@@ -10,7 +10,7 @@ If you want to vibe-code a better solver: welcome. A convincing contribution inc
 
 1. Read [AGENTS.md](AGENTS.md), [handoff](docs/handoff.md) and [architecture](docs/architecture.md). Inspect the code before trusting a historical result.
 2. Run `cargo test --locked --no-default-features -j 2 -- --test-threads=2`. This does not use a GPU.
-3. Choose one bounded task from [ROADMAP.md](ROADMAP.md). State inputs, observable behavior, failure cases and what will remain unsupported.
+3. Choose one bounded task from [ROADMAP.md](ROADMAP.md). The manual-backed backlog has stable task IDs (`SAVE-01`, `DRAW-01`, `SEW-01`, etc.), dependencies and acceptance cases. State inputs, observable behavior, failure cases and what will remain unsupported.
 4. Keep editable panel/boundary IDs and material coordinates stable. Rebuild every dependent cache after topology changes. Never derive rest shape from a drape.
 5. Leave a small reproducible example, relevant checks, and a precise handoff. Report failures as well as improvements.
 

@@ -1,5 +1,7 @@
 # ClothCraft
 
+<img src="assets/branding/clothcraft-icon.png" width="128" height="128" alt="ClothCraft ram icon">
+
 **Draw patterns. Sew pieces. Build better cloth physics.**
 
 ClothCraft is an early native Rust experiment in garment authoring and cloth simulation. It is intended to become an editing foundation on which humans and AI contributors can develop, compare and replace physics solvers.
@@ -116,6 +118,6 @@ Previous local measurements reached about 60 UI frames/s and 60 physical steps/s
 
 ## Provenance and licensing
 
-ClothCraft is independent of CLO and Marvelous Designer. Public manuals and screenshots are workflow references, recorded in the [behavior ledger](docs/manual-study.md); their code, icons, artwork and example garments are not bundled. This implementation does not claim feature parity or formal clean-room certification.
+ClothCraft is independent of CLO, Marvelous Designer and ArtCraft. Public manuals and screenshots are workflow references, recorded in the [behavior ledger](docs/manual-study.md); their code, icons, artwork and example garments are not bundled. The original ram icon was generated for this project, inspired by the engraved-animal presentation of ArtCraft's apps; see [artwork provenance and prompts](assets/branding/README.md). This implementation does not claim feature parity or formal clean-room certification.
 
 **Source licensing is still awaiting the owner's decision.** Public availability is not a distribution license. The bundled MakeHuman assets have a separate [CC0 notice and provenance](assets/makehuman/LICENSE.ASSETS.md).

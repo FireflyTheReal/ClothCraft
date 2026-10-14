@@ -61,9 +61,13 @@ pub fn run(
             ((1100..=3840).contains(&w) && (700..=2160).contains(&h))
                 .then_some([w as f32, h as f32])
         });
+    let icon =
+        eframe::icon_data::from_png_bytes(include_bytes!("../assets/branding/clothcraft-icon.png"))
+            .map_err(|error| format!("Cannot decode the bundled ClothCraft icon: {error}"))?;
     let options = eframe::NativeOptions {
         renderer: eframe::Renderer::Wgpu,
         viewport: egui::ViewportBuilder::default()
+            .with_icon(icon)
             .with_inner_size(smoke_size.unwrap_or([1600., 980.]))
             .with_min_inner_size([1100., 700.]),
         ..Default::default()
