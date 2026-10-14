@@ -2,7 +2,7 @@
 use super::*;
 use std::{collections::BTreeMap, time::Instant};
 
-const ACTIONS: [(&str, Vec2); 31] = [
+const ACTIONS: [(&str, Vec2); 35] = [
     ("Plume", Vec2::ZERO),
     ("replace", Vec2::ZERO),
     ("Rectangle", Vec2::ZERO),
@@ -32,6 +32,10 @@ const ACTIONS: [(&str, Vec2); 31] = [
     ("focus", Vec2::ZERO),
     ("turn", Vec2::ZERO),
     ("ring_z", Vec2::new(25., 20.)),
+    ("fabric_panel", Vec2::ZERO),
+    ("fabric_presets", Vec2::ZERO),
+    ("fabric_preset_denim", Vec2::ZERO),
+    ("fabric_apply", Vec2::ZERO),
     ("export", Vec2::ZERO),
     ("simulate", Vec2::ZERO),
 ];
@@ -56,6 +60,8 @@ pub(super) struct Smoke {
     handle_edited: bool,
     anchor_edited: bool,
     layout_preserved_physics: bool,
+    fabric_before: Option<(Vec<glam::DVec3>, Vec<f64>)>,
+    fabric_applied: bool,
 }
 impl Smoke {
     pub fn new() -> Self {
@@ -77,6 +83,8 @@ impl Smoke {
             handle_edited: false,
             anchor_edited: false,
             layout_preserved_physics: false,
+            fabric_before: None,
+            fabric_applied: false,
         }
     }
     pub fn target(&mut self, name: &str, p: egui::Pos2) {
@@ -179,6 +187,24 @@ impl Atelier {
                         .any(|i| self.scene.state.x[i].distance(x[i]) > 0.001)
                 })
         });
+        if key == Some("fabric_apply") && smoke.fabric_before.is_none() {
+            smoke.fabric_before = Some((
+                self.scene.state.x.clone(),
+                self.scene.garment.mesh.masses.clone(),
+            ));
+        }
+        if key == Some("export") {
+            smoke.fabric_applied |= smoke.fabric_before.as_ref().is_some_and(|(x, masses)| {
+                self.scene.state.x == *x
+                    && self.scene.garment.mesh.masses != *masses
+                    && self
+                        .scene
+                        .garment
+                        .materials
+                        .iter()
+                        .any(|m| (m.density - 0.296675).abs() < 1e-12)
+            });
+        }
         if smoke.finished
             || ((!simulated || smoke.action < ACTIONS.len())
                 && smoke.start.elapsed().as_secs() < 25)
@@ -186,7 +212,7 @@ impl Atelier {
             return;
         }
         smoke.finished = true;
-        let complete = smoke.action == ACTIONS.len();
+        let complete = smoke.action == ACTIONS.len() && smoke.fabric_applied;
         let moved = self.project.template.panels.first().is_some_and(|p| {
             smoke
                 .translation_before
@@ -206,7 +232,7 @@ impl Atelier {
             .and_then(|p| p.compile().map(|_| p))
             .is_ok_and(|p| p.template.panels.len() == 2 && p.template.seams.len() == 1);
         let report = serde_json::json!({"passed":complete&&simulated&&moved&&curved&&smoke.rectangle_drawn&&smoke.handle_edited&&smoke.anchor_edited&&smoke.layout_preserved_physics&&smoke.mixed_sewing&&rotated&&exported&&smoke.undo_observed&&smoke.redo_observed&&self.project.template.seams.len()==1,
-            "new_panel_simulated":simulated,"pending_seam_committed_on_play":smoke.mixed_sewing&&smoke.undo_observed,"completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
+            "fabric_applied_preserving_drape":smoke.fabric_applied,"new_panel_simulated":simulated,"pending_seam_committed_on_play":smoke.mixed_sewing&&smoke.undo_observed,"completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
             "export_reload_compiles":exported,"undo_observed":smoke.undo_observed,"redo_observed":smoke.redo_observed,"panels":self.project.template.panels.len(),"seams":self.project.template.seams.len(),"status":self.status});
         if let Err(e) = std::fs::write(
             self.output.join("authoring.json"),

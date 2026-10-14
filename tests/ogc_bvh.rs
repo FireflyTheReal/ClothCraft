@@ -2,6 +2,71 @@ use glam::DVec3;
 use marvelous_cloth::ogc::bvh::{Bounds, Bvh};
 
 #[test]
+fn dual_tree_pairs_match_exhaustive_search_without_duplicates() {
+    use std::collections::BTreeSet;
+    let mut seed = 53u64;
+    let mut random = || {
+        seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+        (seed >> 32) as f64 / u32::MAX as f64
+    };
+    let mut a: Vec<_> = (0..129)
+        .map(|_| {
+            let p = DVec3::new(random(), random(), random());
+            Bounds::points([p, p + DVec3::splat(0.03)])
+        })
+        .collect();
+    let b: Vec<_> = (0..97)
+        .map(|_| Bounds::points([DVec3::new(random(), random(), random())]))
+        .collect();
+    // Fixed IDs interspersed with moving IDs, and point boxes of zero volume.
+    let da: Vec<_> = (0..a.len()).map(|i| i % 3 == 1).collect();
+    let db: Vec<_> = (0..b.len()).map(|i| i % 2 == 1).collect();
+    let mut ta = Bvh::new(&a, &da);
+    let tb = Bvh::new(&b, &db);
+    for frame in 0..4 {
+        if frame > 0 {
+            for (i, box_) in a.iter_mut().enumerate() {
+                if da[i] {
+                    let delta = DVec3::new(random() - 0.5, random() - 0.5, random() - 0.5);
+                    box_.min += delta;
+                    box_.max += delta;
+                }
+            }
+            ta.refit_dynamic(|i| a[i]);
+        }
+        for radius in [0., 0.05, 0.2, 2.] {
+            let mut pairs = BTreeSet::new();
+            ta.pairs_with(&tb, radius, |i, j| {
+                assert!(pairs.insert((i, j)));
+            });
+            let mut expected = BTreeSet::new();
+            for i in 0..a.len() {
+                for j in 0..b.len() {
+                    if (da[i] || db[j]) && a[i].distance_squared(b[j]) <= radius * radius {
+                        expected.insert((i, j));
+                    }
+                }
+            }
+            assert_eq!(pairs, expected);
+            pairs.clear();
+            expected.clear();
+            ta.self_pairs(radius, |i, j| {
+                assert!(i < j && pairs.insert((i, j)));
+            });
+            for i in 0..a.len() {
+                for j in i + 1..a.len() {
+                    if (da[i] || da[j]) && a[i].distance_squared(a[j]) <= radius * radius {
+                        expected.insert((i, j));
+                    }
+                }
+            }
+            assert_eq!(pairs, expected);
+        }
+    }
+    Bvh::new(&[], &[]).pairs_with(&tb, 1., |_, _| panic!("empty"));
+}
+
+#[test]
 fn bounds_distance_never_discards_a_close_primitive_pair() {
     use marvelous_cloth::ogc::{
         geometry::{closest_segments, closest_triangle},

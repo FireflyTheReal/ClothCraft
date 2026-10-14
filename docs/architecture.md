@@ -30,6 +30,7 @@ Le chemin courant de `cloth-fit` passe par `VbdSolver` + `OgcWorld`, ou `GpuVbd:
 | Module | Rôle | Entrées / sorties |
 |---|---|---|
 | `authoring.rs` | Commandes transactionnelles, historique et placements rigides | template + commande → template validé + modèle compilé |
+| `fabrics.rs`, `atelier/fabrics_ui.rs` | Presets documentés, conversion stretch sous charge et contrôles | propriétés SI → compilation par `Command::Fabric`, sans modifier le repos |
 | `atelier/authoring_ui.rs`, `atelier/gizmo.rs` | Dessin, choix des coutures, sélection et gizmos | interactions → commandes ; aperçu sans remeshing par frame |
 | `model.rs` | Géométrie de repos rectangulaire et maillage FEM | `Pattern` → `Mesh`, masse, charnières |
 | `garment/template.rs` | Modèle d'édition, validation, compilation | `GarmentTemplate` → `CompiledGarment` |

@@ -6,7 +6,7 @@ use crate::{
         meshing::MeshingSettings,
         polygon::PolygonPattern,
         seam::{BoundaryRef, SeamSpec},
-        template::{Panel, Placement},
+        template::{Fabric, FabricProperties, Panel, Placement},
     },
     model::{Pattern, State},
 };
@@ -47,6 +47,12 @@ pub enum Command {
     RemoveSeam {
         seam: String,
     },
+    Fabric {
+        panel: String,
+        name: String,
+        properties: FabricProperties,
+        all_panels: bool,
+    },
 }
 
 pub struct Edit {
@@ -76,7 +82,6 @@ impl Edit {
             if previous.mesh.uv[a.clone()] != self.garment.mesh.uv[b.clone()]
                 || previous.initial_state.x[a.clone()] != self.garment.initial_state.x[b.clone()]
                 || previous.mesh.pins[a.clone()] != self.garment.mesh.pins[b.clone()]
-                || previous.mesh.masses[a.clone()] != self.garment.mesh.masses[b.clone()]
                 || !previous.mesh.triangles[old.triangles.clone()]
                     .iter()
                     .map(|t| t.vertices.map(|i| i - a.start))
@@ -155,6 +160,53 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
     let mut template = source.clone();
     let mut selected = None;
     match command {
+        Command::Fabric {
+            panel,
+            name,
+            properties,
+            all_panels,
+        } => {
+            properties.bind(0.).validate()?;
+            if name.trim().is_empty() {
+                return Err("Nom de tissu vide".into());
+            }
+            let index = template
+                .panels
+                .iter()
+                .position(|p| p.id == panel)
+                .ok_or("Panneau absent")?;
+            let old_id = template.panels[index].fabric.clone();
+            let shared = template
+                .panels
+                .iter()
+                .filter(|p| p.fabric == old_id)
+                .count()
+                > 1;
+            let id = if shared && !all_panels {
+                let id = unused_id("fabric", template.fabrics.iter().map(|f| f.id.clone()));
+                template.fabrics.push(Fabric {
+                    id: id.clone(),
+                    name,
+                    properties,
+                });
+                id
+            } else {
+                let f = template
+                    .fabrics
+                    .iter_mut()
+                    .find(|f| f.id == old_id)
+                    .ok_or("Tissu absent")?;
+                f.name = name;
+                f.properties = properties;
+                old_id
+            };
+            for (i, p) in template.panels.iter_mut().enumerate() {
+                if all_panels || i == index {
+                    p.fabric = id.clone();
+                }
+            }
+            selected = Some(panel);
+        }
         Command::Polygon {
             mut points,
             mut tangents,

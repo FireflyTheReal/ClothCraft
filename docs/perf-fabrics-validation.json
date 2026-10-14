@@ -1,0 +1,176 @@
+{
+  "date": "2026-10-14",
+  "hardware": "NVIDIA GeForce RTX 3090 / Vulkan / Windows",
+  "cpu_threads": 2,
+  "baseline_commit": "8cfe4ec",
+  "cpu_tests_passed": 74,
+  "template_fixtures_passed": 5,
+  "cpu_and_desktop_clippy_passed": true,
+  "gpu_freefall_and_trust_bounds_passed": true,
+  "mixed_fabric_gpu_gradients": {
+    "passed": true,
+    "vertices": 946,
+    "steps": 2,
+    "max_absolute_error_n_per_step": [0.000758, 0.001247]
+  },
+  "settings": {
+    "steps_per_run": 90,
+    "iterations": 8,
+    "dt_s": 0.016666666666666666,
+    "cache_skin_m": 0.003,
+    "bvh_leaf_size": 8
+  },
+  "native_authoring": {
+    "anchor_edited": true,
+    "bezier_drawn": true,
+    "completed_pointer_actions": 35,
+    "expected_actions": 35,
+    "export_reload_compiles": true,
+    "fabric_applied_preserving_drape": true,
+    "handle_edited": true,
+    "layout_preserved_physics": true,
+    "new_panel_simulated": true,
+    "panels": 2,
+    "passed": true,
+    "pending_seam_committed_on_play": true,
+    "rectangle_drawn": true,
+    "redo_observed": true,
+    "rotated_with_gizmo": true,
+    "seams": 1,
+    "sewing_selected_in_2d_and_3d": true,
+    "status": "Simulation dynamique \u00b7 contacts OGC",
+    "translated_with_gizmo": true,
+    "undo_observed": true
+  },
+  "apron_headless_comparison": {
+    "before": {
+      "runs": [
+        {
+          "mean_step_ms": 31.74351777777778,
+          "final_max_seam_gap_m": 0.03052281405872348,
+          "final_minimum_distance_m": 0.0007524290198887858,
+          "mean_detection_ms": 25.815164444444445,
+          "mean_gpu_compute_ms": 2.577375288888889,
+          "mean_contact_profile": {}
+        },
+        {
+          "mean_step_ms": 30.93706666666667,
+          "final_max_seam_gap_m": 0.03052281405872348,
+          "final_minimum_distance_m": 0.0007524290198887858,
+          "mean_detection_ms": 25.639753333333335,
+          "mean_gpu_compute_ms": 1.9647516444444444,
+          "mean_contact_profile": {}
+        },
+        {
+          "mean_step_ms": 31.597883333333332,
+          "final_max_seam_gap_m": 0.03052281405872348,
+          "final_minimum_distance_m": 0.0007524290198887858,
+          "mean_detection_ms": 26.400823333333335,
+          "mean_gpu_compute_ms": 2.1420682666666666,
+          "mean_contact_profile": {}
+        }
+      ],
+      "mean_step_ms": 31.426155925925926
+    },
+    "after": {
+      "runs": [
+        {
+          "mean_step_ms": 21.673557777777777,
+          "final_max_seam_gap_m": 0.03052281405872348,
+          "final_minimum_distance_m": 0.0007524290198887858,
+          "mean_detection_ms": 17.093426666666666,
+          "mean_gpu_compute_ms": 1.4162311111111112,
+          "mean_contact_profile": {
+            "refit_ms": 0.36723555555555554,
+            "candidates_ms": 10.154411111111111,
+            "narrow_ms": 5.86372,
+            "candidate_pairs": 269283.2111111111
+          }
+        },
+        {
+          "mean_step_ms": 23.341820000000002,
+          "final_max_seam_gap_m": 0.03052281405872348,
+          "final_minimum_distance_m": 0.0007524290198887858,
+          "mean_detection_ms": 17.719647777777777,
+          "mean_gpu_compute_ms": 1.4866364444444444,
+          "mean_contact_profile": {
+            "refit_ms": 0.40358,
+            "candidates_ms": 10.517964444444445,
+            "narrow_ms": 6.060554444444445,
+            "candidate_pairs": 269283.2111111111
+          }
+        },
+        {
+          "mean_step_ms": 24.107899999999997,
+          "final_max_seam_gap_m": 0.03052281405872348,
+          "final_minimum_distance_m": 0.0007524290198887858,
+          "mean_detection_ms": 19.147658888888888,
+          "mean_gpu_compute_ms": 1.4058026666666668,
+          "mean_contact_profile": {
+            "refit_ms": 0.4467388888888889,
+            "candidates_ms": 11.510836666666666,
+            "narrow_ms": 6.380425555555556,
+            "candidate_pairs": 269283.2111111111
+          }
+        }
+      ],
+      "mean_step_ms": 23.04109259259259
+    },
+    "time_reduction_percent": 26.68179765001367,
+    "throughput_multiplier": 1.3639177829626457,
+    "final_state_comparison": [
+      {
+        "run": 1,
+        "max_position_component_difference_m": 0.0,
+        "max_velocity_component_difference_m_per_s": 0.0
+      },
+      {
+        "run": 2,
+        "max_position_component_difference_m": 0.0,
+        "max_velocity_component_difference_m_per_s": 0.0
+      },
+      {
+        "run": 3,
+        "max_position_component_difference_m": 0.0,
+        "max_velocity_component_difference_m_per_s": 0.0
+      }
+    ],
+    "scene": "Private apron-ready saved scene: 3139 vertices, 5823 triangles, 3 panels, 9 seams",
+    "source_sha256": "45b62fa5056a5bb9d555ed7331b54e3b2e1af8059cc091514bc095062fff1906",
+    "scope": "Three alternating before/after runs on identical input, full wall time including host work and metrics logging, no concurrent compilation. GPU compute timestamps exclude detection/transfers. This private scene is not a public fixture."
+  },
+  "window": {
+    "before": {
+      "passed": false,
+      "physics_steps_per_second": 50.15896695549387,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 4.183333333333456,
+      "simulation_speed": 0.8359827825915644,
+      "ui_frame_interval_p95_ms": 19.7623,
+      "ui_frames_per_second": 59.95095652050884,
+      "wall_seconds": 5.0040903
+    },
+    "after": {
+      "passed": true,
+      "physics_steps_per_second": 60.20616024647259,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 5.033333333333512,
+      "simulation_speed": 1.0034360041078765,
+      "ui_frame_interval_p95_ms": 20.3381,
+      "ui_frames_per_second": 60.00680209995897,
+      "wall_seconds": 5.016098
+    },
+    "apron": {
+      "passed": false,
+      "physics_steps_per_second": 46.248893764337794,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 3.866666666666699,
+      "simulation_speed": 0.7708148960722966,
+      "ui_frame_interval_p95_ms": 19.705000000000002,
+      "ui_frames_per_second": 60.00395268562742,
+      "wall_seconds": 5.0163362
+    },
+    "scope": "T-shirt before/after: same saved 6 s snapshot at 25 mm, 1 s warmup + 5 s measured. Apron: private saved source. Separate short runs, not statistical FPS guarantees.",
+    "tshirt_source_sha256": "3e5bc12c037e7df812f5c007d8eb5e933a9704407c6fb9070210df5144cb549e"
+  }
+}

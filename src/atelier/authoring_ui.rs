@@ -33,6 +33,7 @@ pub(super) struct AuthoringUi {
     pub preview: Option<Placement>,
     pub preview_state: Option<marvelous_cloth::model::State>,
     pub error: Option<String>,
+    pub fabric_draft: Option<super::fabrics_ui::FabricDraft>,
     pub rotate: bool,
     pub drag: Option<super::gizmo::Drag>,
 }
@@ -65,6 +66,7 @@ impl Atelier {
         self.authoring.preview = None;
         self.authoring.preview_state = None;
         self.authoring.error = None;
+        self.authoring.fabric_draft = None;
         self.authoring.drag = None;
         self.authoring.ends.clear();
         if let Some(id) = edit.selected {
@@ -240,6 +242,7 @@ impl Atelier {
             panel.pattern.width * 1000.,
             panel.pattern.height * 1000.
         ));
+        self.fabric_properties(ui, &panel);
         ui.horizontal(|ui| {
             let duplicate = ui.button("Dupliquer");
             self.smoke_target("duplicate", duplicate.rect.center());

@@ -178,4 +178,61 @@ impl Bvh {
             }
         }
     }
+
+    /// Traverse two hierarchies together, pruning whole pairs of nodes. Fixed /
+    /// fixed pairs are omitted. AABB distance is only a lower bound; the caller
+    /// still evaluates exact feature distances. No bounded candidate buffer.
+    pub fn pairs_with(&self, other: &Self, radius: f64, visit: impl FnMut(usize, usize)) {
+        self.pairs(other, radius, false, visit);
+    }
+    /// Each unordered primitive pair is visited at most once, even when fixed
+    /// primitive IDs precede moving IDs. Output IDs are canonical (a < b).
+    pub fn self_pairs(&self, radius: f64, visit: impl FnMut(usize, usize)) {
+        self.pairs(self, radius, true, visit);
+    }
+    fn pairs(&self, other: &Self, radius: f64, same: bool, mut visit: impl FnMut(usize, usize)) {
+        let mut stack = Vec::with_capacity(128);
+        for (i, a) in self.roots.iter().enumerate() {
+            for b in other.roots.iter().skip(if same { i } else { 0 }) {
+                stack.push((*a, *b));
+            }
+        }
+        let radius2 = radius * radius;
+        while let Some((a, b)) = stack.pop() {
+            let na = &self.nodes[a];
+            let nb = &other.nodes[b];
+            if (!na.dynamic && !nb.dynamic) || na.bounds.distance_squared(nb.bounds) > radius2 {
+                continue;
+            }
+            if same && a == b {
+                if let Some([l, r]) = na.children {
+                    stack.extend([(l, l), (l, r), (r, r)]);
+                    continue;
+                }
+            } else if let Some(children) = na
+                .children
+                .filter(|_| nb.children.is_none() || na.end - na.start >= nb.end - nb.start)
+            {
+                stack.extend(children.map(|c| (c, b)));
+                continue;
+            } else if let Some(children) = nb.children {
+                stack.extend(children.map(|c| (a, c)));
+                continue;
+            }
+            for (offset, i) in self.order[na.start..na.end].iter().enumerate() {
+                let start = nb.start + if same && a == b { offset + 1 } else { 0 };
+                for j in &other.order[start..nb.end] {
+                    if self.primitive_bounds[*i].distance_squared(other.primitive_bounds[*j])
+                        <= radius2
+                    {
+                        if same {
+                            visit((*i).min(*j), (*i).max(*j));
+                        } else {
+                            visit(*i, *j);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

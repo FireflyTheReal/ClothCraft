@@ -16,6 +16,8 @@ mod authoring_ui;
 mod board;
 #[path = "atelier/edges_3d.rs"]
 mod edges_3d;
+#[path = "atelier/fabrics_ui.rs"]
+mod fabrics_ui;
 #[path = "atelier/gizmo.rs"]
 mod gizmo;
 #[path = "atelier/perf.rs"]
@@ -230,6 +232,7 @@ impl Atelier {
                 self.authoring.preview = None;
                 self.authoring.preview_state = None;
                 self.authoring.error = None;
+                self.authoring.fabric_draft = None;
                 self.authoring.drag = None;
                 self.authoring.ends.clear();
                 self.authoring.selected = p.template.panels.first().map(|p| p.id.clone());

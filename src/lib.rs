@@ -3,6 +3,7 @@ pub mod authoring;
 pub mod avatar;
 pub mod contact;
 pub mod energy;
+pub mod fabrics;
 pub mod fitting;
 pub mod garment;
 #[cfg(feature = "desktop")]

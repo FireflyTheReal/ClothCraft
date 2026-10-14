@@ -62,6 +62,7 @@ pub struct VbdMetrics {
     pub dt_s: f64,
     pub step_ms: f64,
     pub detection_ms: f64,
+    pub contact_profile: crate::ogc::DetectionProfile,
     pub solve_ms: f64,
     /// Hardware timestamps; absent for CPU or unsupported timestamp queries.
     pub gpu_compute_ms: Option<f64>,
@@ -334,6 +335,7 @@ impl VbdSolver {
         metrics.detection_ms += detect.elapsed().as_secs_f64() * 1000.0;
         metrics.detection_updates += 1;
         metrics.broad_phase_rebuilds += usize::from(contacts.broad_phase_rebuilt);
+        metrics.contact_profile += contacts.profile;
         let mut colors = self.colors(&contacts, grab);
         // Conservative warm start; no unbounded inertial prediction crosses a face.
         let mut clipped = 0;
@@ -352,6 +354,7 @@ impl VbdSolver {
                 metrics.detection_ms += detect.elapsed().as_secs_f64() * 1000.0;
                 metrics.detection_updates += 1;
                 metrics.broad_phase_rebuilds += usize::from(contacts.broad_phase_rebuilt);
+                metrics.contact_profile += contacts.profile;
             }
             clipped = 0;
             let mut residual = 0.0;

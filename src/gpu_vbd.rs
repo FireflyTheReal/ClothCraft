@@ -445,6 +445,7 @@ impl GpuVbd {
             dt_s: dt,
             step_ms,
             detection_ms,
+            contact_profile: contacts.profile,
             solve_ms: step_ms - detection_ms,
             gpu_compute_ms,
             iterations: settings.iterations,

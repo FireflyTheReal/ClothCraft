@@ -14,7 +14,7 @@ use std::{
 };
 
 /// Fabric properties are independent of how an individual panel is cut on the roll.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct FabricProperties {
     pub warp: f64,

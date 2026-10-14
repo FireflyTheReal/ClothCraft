@@ -6,4 +6,4 @@ pub mod geometry;
 pub mod potential;
 pub mod topology;
 mod world;
-pub use world::{ContactSet, OgcSettings, OgcWorld};
+pub use world::{ContactSet, DetectionProfile, OgcSettings, OgcWorld};

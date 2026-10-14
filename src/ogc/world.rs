@@ -9,6 +9,23 @@ use glam::DVec3;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
+use std::time::Instant;
+
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct DetectionProfile {
+    pub refit_ms: f64,
+    pub candidates_ms: f64,
+    pub narrow_ms: f64,
+    pub candidate_pairs: usize,
+}
+impl std::ops::AddAssign for DetectionProfile {
+    fn add_assign(&mut self, rhs: Self) {
+        self.refit_ms += rhs.refit_ms;
+        self.candidates_ms += rhs.candidates_ms;
+        self.narrow_ms += rhs.narrow_ms;
+        self.candidate_pairs += rhs.candidate_pairs;
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -52,6 +69,7 @@ impl OgcSettings {
 
 #[derive(Clone, Debug)]
 pub struct ContactSet {
+    pub profile: DetectionProfile,
     pub contacts: Vec<Contact>,
     pub incident: Vec<Vec<usize>>,
     pub centers: Vec<DVec3>,
@@ -91,6 +109,7 @@ pub struct OgcWorld {
     pub fixed: Vec<DVec3>,
     triangles: Bvh,
     edges: Bvh,
+    points: Bvh,
     rest_edge_length2: Vec<f64>,
     excluded: BTreeSet<[usize; 2]>,
     excluded_neighbors: Vec<Vec<usize>>,
@@ -151,6 +170,10 @@ impl OgcWorld {
             .iter()
             .map(|e| x[e[0]].distance_squared(x[e[1]]))
             .collect();
+        let points = Bvh::new(
+            &x.iter().map(|p| Bounds::points([*p])).collect::<Vec<_>>(),
+            &(0..x.len()).map(|i| i < moving).collect::<Vec<_>>(),
+        );
         let excluded: BTreeSet<_> = excluded
             .into_iter()
             .map(|[a, b]| [a.min(b), a.max(b)])
@@ -172,6 +195,7 @@ impl OgcWorld {
             fixed: x[moving..].to_vec(),
             triangles,
             edges,
+            points,
             rest_edge_length2,
             excluded,
             excluded_neighbors,
@@ -206,6 +230,7 @@ impl OgcWorld {
             .refit_dynamic(|i| Bounds::points(self.topology.triangles[i].map(|v| x[v])));
         self.edges
             .refit_dynamic(|i| Bounds::points(self.topology.edges[i].map(|v| x[v])));
+        self.points.refit_dynamic(|i| Bounds::points([x[i]]));
         Ok(())
     }
     pub fn validate_start(&mut self, x: &[DVec3]) -> Result<(), String> {
@@ -284,7 +309,10 @@ impl OgcWorld {
         if !query_radius.is_finite() || query_radius < settings.radius {
             return Err("OGC query radius must cover the contact radius".into());
         }
+        let start = Instant::now();
         self.refit(x)?;
+        let refit_ms = start.elapsed().as_secs_f64() * 1000.;
+        let broad_start = Instant::now();
         // Independent narrow-phase lanes: deterministic min reduction and
         // canonical contact union, no atomics or discarded candidates.
         let lanes = rayon::current_num_threads().min(2);
@@ -295,7 +323,7 @@ impl OgcWorld {
         if broad_phase_rebuilt {
             self.candidates = Some(Candidates::build(
                 &self.topology,
-                (&self.triangles, &self.edges),
+                (&self.points, &self.triangles, &self.edges),
                 x,
                 self.moving,
                 // Quantize upward so tiny changes of inertial speed do not
@@ -305,6 +333,8 @@ impl OgcWorld {
                 |a, b| self.adjacent(a, b),
             ));
         }
+        let candidates_ms = broad_start.elapsed().as_secs_f64() * 1000.;
+        let narrow_start = Instant::now();
         let batches: Vec<_> = (0..lanes)
             .into_par_iter()
             .map(|lane| self.scan(x, query_radius, settings, lane, lanes))
@@ -335,6 +365,13 @@ impl OgcWorld {
             .copied()
             .fold(query_radius, f64::min);
         Ok(ContactSet {
+            profile: DetectionProfile {
+                refit_ms,
+                candidates_ms,
+                narrow_ms: narrow_start.elapsed().as_secs_f64() * 1000.,
+                candidate_pairs: self.candidates.as_ref().unwrap().vf.len()
+                    + self.candidates.as_ref().unwrap().ee.len(),
+            },
             contacts,
             incident,
             centers: x[..self.moving].to_vec(),
