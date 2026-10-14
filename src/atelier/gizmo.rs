@@ -23,7 +23,7 @@ const COLORS: [Color32; 3] = [
     Color32::from_rgb(104, 220, 134),
     Color32::from_rgb(98, 160, 255),
 ];
-fn project(camera: &Camera, rect: egui::Rect, p: DVec3) -> Option<egui::Pos2> {
+pub(super) fn project(camera: &Camera, rect: egui::Rect, p: DVec3) -> Option<egui::Pos2> {
     let clip = camera.matrix(rect.width() / rect.height()) * p.as_vec3().extend(1.);
     if clip.w <= 0. {
         return None;
@@ -202,7 +202,7 @@ impl Atelier {
         if self.authoring.tool != Tool::Place {
             return;
         }
-        let Some((placement, _, center, radius)) = self.gizmo_basis() else {
+        let Some((_, _, center, radius)) = self.gizmo_basis() else {
             return;
         };
         let Some(screen_center) = project(&self.camera, rect, center) else {
@@ -225,23 +225,6 @@ impl Atelier {
             .iter()
             .find(|p| Some(&p.id) == self.authoring.selected.as_ref())
         {
-            if let Some(poly) = &panel.polygon {
-                for i in 0..poly.points.len() {
-                    let to_screen = |k: usize| {
-                        let uv = poly.points[k];
-                        project(
-                            &self.camera,
-                            rect,
-                            placement.transform(DVec3::new(uv.x, -uv.y, 0.)),
-                        )
-                    };
-                    if let (Some(a), Some(b)) =
-                        (to_screen(i), to_screen((i + 1) % poly.points.len()))
-                    {
-                        painter.line_segment([a, b], Stroke::new(1.5, Color32::GOLD));
-                    }
-                }
-            }
             painter.text(
                 screen_center + Vec2::new(0., -12.),
                 egui::Align2::CENTER_BOTTOM,

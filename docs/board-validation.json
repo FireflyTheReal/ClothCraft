@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-14",
+  "platform": "Windows / RTX 3090 / Vulkan",
+  "rust_local": "1.97.1",
+  "cpu": {
+    "tests_passed": 68,
+    "cpu_clippy": "passed",
+    "desktop_clippy": "passed",
+    "format": "passed",
+    "template_fixtures": 5
+  },
+  "native_authoring": {
+    "anchor_edited": true,
+    "bezier_drawn": true,
+    "completed_pointer_actions": 30,
+    "expected_actions": 30,
+    "export_reload_compiles": true,
+    "handle_edited": true,
+    "layout_preserved_physics": true,
+    "panels": 2,
+    "passed": true,
+    "rectangle_drawn": true,
+    "redo_observed": true,
+    "rotated_with_gizmo": true,
+    "seams": 1,
+    "sewing_selected_in_2d_and_3d": true,
+    "status": "Export : output/board-final",
+    "translated_with_gizmo": true,
+    "undo_observed": true
+  },
+  "grab": {
+    "accepted_step_with_grab": true,
+    "max_vertex_displacement_m": 0.010776498856166874,
+    "passed": true,
+    "pointer_picked_cloth": true,
+    "state_time_s": 6.083333333333318,
+    "status": "Simulation dynamique \u00b7 contacts OGC"
+  },
+  "tshirt_window": {
+    "passed": true,
+    "physics_steps_per_second": 59.78111873146214,
+    "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+    "simulated_seconds": 4.983333333333524,
+    "simulation_speed": 0.9963519788577024,
+    "ui_frame_interval_p95_ms": 17.924699999999998,
+    "ui_frames_per_second": 59.98105558340453,
+    "wall_seconds": 5.0015792
+  },
+  "curved_panels_60_steps": {
+    "backend": "hybrid-cpu-ogc-gpu-vbd",
+    "last": {
+      "broad_phase_rebuilds": 0,
+      "contacts": 36,
+      "detection_ms": 0.5882,
+      "detection_updates": 1,
+      "dt_s": 0.016666666666666666,
+      "gpu_compute_ms": 1.114816,
+      "iterations": 8,
+      "max_seam_gap_m": 0.40614284579357124,
+      "minimum_distance_m": 0.00011821257835110067,
+      "residual_rms_n": null,
+      "solve_ms": 2.1034,
+      "step_ms": 2.6916,
+      "time_s": 1.0000000000000013,
+      "truncated_vertices": 0
+    },
+    "mean_step_ms": 4.297906666666666,
+    "scope": "OGC two-sided VF/EE normal contact, self-contact, isotropic conservative bounds; local seam exclusions; no friction; fixed iteration residual is reported, not a converged Newton solve",
+    "seams": [
+      {
+        "id": "seam_1",
+        "max_gap_m": 0.40614284579357124
+      }
+    ],
+    "settings": {
+      "contact": {
+        "radius": 0.003,
+        "refresh_fraction": 0.01,
+        "relaxation": 0.45,
+        "stiffness": 100000.0
+      },
+      "damping": 1.5,
+      "dt": 0.016666666666666666,
+      "gravity": [
+        0.0,
+        -9.81,
+        0.0
+      ],
+      "iterations": 8
+    },
+    "steps": 60,
+    "triangles": 1710,
+    "vertices": 946,
+    "wall_ms": 257.8744
+  },
+  "limitations": [
+    "Five-second window sample on one local GPU; not a dense-scene benchmark.",
+    "Authoring fixture demonstrates geometry and seam linkage, not a finished garment.",
+    "60-step curved fixture run remains far from a closed seam; no convergence claim."
+  ]
+}

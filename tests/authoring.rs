@@ -12,6 +12,7 @@ use marvelous_cloth::{
 fn rectangle(width: f64) -> Command {
     // Deliberately clockwise, translated input: drawing direction is arbitrary.
     Command::Polygon {
+        tangents: vec![],
         points: vec![
             DVec2::new(2., 3.),
             DVec2::new(2., 3.3),
@@ -62,6 +63,7 @@ fn invalid_edit_is_atomic_and_does_not_enter_history() {
         unreachable!()
     };
     let invalid = Command::Polygon {
+        tangents: vec![],
         points: vec![DVec2::ZERO, DVec2::ONE, DVec2::Y, DVec2::X],
         meshing,
         fabric,

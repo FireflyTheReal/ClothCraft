@@ -4,9 +4,11 @@
 
 ## Première publication et édition
 
-Lire [l’accueil IA](../AI_START_HERE.md), [la roadmap](../ROADMAP.md), [le guide d’édition](authoring.md) et [l’étude des manuels](manual-study.md). La première tranche permet de dessiner des polygones, choisir des coutures entre bords, déplacer/tourner au gizmo et annuler/rétablir. Les commandes CPU valident le document avant remplacement ; le worker ignore les anciennes générations. Les formats industriels et le contrat commun de backends restent à construire.
+Lire [l’accueil IA](../AI_START_HERE.md), [la roadmap](../ROADMAP.md), [le guide d’édition](authoring.md) et [l’étude des manuels](manual-study.md). L’éditeur propose maintenant un tableau 2D unique : plume Bézier, rectangle, points/poignées éditables, disposition des pièces, couture par bords depuis la 2D ou la 3D, puis placement au gizmo. `board.rs` porte les interactions 2D, `edges_3d.rs` la sélection visible en 3D, `garment/curves.rs` la subdivision des courbes. Les commandes CPU valident le document avant remplacement ; le worker ignore les anciennes générations. Les formats industriels et le contrat commun de backends restent à construire.
 
-Validation de cette tranche : [63 tests CPU, parcours natif de 20 actions et cadence réelle](publication-validation.md).
+Validation actuelle : [68 tests CPU, parcours natif de 30 actions et cadence réelle](board-validation.md). La [validation de première publication](publication-validation.md) reste un historique. `serde_json/float_roundtrip` est nécessaire pour retrouver exactement le même maillage après sauvegarde. Une disposition 2D ne change ni les UV de repos ni l’état 3D ; une modification de contour/couture/placement réinitialise la simulation.
+
+Prochaines tâches d’édition : dimensions numériques, trous/lignes internes, coutures partielles, multisélection, sauvegarde portable et retours sur les intersections initiales. Voir les limites et gestes dans [authoring.md](authoring.md).
 
 ## Passe Turbo
 
@@ -18,7 +20,7 @@ Lire [les mesures et contrats de performance](turbo-perf.md). La détection rest
 - `--reference` conserve Newton/PCG et son ancien contact sommets/avatar. Les résultats dans `first-fit.md` et `first-fit-results.json` sont historiques, avant OGC et avant l'élargissement des patrons.
 - `ogc/` implémente régions admissibles, VF réciproque, EE, auto-contact, activation quadratique/logarithmique et bornes conservatives. `vbd.rs` utilise les mêmes énergies FEM/coutures que la référence.
 - `gpu_vbd.rs` + `vbd.wgsl` calculent les forces et mises à jour VBD sur GPU. La détection, la coloration et l'empaquetage restent CPU. Aucun backend AVBD, PD, IPC ou MAS.
-- `atelier.rs` : bibliothèque, 3D à gauche des patrons 2D, propriétés à droite ; saisir un triangle par ses barycentriques au bouton gauche, orbite au droit, pan au milieu. Espace : play/pause. L'attachement est une énergie, pas un déplacement forcé qui ignorerait les contacts.
+- `atelier.rs` : vue 3D à gauche, tableau unifié 2D et inspecteur contextuel à droite ; exemples dans le menu supérieur ; saisir un triangle par ses barycentriques au bouton gauche, orbite au droit, pan au milieu. Espace : play/pause. L'attachement est une énergie, pas un déplacement forcé qui ignorerait les contacts.
 - `render.rs` : avatar résident en GPU, matrice caméra appliquée en WGSL, normales interpolées. Le rendu et la simulation ont des mesures distinctes.
 - Les patrons T-shirt/robe ont été élargis. Leur arrangement initial est constitué de plans séparés devant/derrière le mannequin, sans le warp par sommet qui pouvait créer des intersections entre les sommets. Les anciennes scènes intersectées sont refusées par OGC ; reconstruire un arrangement.
 - Templates v1/v2, repos 2D en mètres, matériaux orientés par panneau, Delaunay contrainte et exports sont conservés. Mannequin MakeHuman CC0 de 1,75 m / 26 756 triangles.

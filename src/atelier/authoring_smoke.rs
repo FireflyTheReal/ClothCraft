@@ -2,19 +2,29 @@
 use super::*;
 use std::{collections::BTreeMap, time::Instant};
 
-const ACTIONS: [(&str, Vec2); 20] = [
-    ("Dessiner", Vec2::ZERO),
+const ACTIONS: [(&str, Vec2); 30] = [
+    ("Plume", Vec2::ZERO),
+    ("replace", Vec2::ZERO),
+    ("Rectangle", Vec2::ZERO),
+    ("point0", Vec2::new(120., 160.)),
+    ("Plume", Vec2::ZERO),
     ("replace", Vec2::ZERO),
     ("point0", Vec2::ZERO),
-    ("point1", Vec2::ZERO),
+    ("point1", Vec2::new(28., 20.)),
     ("point2", Vec2::ZERO),
     ("point3", Vec2::ZERO),
     ("create", Vec2::ZERO),
+    ("Modifier", Vec2::ZERO),
+    ("panel_1", Vec2::ZERO),
+    ("handle_1", Vec2::new(-12., -16.)),
+    ("anchor_3", Vec2::new(-16., 0.)),
+    ("body_panel_1", Vec2::new(36., 20.)),
+    ("Placer 3D", Vec2::ZERO),
     ("gizmo_x", Vec2::new(35., 0.)),
     ("duplicate", Vec2::ZERO),
     ("Coudre", Vec2::ZERO),
     ("panel_1", Vec2::ZERO),
-    ("panel_2", Vec2::ZERO),
+    ("edge3d_panel_2", Vec2::ZERO),
     ("sew", Vec2::ZERO),
     ("undo", Vec2::ZERO),
     ("redo", Vec2::ZERO),
@@ -33,6 +43,17 @@ pub(super) struct Smoke {
     pub finished: bool,
     undo_observed: bool,
     redo_observed: bool,
+    mixed_sewing: bool,
+    translation_before: Option<glam::DVec3>,
+    shape_before: Option<marvelous_cloth::garment::polygon::PolygonPattern>,
+    layout_before: Option<(
+        marvelous_cloth::garment::template::GarmentTemplate,
+        Vec<glam::DVec3>,
+    )>,
+    rectangle_drawn: bool,
+    handle_edited: bool,
+    anchor_edited: bool,
+    layout_preserved_physics: bool,
 }
 impl Smoke {
     pub fn new() -> Self {
@@ -45,6 +66,14 @@ impl Smoke {
             finished: false,
             undo_observed: false,
             redo_observed: false,
+            mixed_sewing: false,
+            translation_before: None,
+            shape_before: None,
+            layout_before: None,
+            rectangle_drawn: false,
+            handle_edited: false,
+            anchor_edited: false,
+            layout_preserved_physics: false,
         }
     }
     pub fn target(&mut self, name: &str, p: egui::Pos2) {
@@ -92,20 +121,65 @@ impl Atelier {
         let Some(smoke) = &mut self.authoring_smoke else {
             return;
         };
-        smoke.undo_observed |= smoke.action == 14 && self.project.template.seams.is_empty();
-        smoke.redo_observed |= smoke.action == 15 && self.project.template.seams.len() == 1;
+        let key = ACTIONS.get(smoke.action).map(|a| a.0);
+        let panel = &self.project.template.panels[0];
+        let poly = panel.polygon.as_ref();
+        if smoke.action == 4 {
+            smoke.rectangle_drawn |= self.project.template.panels.len() == 1
+                && poly.is_some_and(|p| p.points.len() == 4 && p.curves.is_empty());
+        }
+        if key == Some("handle_1") && smoke.shape_before.is_none() {
+            smoke.shape_before = poly.cloned();
+        }
+        if key == Some("anchor_3") && !smoke.handle_edited {
+            smoke.handle_edited = smoke
+                .shape_before
+                .as_ref()
+                .zip(poly)
+                .is_some_and(|(before, after)| before.curves != after.curves);
+            smoke.shape_before = poly.cloned();
+        }
+        if key == Some("body_panel_1") && smoke.layout_before.is_none() {
+            smoke.anchor_edited =
+                smoke
+                    .shape_before
+                    .as_ref()
+                    .zip(poly)
+                    .is_some_and(|(before, after)| {
+                        (before.points[3] - before.points[0])
+                            .distance(after.points[3] - after.points[0])
+                            > 0.001
+                    });
+            smoke.layout_before = Some((self.project.template.clone(), self.scene.state.x.clone()));
+        }
+        if key == Some("Placer 3D") && !smoke.layout_preserved_physics {
+            smoke.layout_preserved_physics = smoke.layout_before.as_ref().is_some_and(|(t, x)| {
+                t.panels[0].layout_2d != panel.layout_2d
+                    && marvelous_cloth::authoring::same_physics(t, &self.project.template)
+                    && x == &self.scene.state.x
+            });
+        }
+        if key == Some("gizmo_x") && smoke.translation_before.is_none() {
+            smoke.translation_before = Some(panel.placement.translation);
+        }
+        smoke.mixed_sewing |= key == Some("sew") && self.authoring.ends.len() == 2;
+        smoke.undo_observed |= key == Some("redo") && self.project.template.seams.is_empty();
+        smoke.redo_observed |= smoke.undo_observed && self.project.template.seams.len() == 1;
         if smoke.finished || (smoke.action < ACTIONS.len() && smoke.start.elapsed().as_secs() < 25)
         {
             return;
         }
         smoke.finished = true;
         let complete = smoke.action == ACTIONS.len();
-        let moved = self
-            .project
-            .template
-            .panels
-            .first()
-            .is_some_and(|p| p.placement.translation.x > 0.66);
+        let moved = self.project.template.panels.first().is_some_and(|p| {
+            smoke
+                .translation_before
+                .is_some_and(|before| p.placement.translation.distance(before) > 0.001)
+        });
+        let curved = self.project.template.panels[0]
+            .polygon
+            .as_ref()
+            .is_some_and(|p| !p.curves.is_empty());
         let rotated = self
             .project
             .template
@@ -115,8 +189,8 @@ impl Atelier {
         let exported = FittingProject::load(&self.output.join("fitting-project.json"))
             .and_then(|p| p.compile().map(|_| p))
             .is_ok_and(|p| p.template.panels.len() == 2 && p.template.seams.len() == 1);
-        let report = serde_json::json!({"passed":complete&&moved&&rotated&&exported&&smoke.undo_observed&&smoke.redo_observed&&self.project.template.seams.len()==1,
-            "completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"rotated_with_gizmo":rotated,
+        let report = serde_json::json!({"passed":complete&&moved&&curved&&smoke.rectangle_drawn&&smoke.handle_edited&&smoke.anchor_edited&&smoke.layout_preserved_physics&&smoke.mixed_sewing&&rotated&&exported&&smoke.undo_observed&&smoke.redo_observed&&self.project.template.seams.len()==1,
+            "completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
             "export_reload_compiles":exported,"undo_observed":smoke.undo_observed,"redo_observed":smoke.redo_observed,"panels":self.project.template.panels.len(),"seams":self.project.template.seams.len(),"status":self.status});
         if let Err(e) = std::fs::write(
             self.output.join("authoring.json"),

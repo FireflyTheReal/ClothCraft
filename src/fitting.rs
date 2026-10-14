@@ -156,17 +156,23 @@ impl FittingProject {
                     .filter(|r| r.panel == panel.id)
                     .filter_map(|r| r.edge.as_ref())
                     .collect();
+                let curves: Vec<_> = names
+                    .iter()
+                    .map(|name| {
+                        polygon.edge_points(polygon.edges.iter().position(|e| e == *name).unwrap())
+                    })
+                    .collect::<Result<_, _>>()?;
                 let side = panel.placement.translation.z.signum();
                 for i in range.vertices.clone() {
                     let uv = garment.mesh.uv[i];
                     let mut distance = f64::INFINITY;
-                    for name in &names {
-                        let edge = polygon.edges.iter().position(|e| e == *name).unwrap();
-                        let a = polygon.points[edge];
-                        let b = polygon.points[(edge + 1) % polygon.points.len()];
-                        let d = b - a;
-                        let t = ((uv - a).dot(d) / d.length_squared()).clamp(0.0, 1.0);
-                        distance = distance.min(uv.distance(a + t * d));
+                    for curve in &curves {
+                        for pair in curve.windows(2) {
+                            let (a, b) = (pair[0], pair[1]);
+                            let d = b - a;
+                            let t = ((uv - a).dot(d) / d.length_squared()).clamp(0., 1.);
+                            distance = distance.min(uv.distance(a + t * d));
+                        }
                     }
                     let s = (distance / 0.075).clamp(0.0, 1.0);
                     let smooth = s * s * (3.0 - 2.0 * s);
@@ -222,7 +228,11 @@ fn mesh_signature(template: &GarmentTemplate, g: &CompiledGarment) -> Result<Str
             hash = hash.wrapping_mul(0x100000001b3);
         }
     };
-    append(&serde_json::to_vec(template).map_err(|e| e.to_string())?);
+    let mut physical_template = template.clone();
+    for panel in &mut physical_template.panels {
+        panel.layout_2d = None;
+    }
+    append(&serde_json::to_vec(&physical_template).map_err(|e| e.to_string())?);
     for p in &g.mesh.uv {
         append(&p.x.to_le_bytes());
         append(&p.y.to_le_bytes());

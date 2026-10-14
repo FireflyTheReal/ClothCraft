@@ -12,6 +12,10 @@ use std::{path::PathBuf, sync::mpsc, time::Duration};
 mod authoring_smoke;
 #[path = "atelier/authoring_ui.rs"]
 mod authoring_ui;
+#[path = "atelier/board.rs"]
+mod board;
+#[path = "atelier/edges_3d.rs"]
+mod edges_3d;
 #[path = "atelier/gizmo.rs"]
 mod gizmo;
 #[path = "atelier/perf.rs"]
@@ -64,7 +68,14 @@ pub fn run(
                 .map(|p| p.meshing_settings())
                 .unwrap_or_default();
             Ok(Box::new(Atelier {
-                authoring: AuthoringUi::default(),
+                authoring: AuthoringUi {
+                    tool: if drag_test || perf_test {
+                        Tool::Grab
+                    } else {
+                        Tool::Edit
+                    },
+                    ..Default::default()
+                },
                 authoring_smoke: authoring_test.then(authoring_smoke::Smoke::new),
                 mesh_mm: m.target_edge_m * 1000.,
                 anisotropy: m.anisotropy,
@@ -210,6 +221,12 @@ impl Atelier {
                     self.mesh_axis = m.axis_degrees;
                 }
                 self.authoring.history.record(self.project.template.clone());
+                self.authoring.board.fitted = false;
+                self.authoring.replace = false;
+                self.authoring.draft.clear();
+                self.authoring.tangents.clear();
+                self.authoring.edge = None;
+                self.authoring.board.clear_preview();
                 self.authoring.preview = None;
                 self.authoring.drag = None;
                 self.authoring.ends.clear();
@@ -369,6 +386,7 @@ impl eframe::App for Atelier {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         self.frames += 1;
+        self.authoring.hover_edge = None;
         let done = self.receive.lock().unwrap().take();
         if let Some(done) = done.filter(|d| d.generation == self.generation) {
             self.pending = false;
@@ -426,65 +444,92 @@ impl eframe::App for Atelier {
                     self.export();
                 }
                 ui.separator();
-                ui.checkbox(&mut self.wire, "Maillage");
-                ui.checkbox(&mut self.heat, "Tension");
-                ui.checkbox(&mut self.seams, "Coutures");
+                ui.menu_button("Affichage", |ui| {
+                    ui.checkbox(&mut self.wire, "Maillage");
+                    ui.checkbox(&mut self.heat, "Tension");
+                    ui.checkbox(&mut self.seams, "Coutures");
+                });
+                ui.menu_button("Exemples", |ui| {
+                    if ui.button("T-shirt").clicked() {
+                        self.preset(GarmentKind::Tshirt);
+                        ui.close();
+                    }
+                    if ui.button("Robe").clicked() {
+                        self.preset(GarmentKind::Dress);
+                        ui.close();
+                    }
+                });
                 if self.pending {
                     ui.spinner();
                 }
             });
         });
         egui::Panel::top("authoring-tools").show(ui, |ui| self.authoring_toolbar(ui));
-        egui::Panel::bottom("status").show(ui,|ui|{ui.label(&self.status);
-            if let Some(m)=&self.metrics{ui.small(format!("Temps simulé {:.3} s  |  pas {:.1} ms  |  détection {:.1} ms  |  calcul/transferts {:.1} ms  |  ouverture couture {:.1} mm",m.time_s,m.step_ms,m.detection_ms,m.solve_ms,m.max_seam_gap_m*1000.));}
-            else{ui.small("Simuler assemble les deux panneaux. Glisser le tissu avec le bouton gauche pour le saisir.");}
+        egui::Panel::bottom("status").show(ui, |ui| {
+            ui.label(&self.status);
         });
-        egui::Panel::left("library")
-            .default_size(120.)
-            .resizable(false)
-            .show(ui, |ui| {
-                ui.strong("BIBLIOTHÈQUE");
-                ui.separator();
-                ui.label("Vêtements");
-                if ui
-                    .add_sized([100., 55.], egui::Button::new("T-SHIRT"))
-                    .clicked()
-                {
-                    self.preset(GarmentKind::Tshirt);
-                }
-                if ui
-                    .add_sized([100., 55.], egui::Button::new("ROBE"))
-                    .clicked()
-                {
-                    self.preset(GarmentKind::Dress);
-                }
-                ui.add_space(20.);
-                ui.small("Mannequin");
-                ui.label("MakeHuman");
-                ui.small("1,75 m · CC0");
-            });
-        egui::Panel::right("properties").default_size(235.).resizable(true).show(ui,|ui|{egui::ScrollArea::vertical().show(ui,|ui|{
-            ui.strong("PROPRIÉTÉS");ui.separator();self.authoring_properties(ui);ui.label("Tissu tissé");ui.small("Matériau de référence non calibré");
-            ui.add_space(14.);ui.strong("Simulation");ui.checkbox(&mut self.gpu,"Calcul VBD sur GPU");ui.small("OGC : détection CPU · forces GPU");
-            ui.add(egui::Slider::new(&mut self.settings.iterations,2..=24).text("itérations"));ui.label("Pas physique : 1/60 s");
-            ui.add(egui::Slider::new(&mut self.settings.damping,0.0..=10.0).text("amortissement"));ui.small("Plus d’itérations améliore la relaxation et augmente le coût.");
-            ui.separator();ui.strong("Maillage Delaunay");ui.add(egui::Slider::new(&mut self.mesh_mm,8.0..=60.0).text("mm"));
-            ui.horizontal(|ui|{ui.label("Anisotropie");ui.add(egui::DragValue::new(&mut self.anisotropy).range(1.0..=4.0).speed(0.05));});
-            ui.horizontal(|ui|{ui.label("Axe");ui.add(egui::DragValue::new(&mut self.mesh_axis).range(0.0..=180.0).suffix("°"));});
-            if ui.button("Re-mailler et réinitialiser").clicked(){self.remesh();}
-            ui.separator();ui.strong("État");ui.label(format!("{} sommets",self.scene.state.x.len()));ui.label(format!("{} triangles",self.scene.garment.mesh.triangles.len()));
-            if let Some(m)=&self.metrics{ui.label(format!("{} contacts en cache",m.contacts));ui.label(format!("Capacité calcul {:.0} pas/s",1000./m.step_ms));ui.small("Lecture cadencée à 60 pas/s");}
-            ui.separator();ui.small("OGC normal VF/EE et auto-contact. Friction non implémentée. Voisinages cousus exclus localement.");
-        });});
-        egui::Panel::right("patterns")
-            .default_size(400.)
+        egui::Panel::right("properties")
+            .default_size(220.)
             .resizable(true)
             .show(ui, |ui| {
-                egui::ScrollArea::vertical().show(ui, |ui| self.patterns(ui));
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.strong("INSPECTEUR");
+                    ui.separator();
+                    self.authoring_properties(ui);
+                    ui.collapsing("Résolution du tissu", |ui| {
+                        ui.add(egui::Slider::new(&mut self.mesh_mm, 8.0..=60.0).text("mm"));
+                        if ui.button("Re-mailler").clicked() {
+                            self.remesh();
+                        }
+                        ui.small(format!(
+                            "{} sommets · {} triangles",
+                            self.scene.state.x.len(),
+                            self.scene.garment.mesh.triangles.len()
+                        ));
+                    });
+                    ui.collapsing("Réglages avancés", |ui| {
+                        ui.checkbox(&mut self.gpu, "Calcul GPU");
+                        ui.add(
+                            egui::Slider::new(&mut self.settings.iterations, 2..=24)
+                                .text("itérations"),
+                        );
+                        ui.add(
+                            egui::Slider::new(&mut self.settings.damping, 0.0..=10.0)
+                                .text("amortissement"),
+                        );
+                        ui.add(
+                            egui::Slider::new(&mut self.anisotropy, 1.0..=4.0).text("anisotropie"),
+                        );
+                        ui.add(
+                            egui::Slider::new(&mut self.mesh_axis, 0.0..=180.0)
+                                .text("axe maillage"),
+                        );
+                        ui.small("OGC hybride · sans friction · matériau non calibré");
+                        if let Some(m) = &self.metrics {
+                            ui.small(format!(
+                                "Pas {:.2} ms · détection {:.2} ms · coutures {:.2} mm",
+                                m.step_ms,
+                                m.detection_ms,
+                                m.max_seam_gap_m * 1000.
+                            ));
+                        }
+                    });
+                });
+            });
+        egui::Panel::right("patterns")
+            .default_size(610.)
+            .resizable(true)
+            .show(ui, |ui| {
+                self.patterns(ui);
             });
         egui::CentralPanel::default().show(ui, |ui| {
             ui.strong("VÊTEMENT 3D");
-            ui.small("Gauche : tissu · droit : orbite · milieu : déplacer · molette : zoom");
+            ui.small(match self.authoring.tool {
+                Tool::Sew=>"Cliquer les bords à coudre · droit : orbite · milieu : déplacer · molette : zoom",
+                Tool::Place=>"Gizmo : déplacer / tourner · droit : orbite · milieu : déplacer · molette : zoom",
+                Tool::Grab=>"Gauche : saisir le tissu · droit : orbite · milieu : déplacer · molette : zoom",
+                _=>"Sélectionner un bord · droit : orbite · milieu : déplacer · molette : zoom",
+            });
             let (rect, response) = ui.allocate_exact_size(
                 ui.available_size().max(Vec2::splat(1.)),
                 egui::Sense::click_and_drag(),
@@ -493,6 +538,7 @@ impl eframe::App for Atelier {
                 self.pick_and_drag(&response, rect);
             }
             self.place_interaction(&response, rect);
+            self.edge_interaction(&response, rect);
             self.smoke_grabbed |= self.grab.is_some();
             if self.drag_test && self.smoke_point.is_none() {
                 let aim = glam::DVec3::new(0., 1.12, 0.30);
@@ -543,6 +589,7 @@ impl eframe::App for Atelier {
                 egui::Rect::from_min_max(egui::Pos2::ZERO, egui::pos2(1., 1.)),
                 Color32::WHITE,
             );
+            self.paint_edges_3d(ui, rect);
             self.paint_gizmo(ui, rect);
             if let Some(g) = &self.grab {
                 let clip = self.camera.matrix(rect.width() / rect.height())

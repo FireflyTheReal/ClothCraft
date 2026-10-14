@@ -1,4 +1,4 @@
-//! Small simple-polygon mesher with named boundary edges. No holes or curves yet.
+//! Simple contours with named straight/cubic boundaries. No holes yet.
 use super::meshing::{self, MeshingSettings};
 use crate::model::{Hinge, Material, Mesh, Triangle};
 use glam::{DMat2, DVec2};
@@ -15,6 +15,9 @@ pub struct PolygonPattern {
     pub subdivisions: u32,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub meshing: Option<MeshingSettings>,
+    /// Two cubic control points per named edge; absent entries are straight.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub curves: BTreeMap<String, [DVec2; 2]>,
 }
 pub struct MeshedPolygon {
     pub mesh: Mesh,
@@ -35,6 +38,15 @@ fn intersects(a: DVec2, b: DVec2, c: DVec2, d: DVec2) -> bool {
     cross(a, b, c) * cross(a, b, d) <= eps * eps && cross(c, d, a) * cross(c, d, b) <= eps * eps
 }
 impl PolygonPattern {
+    pub fn edge_points(&self, i: usize) -> Result<Vec<DVec2>, String> {
+        let a = self.points[i];
+        let b = self.points[(i + 1) % self.points.len()];
+        if let Some([c, d]) = self.curves.get(&self.edges[i]) {
+            super::curves::flatten([a, *c, *d, b], super::curves::FLATNESS_M)
+        } else {
+            Ok(vec![a, b])
+        }
+    }
     pub fn meshing_settings(&self) -> MeshingSettings {
         self.meshing.clone().unwrap_or_else(|| MeshingSettings {
             target_edge_m: 0.1 / 2.0_f64.powi(self.subdivisions as i32),
@@ -66,9 +78,31 @@ impl PolygonPattern {
                 return Err("Invalid/duplicate polygon edge name".into());
             }
         }
+        if self
+            .curves
+            .iter()
+            .any(|(name, points)| !names.contains(name) || points.iter().any(|p| !p.is_finite()))
+        {
+            return Err("Invalid Bézier edge name or control point".into());
+        }
+        let mut points = vec![];
+        let mut segments = vec![];
+        let mut owners = vec![];
+        for i in 0..n {
+            let samples = self.edge_points(i)?;
+            for (j, p) in samples[..samples.len() - 1].iter().enumerate() {
+                points.push(*p);
+                segments.push(format!("part_{i}_{j}"));
+                owners.push(i);
+            }
+            if points.len() > 4096 {
+                return Err("Contour subdivision budget exceeded".into());
+            }
+        }
+        let n = points.len();
         let mut area = 0.0;
         for i in 0..n {
-            let (a, b) = (self.points[i], self.points[(i + 1) % n]);
+            let (a, b) = (points[i], points[(i + 1) % n]);
             area += a.perp_dot(b) * 0.5;
             if a.distance(b) < 1e-6 {
                 return Err("Zero-length polygon edge".into());
@@ -77,7 +111,7 @@ impl PolygonPattern {
                 if j == i + 1 || (i == 0 && j == n - 1) {
                     continue;
                 }
-                if intersects(a, b, self.points[j], self.points[(j + 1) % n]) {
+                if intersects(a, b, points[j], points[(j + 1) % n]) {
                     return Err("Self-intersecting polygon".into());
                 }
             }
@@ -89,8 +123,21 @@ impl PolygonPattern {
         let meshing::TriangulatedContour {
             uv,
             faces,
-            boundaries,
-        } = meshing::triangulate(&self.points, &self.edges, &settings)?;
+            boundaries: parts,
+        } = meshing::triangulate(&points, &segments, &settings)?;
+        let mut boundaries = BTreeMap::<String, Vec<usize>>::new();
+        for (part, owner) in segments.iter().zip(owners) {
+            let chain = boundaries.entry(self.edges[owner].clone()).or_default();
+            let ids = &parts[part];
+            if chain.is_empty() {
+                chain.extend_from_slice(ids);
+            } else {
+                if chain.last() != ids.first() {
+                    return Err("Disconnected curved boundary".into());
+                }
+                chain.extend_from_slice(&ids[1..]);
+            }
+        }
         let count = uv.len();
         let mut mesh = Mesh {
             uv,

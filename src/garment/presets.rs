@@ -92,6 +92,7 @@ pub fn basic(kind: GarmentKind, subdivisions: u32) -> GarmentTemplate {
         ),
     };
     let polygon = PolygonPattern {
+        curves: Default::default(),
         points: points.into_iter().map(DVec2::from_array).collect(),
         edges: edges.iter().map(|s| s.to_string()).collect(),
         subdivisions,
@@ -120,6 +121,7 @@ pub fn basic(kind: GarmentKind, subdivisions: u32) -> GarmentTemplate {
             },
             pins: vec![],
             pin_points: vec![],
+            layout_2d: None,
         })
         .collect();
     let seams = sewn

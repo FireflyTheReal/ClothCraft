@@ -1,5 +1,5 @@
 //! Transactional authoring in material coordinates, independent of UI and solver.
-//! Compile before accepting an edit. Callers must reset state and solver caches.
+//! Compile before accepting an edit. Reset physical state only when Edit requests it.
 use crate::{
     garment::{
         CompiledGarment, GarmentTemplate,
@@ -15,6 +15,7 @@ use glam::{DQuat, DVec2, DVec3, EulerRot};
 pub enum Command {
     Polygon {
         points: Vec<DVec2>,
+        tangents: Vec<DVec2>,
         meshing: MeshingSettings,
         fabric: String,
         replace: bool,
@@ -22,6 +23,14 @@ pub enum Command {
     Place {
         panel: String,
         placement: Placement,
+    },
+    Shape {
+        panel: String,
+        polygon: PolygonPattern,
+    },
+    Layout {
+        panel: String,
+        origin: DVec2,
     },
     Duplicate {
         panel: String,
@@ -44,6 +53,56 @@ pub struct Edit {
     pub template: GarmentTemplate,
     pub garment: CompiledGarment,
     pub selected: Option<String>,
+    pub reset_simulation: bool,
+}
+
+pub fn layout(template: &GarmentTemplate, index: usize) -> DVec2 {
+    template.panels[index].layout_2d.unwrap_or_else(|| {
+        DVec2::new(
+            template.panels[..index]
+                .iter()
+                .map(|p| p.pattern.width + 0.15)
+                .sum(),
+            0.,
+        )
+    })
+}
+pub fn same_physics(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
+    let without_layout = |t: &GarmentTemplate| {
+        let mut t = t.clone();
+        for p in &mut t.panels {
+            p.layout_2d = None;
+        }
+        serde_json::to_vec(&t).unwrap()
+    };
+    without_layout(a) == without_layout(b)
+}
+fn normalize(panel: &mut Panel) {
+    let poly = panel.polygon.as_mut().unwrap();
+    let lo = poly
+        .points
+        .iter()
+        .chain(poly.curves.values().flatten())
+        .copied()
+        .fold(DVec2::splat(f64::INFINITY), DVec2::min);
+    let hi = poly
+        .points
+        .iter()
+        .chain(poly.curves.values().flatten())
+        .copied()
+        .fold(DVec2::splat(f64::NEG_INFINITY), DVec2::max);
+    for p in poly
+        .points
+        .iter_mut()
+        .chain(poly.curves.values_mut().flatten())
+        .chain(&mut panel.pin_points)
+    {
+        *p -= lo;
+    }
+    panel.layout_2d = Some(panel.layout_2d.unwrap_or_default() + lo);
+    panel.placement.translation = panel.placement.transform(DVec3::new(lo.x, -lo.y, 0.));
+    panel.pattern.width = (hi - lo).x;
+    panel.pattern.height = (hi - lo).y;
 }
 
 fn unused_id(prefix: &str, ids: impl Iterator<Item = String>) -> String {
@@ -61,12 +120,19 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
     match command {
         Command::Polygon {
             mut points,
+            mut tangents,
             meshing,
             fabric,
             replace,
         } => {
             if !(3..=64).contains(&points.len()) || points.iter().any(|p| !p.is_finite()) {
                 return Err("Dessiner 3 à 64 points finis".into());
+            }
+            if tangents.is_empty() {
+                tangents.resize(points.len(), DVec2::ZERO);
+            }
+            if tangents.len() != points.len() || tangents.iter().any(|p| !p.is_finite()) {
+                return Err("Invalid drawing tangents".into());
             }
             let lo = points
                 .iter()
@@ -81,6 +147,10 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .sum();
             if area < 0. {
                 points.reverse();
+                tangents.reverse();
+                for t in &mut tangents {
+                    *t = -*t;
+                }
             }
             if replace {
                 template.name = "Custom garment".into();
@@ -88,6 +158,19 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 template.seams.clear();
             }
             let id = unused_id("panel", template.panels.iter().map(|p| p.id.clone()));
+            let curves = (0..points.len())
+                .filter_map(|i| {
+                    let j = (i + 1) % points.len();
+                    (tangents[i].length_squared() + tangents[j].length_squared() > 1e-20).then(
+                        || {
+                            (
+                                format!("edge_{}", i + 1),
+                                [points[i] + tangents[i], points[j] - tangents[j]],
+                            )
+                        },
+                    )
+                })
+                .collect();
             template.panels.push(Panel {
                 id: id.clone(),
                 name: id.clone(),
@@ -104,16 +187,24 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                     points,
                     subdivisions: 0,
                     meshing: Some(meshing),
+                    curves,
                 }),
                 fabric,
                 grain_degrees: 90.,
                 placement: Placement {
-                    translation: DVec3::new(0.65, 1.50, 0.35),
+                    translation: if let Some(first) = template.panels.first() {
+                        let delta = lo - layout(&template, 0);
+                        first.placement.translation + DVec3::new(delta.x, -delta.y, 0.12)
+                    } else {
+                        DVec3::new(-size.x * 0.5, 1.5, 0.45)
+                    },
                     ..Default::default()
                 },
                 pins: vec![],
                 pin_points: vec![],
+                layout_2d: Some(lo),
             });
+            normalize(template.panels.last_mut().unwrap());
             template.version = 2;
             selected = Some(id);
         }
@@ -126,6 +217,35 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .placement = placement;
             selected = Some(panel);
         }
+        Command::Shape { panel, polygon } => {
+            let index = template
+                .panels
+                .iter()
+                .position(|p| p.id == panel)
+                .ok_or("Panneau absent")?;
+            let origin = layout(&template, index);
+            let p = &mut template.panels[index];
+            let old = p
+                .polygon
+                .as_ref()
+                .ok_or("Convertir le patron rectangulaire avant édition")?;
+            if polygon.edges != old.edges || polygon.points.len() != old.points.len() {
+                return Err("Les bords nommés doivent rester stables".into());
+            }
+            p.layout_2d = Some(origin);
+            p.polygon = Some(polygon);
+            normalize(p);
+            selected = Some(panel);
+        }
+        Command::Layout { panel, origin } => {
+            template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panneau absent")?
+                .layout_2d = Some(origin);
+            selected = Some(panel);
+        }
         Command::Duplicate { panel } => {
             let mut copy = template
                 .panels
@@ -136,6 +256,8 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             copy.id = unused_id("panel", template.panels.iter().map(|p| p.id.clone()));
             copy.name = format!("{} copie", copy.name);
             copy.placement.translation.x += copy.pattern.width + 0.05;
+            let i = template.panels.iter().position(|p| p.id == panel).unwrap();
+            copy.layout_2d = Some(layout(&template, i) + DVec2::new(copy.pattern.width + 0.15, 0.));
             selected = Some(copy.id.clone());
             template.panels.push(copy);
         }
@@ -204,6 +326,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
     }
     let garment = template.compile()?;
     Ok(Edit {
+        reset_simulation: !same_physics(source, &template),
         template,
         garment,
         selected,
@@ -253,6 +376,7 @@ impl History {
         let template = from.pop().unwrap();
         to.push(current.clone());
         Ok(Edit {
+            reset_simulation: !same_physics(current, &template),
             template,
             garment,
             selected: None,

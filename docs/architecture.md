@@ -69,10 +69,16 @@ Le chemin courant de `cloth-fit` passe par `VbdSolver` + `OgcWorld`, ou `GpuVbd:
 
 ## Évolutions localisées
 
-1. Étendre les contours polygonaux aux courbes/trous, puis ajouter une métrique de résolution spatiale.
+1. Étendre les contours Bézier aux trous, puis ajouter une métrique de résolution spatiale.
 2. Transférer l'état lors d'un remeshing dynamique ; aujourd'hui le remeshing explicite reconstruit l'arrangement initial.
-3. Étendre l’édition actuelle (création de polygones, coutures par segments, gizmos, historique) aux points existants, courbes, trous et coutures partielles.
+3. Étendre l’édition actuelle (points/poignées Bézier, coutures 2D/3D, gizmos, historique) aux trous, dimensions et coutures partielles.
 4. Porter la détection OGC VF/EE sur GPU, ajouter friction et traitement dédié des coutures. Une couture n'autorise pas à exclure toutes les collisions entre panneaux cousus. Les bornes OGC préservent un état séparé ; elles ne sont pas une réparation d'intersections initiales.
 5. Faire évoluer les lois constitutives à partir de mesures ou d'homogénéisation. Conserver les coordonnées matérielles et tests d'objectivité. Ne pas inventer une calibration.
 
 L’objectif d’évolution des backends et leur protocole de comparaison sont décrits dans [solver-challenge.md](solver-challenge.md). Aucun trait commun ni ABI de plugin de solveur n’est encore implémenté.
+
+## Unified authoring board
+
+The board in `atelier/board.rs` shares selection (`panel` + named edge) with `atelier/edges_3d.rs`. It has one metric camera and persistent per-panel `layout_2d` metadata. Layout does not modify material UV, placement, masses or cache signatures. Shape edits operate transactionally on local anchors and controls; moving the local origin compensates both 2D layout and 3D placement so untouched geometry stays fixed.
+
+`garment/curves.rs` subdivides cubic controls with a fixed 0.25 mm geometric error bound, independent of triangulation density. `polygon.rs` validates that sampled contour and joins its temporary subsegments back into the original named boundary chain. Thus sewing quadrature still uses rest arclength on one semantic edge. `serde_json/float_roundtrip` preserves exact input floats on reload; small parsing changes can otherwise alter Delaunay decisions. The legacy template formats remain readable through optional serde fields.

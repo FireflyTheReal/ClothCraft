@@ -67,3 +67,9 @@ Le maximum d'ouverture est évalué à toutes les extrémités de la partition :
 - `template.json` : copie de la définition éditable. `initial.obj`, `metrics.jsonl` et `run.json` s'ajoutent en simulation.
 
 Panneaux rectangulaires uniquement. Pas de courbes, pinces géométriques, marges, patrons industriels, avatar, fermeture éclair, plis de couture, fil explicite ou contact entre panneaux. Un assemblage qui converge peut toujours s'auto-intersecter. Les placements sont explicites, sans arrangement automatique autour d'un corps. Le CLI multi-panneaux n'est pas encore branché sur l'éditeur desktop.
+
+## Optional curve and board fields
+
+A polygon may now include `"curves": {"edge_name": [[c1_u, c1_v], [c2_u, c2_v]]}`. Coordinates are local material meters; the edge's existing consecutive anchors remain its endpoints. Missing entries are straight. Unknown edge names and non-finite controls are rejected. Curves are flattened to 0.25 mm tolerance before meshing, then sampled segment chains are rejoined under the original edge ID. No holes or topology-changing anchor insert/delete editor yet.
+
+A panel may include `"layout_2d": [x, y]`, the board location of its local material origin in meters. It is presentation metadata, excluded from physical signatures. Omitted layout is arranged deterministically beside preceding pieces. Old files omit these fields and remain valid. New files with these extensions require this editor version; older strict readers may reject unknown fields.

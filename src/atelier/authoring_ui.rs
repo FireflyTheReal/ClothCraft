@@ -3,19 +3,17 @@ use super::*;
 use glam::{DVec2, DVec3};
 use marvelous_cloth::{
     authoring::{self, Command, Edit, History},
-    garment::{
-        meshing::MeshingSettings,
-        seam::{BoundaryRef, Side},
-        template::Placement,
-    },
+    garment::{meshing::MeshingSettings, seam::BoundaryRef, template::Placement},
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]
 pub(super) enum Tool {
-    #[default]
     Grab,
+    #[default]
+    Edit,
     Place,
     Draw,
+    Rectangle,
     Sew,
 }
 #[derive(Default)]
@@ -24,6 +22,10 @@ pub(super) struct AuthoringUi {
     pub selected: Option<String>,
     pub history: History,
     pub draft: Vec<DVec2>,
+    pub tangents: Vec<DVec2>,
+    pub board: super::board::Board,
+    pub edge: Option<BoundaryRef>,
+    pub hover_edge: Option<BoundaryRef>,
     pub replace: bool,
     pub ends: Vec<BoundaryRef>,
     pub reverse: bool,
@@ -44,8 +46,11 @@ impl Atelier {
         self.project.state = None;
         self.project.mesh_signature = None;
         self.project.prearrange = false;
-        self.scene.state = edit.garment.initial_state.clone();
-        self.scene.garment = std::sync::Arc::new(edit.garment);
+        if edit.reset_simulation {
+            self.scene.state = edit.garment.initial_state.clone();
+            self.scene.garment = std::sync::Arc::new(edit.garment);
+        }
+        self.authoring.board.clear_preview();
         self.scene.next_dt = self.settings.dt;
         self.generation += 1;
         self.playing = false;
@@ -68,7 +73,12 @@ impl Atelier {
         {
             self.authoring.selected = self.project.template.panels.first().map(|p| p.id.clone());
         }
-        self.status = "Édition validée · arrangement réinitialisé · prêt à simuler".into();
+        self.status = if edit.reset_simulation {
+            "Édition validée · arrangement réinitialisé · prêt à simuler"
+        } else {
+            "Disposition 2D modifiée · état 3D conservé"
+        }
+        .into();
     }
     pub(super) fn edit(&mut self, command: Command) -> bool {
         match authoring::apply(&self.project.template, command) {
@@ -85,6 +95,9 @@ impl Atelier {
     }
     fn undo_edit(&mut self, redo: bool) {
         self.cancel_preview();
+        self.authoring.replace = false;
+        self.authoring.draft.clear();
+        self.authoring.tangents.clear();
         match self.authoring.history.restore(&self.project.template, redo) {
             Ok(edit) => self.install_edit(edit),
             Err(e) => self.status = e,
@@ -124,12 +137,15 @@ impl Atelier {
         }
     }
     pub(super) fn authoring_toolbar(&mut self, ui: &mut egui::Ui) {
+        self.history_shortcuts(ui.ctx());
         ui.horizontal(|ui| {
             let previous = self.authoring.tool;
             for (tool, label) in [
+                (Tool::Edit, "Modifier"),
                 (Tool::Grab, "Saisir"),
                 (Tool::Place, "Placer 3D"),
-                (Tool::Draw, "Dessiner"),
+                (Tool::Draw, "Plume"),
+                (Tool::Rectangle, "Rectangle"),
                 (Tool::Sew, "Coudre"),
             ] {
                 let button = ui.selectable_value(&mut self.authoring.tool, tool, label);
@@ -137,15 +153,24 @@ impl Atelier {
             }
             if self.authoring.tool != previous {
                 self.cancel_preview();
+                self.authoring.board.clear_preview();
                 self.grab = None;
                 self.drag_plane = None;
                 if self.authoring.tool != Tool::Grab {
                     self.playing = false;
                     self.pending = false;
                     self.generation += 1;
-                    self.scene.state = self.scene.garment.initial_state.clone();
+                    // Sewing can pick the current drape. Placement acts on the initial arrangement.
+                    if self.authoring.tool == Tool::Place {
+                        self.scene.state = self.scene.garment.initial_state.clone();
+                    }
                     self.metrics = None;
-                    self.status = "Mode édition · retour à l'arrangement de repos".into();
+                    self.status = if self.authoring.tool == Tool::Place {
+                        "Placement · retour à l'arrangement initial"
+                    } else {
+                        "Mode édition · simulation en pause"
+                    }
+                    .into();
                 }
             }
             ui.separator();
@@ -167,7 +192,24 @@ impl Atelier {
             }
         });
     }
+    fn history_shortcuts(&mut self, ctx: &egui::Context) {
+        if ctx.egui_wants_keyboard_input() {
+            return;
+        }
+        if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Z)) {
+            if self.authoring.tool == Tool::Draw && !self.authoring.draft.is_empty() {
+                self.authoring.draft.pop();
+                self.authoring.tangents.pop();
+            } else {
+                self.undo_edit(ctx.input(|i| i.modifiers.shift));
+            }
+        }
+    }
     pub(super) fn authoring_properties(&mut self, ui: &mut egui::Ui) {
+        if self.authoring.tool == Tool::Sew {
+            self.sewing_controls(ui);
+        }
+        self.edge_properties(ui);
         ui.strong("Panneau actif");
         let Some(panel) = self
             .project
@@ -186,6 +228,20 @@ impl Atelier {
             panel.pattern.width * 1000.,
             panel.pattern.height * 1000.
         ));
+        ui.horizontal(|ui| {
+            let duplicate = ui.button("Dupliquer");
+            self.smoke_target("duplicate", duplicate.rect.center());
+            if duplicate.clicked() {
+                self.edit(Command::Duplicate {
+                    panel: panel.id.clone(),
+                });
+            }
+            if ui.button("Supprimer").clicked() {
+                self.edit(Command::RemovePanel {
+                    panel: panel.id.clone(),
+                });
+            }
+        });
         if self.authoring.tool != Tool::Place {
             ui.small("Placer 3D : translation et rotation du panneau.");
             return;
@@ -244,22 +300,11 @@ impl Atelier {
             }
         });
         ui.small("Gizmo : glisser un axe / anneau ; relâcher pour valider. Échap annule.");
-        ui.horizontal(|ui| {
-            let duplicate = ui.button("Dupliquer");
-            self.smoke_target("duplicate", duplicate.rect.center());
-            if duplicate.clicked() {
-                self.edit(Command::Duplicate {
-                    panel: panel.id.clone(),
-                });
-            }
-            if ui.button("Supprimer").clicked() {
-                self.edit(Command::RemovePanel { panel: panel.id });
-            }
-        });
         ui.separator();
     }
-    fn create_polygon(&mut self) {
+    pub(super) fn create_polygon(&mut self) {
         let command = Command::Polygon {
+            tangents: self.authoring.tangents.clone(),
             points: self.authoring.draft.clone(),
             meshing: MeshingSettings {
                 target_edge_m: self.mesh_mm * 0.001,
@@ -272,111 +317,13 @@ impl Atelier {
         };
         if self.edit(command) {
             self.authoring.draft.clear();
+            self.authoring.tangents.clear();
             self.authoring.replace = false;
             self.authoring.tool = Tool::Place;
         }
     }
-    fn draw_canvas(&mut self, ui: &mut egui::Ui) {
-        ui.label("Contour · clics successifs, puis premier point");
-        ui.small("Carré de 1 m · grille 50 mm · aimant 10 mm");
-        let replace_button = ui.checkbox(
-            &mut self.authoring.replace,
-            "Nouveau vêtement (remplace les panneaux)",
-        );
-        self.smoke_target("replace", replace_button.rect.center());
-        let size = ui.available_width().clamp(100., 500.);
-        let (rect, response) = ui.allocate_exact_size(Vec2::splat(size), egui::Sense::click());
-        let canvas = rect.shrink(10.);
-        let scale = canvas.width();
-        let point = |p: DVec2| canvas.min + Vec2::new(p.x as f32, p.y as f32) * scale;
-        ui.painter()
-            .rect_filled(rect, 4., Color32::from_rgb(46, 53, 59));
-        for i in 0..=20 {
-            let v = i as f32 / 20.;
-            for line in [
-                [
-                    canvas.min + Vec2::new(v * scale, 0.),
-                    canvas.min + Vec2::new(v * scale, scale),
-                ],
-                [
-                    canvas.min + Vec2::new(0., v * scale),
-                    canvas.min + Vec2::new(scale, v * scale),
-                ],
-            ] {
-                ui.painter()
-                    .line_segment(line, Stroke::new(0.5, Color32::from_gray(85)));
-            }
-        }
-        for (key, uv) in [
-            ("point0", DVec2::new(0.15, 0.15)),
-            ("point1", DVec2::new(0.45, 0.15)),
-            ("point2", DVec2::new(0.45, 0.55)),
-            ("point3", DVec2::new(0.15, 0.55)),
-        ] {
-            self.smoke_target(key, point(uv));
-        }
-        let mut close = false;
-        if response.clicked()
-            && let Some(pos) = response.interact_pointer_pos()
-            && canvas.contains(pos)
-        {
-            if self.authoring.draft.len() >= 3 && pos.distance(point(self.authoring.draft[0])) < 10.
-            {
-                close = true;
-            } else if self.authoring.draft.len() < 64 {
-                let v = (pos - canvas.min) / scale;
-                let p = (DVec2::new(v.x as f64, v.y as f64) * 100.).round() / 100.;
-                if self.authoring.draft.last() != Some(&p) {
-                    self.authoring.draft.push(p);
-                }
-            }
-        }
-        for pair in self.authoring.draft.windows(2) {
-            ui.painter().line_segment(
-                [point(pair[0]), point(pair[1])],
-                Stroke::new(2., Color32::LIGHT_BLUE),
-            );
-        }
-        for (i, p) in self.authoring.draft.iter().enumerate() {
-            ui.painter()
-                .circle_filled(point(*p), if i == 0 { 5. } else { 3. }, Color32::GOLD);
-        }
-        if let (Some(last), Some(pos)) = (self.authoring.draft.last(), response.hover_pos()) {
-            ui.painter()
-                .line_segment([point(*last), pos], Stroke::new(1., Color32::GRAY));
-        }
-        ui.horizontal(|ui| {
-            let create = ui.add_enabled(
-                self.authoring.draft.len() >= 3,
-                egui::Button::new("Créer le panneau"),
-            );
-            self.smoke_target("create", create.rect.center());
-            close |= create.clicked();
-            if ui.button("Retirer point").clicked() {
-                self.authoring.draft.pop();
-            }
-            if ui.button("Effacer").clicked() {
-                self.authoring.draft.clear();
-            }
-        });
-        if !ui.ctx().egui_wants_keyboard_input() {
-            if ui.input(|i| i.key_pressed(egui::Key::Backspace)) {
-                self.authoring.draft.pop();
-            }
-            if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                close = true;
-            }
-            if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-                self.authoring.draft.clear();
-            }
-        }
-        if close {
-            self.create_polygon();
-        }
-        ui.separator();
-    }
-    fn sewing_controls(&mut self, ui: &mut egui::Ui) {
-        ui.small("Choisir deux bords dans les patrons ; 0 ↔ 0, 1 ↔ 1.");
+    pub(super) fn sewing_controls(&mut self, ui: &mut egui::Ui) {
+        ui.small("Choisir deux bords en 2D ou 3D ; 0 ↔ 0, 1 ↔ 1.");
         let mut lengths = vec![];
         for (i, e) in self.authoring.ends.iter().enumerate() {
             ui.label(format!(
@@ -385,16 +332,17 @@ impl Atelier {
                 e.panel,
                 e.edge.as_deref().unwrap_or("?")
             ));
-            if let Some(poly) = self
-                .project
-                .template
-                .panels
-                .iter()
-                .find(|p| p.id == e.panel)
-                .and_then(|p| p.polygon.as_ref())
-                && let Some(k) = poly.edges.iter().position(|s| Some(s) == e.edge.as_ref())
+            if let Some(range) = self.scene.garment.panels.iter().find(|p| p.id == e.panel)
+                && let Some(ids) = e.edge.as_ref().and_then(|name| range.boundaries.get(name))
             {
-                lengths.push(poly.points[k].distance(poly.points[(k + 1) % poly.points.len()]));
+                lengths.push(
+                    ids.windows(2)
+                        .map(|p| {
+                            self.scene.garment.mesh.uv[p[0]]
+                                .distance(self.scene.garment.mesh.uv[p[1]])
+                        })
+                        .sum::<f64>(),
+                );
             }
         }
         if lengths.len() == 2 {
@@ -444,169 +392,5 @@ impl Atelier {
             }
         });
         ui.separator();
-    }
-    pub(super) fn patterns(&mut self, ui: &mut egui::Ui) {
-        ui.strong("PATRONS 2D");
-        ui.small("Repos en mètres · édition réinitialise la simulation");
-        ui.separator();
-        if self.authoring.tool == Tool::Draw {
-            self.draw_canvas(ui);
-        }
-        if self.authoring.tool == Tool::Sew {
-            self.sewing_controls(ui);
-        }
-        let mut selected = None;
-        let mut edge_click = None;
-        for panel in &self.project.template.panels {
-            ui.push_id(&panel.id, |ui| {
-                if ui
-                    .selectable_label(
-                        self.authoring.selected.as_ref() == Some(&panel.id),
-                        &panel.name,
-                    )
-                    .clicked()
-                {
-                    selected = Some(panel.id.clone());
-                }
-                let (rect, response) = ui.allocate_exact_size(
-                    Vec2::new(ui.available_width(), 260.),
-                    egui::Sense::click(),
-                );
-                ui.painter()
-                    .rect_filled(rect, 4., Color32::from_rgb(174, 177, 181));
-                let scale = ((rect.width() - 30.) / panel.pattern.width as f32)
-                    .min((rect.height() - 30.) / panel.pattern.height as f32);
-                let origin = rect.center()
-                    - Vec2::new(panel.pattern.width as f32, panel.pattern.height as f32)
-                        * scale
-                        * 0.5;
-                let point = |p: DVec2| origin + Vec2::new(p.x as f32, p.y as f32) * scale;
-                let range = self
-                    .scene
-                    .garment
-                    .panels
-                    .iter()
-                    .find(|p| p.id == panel.id)
-                    .unwrap();
-                let mut mesh = egui::Mesh::default();
-                for tri in &self.scene.garment.mesh.triangles[range.triangles.clone()] {
-                    let index = mesh.vertices.len() as u32;
-                    for p in tri.rest {
-                        mesh.colored_vertex(point(p), Color32::from_gray(246));
-                    }
-                    mesh.add_triangle(index, index + 1, index + 2);
-                }
-                ui.painter().add(egui::Shape::mesh(mesh));
-                if self.wire {
-                    for tri in &self.scene.garment.mesh.triangles[range.triangles.clone()] {
-                        for i in 0..3 {
-                            ui.painter().line_segment(
-                                [point(tri.rest[i]), point(tri.rest[(i + 1) % 3])],
-                                Stroke::new(0.4, Color32::GRAY),
-                            );
-                        }
-                    }
-                }
-                if response.clicked() {
-                    selected = Some(panel.id.clone());
-                }
-                if let Some(poly) = &panel.polygon {
-                    let nearest = response.hover_pos().and_then(|p| {
-                        poly.edges
-                            .iter()
-                            .enumerate()
-                            .map(|(i, _)| {
-                                (
-                                    i,
-                                    segment_distance(
-                                        p,
-                                        point(poly.points[i]),
-                                        point(poly.points[(i + 1) % poly.points.len()]),
-                                    ),
-                                )
-                            })
-                            .filter(|(_, d)| *d < 9.)
-                            .min_by(|a, b| a.1.total_cmp(&b.1))
-                            .map(|(i, _)| i)
-                    });
-                    for (i, name) in poly.edges.iter().enumerate() {
-                        let a = point(poly.points[i]);
-                        let b = point(poly.points[(i + 1) % poly.points.len()]);
-                        if i == 0
-                            && let Some(smoke) = &mut self.authoring_smoke
-                        {
-                            smoke.target(&panel.id, a + (b - a) * 0.5);
-                        }
-                        let chosen = self
-                            .authoring
-                            .ends
-                            .iter()
-                            .position(|e| e.panel == panel.id && e.edge.as_ref() == Some(name));
-                        let sewn = self.project.template.seams.iter().any(|s| {
-                            [&s.a, &s.b]
-                                .iter()
-                                .any(|e| e.panel == panel.id && e.edge.as_ref() == Some(name))
-                        });
-                        let color = if chosen.is_some() {
-                            Color32::from_rgb(180, 40, 170)
-                        } else if nearest == Some(i) {
-                            Color32::from_rgb(0, 150, 210)
-                        } else if sewn {
-                            Color32::from_rgb(210, 120, 20)
-                        } else {
-                            Color32::from_rgb(54, 116, 152)
-                        };
-                        ui.painter().line_segment(
-                            [a, b],
-                            Stroke::new(if chosen.is_some() { 4. } else { 2. }, color),
-                        );
-                        if let Some(k) = chosen {
-                            let reverse = k == 1 && self.authoring.reverse;
-                            for (p, end) in [(a, usize::from(reverse)), (b, usize::from(!reverse))]
-                            {
-                                ui.painter().text(
-                                    p,
-                                    egui::Align2::CENTER_CENTER,
-                                    format!("{}{end}", if k == 0 { "A" } else { "B" }),
-                                    egui::FontId::proportional(13.),
-                                    Color32::BLACK,
-                                );
-                            }
-                        }
-                        if nearest == Some(i) {
-                            response.clone().on_hover_text(format!(
-                                "{name} · {:.1} mm",
-                                poly.points[i].distance(poly.points[(i + 1) % poly.points.len()])
-                                    * 1000.
-                            ));
-                            if response.clicked() && self.authoring.tool == Tool::Sew {
-                                edge_click = Some(BoundaryRef {
-                                    panel: panel.id.clone(),
-                                    side: Side::Top,
-                                    edge: Some(name.clone()),
-                                    range: [0., 1.],
-                                });
-                            }
-                        }
-                    }
-                }
-                ui.small(format!(
-                    "{} triangles · droit-fil {:.0}°",
-                    range.triangles.len(),
-                    panel.grain_degrees
-                ));
-                ui.add_space(10.);
-            });
-        }
-        if let Some(id) = selected {
-            self.cancel_preview();
-            self.authoring.selected = Some(id);
-        }
-        if let Some(edge) = edge_click {
-            if self.authoring.ends.len() == 2 {
-                self.authoring.ends.clear();
-            }
-            self.authoring.ends.push(edge);
-        }
     }
 }

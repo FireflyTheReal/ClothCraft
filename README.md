@@ -6,7 +6,9 @@ A native Rust garment lab: pattern authoring, 3D placement and cloth simulation,
 
 **Start here:** [AI contributor welcome](AI_START_HERE.md) · [Product & format roadmap](ROADMAP.md) · [Draw / sew / arrange guide](docs/authoring.md) · [Solver challenge](docs/solver-challenge.md) · [Contributing](CONTRIBUTING.md)
 
-Current authoring: straight polygon drawing, named-edge sewing, rigid translation/rotation gizmos, duplicate/delete and undo/redo. Current physics: CPU reference Newton and CPU/hybrid GPU VBD with OGC contact. No common backend plugin API yet. OBJ and preview SVG are partial exchange paths; DXF, glTF, Alembic, USD and the other requested formats are tracked in the roadmap, not advertised as implemented.
+Validated editor workflow and measured window cadence: [board validation](docs/board-validation.md).
+
+Current authoring: one unified 2D board, rectangle/pen drawing with Bézier handles, editable anchors, linked 2D/3D boundary selection and sewing, rigid placement gizmos, duplicate/delete and undo/redo. Current physics: CPU reference Newton and CPU/hybrid GPU VBD with OGC contact. No common backend plugin API yet. OBJ and preview SVG are partial exchange paths; DXF, glTF, Alembic, USD and the other requested formats are tracked in the roadmap, not advertised as implemented.
 
 Development snapshot, not an industrial garment-production release. Source license selection is pending the owner; the bundled MakeHuman assets are separately CC0. Public-manual references and independent implementation scope are recorded in the [behavior ledger](docs/manual-study.md).
 
@@ -26,7 +28,7 @@ Pour reprendre : [guide de reprise](docs/handoff.md), [architecture](docs/archit
 cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view --output output/atelier
 ```
 
-**Simuler / Espace** assemble les panneaux et fait évoluer le tissu. **Bouton gauche** : saisir le tissu ; **droit** : orbite ; **milieu** : déplacer la caméra ; **molette** : zoom. **Dessiner / Coudre / Placer 3D** ouvrent les outils d’édition, avec annuler/rétablir. Les patrons 2D sont à droite de la vue 3D. La résolution et l'anisotropie se règlent dans les propriétés ; remailler reconstruit l'arrangement.
+**Simuler / Espace** assemble les panneaux et fait évoluer le tissu. **Bouton gauche** : saisir le tissu ; **droit** : orbite ; **milieu** : déplacer la caméra ; **molette** : zoom. **Plume / Rectangle / Modifier / Coudre / Placer 3D** ouvrent les outils d’édition, avec annuler/rétablir. Tous les patrons partagent un tableau 2D avec zoom/pan à droite de la vue 3D. La couture se sélectionne dans les deux vues. La résolution et l'anisotropie se règlent dans les propriétés ; remailler reconstruit l'arrangement.
 
 Le T-shirt et la robe sont des patrons d'essai, élargis pour le mannequin MakeHuman CC0 de 1,75 m. OGC part d'un état séparé et ne répare pas un ancien cache traversé. Pas de friction ni de calibration industrielle. Les coutures restent des pénalités finies. **Temps réel mesuré dans l’atelier sur RTX 3090** pour les scènes T-shirt/robe à 25 mm et 8 itérations. Voir [périmètre, pointes de temps et protocole](docs/turbo-perf.md) ; ce résultat ne garantit pas 60 Hz pour toute résolution ou scène.
 
@@ -135,8 +137,8 @@ Un seul package avec modules suffit à cette taille. Le noyau numérique reste i
 
 Le matériau est un modèle non linéaire de référence, avec paramètres en unités physiques mais **non calibrés**. La flexion par charnières plates est une approximation directionnelle, pas le modèle Stable Discrete Bending ni un tenseur de coque orthotrope complet. La discrétisation reste grossière et dépendante du maillage ; le solveur de référence n'est pas optimisé pour 10k–200k sommets.
 
-Le contact OGC normal traite VF/EE et l’auto-contact. Sa détection reste CPU, accélérée par un cache conservatif ; le solve local GPU est coopératif et les allocations sont réutilisées. Les mesures concernent nos scènes et ne reproduisent pas le benchmark du papier. Il part d'un état séparé et exclut localement les correspondances cousues. Pas de friction, traitement industriel multicouche, courbes de patron ou glTF. L'ancien backend `--reference` conserve sa pénalité de sommets sans garantie entre les sommets. Le remeshing reconstruit le repos sans transfert du drapé. Les coutures restent des raccords par pénalité, sans fil explicite, repli ou surépaisseur. La grille 3D n'est pas un sol physique.
+Le contact OGC normal traite VF/EE et l’auto-contact. Sa détection reste CPU, accélérée par un cache conservatif ; le solve local GPU est coopératif et les allocations sont réutilisées. Les mesures concernent nos scènes et ne reproduisent pas le benchmark du papier. Il part d'un état séparé et exclut localement les correspondances cousues. Pas de friction, traitement industriel multicouche, trous dans les patrons ou glTF. L'ancien backend `--reference` conserve sa pénalité de sommets sans garantie entre les sommets. Le remeshing reconstruit le repos sans transfert du drapé. Les coutures restent des raccords par pénalité, sans fil explicite, repli ou surépaisseur. La grille 3D n'est pas un sol physique.
 
 L'atelier, le calcul VBD et le renderer ont été exécutés sur RTX 3090/Vulkan. Les contrôles de forces, la saisie souris, les captures et les temps sont décrits dans [validation OGC](docs/ogc-validation.md).
 
-Les prochains chantiers sont détaillés dans le [guide de reprise](docs/handoff.md) : contacts robustes, arrangement initial, patrons courbes et solveur de vêtements plus grands.
+Les prochains chantiers sont détaillés dans le [guide de reprise](docs/handoff.md) : contacts robustes, arrangement initial, patronage avancé et solveur de vêtements plus grands.

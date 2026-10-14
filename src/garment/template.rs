@@ -112,6 +112,10 @@ pub struct Panel {
     pub fabric: String,
     pub grain_degrees: f64,
     pub placement: Placement,
+    /// Position of the local material origin on the unified 2D drafting board.
+    /// Presentation only: it never transforms rest geometry or 3D placement.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub layout_2d: Option<DVec2>,
     #[serde(default)]
     pub pins: Vec<Corner>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -251,6 +255,9 @@ impl GarmentTemplate {
             warnings: vec![],
         };
         for panel in &self.panels {
+            if panel.layout_2d.is_some_and(|p| !p.is_finite()) {
+                return Err("Non-finite 2D layout".into());
+            }
             let f = self
                 .fabrics
                 .iter()
@@ -429,6 +436,7 @@ impl GarmentTemplate {
                 Panel {
                     polygon: None,
                     pin_points: vec![],
+                    layout_2d: None,
                     id: "left".into(),
                     name: "Left panel".into(),
                     pattern: Pattern {
@@ -448,6 +456,7 @@ impl GarmentTemplate {
                 Panel {
                     polygon: None,
                     pin_points: vec![],
+                    layout_2d: None,
                     id: "right".into(),
                     name: "Right panel".into(),
                     pattern: Pattern {

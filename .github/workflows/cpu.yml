@@ -19,4 +19,5 @@ jobs:
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/local-ease.json
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/tshirt.json
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/dress.json
+      - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/curved-panels.json
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- simulate examples/templates/two-panel.json --steps 30 --threads 2 --output output/ci-template

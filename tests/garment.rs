@@ -90,7 +90,9 @@ fn seam_gradient_hessian_conservation_and_rigid_motion() {
         }
     }
     let forces: Vec<_> = grad
-        .chunks_exact(3)
+        .as_chunks::<3>()
+        .0
+        .iter()
         .map(|v| -DVec3::new(v[0], v[1], v[2]))
         .collect();
     assert!(forces.iter().sum::<DVec3>().length() < 1e-11);

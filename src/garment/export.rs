@@ -41,9 +41,13 @@ pub fn pattern_svg(template: &GarmentTemplate) -> String {
         if let Some(polygon) = &panel.polygon {
             // Cover the legacy rectangular outline before drawing the actual contour.
             write!(out,"<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"#141c26\"/><polygon points=\"",origin.x-1.0,origin.y-1.0,w*scale+2.0,h*scale+2.0).unwrap();
-            for p in &polygon.points {
-                let p = pos(*p);
-                write!(out, "{},{} ", p.x, p.y).unwrap();
+            for k in 0..polygon.points.len() {
+                if let Ok(points) = polygon.edge_points(k) {
+                    for p in &points[..points.len() - 1] {
+                        let p = pos(*p);
+                        write!(out, "{},{} ", p.x, p.y).unwrap();
+                    }
+                }
             }
             out.push_str("\" fill=\"#233d47\" stroke=\"#75c8d1\"/>");
         }
@@ -67,14 +71,19 @@ pub fn pattern_svg(template: &GarmentTemplate) -> String {
                     if let (Some(polygon), Some(name)) = (&panel.polygon, &reference.edge)
                         && let Some(i) = polygon.edges.iter().position(|e| e == name)
                     {
-                        return pos(polygon.points[i]
-                            .lerp(polygon.points[(i + 1) % polygon.points.len()], s));
+                        return pos(super::curves::arclength_point(
+                            &polygon.edge_points(i).unwrap_or_default(),
+                            s,
+                        ));
                     }
                     pos(edge_point(w, h, reference.side, s))
                 };
-                let a = edge(0.0);
-                let b = edge(1.0);
-                write!(out,"<path d=\"M {} {} L {} {}\" stroke=\"{color}\" stroke-width=\"4\"><title>{}: {} / reverse {reverse}</title></path>",a.x,a.y,b.x,b.y,xml(&seam.id),if side==0 {"A"} else {"B"}).unwrap();
+                write!(out, "<polyline points=\"").unwrap();
+                for k in 0..=32 {
+                    let p = edge(k as f64 / 32.);
+                    write!(out, "{},{} ", p.x, p.y).unwrap();
+                }
+                write!(out,"\" fill=\"none\" stroke=\"{color}\" stroke-width=\"4\"><title>{}: {} / reverse {reverse}</title></polyline>",xml(&seam.id),if side==0 {"A"} else {"B"}).unwrap();
                 for notch in &seam.notches {
                     let t = if reverse {
                         1.0 - notch[side]

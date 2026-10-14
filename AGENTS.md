@@ -40,3 +40,5 @@ Préserver les fichiers et modifications de l'utilisateur. Ne pas publier, pouss
 ## Édition et recherche produit
 
 `src/authoring.rs` contient les commandes CPU transactionnelles et l’historique. `src/atelier/authoring_ui.rs` et `gizmo.rs` sont les adaptateurs graphiques. Lire `docs/authoring.md` avant de les modifier. Une prévisualisation de placement n’est pas un nouvel état de repos ; sa validation réinitialise les caches. Les manuels publics réellement lus figurent dans `docs/manual-study.md`. Ne pas annoncer les formats de `ROADMAP.md` comme disponibles. Le contrat de comparaison des nouveaux solveurs est dans `docs/solver-challenge.md`.
+
+Le tableau unifié est dans `atelier/board.rs`, la sélection/couture 3D dans `atelier/edges_3d.rs`, les Bézier dans `garment/curves.rs`. Préserver le partage des identifiants de bords entre vues. `layout_2d` est exclu de la physique ; les poignées restent dans le repos local. Ne pas désactiver `serde_json/float_roundtrip` sans vérifier la stabilité des maillages au rechargement.

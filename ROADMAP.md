@@ -6,11 +6,12 @@ Status: first public source snapshot, October 2026. **A roadmap item is not a su
 
 ## 1. Draw → sew → arrange → simulate
 
-- [x] Simple polygon creation in a metric 2D canvas; constrained Delaunay meshing.
-- [x] Panel selection, duplicate/delete, named full-segment sewing, direction and explicit easing.
+- [x] Unified metric 2D board, rectangle/pen creation with straight and cubic Bézier boundaries; constrained Delaunay meshing.
+- [x] Linked 2D/3D panel/edge selection, duplicate/delete, whole-edge sewing from either view, direction and explicit easing.
 - [x] World-axis translation/rotation gizmos, numeric transforms, transactional preview and undo/redo.
 - [x] Save editable templates/projects and reopen through the CLI; preserve v1/v2 data compatibility.
-- [ ] Edit existing points/segments; dimensions, snapping, curves, holes, internal lines and symmetry.
+- [x] Edit existing anchors and Bézier handles; pan/zoom, snapping and saved 2D layouts.
+- [ ] Exact dimension entry, holes, internal lines, multi-selection and symmetry.
 - [ ] Partial/free sewing, notch editing, 1:N / M:N relationships and clearer 3D direction preview.
 - [ ] Arrangement points, body-aware placement and useful preflight intersection feedback.
 - [ ] File picker, multi-document projects, portable asset bundles and recovery/autosave.
