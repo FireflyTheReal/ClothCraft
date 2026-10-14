@@ -34,6 +34,6 @@ If you want to vibe-code a better solver: welcome. A convincing contribution inc
 - GPU runs are opt-in. Coordinate with the person using the machine before occupying their GPU; never put them in ordinary CI.
 - Read public manuals as behavioral references, write original code and examples, record sources. Do not import proprietary implementations or assets.
 - Do not overwrite another contributor's work. Prefer a focused branch and PR with the exact reproduction command.
-- Repository source licensing is still awaiting the owner's decision. The bundled MakeHuman assets have their own CC0 notice; that is not a license for all project code.
+- Original source and documentation are MIT-licensed; preserve [LICENSE](LICENSE). The bundled MakeHuman assets retain their own CC0 notice, and dependencies retain their respective licenses. Public reference manuals are not project-owned assets.
 
 Suggested first message in a contribution: **“I changed X; on scene Y, at settings Z, this is the quality/cost difference, and this is the case that still fails.”**

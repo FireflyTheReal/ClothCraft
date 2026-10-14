@@ -1,6 +1,8 @@
 # Reprise du dépôt
 
-État au 14 octobre 2026. GPU autorisé par l'utilisateur ; tests ordinaires CPU uniquement. Lire [AGENTS.md](../AGENTS.md), [architecture](architecture.md), [OGC/VBD](ogc.md), puis [maillage](meshing.md).
+État au 15 octobre 2026. Cette passe concerne la licence et la soumission documentaire ; aucun GPU nécessaire. Pour une nouvelle charge GPU, suivre l'autorisation de la demande courante. Lire [AGENTS.md](../AGENTS.md), [architecture](architecture.md), [OGC/VBD](ogc.md), puis [maillage](meshing.md).
+
+**Passe du 15 octobre : préparation Remade et licence MIT.** Le propriétaire a choisi explicitement MIT. `LICENSE` et les métadonnées Cargo portent cette licence ; README, accueil IA, provenance de l'icône et guide de contribution anglais sont cohérents. Les assets MakeHuman restent CC0. Le README précise la cible comportementale Marvelous Designer et l'absence de compatibilité native/parité vérifiée ; les formats et solveurs disponibles sont inchangés. La soumission Remade vise `status: alpha`, `compatibility: targeting`, catégorie `creative`, Rust, Windows uniquement. Ne pas confondre PR proposée et inscription acceptée au catalogue.
 
 **Dernière passe : identité et roadmap issue des manuels.** L’icône originale du bélier est dans `assets/branding/clothcraft-icon.png` ; sources visuelles et prompts complets dans [sa provenance](../assets/branding/README.md). L’atelier l’embarque via `include_bytes!` comme icône de fenêtre eframe, et le README l’affiche. Ce n’est pas encore une ressource d’icône de l’exécutable Windows/installeur. Neuf articles Marvelous supplémentaires sont réellement lus et référencés dans [manual-study.md](manual-study.md#authoring-backlog-review-2026-10-14). La [roadmap](../ROADMAP.md#3-concrete-authoring-backlog-from-the-manual-study) fournit des tâches identifiées, dépendances et critères : sauvegarde portable, dimensions/splits, coutures partielles, points d’arrangement, pins, symétrie, lignes internes, chaînes de couture et plis. Ces tâches restent planifiées ; cette passe ne les implémente pas.
 
@@ -62,4 +64,4 @@ Lire [les contrats OGC](ogc.md) avant de modifier le solveur. Les rapports compl
 
 ## Publication
 
-Dépôt de première publication : `git@github.com:erythrofr/ClothCraft.git`, branche `main`. `output/` et `target/` sont ignorés. La licence du projet appartient au propriétaire. Aucun code des auteurs d'OGC/IPC Toolkit n'a été incorporé ; les sources sont citées dans `ogc.md`. Spade reste fixé dans Cargo ; provenance MakeHuman sous `assets/makehuman/`. La CI CPU est configurée dans `.github/workflows/cpu.yml` ; consulter son statut sur GitHub plutôt que supposer sa réussite.
+Dépôt de première publication : `git@github.com:erythrofr/ClothCraft.git`, branche `main`. `output/` et `target/` sont ignorés. Le propriétaire a choisi la licence MIT ; voir `LICENSE`. Aucun code des auteurs d'OGC/IPC Toolkit n'a été incorporé ; les sources sont citées dans `ogc.md`. Spade reste fixé dans Cargo ; provenance MakeHuman sous `assets/makehuman/`. La CI CPU est configurée dans `.github/workflows/cpu.yml` ; consulter son statut sur GitHub plutôt que supposer sa réussite.

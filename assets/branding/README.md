@@ -8,7 +8,7 @@ Viewed the official [ArtCraft app lineup](https://getartcraft.com/apps) on 2026-
 
 ## Generation record
 
-Generated with Codex's built-in `image_gen` tool, followed by one edge-cleanup edit using the same tool. No external API key or fallback CLI was used. The generated PNG was copied into this directory; the original remains outside the repository. Project licensing remains the owner's decision.
+Generated with Codex's built-in `image_gen` tool, followed by one edge-cleanup edit using the same tool. No external API key or fallback CLI was used. The generated PNG was copied into this directory; the original remains outside the repository. The project artwork is distributed under the repository's [MIT License](../../LICENSE) where applicable; this does not change the rights in the external visual references.
 
 ### Initial prompt
 

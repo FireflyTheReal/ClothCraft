@@ -12,6 +12,12 @@ ClothCraft is an early native Rust experiment in garment authoring and cloth sim
 
 ![ClothCraft workspace: 3D garment, shared 2D pattern board and properties](docs/images/atelier.png)
 
+## Behavioral target
+
+ClothCraft independently targets the core pattern-based garment workflow of [Marvelous Designer](https://www.marvelousdesigner.com/): draw material-space 2D pieces, connect their boundaries with seams, arrange them around a 3D avatar, and simulate the assembled cloth. The [public-manual study](docs/manual-study.md) records the behaviors studied, what is implemented, and the next acceptance cases in the [roadmap](ROADMAP.md).
+
+Compatibility is currently **targeting**, not verified parity. Native Marvelous Designer / CLO project and garment files are unsupported; matching their simulation results, full toolset or proprietary implementation is not claimed. ClothCraft uses its own document formats and physics implementation. The editor is currently French, and Windows is the only locally exercised desktop platform.
+
 ## What works today
 
 - One metric 2D board: rectangles, polygon/Bézier drafting, anchor/handle editing, translation and rotation.
@@ -30,7 +36,7 @@ The T-shirt, dress and bundled CC0 MakeHuman avatar are engineering fixtures, no
 Install a stable Rust toolchain and a platform C/C++ linker. The desktop build needs a GPU/driver supported by wgpu. Windows + RTX 3090/Vulkan is the locally exercised configuration; other desktop platforms are not release-qualified.
 
 ```powershell
-git clone git@github.com:erythrofr/ClothCraft.git
+git clone https://github.com/erythrofr/ClothCraft.git
 cd ClothCraft
 .\scripts\start-atelier.ps1
 ```
@@ -120,4 +126,4 @@ Previous local measurements reached about 60 UI frames/s and 60 physical steps/s
 
 ClothCraft is independent of CLO, Marvelous Designer and ArtCraft. Public manuals and screenshots are workflow references, recorded in the [behavior ledger](docs/manual-study.md); their code, icons, artwork and example garments are not bundled. The original ram icon was generated for this project, inspired by the engraved-animal presentation of ArtCraft's apps; see [artwork provenance and prompts](assets/branding/README.md). This implementation does not claim feature parity or formal clean-room certification.
 
-**Source licensing is still awaiting the owner's decision.** Public availability is not a distribution license. The bundled MakeHuman assets have a separate [CC0 notice and provenance](assets/makehuman/LICENSE.ASSETS.md).
+ClothCraft's original source and documentation are available under the [MIT License](LICENSE). The project artwork is distributed under the same license where applicable; its generation record remains in [artwork provenance](assets/branding/README.md). The bundled MakeHuman assets retain their separate [CC0 notice and provenance](assets/makehuman/LICENSE.ASSETS.md). Third-party dependencies retain their respective licenses.
