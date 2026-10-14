@@ -1,0 +1,29 @@
+{
+  "anchor_edited": true,
+  "bezier_drawn": true,
+  "completed_pointer_actions": 41,
+  "expected_actions": 41,
+  "export_reload_compiles": true,
+  "fabric_applied_preserving_drape": true,
+  "handle_edited": true,
+  "layout_preserved_physics": true,
+  "new_panel_simulated": true,
+  "panels": 2,
+  "passed": true,
+  "pending_seam_committed_on_play": true,
+  "rectangle_drawn": true,
+  "redo_observed": true,
+  "rotated_with_gizmo": true,
+  "rotation_2d_preserved_physics": true,
+  "rotation_axes_xyz": [
+    true,
+    true,
+    true
+  ],
+  "seam_removed_preserving_drape": true,
+  "seams": 1,
+  "sewing_selected_in_2d_and_3d": true,
+  "status": "Simulation dynamique · contacts OGC",
+  "translated_with_gizmo": true,
+  "undo_observed": true
+}

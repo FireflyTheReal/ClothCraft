@@ -16,6 +16,8 @@ pub(super) struct Drag {
     radius: f64,
     rotate: bool,
     vector: DVec3,
+    /// Screen tangent fallback for a ring viewed edge-on.
+    screen_rotation: Option<Vec2>,
 }
 const AXES: [DVec3; 3] = [DVec3::X, DVec3::Y, DVec3::Z];
 const COLORS: [Color32; 3] = [
@@ -102,9 +104,6 @@ impl Atelier {
                     .map(|p| p - center)
                     .unwrap_or_default();
                 let distance = if rotate {
-                    if dir.dot(*axis).abs() < 0.08 || vector.length_squared() < 1e-8 {
-                        continue;
-                    }
                     ring(&self.camera, rect, center, i, radius)
                         .windows(2)
                         .map(|p| segment_distance(pointer, p[0], p[1]))
@@ -127,6 +126,9 @@ impl Atelier {
                         radius,
                         rotate,
                         vector,
+                        screen_rotation: (rotate
+                            && (dir.dot(*axis).abs() < 0.08 || vector.length_squared() < 1e-8))
+                            .then_some(Vec2::new(-screen_axis.y, screen_axis.x)),
                     });
                 }
             }
@@ -137,13 +139,27 @@ impl Atelier {
                 (&self.authoring.drag, response.interact_pointer_pos())
         {
             let placement = if drag.rotate {
-                let (origin, dir) = self.camera.ray(pointer, rect);
-                picking::ray_plane(origin, dir, drag.center, drag.axis).map(|p| {
-                    let v = p - drag.center;
-                    let angle = drag
-                        .axis
-                        .dot(drag.vector.cross(v))
-                        .atan2(drag.vector.dot(v));
+                let angle = if let Some(tangent) = drag.screen_rotation {
+                    Some(
+                        (pointer - drag.pointer).dot(tangent) as f64
+                            / tangent.length_sq().max(1.) as f64,
+                    )
+                } else {
+                    let (origin, dir) = self.camera.ray(pointer, rect);
+                    picking::ray_plane(origin, dir, drag.center, drag.axis).and_then(|p| {
+                        let v = p - drag.center;
+                        (v.length_squared() > 1e-10).then(|| {
+                            drag.axis
+                                .dot(drag.vector.cross(v))
+                                .atan2(drag.vector.dot(v))
+                        })
+                    })
+                };
+                angle.map(|mut angle| {
+                    if response.ctx.input(|i| i.modifiers.shift) {
+                        let snap = 15_f64.to_radians();
+                        angle = (angle / snap).round() * snap;
+                    }
                     authoring::rotate_about(&drag.start, drag.pivot, drag.axis, angle)
                 })
             } else {
@@ -216,6 +232,14 @@ impl Atelier {
             if let Some(p) = project(&self.camera, rect, target) {
                 self.smoke_target("ring_z", p);
             }
+            for (i, key) in [(0, "ring_x"), (1, "ring_y")] {
+                let target = center
+                    + radius * AXES[(i + 1) % 3] * 0.65
+                    + radius * AXES[(i + 2) % 3] * (1. - 0.65_f64.powi(2)).sqrt();
+                if let Some(p) = project(&self.camera, rect, target) {
+                    self.smoke_target(key, p);
+                }
+            }
         }
         let painter = ui.painter().with_clip_rect(rect);
         if let Some(panel) = self
@@ -247,6 +271,17 @@ impl Atelier {
             if self.authoring.rotate {
                 let points = ring(&self.camera, rect, center, i, radius);
                 painter.add(egui::Shape::line(points, Stroke::new(2.5, color)));
+                if let Some(label) =
+                    project(&self.camera, rect, center + radius * AXES[(i + 1) % 3])
+                {
+                    painter.text(
+                        label,
+                        egui::Align2::LEFT_BOTTOM,
+                        ["X", "Y", "Z"][i],
+                        egui::FontId::proportional(13.),
+                        color,
+                    );
+                }
             } else if let Some(tip) = project(&self.camera, rect, center + radius * axis) {
                 painter.arrow(screen_center, tip - screen_center, Stroke::new(3., color));
                 painter.text(

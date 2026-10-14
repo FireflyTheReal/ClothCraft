@@ -99,15 +99,17 @@ fn board_motion_is_not_a_physical_transform_and_does_not_stale_state_cache() {
     let a = t.compile().unwrap();
     let edit = authoring::apply(
         &t,
-        Command::Layout {
+        Command::BoardTransform {
             panel: t.panels[0].id.clone(),
             origin: DVec2::new(-2., 3.),
+            rotation_degrees: 73.,
         },
     )
     .unwrap();
     assert!(!edit.reset_simulation);
     assert_eq!(a.mesh.uv, edit.garment.mesh.uv);
     assert_eq!(a.initial_state.x, edit.garment.initial_state.x);
+    assert_eq!(a.mesh.masses, edit.garment.mesh.masses);
     assert!(authoring::same_physics(&t, &edit.template));
     let mut p = FittingProject::basic(
         GarmentKind::Tshirt,
@@ -123,7 +125,8 @@ fn board_motion_is_not_a_physical_transform_and_does_not_stale_state_cache() {
     p.save(&file).unwrap();
     let mut read = FittingProject::load(&file).unwrap();
     std::fs::remove_file(file).unwrap();
-    read.template = edit.template;
+    read.template = serde_json::from_str(&serde_json::to_string(&edit.template).unwrap()).unwrap();
+    assert_eq!(read.template.panels[0].layout_rotation_degrees, 73.);
     assert!(read.compile().is_ok());
 }
 #[test]
@@ -178,10 +181,14 @@ fn curve_sewing_and_rest_edits_are_transactional() {
 }
 #[test]
 fn moving_anchor_can_rebase_local_uv_without_moving_untouched_world_points() {
-    let t = drawing();
+    let mut t = drawing();
+    t.panels[0].layout_rotation_degrees = 37.;
+    t.panels[0].layout_2d = Some(DVec2::new(-2., 3.));
     let panel = &t.panels[0];
     let mut poly = panel.polygon.clone().unwrap();
     let untouched = poly.points[2];
+    let board_before =
+        panel.layout_2d.unwrap() + authoring::rotate_2d(untouched, panel.layout_rotation_degrees);
     let before = panel
         .placement
         .transform(DVec3::new(untouched.x, -untouched.y, 0.));
@@ -196,6 +203,9 @@ fn moving_anchor_can_rebase_local_uv_without_moving_untouched_world_points() {
     .unwrap();
     let panel = &edit.template.panels[0];
     let untouched = panel.polygon.as_ref().unwrap().points[2];
+    let board_after =
+        panel.layout_2d.unwrap() + authoring::rotate_2d(untouched, panel.layout_rotation_degrees);
+    assert!(board_after.distance(board_before) < 1e-12);
     assert!(
         before.distance(
             panel

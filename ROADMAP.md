@@ -9,6 +9,7 @@ Status: first public source snapshot, October 2026. **A roadmap item is not a su
 - [x] Unified metric 2D board, rectangle/pen creation with straight and cubic Bézier boundaries; constrained Delaunay meshing.
 - [x] Linked 2D/3D panel/edge selection, duplicate/delete, whole-edge sewing from either view, direction and explicit easing.
 - [x] World-axis translation/rotation gizmos, numeric transforms, transactional preview and undo/redo.
+- [x] Direct 3D move/rotate tools (G/R), edge-on rotation rings, 15° snapping and 2D board rotation independent of physical rest/grain.
 - [x] Save editable templates/projects and reopen through the CLI; preserve v1/v2 data compatibility.
 - [x] Edit existing anchors and Bézier handles; pan/zoom, snapping and saved 2D layouts.
 - [ ] Exact dimension entry, holes, internal lines, multi-selection and symmetry.

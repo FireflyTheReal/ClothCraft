@@ -20,6 +20,7 @@ pub(super) struct Board {
     drag: Option<Drag>,
     pub shape: Option<(String, PolygonPattern)>,
     pub layout: Option<(String, DVec2)>,
+    pub rotation: Option<(String, f64)>,
 }
 impl Default for Board {
     fn default() -> Self {
@@ -31,6 +32,7 @@ impl Default for Board {
             drag: None,
             shape: None,
             layout: None,
+            rotation: None,
         }
     }
 }
@@ -39,6 +41,7 @@ impl Board {
         self.drag = None;
         self.shape = None;
         self.layout = None;
+        self.rotation = None;
     }
     fn screen(&self, rect: egui::Rect, p: DVec2) -> egui::Pos2 {
         rect.center()
@@ -67,12 +70,20 @@ enum Drag {
         start: DVec2,
         pointer: DVec2,
     },
+    Rotate {
+        panel: String,
+        pivot: DVec2,
+        center: DVec2,
+        vector: DVec2,
+        angle: f64,
+    },
     Shape {
         panel: String,
         polygon: PolygonPattern,
         part: Part,
         origin: DVec2,
         pointer: DVec2,
+        angle: f64,
     },
 }
 #[derive(Clone)]
@@ -81,6 +92,7 @@ enum Part {
     Anchor(usize),
     Edge(usize),
     Handle(usize, usize),
+    Rotation,
 }
 struct Hit {
     index: usize,
@@ -101,6 +113,23 @@ pub(super) fn same_edge(a: &BoundaryRef, b: &BoundaryRef) -> bool {
     a.panel == b.panel && a.edge == b.edge && (a.edge.is_some() || a.side == b.side)
 }
 impl Atelier {
+    fn board_angle(&self, i: usize) -> f64 {
+        let panel = &self.project.template.panels[i];
+        self.authoring
+            .board
+            .rotation
+            .as_ref()
+            .filter(|(id, _)| id == &panel.id)
+            .map(|(_, angle)| *angle)
+            .unwrap_or(panel.layout_rotation_degrees)
+    }
+    fn rotation_handle(&self, i: usize) -> DVec2 {
+        let p = &self.project.template.panels[i];
+        DVec2::new(
+            p.pattern.width * 0.5,
+            -32. / self.authoring.board.scale as f64,
+        )
+    }
     fn board_origin(&self, i: usize) -> DVec2 {
         let p = &self.project.template.panels[i];
         self.authoring
@@ -126,8 +155,16 @@ impl Atelier {
         let mut hi = DVec2::splat(f64::NEG_INFINITY);
         for (i, p) in self.project.template.panels.iter().enumerate() {
             let origin = authoring::layout(&self.project.template, i);
-            lo = lo.min(origin);
-            hi = hi.max(origin + DVec2::new(p.pattern.width, p.pattern.height));
+            for corner in [
+                DVec2::ZERO,
+                DVec2::new(p.pattern.width, 0.),
+                DVec2::new(p.pattern.width, p.pattern.height),
+                DVec2::new(0., p.pattern.height),
+            ] {
+                let q = origin + authoring::rotate_2d(corner, p.layout_rotation_degrees);
+                lo = lo.min(q);
+                hi = hi.max(q);
+            }
         }
         self.authoring.board.center = (lo + hi) * 0.5;
         self.authoring.board.scale = ((rect.width() - 80.) / (hi - lo).x.max(0.1) as f32)
@@ -142,7 +179,21 @@ impl Atelier {
         for i in (0..self.project.template.panels.len()).rev() {
             let p = &self.project.template.panels[i];
             let origin = self.board_origin(i);
-            let point = |uv| self.authoring.board.screen(rect, origin + uv);
+            let angle = self.board_angle(i);
+            let point = |uv| {
+                self.authoring
+                    .board
+                    .screen(rect, origin + authoring::rotate_2d(uv, angle))
+            };
+            if self.authoring.tool == Tool::Edit
+                && self.authoring.selected.as_ref() == Some(&p.id)
+                && point(self.rotation_handle(i)).distance(pos) < 11.
+            {
+                return Some(Hit {
+                    index: i,
+                    part: Part::Rotation,
+                });
+            }
             let Some(poly) = self.board_polygon(i) else {
                 continue;
             };
@@ -190,7 +241,12 @@ impl Atelier {
                 }
                 contour.extend_from_slice(&points[..points.len() - 1]);
             }
-            if body.is_none() && inside(self.authoring.board.world(rect, pos) - origin, &contour) {
+            if body.is_none()
+                && inside(
+                    authoring::rotate_2d(self.authoring.board.world(rect, pos) - origin, -angle),
+                    &contour,
+                )
+            {
                 body = Some(Hit {
                     index: i,
                     part: Part::Body,
@@ -329,7 +385,7 @@ impl Atelier {
             Tool::Rectangle => "Rectangle : glisser entre deux coins opposés",
             Tool::Sew => "Choisir deux bords en 2D ou 3D, puis créer la couture →",
             Tool::Edit => {
-                "Modifier : glisser les points / poignées ; glisser une pièce déplace son plan"
+                "Poignée ronde : tourner en 2D · intérieur : déplacer · Maj : angles de 15°"
             }
             _ => "Sélection liée à la 3D · Plume ou Rectangle pour créer du tissu",
         });
@@ -386,6 +442,20 @@ impl Atelier {
                             self.authoring.edge = None;
                         }
                         self.authoring.board.drag = match hit.part {
+                            Part::Rotation => {
+                                let pivot =
+                                    DVec2::new(panel.pattern.width, panel.pattern.height) * 0.5;
+                                let angle = self.board_angle(hit.index);
+                                let center = self.board_origin(hit.index)
+                                    + authoring::rotate_2d(pivot, angle);
+                                Some(Drag::Rotate {
+                                    panel: panel.id.clone(),
+                                    pivot,
+                                    center,
+                                    vector: self.authoring.board.world(rect, start) - center,
+                                    angle,
+                                })
+                            }
                             Part::Body => Some(Drag::Layout {
                                 panel: panel.id.clone(),
                                 start: self.board_origin(hit.index),
@@ -397,6 +467,7 @@ impl Atelier {
                                 part: hit.part,
                                 origin: self.board_origin(hit.index),
                                 pointer: p,
+                                angle: self.board_angle(hit.index),
                             }),
                             _ => None,
                         };
@@ -426,17 +497,39 @@ impl Atelier {
                     start,
                     pointer,
                 }) => self.authoring.board.layout = Some((panel.clone(), *start + p - *pointer)),
+                Some(Drag::Rotate {
+                    panel,
+                    pivot,
+                    center,
+                    vector,
+                    angle,
+                }) => {
+                    let v = self.authoring.board.world(rect, pos) - *center;
+                    if v.length_squared() > 1e-10 {
+                        let mut degrees =
+                            *angle + vector.perp_dot(v).atan2(vector.dot(v)).to_degrees();
+                        if response.ctx.input(|i| i.modifiers.shift) {
+                            degrees = (degrees / 15.).round() * 15.;
+                        }
+                        self.authoring.board.layout = Some((
+                            panel.clone(),
+                            *center - authoring::rotate_2d(*pivot, degrees),
+                        ));
+                        self.authoring.board.rotation = Some((panel.clone(), degrees));
+                    }
+                }
                 Some(Drag::Shape {
                     panel,
                     polygon,
                     part,
                     origin,
                     pointer,
+                    angle,
                 }) => {
                     let mut poly = polygon.clone();
                     match *part {
                         Part::Anchor(k) => {
-                            let delta = p - *pointer;
+                            let delta = authoring::rotate_2d(p - *pointer, -*angle);
                             poly.points[k] += delta;
                             if let Some(c) = poly.curves.get_mut(&poly.edges[k]) {
                                 c[0] += delta;
@@ -447,7 +540,8 @@ impl Atelier {
                             }
                         }
                         Part::Handle(k, j) => {
-                            poly.curves.get_mut(&poly.edges[k]).unwrap()[j] = p - *origin
+                            poly.curves.get_mut(&poly.edges[k]).unwrap()[j] =
+                                authoring::rotate_2d(p - *origin, -*angle)
                         }
                         _ => {}
                     }
@@ -458,6 +552,18 @@ impl Atelier {
         }
         if response.drag_stopped_by(egui::PointerButton::Primary) {
             match self.authoring.board.drag.take() {
+                Some(Drag::Rotate { .. }) => {
+                    if let (Some((panel, origin)), Some((_, rotation_degrees))) = (
+                        self.authoring.board.layout.take(),
+                        self.authoring.board.rotation.take(),
+                    ) {
+                        self.edit(Command::BoardTransform {
+                            panel,
+                            origin,
+                            rotation_degrees,
+                        });
+                    }
+                }
                 Some(Drag::Rectangle(_)) => {
                     if self.authoring.draft[0].distance(self.authoring.draft[2]) > 0.02 {
                         self.create_polygon();
@@ -575,7 +681,8 @@ impl Atelier {
         if !self.authoring.replace {
             for (i, panel) in self.project.template.panels.iter().enumerate() {
                 let origin = self.board_origin(i);
-                let point = |uv| board.screen(rect, origin + uv);
+                let angle = self.board_angle(i);
+                let point = |uv| board.screen(rect, origin + authoring::rotate_2d(uv, angle));
                 let selected = self.authoring.selected.as_ref() == Some(&panel.id);
                 let range = &self.scene.garment.panels[i];
                 let mut mesh = egui::Mesh::default();
@@ -608,6 +715,23 @@ impl Atelier {
                     format!("body_{}", panel.id),
                     point(DVec2::new(panel.pattern.width, panel.pattern.height) * 0.5),
                 ));
+                if selected && self.authoring.tool == Tool::Edit {
+                    let handle = point(self.rotation_handle(i));
+                    painter.line_segment(
+                        [point(DVec2::new(panel.pattern.width * 0.5, 0.)), handle],
+                        Stroke::new(1.5, Color32::GOLD),
+                    );
+                    painter.circle_filled(handle, 8., Color32::from_rgb(40, 46, 52));
+                    painter.circle_stroke(handle, 8., Stroke::new(2., Color32::GOLD));
+                    painter.text(
+                        handle + Vec2::new(14., 0.),
+                        egui::Align2::LEFT_CENTER,
+                        format!("↻ {:.0}°", angle.rem_euclid(360.)),
+                        egui::FontId::proportional(12.),
+                        Color32::GOLD,
+                    );
+                    smoke_targets.push(("rotate_2d".into(), handle));
+                }
                 let Some(poly) = self.board_polygon(i) else {
                     continue;
                 };

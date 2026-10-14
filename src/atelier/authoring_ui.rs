@@ -154,34 +154,21 @@ impl Atelier {
     pub(super) fn authoring_toolbar(&mut self, ui: &mut egui::Ui) {
         self.history_shortcuts(ui.ctx());
         ui.horizontal(|ui| {
-            let previous = self.authoring.tool;
-            for (tool, label) in [
-                (Tool::Edit, "Modifier"),
-                (Tool::Grab, "Saisir"),
-                (Tool::Place, "Placer 3D"),
-                (Tool::Draw, "Plume"),
-                (Tool::Rectangle, "Rectangle"),
-                (Tool::Sew, "Coudre"),
+            for (tool, label, rotate) in [
+                (Tool::Edit, "Modifier", false),
+                (Tool::Grab, "Saisir", false),
+                (Tool::Place, "Déplacer 3D", false),
+                (Tool::Place, "Tourner 3D", true),
+                (Tool::Draw, "Plume", false),
+                (Tool::Rectangle, "Rectangle", false),
+                (Tool::Sew, "Coudre", false),
             ] {
-                let button = ui.selectable_value(&mut self.authoring.tool, tool, label);
+                let active = self.authoring.tool == tool
+                    && (tool != Tool::Place || self.authoring.rotate == rotate);
+                let button = ui.selectable_label(active, label);
                 self.smoke_target(label, button.rect.center());
-            }
-            if self.authoring.tool != previous {
-                self.cancel_preview();
-                self.authoring.board.clear_preview();
-                self.grab = None;
-                self.drag_plane = None;
-                if self.authoring.tool != Tool::Grab {
-                    self.playing = false;
-                    self.pending = false;
-                    self.generation += 1;
-                    self.metrics = None;
-                    self.status = if self.authoring.tool == Tool::Place {
-                        "Placement du panneau sélectionné · autres pièces conservées"
-                    } else {
-                        "Mode édition · simulation en pause"
-                    }
-                    .into();
+                if button.clicked() {
+                    self.set_authoring_tool(tool, rotate);
                 }
             }
             ui.separator();
@@ -203,9 +190,38 @@ impl Atelier {
             }
         });
     }
+    pub(super) fn set_authoring_tool(&mut self, tool: Tool, rotate: bool) {
+        if self.authoring.tool == tool && (tool != Tool::Place || self.authoring.rotate == rotate) {
+            return;
+        }
+        self.cancel_preview();
+        self.authoring.board.clear_preview();
+        self.authoring.tool = tool;
+        self.authoring.rotate = rotate;
+        self.grab = None;
+        self.drag_plane = None;
+        if tool != Tool::Grab {
+            self.playing = false;
+            self.pending = false;
+            self.generation += 1;
+            self.metrics = None;
+            self.status = if tool == Tool::Place {
+                "Placement à plat du panneau sélectionné · autres pièces conservées"
+            } else {
+                "Mode édition · simulation en pause"
+            }
+            .into();
+        }
+    }
     fn history_shortcuts(&mut self, ctx: &egui::Context) {
         if ctx.egui_wants_keyboard_input() {
             return;
+        }
+        if ctx.input(|i| !i.modifiers.command && !i.modifiers.alt && i.key_pressed(egui::Key::R)) {
+            self.set_authoring_tool(Tool::Place, true);
+        }
+        if ctx.input(|i| !i.modifiers.command && !i.modifiers.alt && i.key_pressed(egui::Key::G)) {
+            self.set_authoring_tool(Tool::Place, false);
         }
         if matches!(self.authoring.tool, Tool::Edit | Tool::Sew)
             && ctx.input(|i| i.key_pressed(egui::Key::Delete))
@@ -267,14 +283,24 @@ impl Atelier {
             }
         });
         if self.authoring.tool != Tool::Place {
-            ui.small("Placer 3D : translation et rotation du panneau.");
+            ui.small("Déplacer 3D (G) / Tourner 3D (R) dans la barre d’outils.");
             return;
         }
         ui.horizontal(|ui| {
-            ui.selectable_value(&mut self.authoring.rotate, false, "Déplacer");
-            let turn = ui.selectable_value(&mut self.authoring.rotate, true, "Tourner");
-            self.smoke_target("turn", turn.rect.center());
+            if ui
+                .selectable_label(!self.authoring.rotate, "Déplacer (G)")
+                .clicked()
+            {
+                self.set_authoring_tool(Tool::Place, false);
+            }
+            if ui
+                .selectable_label(self.authoring.rotate, "Tourner (R)")
+                .clicked()
+            {
+                self.set_authoring_tool(Tool::Place, true);
+            }
         });
+        ui.small("Placement à plat : cette pièce reprend la forme de son patron. Les autres pièces restent en place.");
         let focus = ui.button("Cadrer le panneau");
         self.smoke_target("focus", focus.rect.center());
         if focus.clicked() {
@@ -290,6 +316,7 @@ impl Atelier {
                 (panel.pattern.width.max(panel.pattern.height) * 3.).max(1.) as f32;
         }
         let mut p = self.authoring.preview.clone().unwrap_or(panel.placement);
+        let before = p.clone();
         let mut changed = false;
         for (label, value, speed, suffix) in [
             ("X", &mut p.translation.x, 0.005, " m"),
@@ -307,6 +334,11 @@ impl Atelier {
             });
         }
         if changed {
+            // Numeric rotations use the same center pivot as the rings.
+            let pivot = DVec3::new(panel.pattern.width * 0.5, -panel.pattern.height * 0.5, 0.);
+            let rotated_pivot = p.transform(pivot) - p.translation;
+            p.translation =
+                before.transform(pivot) + (p.translation - before.translation) - rotated_pivot;
             self.preview_placement(p);
         }
         ui.horizontal(|ui| {
@@ -323,7 +355,9 @@ impl Atelier {
                 self.cancel_preview();
             }
         });
-        ui.small("Gizmo : glisser un axe / anneau ; relâcher pour valider. Échap annule.");
+        ui.small(
+            "Glisser un axe / anneau · Maj : angles de 15° · relâcher : valider · Échap : annuler.",
+        );
         ui.separator();
     }
     pub(super) fn create_polygon(&mut self) {

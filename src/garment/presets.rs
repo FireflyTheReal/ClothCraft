@@ -122,6 +122,7 @@ pub fn basic(kind: GarmentKind, subdivisions: u32) -> GarmentTemplate {
             pins: vec![],
             pin_points: vec![],
             layout_2d: None,
+            layout_rotation_degrees: 0.,
         })
         .collect();
     let seams = sewn

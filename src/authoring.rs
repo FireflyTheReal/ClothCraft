@@ -32,6 +32,11 @@ pub enum Command {
         panel: String,
         origin: DVec2,
     },
+    BoardTransform {
+        panel: String,
+        origin: DVec2,
+        rotation_degrees: f64,
+    },
     Duplicate {
         panel: String,
     },
@@ -114,10 +119,15 @@ pub fn same_physics(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
         let mut t = t.clone();
         for p in &mut t.panels {
             p.layout_2d = None;
+            p.layout_rotation_degrees = 0.;
         }
         serde_json::to_vec(&t).unwrap()
     };
     without_layout(a) == without_layout(b)
+}
+pub fn rotate_2d(p: DVec2, degrees: f64) -> DVec2 {
+    let (s, c) = degrees.to_radians().sin_cos();
+    DVec2::new(c * p.x - s * p.y, s * p.x + c * p.y)
 }
 fn normalize(panel: &mut Panel) {
     let poly = panel.polygon.as_mut().unwrap();
@@ -141,7 +151,8 @@ fn normalize(panel: &mut Panel) {
     {
         *p -= lo;
     }
-    panel.layout_2d = Some(panel.layout_2d.unwrap_or_default() + lo);
+    panel.layout_2d =
+        Some(panel.layout_2d.unwrap_or_default() + rotate_2d(lo, panel.layout_rotation_degrees));
     panel.placement.translation = panel.placement.transform(DVec3::new(lo.x, -lo.y, 0.));
     panel.pattern.width = (hi - lo).x;
     panel.pattern.height = (hi - lo).y;
@@ -292,6 +303,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 pins: vec![],
                 pin_points: vec![],
                 layout_2d: Some(lo),
+                layout_rotation_degrees: 0.,
             });
             normalize(template.panels.last_mut().unwrap());
             template.version = 2;
@@ -333,6 +345,23 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .find(|p| p.id == panel)
                 .ok_or("Panneau absent")?
                 .layout_2d = Some(origin);
+            selected = Some(panel);
+        }
+        Command::BoardTransform {
+            panel,
+            origin,
+            rotation_degrees,
+        } => {
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panneau absent")?;
+            if !rotation_degrees.is_finite() {
+                return Err("Rotation 2D invalide".into());
+            }
+            p.layout_2d = Some(origin);
+            p.layout_rotation_degrees = rotation_degrees.rem_euclid(360.);
             selected = Some(panel);
         }
         Command::Duplicate { panel } => {

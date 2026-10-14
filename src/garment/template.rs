@@ -116,10 +116,16 @@ pub struct Panel {
     /// Presentation only: it never transforms rest geometry or 3D placement.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub layout_2d: Option<DVec2>,
+    /// Board presentation only; material coordinates and grain are unchanged.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub layout_rotation_degrees: f64,
     #[serde(default)]
     pub pins: Vec<Corner>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub pin_points: Vec<DVec2>,
+}
+fn is_zero(value: &f64) -> bool {
+    *value == 0.
 }
 impl Panel {
     pub fn boundary_vertices(&self, side: Side, offset: usize) -> Vec<usize> {
@@ -255,7 +261,9 @@ impl GarmentTemplate {
             warnings: vec![],
         };
         for panel in &self.panels {
-            if panel.layout_2d.is_some_and(|p| !p.is_finite()) {
+            if panel.layout_2d.is_some_and(|p| !p.is_finite())
+                || !panel.layout_rotation_degrees.is_finite()
+            {
                 return Err("Non-finite 2D layout".into());
             }
             let f = self
@@ -437,6 +445,7 @@ impl GarmentTemplate {
                     polygon: None,
                     pin_points: vec![],
                     layout_2d: None,
+                    layout_rotation_degrees: 0.,
                     id: "left".into(),
                     name: "Left panel".into(),
                     pattern: Pattern {
@@ -457,6 +466,7 @@ impl GarmentTemplate {
                     polygon: None,
                     pin_points: vec![],
                     layout_2d: None,
+                    layout_rotation_degrees: 0.,
                     id: "right".into(),
                     name: "Right panel".into(),
                     pattern: Pattern {

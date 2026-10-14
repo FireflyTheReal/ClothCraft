@@ -543,7 +543,7 @@ impl eframe::App for Atelier {
             ui.strong("VÊTEMENT 3D");
             ui.small(match self.authoring.tool {
                 Tool::Sew=>"Cliquer les bords à coudre · droit : orbite · milieu : déplacer · molette : zoom",
-                Tool::Place=>"Gizmo : déplacer / tourner · droit : orbite · milieu : déplacer · molette : zoom",
+                Tool::Place=>"G : déplacer · R : tourner · anneaux X/Y/Z · Maj : 15° · Échap : annuler",
                 Tool::Grab=>"Gauche : saisir le tissu · droit : orbite · milieu : déplacer · molette : zoom",
                 _=>"Sélectionner un bord · droit : orbite · milieu : déplacer · molette : zoom",
             });

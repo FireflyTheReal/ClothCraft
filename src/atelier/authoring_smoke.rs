@@ -2,7 +2,7 @@
 use super::*;
 use std::{collections::BTreeMap, time::Instant};
 
-const ACTIONS: [(&str, Vec2); 37] = [
+const ACTIONS: [(&str, Vec2); 41] = [
     ("Plume", Vec2::ZERO),
     ("replace", Vec2::ZERO),
     ("Rectangle", Vec2::ZERO),
@@ -19,7 +19,8 @@ const ACTIONS: [(&str, Vec2); 37] = [
     ("handle_1", Vec2::new(-12., -16.)),
     ("anchor_3", Vec2::new(-16., 0.)),
     ("body_panel_1", Vec2::new(36., 20.)),
-    ("Placer 3D", Vec2::ZERO),
+    ("rotate_2d", Vec2::new(48., 20.)),
+    ("Déplacer 3D", Vec2::ZERO),
     ("gizmo_x", Vec2::new(35., 0.)),
     ("duplicate", Vec2::ZERO),
     ("Coudre", Vec2::ZERO),
@@ -30,9 +31,13 @@ const ACTIONS: [(&str, Vec2); 37] = [
     ("redo", Vec2::ZERO),
     ("remove_seam", Vec2::ZERO),
     ("undo", Vec2::ZERO),
-    ("Placer 3D", Vec2::ZERO),
+    ("Déplacer 3D", Vec2::ZERO),
     ("focus", Vec2::ZERO),
-    ("turn", Vec2::ZERO),
+    // Leave room for the following XYZ rotations without intersecting its neighbour.
+    ("gizmo_x", Vec2::new(80., 0.)),
+    ("Tourner 3D", Vec2::ZERO),
+    ("ring_x", Vec2::new(0., 25.)),
+    ("ring_y", Vec2::new(25., 0.)),
     ("ring_z", Vec2::new(25., 20.)),
     ("fabric_panel", Vec2::ZERO),
     ("fabric_presets", Vec2::ZERO),
@@ -62,6 +67,9 @@ pub(super) struct Smoke {
     handle_edited: bool,
     anchor_edited: bool,
     layout_preserved_physics: bool,
+    rotation_2d_preserved_physics: bool,
+    rotation_before: Option<(usize, glam::DVec3)>,
+    rotation_axes: [bool; 3],
     fabric_before: Option<(Vec<glam::DVec3>, Vec<f64>)>,
     fabric_applied: bool,
     seam_before: Option<Vec<glam::DVec3>>,
@@ -87,6 +95,9 @@ impl Smoke {
             handle_edited: false,
             anchor_edited: false,
             layout_preserved_physics: false,
+            rotation_2d_preserved_physics: false,
+            rotation_before: None,
+            rotation_axes: [false; 3],
             fabric_before: None,
             fabric_applied: false,
             seam_before: None,
@@ -120,6 +131,11 @@ impl Smoke {
             }
         }
         if self.tick >= 10 && self.origin.is_some() {
+            eprintln!(
+                "Authoring smoke: completed {}/{} ({key})",
+                self.action + 1,
+                ACTIONS.len()
+            );
             self.action += 1;
             self.tick = 0;
             self.origin = None;
@@ -139,6 +155,27 @@ impl Atelier {
             return;
         };
         let key = ACTIONS.get(smoke.action).map(|a| a.0);
+        let axis = match key {
+            Some("ring_x") => Some(0),
+            Some("ring_y") => Some(1),
+            Some("ring_z") => Some(2),
+            _ => None,
+        };
+        if smoke.rotation_before.as_ref().map(|(i, _)| *i) != axis {
+            let rotation = self
+                .project
+                .template
+                .panels
+                .iter()
+                .find(|p| Some(&p.id) == self.authoring.selected.as_ref())
+                .map(|p| p.placement.rotation_degrees);
+            if let Some((i, before)) = smoke.rotation_before.take() {
+                smoke.rotation_axes[i] = rotation.is_some_and(|after| after.distance(before) > 1.);
+            }
+            if let (Some(i), Some(rotation)) = (axis, rotation) {
+                smoke.rotation_before = Some((i, rotation));
+            }
+        }
         if key == Some("remove_seam") && smoke.seam_before.is_none() {
             smoke.seam_before = Some(self.scene.state.x.clone());
         }
@@ -178,12 +215,20 @@ impl Atelier {
                     });
             smoke.layout_before = Some((self.project.template.clone(), self.scene.state.x.clone()));
         }
-        if key == Some("Placer 3D") && !smoke.layout_preserved_physics {
+        if key == Some("rotate_2d") && !smoke.layout_preserved_physics {
             smoke.layout_preserved_physics = smoke.layout_before.as_ref().is_some_and(|(t, x)| {
                 t.panels[0].layout_2d != panel.layout_2d
                     && marvelous_cloth::authoring::same_physics(t, &self.project.template)
                     && x == &self.scene.state.x
             });
+        }
+        if key == Some("Déplacer 3D") && !smoke.rotation_2d_preserved_physics {
+            smoke.rotation_2d_preserved_physics =
+                smoke.layout_before.as_ref().is_some_and(|(t, x)| {
+                    panel.layout_rotation_degrees.abs() > 1.
+                        && marvelous_cloth::authoring::same_physics(t, &self.project.template)
+                        && x == &self.scene.state.x
+                });
         }
         if key == Some("gizmo_x") && smoke.translation_before.is_none() {
             smoke.translation_before = Some(panel.placement.translation);
@@ -195,7 +240,8 @@ impl Atelier {
             smoke.motion_start = Some((self.scene.state.time, self.scene.state.x.clone()));
         }
         let simulated = smoke.motion_start.as_ref().is_some_and(|(time, x)| {
-            self.scene.state.time - time >= 0.2
+            x.len() == self.scene.state.x.len()
+                && self.scene.state.time - time >= 0.2
                 && self.scene.garment.panels.last().is_some_and(|p| {
                     p.vertices
                         .clone()
@@ -227,7 +273,11 @@ impl Atelier {
             return;
         }
         smoke.finished = true;
-        let complete = smoke.action == ACTIONS.len() && smoke.fabric_applied && smoke.seam_removed;
+        let complete = smoke.action == ACTIONS.len()
+            && smoke.fabric_applied
+            && smoke.seam_removed
+            && smoke.rotation_2d_preserved_physics
+            && smoke.rotation_axes.iter().all(|v| *v);
         let moved = self.project.template.panels.first().is_some_and(|p| {
             smoke
                 .translation_before
@@ -248,7 +298,7 @@ impl Atelier {
             .is_ok_and(|p| p.template.panels.len() == 2 && p.template.seams.len() == 1);
         let report = serde_json::json!({"passed":complete&&simulated&&moved&&curved&&smoke.rectangle_drawn&&smoke.handle_edited&&smoke.anchor_edited&&smoke.layout_preserved_physics&&smoke.mixed_sewing&&rotated&&exported&&smoke.undo_observed&&smoke.redo_observed&&self.project.template.seams.len()==1,
             "seam_removed_preserving_drape":smoke.seam_removed,"fabric_applied_preserving_drape":smoke.fabric_applied,"new_panel_simulated":simulated,"pending_seam_committed_on_play":smoke.mixed_sewing&&smoke.undo_observed,"completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
-            "export_reload_compiles":exported,"undo_observed":smoke.undo_observed,"redo_observed":smoke.redo_observed,"panels":self.project.template.panels.len(),"seams":self.project.template.seams.len(),"status":self.status});
+            "rotation_axes_xyz":smoke.rotation_axes,"rotation_2d_preserved_physics":smoke.rotation_2d_preserved_physics,"export_reload_compiles":exported,"undo_observed":smoke.undo_observed,"redo_observed":smoke.redo_observed,"panels":self.project.template.panels.len(),"seams":self.project.template.seams.len(),"status":self.status});
         if let Err(e) = std::fs::write(
             self.output.join("authoring.json"),
             serde_json::to_string_pretty(&report).unwrap(),
