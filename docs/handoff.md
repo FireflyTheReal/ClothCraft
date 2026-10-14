@@ -1,5 +1,7 @@
 # Reprise du dépôt
 
+Soumission Remade : [PR #49](https://github.com/replicraft/remade/pull/49), ouverte le 15 octobre 2026 depuis `erythrofr/remade:catalog/clothcraft`. Le catalogue local est valide (`uv run --locked --project scripts python scripts/validate_catalog.py`) ; la publication dans l'annuaire reste soumise à la revue et au merge des mainteneurs. Le clone de travail est ignoré sous `output/remade-submission/` ; seules la fiche ClothCraft et la suppression de la demande Marvelous correspondante sont proposées. La licence MIT est publiée dans ClothCraft depuis `a29b85f`.
+
 État au 15 octobre 2026. Cette passe concerne la licence et la soumission documentaire ; aucun GPU nécessaire. Pour une nouvelle charge GPU, suivre l'autorisation de la demande courante. Lire [AGENTS.md](../AGENTS.md), [architecture](architecture.md), [OGC/VBD](ogc.md), puis [maillage](meshing.md).
 
 **Passe du 15 octobre : préparation Remade et licence MIT.** Le propriétaire a choisi explicitement MIT. `LICENSE` et les métadonnées Cargo portent cette licence ; README, accueil IA, provenance de l'icône et guide de contribution anglais sont cohérents. Les assets MakeHuman restent CC0. Le README précise la cible comportementale Marvelous Designer et l'absence de compatibilité native/parité vérifiée ; les formats et solveurs disponibles sont inchangés. La soumission Remade vise `status: alpha`, `compatibility: targeting`, catégorie `creative`, Rust, Windows uniquement. Ne pas confondre PR proposée et inscription acceptée au catalogue.
