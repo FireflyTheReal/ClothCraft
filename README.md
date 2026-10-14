@@ -137,6 +137,8 @@ Un seul package avec modules suffit à cette taille. Le noyau numérique reste i
 
 ## Limites actuelles
 
+La dernière [correction du jitter aux épaules](docs/jitter.md) anticipe l'activation des contacts dans le pas courant et réduit les erreurs d'arrondi GPU. Sur les scènes mesurées, l'oscillation P95 baisse de 85–88%. Le T-shirt reste autour de 60 pas/s ; le montage avec tablier reste vers 50 pas/s. Les pics résiduels et la cadence physique sont documentés séparément de la fluidité d'affichage.
+
 Le matériau est un modèle non linéaire de référence, avec paramètres en unités physiques mais **non calibrés**. La flexion par charnières plates est une approximation directionnelle, pas le modèle Stable Discrete Bending ni un tenseur de coque orthotrope complet. La discrétisation reste grossière et dépendante du maillage ; le solveur de référence n'est pas optimisé pour 10k–200k sommets.
 
 Le contact OGC normal traite VF/EE et l’auto-contact. Sa détection reste CPU, accélérée par un cache conservatif ; le solve local GPU est coopératif et les allocations sont réutilisées. Les mesures concernent nos scènes et ne reproduisent pas le benchmark du papier. Il part d'un état séparé et exclut localement les correspondances cousues. Pas de friction, traitement industriel multicouche, trous dans les patrons ou glTF. L'ancien backend `--reference` conserve sa pénalité de sommets sans garantie entre les sommets. Le remeshing reconstruit le repos sans transfert du drapé. Les coutures restent des raccords par pénalité, sans fil explicite, repli ou surépaisseur. La grille 3D n'est pas un sol physique.

@@ -5,6 +5,33 @@ use marvelous_cloth::{
     vbd::{Grab, VbdSettings, VbdSolver},
 };
 use std::sync::Arc;
+mod common;
+#[test]
+fn contact_activates_during_the_step_and_settles_without_a_sawtooth() {
+    let (g, floor) = common::resting_patch(DVec3::ZERO);
+    let mut s = g.initial_state.clone();
+    let mut solver = VbdSolver::new(g, Some(&floor), &s).unwrap();
+    let settings = VbdSettings {
+        dt: 1. / 60.,
+        ..Default::default()
+    };
+    let mut max_delta = 0.0_f64;
+    for i in 0..60 {
+        let old = s.x.clone();
+        solver.step(&mut s, &settings, None).unwrap();
+        for (x, prev) in s.x.iter().zip(old) {
+            assert!(
+                (x.y - settings.contact.radius).abs() < 1e-5,
+                "step {i}: {}",
+                x.y
+            );
+            if i > 10 {
+                max_delta = max_delta.max((x.y - prev.y).abs());
+            }
+        }
+    }
+    assert!(max_delta < 1e-6, "normal contact motion {max_delta} m");
+}
 fn fixture() -> Arc<marvelous_cloth::garment::CompiledGarment> {
     let mut t = GarmentTemplate::two_panel_demo();
     t.panels.truncate(1);

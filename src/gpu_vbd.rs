@@ -151,6 +151,9 @@ impl GpuVbd {
             return Err("Invalid GPU mouse attachment".into());
         }
         let dt = settings.dt;
+        // Work near the cloth, not the world origin: f32 contact gaps must not
+        // lose precision merely because the garment sits at shoulder height.
+        let origin = state.x.iter().copied().sum::<DVec3>() / n as f64;
         let old_velocity = state.v.clone();
         let guess = solver.prediction.guess(state, settings);
         let damp = 1. + settings.damping * dt;
@@ -201,12 +204,8 @@ impl GpuVbd {
                 t.a[i] = grab.weights[i] as f32;
             }
             t.b[0] = grab.stiffness as f32;
-            t.c = [
-                grab.target.x as f32,
-                grab.target.y as f32,
-                grab.target.z as f32,
-                0.,
-            ];
+            let target = grab.target - origin;
+            t.c = [target.x as f32, target.y as f32, target.z as f32, 1.];
             terms.push(t);
         }
         let mut adjacency = vec![Vec::new(); n];
@@ -232,6 +231,7 @@ impl GpuVbd {
             .iter()
             .enumerate()
             .map(|(i, p)| {
+                let p = *p - origin;
                 [
                     p.x as f32,
                     p.y as f32,
@@ -246,7 +246,7 @@ impl GpuVbd {
             .collect();
         let targets: Vec<_> = (0..n)
             .map(|i| {
-                let t = state.x[i] + (state.v[i] * dt + settings.gravity * dt * dt) / damp;
+                let t = state.x[i] - origin + (state.v[i] * dt + settings.gravity * dt * dt) / damp;
                 [
                     t.x as f32,
                     t.y as f32,
@@ -257,16 +257,17 @@ impl GpuVbd {
             .collect();
         let balls: Vec<_> = (0..n)
             .map(|i| {
-                let p = contacts.centers[i];
+                let p = contacts.centers[i] - origin;
                 let roundoff = 16. * f32::EPSILON as f64 * p.abs().max_element().max(1.);
+                let guess = guess[i] - origin;
                 [
                     p.x as f32,
                     p.y as f32,
                     p.z as f32,
                     (contacts.radii[i] - roundoff).max(0.) as f32,
-                    guess[i].x as f32,
-                    guess[i].y as f32,
-                    guess[i].z as f32,
+                    guess.x as f32,
+                    guess.y as f32,
+                    guess.z as f32,
                     0.,
                 ]
             })
@@ -334,7 +335,7 @@ impl GpuVbd {
             // GPU formulas, not the f32 quantization of a stiff rest state.
             let rounded: Vec<_> = positions
                 .iter()
-                .map(|p| DVec3::new(p[0] as f64, p[1] as f64, p[2] as f64))
+                .map(|p| DVec3::new(p[0] as f64, p[1] as f64, p[2] as f64) + origin)
                 .collect();
             let mut max_error = 0.0_f64;
             for i in 0..n {
@@ -350,7 +351,7 @@ impl GpuVbd {
                     targets[i][0] as f64,
                     targets[i][1] as f64,
                     targets[i][2] as f64,
-                );
+                ) + origin;
                 let g = DVec3::from_array(j.g) + (rounded[i] - target) * targets[i][3] as f64;
                 let actual = DVec3::new(
                     probes[i][0] as f64,
@@ -427,7 +428,7 @@ impl GpuVbd {
         let values: &[[f32; 4]] = bytemuck::cast_slice(&mapped[..n * 16]);
         let new: Vec<_> = values
             .iter()
-            .map(|p| DVec3::new(p[0] as f64, p[1] as f64, p[2] as f64))
+            .map(|p| DVec3::new(p[0] as f64, p[1] as f64, p[2] as f64) + origin)
             .collect();
         drop(mapped);
         read.unmap();
@@ -458,7 +459,8 @@ impl GpuVbd {
             solve_ms: step_ms - detection_ms,
             gpu_compute_ms,
             iterations: settings.iterations,
-            contacts: contacts.contacts.len(),
+            contacts: contacts.active_contacts,
+            contact_terms: contacts.contacts.len(),
             detection_updates: 1,
             broad_phase_rebuilds: usize::from(contacts.broad_phase_rebuilt),
             minimum_distance_m: contacts.minimum_distance,

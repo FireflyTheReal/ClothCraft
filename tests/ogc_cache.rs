@@ -82,5 +82,7 @@ fn cached_broad_phase_catches_a_pair_entering_the_query_radius() {
     assert!(!b.broad_phase_rebuilt);
     assert_eq!(b.vertex_face_candidates, 1);
     assert!((b.radii[0] - 0.45 * 0.047).abs() < 1e-14);
-    assert!(b.contacts.is_empty());
+    assert_eq!(b.contacts.len(), 1);
+    assert_eq!(b.active_contacts, 0);
+    assert_eq!(b.value(&x, &s), 0.);
 }

@@ -36,10 +36,12 @@ fn evaluate(t:Term,v:u32,p:vec3f)->Result {
     var r=Result(0,vec3f(0),mat3x3f());
     if local==4u{return r;}
     if t.info.x==0u {
-        let w=t.a.x*x[0]+t.a.y*x[1]+t.a.z*x[2];let f=t.b.x*x[0]+t.b.y*x[1]+t.b.z*x[2];
+        let e1=x[1]-x[0];let e2=x[2]-x[0];
+        let w=t.a.y*e1+t.a.z*e2;let f=t.b.y*e1+t.b.z*e2;
         let ew=0.5*(dot(w,w)-1);let ef=0.5*(dot(f,f)-1);let shear=dot(w,f);
         let aw=axial(ew,t.b.w,t.c.z,t.c.w);let af=axial(ef,t.c.x,t.c.z,t.c.w);
-        let cw=t.a[local];let cf=t.b[local];let gw=cw*w;let gf=cf*f;let gs=cw*f+cf*w;
+        let cw=select(t.a[local],-t.a.y-t.a.z,local==0u);let cf=select(t.b[local],-t.b.y-t.b.z,local==0u);
+        let gw=cw*w;let gf=cf*f;let gs=cw*f+cf*w;
         r.e=t.a.w*(aw.x+af.x+0.5*t.c.y*shear*shear);
         r.g=t.a.w*(aw.y*gw+af.y*gf+t.c.y*shear*gs);
         r.h=t.a.w*(max(aw.z,0)*outer(gw,gw)+max(af.z,0)*outer(gf,gf)+t.c.y*outer(gs,gs)
@@ -56,26 +58,34 @@ fn evaluate(t:Term,v:u32,p:vec3f)->Result {
         let jac=(I-outer(a,a))*da*(1/la)-(I-outer(b,b))*db*(1/lb);let d=a-b;
         r.e=0.5*t.a.x*dot(d,d);r.g=t.a.x*transpose(jac)*d;r.h=t.a.x*transpose(jac)*jac;
     } else if t.info.x==2u {
-        var d=-t.c.xyz;for(var j=0u;j<t.info.y;j++){d+=t.a[j]*x[j];}
-        r.e=0.5*t.b.x*dot(d,d);r.g=t.b.x*t.a[local]*d;r.h=I*(t.b.x*t.a[local]*t.a[local]);
+        // c.w is the exact weight sum: zero for seams, one for a mouse grab.
+        var d=t.c.w*x[0]-t.c.xyz;var first_weight=t.c.w;
+        for(var j=1u;j<t.info.y;j++){d+=t.a[j]*(x[j]-x[0]);first_weight-=t.a[j];}
+        let weight=select(t.a[local],first_weight,local==0u);
+        r.e=0.5*t.b.x*dot(d,d);r.g=t.b.x*weight*d;r.h=I*(t.b.x*weight*weight);
     } else {
         var d=0.0;var gd=vec3f(0);var moll=1.0;var gm=vec3f(0);
         if t.info.x==10u {
-            let q=x[0]-x[1];d=length(q);gd=select(-q,q,local==0u)/max(d,1e-20);
+            let q=x[0]-x[1];d=length(q);if d>=t.a.x{return r;}
+            gd=select(-q,q,local==0u)/max(d,1e-20);
         } else if t.info.x==11u {
             let e=x[2]-x[1];let s=dot(x[0]-x[1],e)/max(dot(e,e),1e-20);let q=x[0]-x[1]-s*e;d=length(q);
+            if d>=t.a.x{return r;}
             let weights=vec3f(1,s-1,-s);gd=weights[local]*q/max(d,1e-20);
         } else if t.info.x==12u {
             let e=x[2]-x[1];let f=x[3]-x[1];let n=normalize(cross(e,f));let h=dot(x[0]-x[1],n);d=abs(h);
+            if d>=t.a.x{return r;}
             let w=x[0]-x[1];let ee=dot(e,e);let ff=dot(f,f);let ef=dot(e,f);let den=max(ee*ff-ef*ef,1e-25);
             let b=(dot(w,e)*ff-dot(w,f)*ef)/den;let c=(dot(w,f)*ee-dot(w,e)*ef)/den;
             let weights=vec4f(1,b+c-1,-b,-c);gd=weights[local]*sign(h)*n;
         } else {
             let e=x[1]-x[0];let f=x[3]-x[2];let n=cross(e,f);let n2=dot(n,n);
             if n2<1e-24{return r;}
-            let w=x[0]-x[2];let ee=dot(e,e);let ff=dot(f,f);let ef=dot(e,f);let den=max(ee*ff-ef*ef,1e-25);
+            let w=x[0]-x[2];let h=dot(w,n)/sqrt(n2);d=abs(h);
+            if d>=t.a.x{return r;}
+            let ee=dot(e,e);let ff=dot(f,f);let ef=dot(e,f);let den=max(ee*ff-ef*ef,1e-25);
             let s=(ef*dot(f,w)-ff*dot(e,w))/den;let z=(ee*dot(f,w)-ef*dot(e,w))/den;
-            let h=dot(w,n)/sqrt(n2);d=abs(h);let weights=vec4f(1-s,s,z-1,-z);gd=weights[local]*sign(h)*n/sqrt(n2);
+            let weights=vec4f(1-s,s,z-1,-z);gd=weights[local]*sign(h)*n/sqrt(n2);
             let q=n2/t.a.z;
             if q<1 {moll=q*(2-q);var derivative=vec3f(0);
                 if local==0u {derivative=-2*cross(f,n);}if local==1u{derivative=2*cross(f,n);}

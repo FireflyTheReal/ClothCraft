@@ -69,6 +69,8 @@ pub struct VbdMetrics {
     pub gpu_compute_ms: Option<f64>,
     pub iterations: usize,
     pub contacts: usize,
+    /// Retained nearby interactions, including currently inactive potentials.
+    pub contact_terms: usize,
     pub detection_updates: usize,
     pub broad_phase_rebuilds: usize,
     pub truncated_vertices: usize,
@@ -441,7 +443,8 @@ impl VbdSolver {
         state.time += dt;
         self.prediction.record(&old_velocity, state, settings);
         metrics.time_s = state.time;
-        metrics.contacts = contacts.contacts.len();
+        metrics.contacts = contacts.active_contacts;
+        metrics.contact_terms = contacts.contacts.len();
         metrics.minimum_distance_m = contacts.minimum_distance;
         metrics.max_seam_gap_m = self.garment.max_seam_gap(&state.x);
         [metrics.extension_p95_percent, metrics.extension_max_percent] =

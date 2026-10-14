@@ -1,0 +1,231 @@
+{
+  "baseline_commit": "f385ed0",
+  "device": "NVIDIA GeForce RTX 3090 / Vulkan",
+  "threads": 2,
+  "definition": "accepted-state highpass position, not render jitter; one second warmup; three second traces; same source snapshots within each pair",
+  "cases": [
+    {
+      "directory": "output\\jitter-audit\\final-baseline-shirt",
+      "initial_state_sha256": "7659d4fb11234e44f561d946cfd4b80606755795ec76447054a16cca1544d961",
+      "vertices": 2454,
+      "selected_vertices": 486,
+      "selection": "initial world y >= 1.35 m",
+      "warmup_steps": 60,
+      "start_time_s": 10.000000000000076,
+      "end_time_s": 13.000000000000226,
+      "steps": 180,
+      "iterations": 16,
+      "dt_s": 0.016666666666666666,
+      "highpass_position_mm": {
+        "definition": "norm(x[t] - (x[t-1]+x[t+1])/2); no rendering filter",
+        "rms": 0.30670242476225884,
+        "p95": 0.7007837650747385,
+        "max": 1.4263592088566892
+      },
+      "max_vertical_step_um": 1592.1592712402344,
+      "mean_full_step_ms_after_warmup": 20.530945,
+      "mean_detection_ms_after_warmup": 11.53501,
+      "mean_solve_ms_after_warmup": 8.995935000000001,
+      "final_max_seam_gap_mm": 2.1293761445915758,
+      "final_extension_p95_percent": 4.325313886408022,
+      "minimum_detected_separation_mm": 1.6529763444178935
+    },
+    {
+      "directory": "output\\jitter-audit\\merged-shirt",
+      "initial_state_sha256": "7659d4fb11234e44f561d946cfd4b80606755795ec76447054a16cca1544d961",
+      "vertices": 2454,
+      "selected_vertices": 486,
+      "selection": "initial world y >= 1.35 m",
+      "warmup_steps": 60,
+      "start_time_s": 10.000000000000076,
+      "end_time_s": 13.000000000000226,
+      "steps": 180,
+      "iterations": 16,
+      "dt_s": 0.016666666666666666,
+      "highpass_position_mm": {
+        "definition": "norm(x[t] - (x[t-1]+x[t+1])/2); no rendering filter",
+        "rms": 0.044536120018687834,
+        "p95": 0.08370985451134899,
+        "max": 0.8601499760502319
+      },
+      "max_vertical_step_um": 1354.5055682298023,
+      "mean_full_step_ms_after_warmup": 16.55932333333333,
+      "mean_detection_ms_after_warmup": 9.847508333333334,
+      "mean_solve_ms_after_warmup": 6.711815,
+      "final_max_seam_gap_mm": 2.0041612644059845,
+      "final_extension_p95_percent": 3.370649517605795,
+      "minimum_detected_separation_mm": 1.71397385360091
+    },
+    {
+      "directory": "output\\jitter-audit\\final-baseline-apron",
+      "initial_state_sha256": "0e861e7b873c4c2a1f748f1380cbc7bbd35ee7b6aefe7c5c1b8b28c543cddf09",
+      "vertices": 3139,
+      "selected_vertices": 419,
+      "selection": "initial world y >= 1.35 m",
+      "warmup_steps": 60,
+      "start_time_s": 21.9666666666667,
+      "end_time_s": 24.96666666666653,
+      "steps": 180,
+      "iterations": 16,
+      "dt_s": 0.016666666666666666,
+      "highpass_position_mm": {
+        "definition": "norm(x[t] - (x[t-1]+x[t+1])/2); no rendering filter",
+        "rms": 0.3200420970066707,
+        "p95": 0.7294749950835745,
+        "max": 1.5293051618018074
+      },
+      "max_vertical_step_um": 2609.848976135254,
+      "mean_full_step_ms_after_warmup": 20.124700833333335,
+      "mean_detection_ms_after_warmup": 12.6904675,
+      "mean_solve_ms_after_warmup": 7.434233333333333,
+      "final_max_seam_gap_mm": 1.7354974290214527,
+      "final_extension_p95_percent": 3.6767315772773035,
+      "minimum_detected_separation_mm": 0.7994592877790694
+    },
+    {
+      "directory": "output\\jitter-audit\\final-apron",
+      "initial_state_sha256": "0e861e7b873c4c2a1f748f1380cbc7bbd35ee7b6aefe7c5c1b8b28c543cddf09",
+      "vertices": 3139,
+      "selected_vertices": 419,
+      "selection": "initial world y >= 1.35 m",
+      "warmup_steps": 60,
+      "start_time_s": 21.9666666666667,
+      "end_time_s": 24.96666666666653,
+      "steps": 180,
+      "iterations": 16,
+      "dt_s": 0.016666666666666666,
+      "highpass_position_mm": {
+        "definition": "norm(x[t] - (x[t-1]+x[t+1])/2); no rendering filter",
+        "rms": 0.055726702722152965,
+        "p95": 0.11075468064208391,
+        "max": 0.6946110692471295
+      },
+      "max_vertical_step_um": 1413.8748108725174,
+      "mean_full_step_ms_after_warmup": 26.752414166666664,
+      "mean_detection_ms_after_warmup": 16.434916666666666,
+      "mean_solve_ms_after_warmup": 10.3174975,
+      "final_max_seam_gap_mm": 1.8527094124493135,
+      "final_extension_p95_percent": 3.2240467292565578,
+      "minimum_detected_separation_mm": 1.7940473678909168
+    }
+  ],
+  "flat_contact": [
+    {
+      "directory": "output\\jitter-audit\\flat-before",
+      "initial_state_sha256": "fd28b54beda373d033146d2f2f00ee922a781d042104bf8184839835f99c5a70",
+      "vertices": 16,
+      "selected_vertices": 16,
+      "selection": "initial world y >= -1000 m",
+      "warmup_steps": 60,
+      "start_time_s": 0.0,
+      "end_time_s": 1.9999999999999978,
+      "steps": 120,
+      "iterations": 16,
+      "dt_s": 0.016666666666666666,
+      "highpass_position_mm": {
+        "definition": "norm(x[t] - (x[t-1]+x[t+1])/2); no rendering filter",
+        "rms": 0.2739816734221505,
+        "p95": 0.8086136167331028,
+        "max": 1.0460527389716874
+      },
+      "max_vertical_step_um": 1349.6654573827982,
+      "mean_full_step_ms_after_warmup": 1.5479366666666665,
+      "mean_detection_ms_after_warmup": 0.10442,
+      "mean_solve_ms_after_warmup": 1.4435166666666668,
+      "final_max_seam_gap_mm": 0.0,
+      "final_extension_p95_percent": 2.393538560685471e-05,
+      "minimum_detected_separation_mm": 1.6519236378371716
+    },
+    {
+      "directory": "output\\jitter-audit\\flat-after",
+      "initial_state_sha256": "fd28b54beda373d033146d2f2f00ee922a781d042104bf8184839835f99c5a70",
+      "vertices": 16,
+      "selected_vertices": 16,
+      "selection": "initial world y >= -1000 m",
+      "warmup_steps": 60,
+      "start_time_s": 0.0,
+      "end_time_s": 1.9999999999999978,
+      "steps": 120,
+      "iterations": 16,
+      "dt_s": 0.016666666666666666,
+      "highpass_position_mm": {
+        "definition": "norm(x[t] - (x[t-1]+x[t+1])/2); no rendering filter",
+        "rms": 9.736501752705463e-06,
+        "p95": 1.5636511837122488e-05,
+        "max": 1.990916176873739e-05
+      },
+      "max_vertical_step_um": 0.0004076565612853855,
+      "mean_full_step_ms_after_warmup": 1.1495133333333334,
+      "mean_detection_ms_after_warmup": 0.04826333333333333,
+      "mean_solve_ms_after_warmup": 1.10125,
+      "final_max_seam_gap_mm": 0.0,
+      "final_extension_p95_percent": 4.065447711809611e-06,
+      "minimum_detected_separation_mm": 2.99995745844406
+    }
+  ],
+  "ui": {
+    "ui-shirt-final": {
+      "passed": true,
+      "physics_steps_per_second": 60.40799319363351,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 5.049999999999956,
+      "simulation_speed": 1.0067998865605585,
+      "ui_frame_interval_p95_ms": 21.235799999999998,
+      "ui_frames_per_second": 60.00926056529322,
+      "wall_seconds": 5.0158925
+    },
+    "ui-apron-final": {
+      "passed": false,
+      "physics_steps_per_second": 50.17640091167049,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 4.199999999999761,
+      "simulation_speed": 0.8362733485278415,
+      "ui_frame_interval_p95_ms": 21.4327,
+      "ui_frames_per_second": 59.93292331116538,
+      "wall_seconds": 5.0222813
+    }
+  },
+  "fresh_shirt_4s": {
+    "broad_phase_rebuilds": 1,
+    "contact_profile": {
+      "candidate_pairs": 203051,
+      "candidates_ms": 9.1185,
+      "narrow_ms": 8.1949,
+      "refit_ms": 0.5753
+    },
+    "contact_terms": 8114,
+    "contacts": 213,
+    "detection_ms": 19.0555,
+    "detection_updates": 1,
+    "dt_s": 0.016666666666666666,
+    "extension_max_percent": 20.15781101434877,
+    "extension_p95_percent": 3.882906548951248,
+    "gpu_compute_ms": 5.295168,
+    "iterations": 16,
+    "max_seam_gap_m": 0.0020802174052554673,
+    "minimum_distance_m": 0.00299446948002697,
+    "residual_rms_n": null,
+    "solve_ms": 8.734600000000004,
+    "step_ms": 27.790100000000002,
+    "time_s": 3.9999999999999907,
+    "truncated_vertices": 0
+  },
+  "validation": {
+    "cpu_tests": 78,
+    "gpu_tests": 3,
+    "interaction": {
+      "accepted_step_with_grab": true,
+      "max_vertex_displacement_m": 0.010685957458115507,
+      "passed": true,
+      "pointer_picked_cloth": true,
+      "state_time_s": 25.016666666666527,
+      "status": "Simulation dynamique \u00c2\u00b7 contacts OGC"
+    }
+  },
+  "limitations": [
+    "The apron trace precedes the final equivalent contact sort/merge optimization; shirt trace hashes verify unchanged positions across that optimization.",
+    "Headless wall times fluctuate with workstation load; UI throughput is measured separately, not inferred from those means.",
+    "All features remain frozen between detections; no proof of complete activation coverage during arbitrary large steps.",
+    "No friction; uncalibrated material; finite-iteration solves; peak shoulder excursions remain."
+  ]
+}

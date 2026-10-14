@@ -8,6 +8,57 @@ use marvelous_cloth::{
     vbd::{VbdSettings, VbdSolver},
 };
 use std::sync::Arc;
+mod common;
+
+#[test]
+#[ignore = "uses a hardware GPU; run explicitly with --ignored"]
+fn gpu_contact_settles_and_is_invariant_under_world_translation() {
+    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
+    let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
+        power_preference: wgpu::PowerPreference::HighPerformance,
+        ..Default::default()
+    }))
+    .unwrap();
+    assert_ne!(adapter.get_info().device_type, wgpu::DeviceType::Cpu);
+    let (device, queue) =
+        pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).unwrap();
+    let mut gpu = GpuVbd::new(device, queue);
+    let settings = VbdSettings {
+        dt: 1. / 60.,
+        ..Default::default()
+    };
+    let mut reference = None::<Vec<DVec3>>;
+    for offset in [DVec3::ZERO, DVec3::new(100., 101.4, -100.)] {
+        let (g, floor) = common::resting_patch(offset);
+        let mut s = g.initial_state.clone();
+        let mut solver = VbdSolver::new(g, Some(&floor), &s).unwrap();
+        let mut jitter = 0.0_f64;
+        for i in 0..120 {
+            gpu.check_gradients = i < 2;
+            let old = s.x.clone();
+            gpu.step(&mut solver, &mut s, &settings, None).unwrap();
+            for (x, prev) in s.x.iter().zip(old) {
+                assert!(
+                    (x.y - offset.y - settings.contact.radius).abs() < 1e-5,
+                    "step {i}: {x:?}"
+                );
+                if i > 10 {
+                    jitter = jitter.max((x.y - prev.y).abs());
+                }
+            }
+        }
+        eprintln!("resting contact at {offset}: max normal step displacement {jitter:.9} m");
+        assert!(jitter < 1e-6, "normal contact motion {jitter} m");
+        let local: Vec<_> = s.x.iter().map(|p| *p - offset).collect();
+        if let Some(reference) = &reference {
+            for (a, b) in local.iter().zip(reference) {
+                assert!(a.distance(*b) < 2e-6);
+            }
+        } else {
+            reference = Some(local);
+        }
+    }
+}
 
 #[test]
 #[ignore = "uses a hardware GPU; run explicitly with --ignored"]

@@ -222,8 +222,36 @@ fn query_radius_changes_bounds_without_activating_distant_forces() {
     ];
     let mut w = OgcWorld::new(&x, vec![[1, 2, 3]], 1, []).unwrap();
     let s = w.detect(&x, 0.03, &settings(0.01)).unwrap();
-    assert!(s.contacts.is_empty());
+    assert_eq!(s.contacts.len(), 1);
+    assert_eq!(s.active_contacts, 0);
+    assert_eq!(s.value(&x, &settings(0.01)), 0.);
     assert!((s.radii[0] - 0.009).abs() < 1e-12);
+}
+
+#[test]
+fn dormant_contact_activates_inside_the_same_original_trust_region() {
+    let mut x = vec![
+        DVec3::new(0., 0., 0.00305),
+        DVec3::new(-1., -1., 0.),
+        DVec3::new(1., -1., 0.),
+        DVec3::new(0., 1., 0.),
+    ];
+    let mut w = OgcWorld::new(&x, vec![[1, 2, 3]], 1, []).unwrap();
+    let settings = settings(0.003);
+    let contacts = w.detect(&x, 0.006, &settings).unwrap();
+    assert_eq!(contacts.active_contacts, 0);
+    assert_eq!(contacts.value(&x, &settings), 0.);
+    let (p, clipped) = contacts.truncate(0, DVec3::new(0., 0., 0.0025));
+    assert!(!clipped);
+    x[0] = p;
+    let expected = 0.5 * settings.stiffness * 0.0005_f64.powi(2);
+    assert!((contacts.value(&x, &settings) - expected).abs() < 1e-12);
+    assert!(
+        (contacts.value(&x, &settings)
+            - w.detect(&x, 0.006, &settings).unwrap().value(&x, &settings))
+        .abs()
+            < 1e-12
+    );
 }
 
 #[test]

@@ -8,7 +8,7 @@ use super::{
 use glam::DVec3;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::time::Instant;
 
 #[derive(Clone, Copy, Debug, Default, Serialize)]
@@ -70,7 +70,10 @@ impl OgcSettings {
 #[derive(Clone, Debug)]
 pub struct ContactSet {
     pub profile: DetectionProfile,
+    /// Nearby terms retained until the next detection, including zero energy.
     pub contacts: Vec<Contact>,
+    /// Terms with positive energy at the detection configuration.
+    pub active_contacts: usize,
     pub incident: Vec<Vec<usize>>,
     pub centers: Vec<DVec3>,
     pub radii: Vec<f64>,
@@ -337,10 +340,10 @@ impl OgcWorld {
         let narrow_start = Instant::now();
         let batches: Vec<_> = (0..lanes)
             .into_par_iter()
-            .map(|lane| self.scan(x, query_radius, settings, lane, lanes))
+            .map(|lane| self.scan(x, query_radius, lane, lanes))
             .collect();
         let mut distance = vec![query_radius; x.len()];
-        let mut found = BTreeMap::new();
+        let mut found = Vec::new();
         let mut vf_count = 0;
         let mut ee_count = 0;
         for (distances, contacts, vf, ee) in batches {
@@ -351,7 +354,15 @@ impl OgcWorld {
             vf_count += vf;
             ee_count += ee;
         }
-        let contacts: Vec<_> = found.into_values().collect();
+        // Sort/merge once instead of allocating a tree node for every retained
+        // nearby term. Canonical order remains the same for colors/reductions.
+        found.sort_unstable_by_key(|c: &Contact| (c.kind, c.vertices));
+        found.dedup_by_key(|c| (c.kind, c.vertices));
+        let contacts = found;
+        let active_contacts = contacts
+            .iter()
+            .filter(|c| c.value(x, settings.radius, settings.stiffness) > 0.)
+            .count();
         let mut incident = vec![Vec::new(); self.moving];
         for (c, contact) in contacts.iter().enumerate() {
             for v in &contact.vertices[..contact.count] {
@@ -373,6 +384,7 @@ impl OgcWorld {
                     + self.candidates.as_ref().unwrap().ee.len(),
             },
             contacts,
+            active_contacts,
             incident,
             centers: x[..self.moving].to_vec(),
             radii: distance[..self.moving]
@@ -385,17 +397,10 @@ impl OgcWorld {
             broad_phase_rebuilt,
         })
     }
-    fn scan(
-        &self,
-        x: &[DVec3],
-        query_radius: f64,
-        settings: &OgcSettings,
-        lane: usize,
-        lanes: usize,
-    ) -> DetectionBatch {
+    fn scan(&self, x: &[DVec3], query_radius: f64, lane: usize, lanes: usize) -> DetectionBatch {
         let top = &self.topology;
         let mut distance = vec![query_radius; x.len()];
-        let mut found = BTreeMap::new();
+        let mut found = Vec::new();
         let mut vf_count = 0;
         let mut ee_count = 0;
         let mut add = |kind: Kind, mut ids: [usize; 4], count: usize, epsilon: f64| {
@@ -416,7 +421,7 @@ impl OgcWorld {
                     ids.swap(1, 3);
                 }
             }
-            found.entry((kind, ids)).or_insert(Contact {
+            found.push(Contact {
                 kind,
                 vertices: ids,
                 count,
@@ -437,10 +442,8 @@ impl OgcWorld {
             for i in ids {
                 distance[i] = distance[i].min(d);
             }
-            // Algorithm 1: rq affects bounds, r alone selects forces.
-            if d >= settings.radius {
-                continue;
-            }
+            // Keep nearby zero-energy terms too: a local iterate can cross r
+            // before the next detection. The potential itself activates at r.
             match f {
                 Feature::Vertex(i) if geometry::vertex_feasible(x[v], i, x, top) => {
                     add(Kind::PointPoint, [v, i, 0, 0], 2, 0.0)
@@ -469,9 +472,6 @@ impl OgcWorld {
             ee_count += 1;
             for v in ids.iter().chain(&js) {
                 distance[*v] = distance[*v].min(dist);
-            }
-            if dist >= settings.radius {
-                continue;
             }
             let end_a = if s <= 0.0 {
                 Some(ids[0])
@@ -508,9 +508,4 @@ impl OgcWorld {
     }
 }
 
-type DetectionBatch = (
-    Vec<f64>,
-    BTreeMap<(Kind, [usize; 4]), Contact>,
-    usize,
-    usize,
-);
+type DetectionBatch = (Vec<f64>, Vec<Contact>, usize, usize);

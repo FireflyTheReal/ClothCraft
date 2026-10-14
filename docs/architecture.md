@@ -74,6 +74,8 @@ L'initialisation adaptative conserve un historique de l'état accepté dans `Vbd
 
 ## Évolutions localisées
 
+Depuis la [correction du jitter](jitter.md), `ContactSet.contacts` contient aussi les interactions admissibles proches dont l'énergie est encore nulle : la distance d'activation reste `r`, la sélection va jusqu'à `rq`. Coloration et incidence incluent ces termes dormants. `active_contacts` / `VbdMetrics.contacts` indiquent ceux d'énergie positive à la détection ; `contact_terms` donne le coût en termes retenus. Les identifiants canoniques sont triés/dédupliqués avant la coloration. Le GPU travaille dans un repère translaté, rétabli à la lecture ; l'état et les contacts CPU restent mondiaux en f64. Ne pas oublier ce changement de repère pour une nouvelle cible ou un diagnostic GPU.
+
 1. Étendre les contours Bézier aux trous, puis ajouter une métrique de résolution spatiale.
 2. Transférer l'état lors d'un remeshing dynamique ; aujourd'hui le remeshing explicite reconstruit l'arrangement initial.
 3. Étendre l’édition actuelle (points/poignées Bézier, coutures 2D/3D, gizmos, historique) aux trous, dimensions et coutures partielles.
