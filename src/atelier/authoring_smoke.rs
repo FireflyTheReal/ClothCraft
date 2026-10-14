@@ -2,7 +2,7 @@
 use super::*;
 use std::{collections::BTreeMap, time::Instant};
 
-const ACTIONS: [(&str, Vec2); 30] = [
+const ACTIONS: [(&str, Vec2); 31] = [
     ("Plume", Vec2::ZERO),
     ("replace", Vec2::ZERO),
     ("Rectangle", Vec2::ZERO),
@@ -25,7 +25,7 @@ const ACTIONS: [(&str, Vec2); 30] = [
     ("Coudre", Vec2::ZERO),
     ("panel_1", Vec2::ZERO),
     ("edge3d_panel_2", Vec2::ZERO),
-    ("sew", Vec2::ZERO),
+    ("simulate", Vec2::ZERO),
     ("undo", Vec2::ZERO),
     ("redo", Vec2::ZERO),
     ("Placer 3D", Vec2::ZERO),
@@ -33,6 +33,7 @@ const ACTIONS: [(&str, Vec2); 30] = [
     ("turn", Vec2::ZERO),
     ("ring_z", Vec2::new(25., 20.)),
     ("export", Vec2::ZERO),
+    ("simulate", Vec2::ZERO),
 ];
 pub(super) struct Smoke {
     targets: BTreeMap<String, egui::Pos2>,
@@ -50,6 +51,7 @@ pub(super) struct Smoke {
         marvelous_cloth::garment::template::GarmentTemplate,
         Vec<glam::DVec3>,
     )>,
+    motion_start: Option<(f64, Vec<glam::DVec3>)>,
     rectangle_drawn: bool,
     handle_edited: bool,
     anchor_edited: bool,
@@ -70,6 +72,7 @@ impl Smoke {
             translation_before: None,
             shape_before: None,
             layout_before: None,
+            motion_start: None,
             rectangle_drawn: false,
             handle_edited: false,
             anchor_edited: false,
@@ -162,10 +165,23 @@ impl Atelier {
         if key == Some("gizmo_x") && smoke.translation_before.is_none() {
             smoke.translation_before = Some(panel.placement.translation);
         }
-        smoke.mixed_sewing |= key == Some("sew") && self.authoring.ends.len() == 2;
+        smoke.mixed_sewing |= key == Some("simulate") && self.authoring.ends.len() == 2;
         smoke.undo_observed |= key == Some("redo") && self.project.template.seams.is_empty();
         smoke.redo_observed |= smoke.undo_observed && self.project.template.seams.len() == 1;
-        if smoke.finished || (smoke.action < ACTIONS.len() && smoke.start.elapsed().as_secs() < 25)
+        if smoke.action == ACTIONS.len() - 1 && smoke.motion_start.is_none() {
+            smoke.motion_start = Some((self.scene.state.time, self.scene.state.x.clone()));
+        }
+        let simulated = smoke.motion_start.as_ref().is_some_and(|(time, x)| {
+            self.scene.state.time - time >= 0.2
+                && self.scene.garment.panels.last().is_some_and(|p| {
+                    p.vertices
+                        .clone()
+                        .any(|i| self.scene.state.x[i].distance(x[i]) > 0.001)
+                })
+        });
+        if smoke.finished
+            || ((!simulated || smoke.action < ACTIONS.len())
+                && smoke.start.elapsed().as_secs() < 25)
         {
             return;
         }
@@ -189,8 +205,8 @@ impl Atelier {
         let exported = FittingProject::load(&self.output.join("fitting-project.json"))
             .and_then(|p| p.compile().map(|_| p))
             .is_ok_and(|p| p.template.panels.len() == 2 && p.template.seams.len() == 1);
-        let report = serde_json::json!({"passed":complete&&moved&&curved&&smoke.rectangle_drawn&&smoke.handle_edited&&smoke.anchor_edited&&smoke.layout_preserved_physics&&smoke.mixed_sewing&&rotated&&exported&&smoke.undo_observed&&smoke.redo_observed&&self.project.template.seams.len()==1,
-            "completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
+        let report = serde_json::json!({"passed":complete&&simulated&&moved&&curved&&smoke.rectangle_drawn&&smoke.handle_edited&&smoke.anchor_edited&&smoke.layout_preserved_physics&&smoke.mixed_sewing&&rotated&&exported&&smoke.undo_observed&&smoke.redo_observed&&self.project.template.seams.len()==1,
+            "new_panel_simulated":simulated,"pending_seam_committed_on_play":smoke.mixed_sewing&&smoke.undo_observed,"completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
             "export_reload_compiles":exported,"undo_observed":smoke.undo_observed,"redo_observed":smoke.redo_observed,"panels":self.project.template.panels.len(),"seams":self.project.template.seams.len(),"status":self.status});
         if let Err(e) = std::fs::write(
             self.output.join("authoring.json"),

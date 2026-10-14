@@ -1,5 +1,7 @@
 # Turbo performance — 14 octobre 2026
 
+**Mesures historiques antérieures à la correction de chute libre GPU.** La [validation du tablier](apron-validation.md) révèle une prédiction inertielle manquante : ces trajectoires étaient trop lentes physiquement. Après correction, le T-shirt à 25 mm affiche environ 60 images/s mais livre 53 pas/s (0,883×) ; le seuil temps réel physique échoue. Les résultats ci-dessous restent utiles pour comparer les anciennes versions, sans établir les performances ou la qualité actuelles.
+
 **Temps réel mesuré dans l'atelier sur les deux vêtements assemblés**, sur RTX 3090 / Vulkan, avec deux threads CPU. Le maillage, les huit itérations, le pas physique de 1/60 s et les lois matérielles/contact n'ont pas été réduits pour obtenir le gain. La détection reste CPU ; ce n'est pas un port OGC entièrement GPU.
 
 ## Comparaison à réglages identiques

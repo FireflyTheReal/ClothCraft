@@ -4,7 +4,6 @@
 //! inequality). An rq+2s search therefore covers the next rq searches.
 use super::{
     bvh::{Bounds, Bvh},
-    geometry,
     topology::Topology,
 };
 use glam::DVec3;
@@ -55,8 +54,13 @@ impl Candidates {
                             if ids.iter().any(|i| adjacent(v, *i)) {
                                 return;
                             }
-                            let (p, _) = geometry::closest_triangle(x[v], t, x, top);
-                            if x[v].distance_squared(p) <= search * search {
+                            // Candidate construction needs only a conservative
+                            // lower bound. Exact VF/EE distances are recomputed
+                            // by scan every step, including this first one.
+                            if Bounds::points([x[v]])
+                                .distance_squared(Bounds::points(ids.map(|i| x[i])))
+                                <= search * search
+                            {
                                 vf.push([v, t]);
                             }
                         });
@@ -77,10 +81,8 @@ impl Candidates {
                             {
                                 return;
                             }
-                            let [a, b] = ids.map(|i| x[i]);
-                            let [c, d] = js.map(|i| x[i]);
-                            let (s, t) = geometry::closest_segments(a, b, c, d);
-                            if (a + (b - a) * s).distance_squared(c + (d - c) * t)
+                            if Bounds::points(ids.map(|i| x[i]))
+                                .distance_squared(Bounds::points(js.map(|i| x[i])))
                                 <= search * search
                             {
                                 ee.push([e, f]);

@@ -31,6 +31,8 @@ pub(super) struct AuthoringUi {
     pub reverse: bool,
     pub ease: bool,
     pub preview: Option<Placement>,
+    pub preview_state: Option<marvelous_cloth::model::State>,
+    pub error: Option<String>,
     pub rotate: bool,
     pub drag: Option<super::gizmo::Drag>,
 }
@@ -42,12 +44,14 @@ pub(super) fn segment_distance(p: egui::Pos2, a: egui::Pos2, b: egui::Pos2) -> f
 
 impl Atelier {
     pub(super) fn install_edit(&mut self, edit: Edit) {
+        if edit.reset_simulation {
+            self.scene.state = edit.state_after(&self.scene.garment, &self.scene.state);
+        }
         self.project.template = edit.template;
         self.project.state = None;
         self.project.mesh_signature = None;
         self.project.prearrange = false;
         if edit.reset_simulation {
-            self.scene.state = edit.garment.initial_state.clone();
             self.scene.garment = std::sync::Arc::new(edit.garment);
         }
         self.authoring.board.clear_preview();
@@ -59,6 +63,8 @@ impl Atelier {
         self.grab = None;
         self.drag_plane = None;
         self.authoring.preview = None;
+        self.authoring.preview_state = None;
+        self.authoring.error = None;
         self.authoring.drag = None;
         self.authoring.ends.clear();
         if let Some(id) = edit.selected {
@@ -74,7 +80,7 @@ impl Atelier {
             self.authoring.selected = self.project.template.panels.first().map(|p| p.id.clone());
         }
         self.status = if edit.reset_simulation {
-            "Édition validée · arrangement réinitialisé · prêt à simuler"
+            "Édition validée · pièces inchangées conservées · prêt à simuler"
         } else {
             "Disposition 2D modifiée · état 3D conservé"
         }
@@ -88,6 +94,7 @@ impl Atelier {
                 true
             }
             Err(e) => {
+                self.authoring.error = Some(e.clone());
                 self.status = e;
                 false
             }
@@ -105,7 +112,9 @@ impl Atelier {
     }
     pub(super) fn cancel_preview(&mut self) {
         if self.authoring.preview.take().is_some() {
-            self.scene.state = self.scene.garment.initial_state.clone();
+            if let Some(state) = self.authoring.preview_state.take() {
+                self.scene.state = state;
+            }
             self.generation += 1;
         }
         self.authoring.drag = None;
@@ -118,23 +127,27 @@ impl Atelier {
             return;
         };
         if self.authoring.preview.is_none() {
+            self.authoring.preview_state = Some(self.scene.state.clone());
             self.generation += 1;
         }
         self.playing = false;
         for i in range.vertices.clone() {
             let uv = self.scene.garment.mesh.uv[i];
             self.scene.state.x[i] = placement.transform(DVec3::new(uv.x, -uv.y, 0.));
+            self.scene.state.v[i] = DVec3::ZERO;
         }
         self.authoring.preview = Some(placement);
     }
-    pub(super) fn commit_placement(&mut self) {
+    pub(super) fn commit_placement(&mut self) -> bool {
         if let (Some(panel), Some(placement)) = (
             self.authoring.selected.clone(),
             self.authoring.preview.clone(),
         ) && !self.edit(Command::Place { panel, placement })
         {
             self.cancel_preview();
+            return false;
         }
+        true
     }
     pub(super) fn authoring_toolbar(&mut self, ui: &mut egui::Ui) {
         self.history_shortcuts(ui.ctx());
@@ -160,13 +173,9 @@ impl Atelier {
                     self.playing = false;
                     self.pending = false;
                     self.generation += 1;
-                    // Sewing can pick the current drape. Placement acts on the initial arrangement.
-                    if self.authoring.tool == Tool::Place {
-                        self.scene.state = self.scene.garment.initial_state.clone();
-                    }
                     self.metrics = None;
                     self.status = if self.authoring.tool == Tool::Place {
-                        "Placement · retour à l'arrangement initial"
+                        "Placement du panneau sélectionné · autres pièces conservées"
                     } else {
                         "Mode édition · simulation en pause"
                     }
@@ -206,8 +215,11 @@ impl Atelier {
         }
     }
     pub(super) fn authoring_properties(&mut self, ui: &mut egui::Ui) {
-        if self.authoring.tool == Tool::Sew {
+        if self.authoring.tool == Tool::Sew || !self.authoring.ends.is_empty() {
             self.sewing_controls(ui);
+        }
+        if let Some(error) = &self.authoring.error {
+            ui.colored_label(Color32::LIGHT_RED, error);
         }
         self.edge_properties(ui);
         ui.strong("Panneau actif");
@@ -323,6 +335,9 @@ impl Atelier {
         }
     }
     pub(super) fn sewing_controls(&mut self, ui: &mut egui::Ui) {
+        if self.authoring.ends.len() == 2 {
+            ui.colored_label(Color32::GOLD, "Aperçu seulement — couture à valider");
+        }
         ui.small("Choisir deux bords en 2D ou 3D ; 0 ↔ 0, 1 ↔ 1.");
         let mut lengths = vec![];
         for (i, e) in self.authoring.ends.iter().enumerate() {
@@ -352,6 +367,12 @@ impl Atelier {
                 lengths[1] * 1000.,
                 (lengths[0] - lengths[1]).abs() * 1000.
             ));
+            if (lengths[0] - lengths[1]).abs() > 1e-5 && !self.authoring.ease {
+                ui.colored_label(
+                    Color32::GOLD,
+                    "Longueurs différentes : ajuster le patron ou autoriser l'embu ci-dessous.",
+                );
+            }
         }
         ui.checkbox(&mut self.authoring.reverse, "Inverser le sens B");
         ui.checkbox(
@@ -361,16 +382,11 @@ impl Atelier {
         ui.horizontal(|ui| {
             let sew = ui.add_enabled(
                 self.authoring.ends.len() == 2,
-                egui::Button::new("Créer la couture"),
+                egui::Button::new("Valider la couture"),
             );
             self.smoke_target("sew", sew.rect.center());
             if sew.clicked() {
-                self.edit(Command::Sew {
-                    a: self.authoring.ends[0].clone(),
-                    b: self.authoring.ends[1].clone(),
-                    reverse: self.authoring.reverse,
-                    ease: self.authoring.ease,
-                });
+                self.commit_seam();
             }
             if ui.button("Effacer sélection").clicked() {
                 self.authoring.ends.clear();
@@ -392,5 +408,32 @@ impl Atelier {
             }
         });
         ui.separator();
+    }
+    pub(super) fn commit_seam(&mut self) -> bool {
+        if self.authoring.ends.len() != 2 {
+            return false;
+        }
+        if self.edit(Command::Sew {
+            a: self.authoring.ends[0].clone(),
+            b: self.authoring.ends[1].clone(),
+            reverse: self.authoring.reverse,
+            ease: self.authoring.ease,
+        }) {
+            self.status = "Couture créée · Simuler pour assembler les pièces".into();
+            true
+        } else {
+            self.authoring.tool = Tool::Sew;
+            false
+        }
+    }
+    pub(super) fn prepare_simulation(&mut self) -> bool {
+        if self.authoring.ends.len() == 2 && !self.commit_seam() {
+            return false;
+        }
+        if !self.commit_placement() {
+            return false;
+        }
+        self.authoring.tool = Tool::Grab;
+        true
     }
 }

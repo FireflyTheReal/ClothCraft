@@ -27,6 +27,13 @@ impl Bounds {
     pub fn overlaps(self, b: Self) -> bool {
         self.min.cmple(b.max).all() && self.max.cmpge(b.min).all()
     }
+    /// Conservative lower bound on the distance between enclosed primitives.
+    pub fn distance_squared(self, b: Self) -> f64 {
+        (self.min - b.max)
+            .max(b.min - self.max)
+            .max(DVec3::ZERO)
+            .length_squared()
+    }
     fn union(self, b: Self) -> Self {
         Self {
             min: self.min.min(b.min),

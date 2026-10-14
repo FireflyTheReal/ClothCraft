@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-14",
+  "hardware": "NVIDIA GeForce RTX 3090 / Vulkan / Windows",
+  "cpu_tests_passed": 71,
+  "cpu_and_desktop_clippy_passed": true,
+  "template_fixtures_passed": 5,
+  "gpu_freefall_and_trust_bounds_passed": true,
+  "native_authoring": {
+    "anchor_edited": true,
+    "bezier_drawn": true,
+    "completed_pointer_actions": 31,
+    "expected_actions": 31,
+    "export_reload_compiles": true,
+    "handle_edited": true,
+    "layout_preserved_physics": true,
+    "new_panel_simulated": true,
+    "panels": 2,
+    "passed": true,
+    "pending_seam_committed_on_play": true,
+    "rectangle_drawn": true,
+    "redo_observed": true,
+    "rotated_with_gizmo": true,
+    "seams": 1,
+    "sewing_selected_in_2d_and_3d": true,
+    "status": "Simulation dynamique · contacts OGC",
+    "translated_with_gizmo": true,
+    "undo_observed": true
+  },
+  "private_reproduction": {
+    "vertices": 3139,
+    "triangles": 5823,
+    "steps": 10,
+    "mean_rectangle_drop_before_m": 0.00031843746665620454,
+    "mean_rectangle_drop_after_m": 0.03771473726216894,
+    "source_preserved": true,
+    "sewn_copy_preserves_state": true,
+    "new_seam_30_step_gap_m": 0.1802233076784217,
+    "assembly_mean_step_ms": 40.09924
+  },
+  "before_candidate_change": {
+    "passed": false,
+    "physics_steps_per_second": 51.8347384136018,
+    "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+    "simulated_seconds": 4.333333333333465,
+    "simulation_speed": 0.8639123068933633,
+    "ui_frame_interval_p95_ms": 18.3316,
+    "ui_frames_per_second": 60.00867793266794,
+    "wall_seconds": 5.0159412
+  },
+  "final_performance": {
+    "passed": false,
+    "physics_steps_per_second": 52.99911703471188,
+    "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+    "simulated_seconds": 4.416666666666806,
+    "simulation_speed": 0.883318617245198,
+    "ui_frame_interval_p95_ms": 19.4526,
+    "ui_frames_per_second": 59.99900041665306,
+    "wall_seconds": 5.0000833
+  },
+  "limitations": [
+    "Realtime physics threshold fails",
+    "No friction",
+    "Fixed eight iterations do not guarantee convergence",
+    "Apron seam is not fully closed after 30 steps"
+  ]
+}

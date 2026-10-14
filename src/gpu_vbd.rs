@@ -16,6 +16,7 @@ pub struct GpuVbd {
     device: wgpu::Device,
     queue: wgpu::Queue,
     pipeline: wgpu::ComputePipeline,
+    predict: wgpu::ComputePipeline,
     probe: wgpu::ComputePipeline,
     layout: wgpu::BindGroupLayout,
     pub check_gradients: bool,
@@ -100,6 +101,14 @@ impl GpuVbd {
             compilation_options: Default::default(),
             cache: None,
         });
+        let predict = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+            label: Some("VBD conservative inertial prediction"),
+            layout: Some(&pipeline_layout),
+            module: &shader,
+            entry_point: Some("predict"),
+            compilation_options: Default::default(),
+            cache: None,
+        });
         let resources = RefCell::new(Resources::new(&device));
         Self {
             resources,
@@ -107,6 +116,7 @@ impl GpuVbd {
             device,
             queue,
             pipeline,
+            predict,
             probe,
             layout,
             check_gradients: false,
@@ -142,7 +152,11 @@ impl GpuVbd {
         }
         let dt = settings.dt;
         let damp = 1. + settings.damping * dt;
-        let motion = state.v.iter().map(|v| v.length() * dt).fold(0., f64::max);
+        let motion = state
+            .v
+            .iter()
+            .map(|v| ((*v * dt + settings.gravity * dt * dt) / damp).length())
+            .fold(0., f64::max);
         // A bounded query controls broad-phase work. This can slow convergence,
         // never enlarge the allowable movement beyond a conservative ball.
         let rq = (settings.contact.radius + motion)
@@ -369,6 +383,11 @@ impl GpuVbd {
                     end_of_pass_write_index: Some(1),
                 }),
             });
+            // Same warm start as CPU VBD, clipped to the original detection
+            // balls (including the f32 safety margin). Never reset their centers.
+            pass.set_pipeline(&self.predict);
+            pass.set_bind_group(0, bind, &[0]);
+            pass.dispatch_workgroups((n as u32).div_ceil(64), 1, 1);
             pass.set_pipeline(&self.pipeline);
             for _ in 0..settings.iterations {
                 for (i, c) in configs.iter().enumerate() {

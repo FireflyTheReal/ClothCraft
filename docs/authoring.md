@@ -14,7 +14,9 @@ Curves are cubic Béziers with two controls per named edge. They are stored as c
 
 ## Sew in either view
 
-Choose **Coudre** and click boundary A in 2D or 3D, then boundary B in either view. Edges highlight together across views; endpoint labels (`A0 ↔ B0`, `A1 ↔ B1`) and 3D connection lines preview correspondence. Check the length difference and **Inverser le sens B**, then **Créer la couture**. Different lengths require **Autoriser l'embu**.
+Choose **Coudre** and click boundary A in 2D or 3D, then boundary B in either view. Edges highlight together across views; endpoint labels (`A0 ↔ B0`, `A1 ↔ B1`) and 3D connection lines preview correspondence. Check the length difference and **Inverser le sens B**, then **Valider la couture**. Different lengths require **Autoriser l'embu**. The highlighted pair is explicitly labelled as a preview until committed. **Coudre et simuler / Space** commits the pending pair before starting; invalid sewing leaves simulation paused and displays the reason in the inspector.
+
+For an apron added to an existing shirt: draw the rectangle, place it outside the body, select its upper edge and the shirt's free hem, check correspondence, then **Coudre et simuler**. For example, a 660 mm edge joined to a 560 mm hem needs explicit easing or a pattern adjustment. A newly drawn piece participates in physics even before it is sewn; without an attachment it falls.
 
 3D picking follows compiled boundary chains, including curves and the current drape. It rejects hits hidden by the avatar or other cloth: orbit to reach the back. Highlight lines are overlays and may remain visible through geometry. A whole panel can be selected by clicking its visible surface in **Modifier** or **Placer 3D**.
 
@@ -22,9 +24,9 @@ Expand **Coutures existantes** to remove a seam before reusing a boundary. This 
 
 ## Place and simulate
 
-**Placer 3D** returns to the initial flat arrangement. Use the colored arrows / rotation rings or numeric values; **Cadrer le panneau** finds an off-screen selection. Gizmo release commits, Escape discards; numeric fields use **Appliquer**. Right drag orbits, middle drag pans, wheel zooms the 3D camera. **Dupliquer / Supprimer** act on the selected panel; deletion removes its seams and retains at least one panel.
+**Placer 3D** edits the selected piece's flat arrangement and preserves the other pieces' drape. Use the colored arrows / rotation rings or numeric values; **Cadrer le panneau** finds an off-screen selection. Moving a draped piece with the arrangement gizmo returns that piece to its flat shape; it is not a rigid transformation of the drape. Gizmo release commits, Escape restores the state before preview; numeric fields use **Appliquer**. Right drag orbits, middle drag pans, wheel zooms the 3D camera. **Dupliquer / Supprimer** act on the selected panel; deletion removes its seams and retains at least one panel.
 
-**Simuler / Space** switches to cloth-grab mode and starts the existing worker. In **Saisir**, left drag applies a barycentric force. Shape, seam and 3D placement edits reset the simulated garment and invalidate solver caches; a 2D layout edit preserves the physical state. Gizmo/contour previews do not remesh each frame. Neither a drawing nor a gizmo guarantees a collision-free initial arrangement; OGC can reject cloth placed inside the body.
+**Simuler / Space** switches to cloth-grab mode and starts the existing worker. In **Saisir**, left drag applies a barycentric force. Physical edits invalidate solver caches but retain positions and velocities of compatible panels, matched by ID and identical local rest mesh, arrangement, pins and masses. Adding a piece or changing seams therefore preserves the existing drape; newly drawn, moved or remeshed pieces start at their arrangement. A 2D layout edit preserves the whole physical state. **Réinitialiser** deliberately restores the full arrangement. Gizmo/contour previews do not remesh each frame. Neither a drawing nor a gizmo guarantees a collision-free initial arrangement; OGC can reject cloth placed inside the body.
 
 **Annuler / Rétablir**, or Ctrl+Z / Ctrl+Shift+Z, retain up to 32 document edits. While drafting, Ctrl+Z removes an anchor. The inspector shows relevant tools; mesh density and simulation diagnostics are under **Résolution du tissu** / **Réglages avancés**. **Exemples** loads the T-shirt or dress; **Affichage** contains mesh, strain and seam overlays.
 
@@ -53,6 +55,6 @@ The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --ui-authoring-smoke --output output/board-smoke
 ```
 
-It uses real egui pointer events and writes `authoring.json` plus `ui.png`. CPU coverage is in `tests/authoring.rs` and `tests/pattern_board.rs`.
+It uses 31 real egui pointer actions and writes `authoring.json` plus `ui.png`, including pending-seam commitment on Play and actual motion of the new piece. CPU coverage is in `tests/authoring.rs`, `tests/pattern_board.rs` and `tests/editing_state.rs`. GPU free-fall regression is explicitly ignored by default; see [apron correction validation](apron-validation.md).
 
 Measured outcomes and example captures: [board validation](board-validation.md). The reusable [curved-panels fixture](../examples/templates/curved-panels.json) is a saved result from the native drawing workflow.

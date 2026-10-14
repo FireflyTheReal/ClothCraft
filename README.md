@@ -6,7 +6,7 @@ A native Rust garment lab: pattern authoring, 3D placement and cloth simulation,
 
 **Start here:** [AI contributor welcome](AI_START_HERE.md) · [Product & format roadmap](ROADMAP.md) · [Draw / sew / arrange guide](docs/authoring.md) · [Solver challenge](docs/solver-challenge.md) · [Contributing](CONTRIBUTING.md)
 
-Validated editor workflow and measured window cadence: [board validation](docs/board-validation.md).
+Current motion/sewing regression checks and measured window cadence: [apron validation](docs/apron-validation.md). Earlier drawing checks: [board validation](docs/board-validation.md).
 
 Current authoring: one unified 2D board, rectangle/pen drawing with Bézier handles, editable anchors, linked 2D/3D boundary selection and sewing, rigid placement gizmos, duplicate/delete and undo/redo. Current physics: CPU reference Newton and CPU/hybrid GPU VBD with OGC contact. No common backend plugin API yet. OBJ and preview SVG are partial exchange paths; DXF, glTF, Alembic, USD and the other requested formats are tracked in the roadmap, not advertised as implemented.
 
@@ -30,7 +30,7 @@ cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view --output o
 
 **Simuler / Espace** assemble les panneaux et fait évoluer le tissu. **Bouton gauche** : saisir le tissu ; **droit** : orbite ; **milieu** : déplacer la caméra ; **molette** : zoom. **Plume / Rectangle / Modifier / Coudre / Placer 3D** ouvrent les outils d’édition, avec annuler/rétablir. Tous les patrons partagent un tableau 2D avec zoom/pan à droite de la vue 3D. La couture se sélectionne dans les deux vues. La résolution et l'anisotropie se règlent dans les propriétés ; remailler reconstruit l'arrangement.
 
-Le T-shirt et la robe sont des patrons d'essai, élargis pour le mannequin MakeHuman CC0 de 1,75 m. OGC part d'un état séparé et ne répare pas un ancien cache traversé. Pas de friction ni de calibration industrielle. Les coutures restent des pénalités finies. **Temps réel mesuré dans l’atelier sur RTX 3090** pour les scènes T-shirt/robe à 25 mm et 8 itérations. Voir [périmètre, pointes de temps et protocole](docs/turbo-perf.md) ; ce résultat ne garantit pas 60 Hz pour toute résolution ou scène.
+Le T-shirt et la robe sont des patrons d'essai, élargis pour le mannequin MakeHuman CC0 de 1,75 m. OGC part d'un état séparé et ne répare pas un ancien cache traversé. Pas de friction ni de calibration industrielle. Les coutures restent des pénalités finies. Après correction de la chute libre GPU, le T-shirt à 25 mm et huit itérations affiche **60 images/s mais environ 53 pas physiques/s** sur RTX 3090 : le seuil physique temps réel n'est pas atteint. Voir [mesures et limites actuelles](docs/apron-validation.md) ; les anciens résultats [Turbo](docs/turbo-perf.md) sont historiques.
 
 ```powershell
 # Calcul physique et benchmark GPU explicitement demandés
@@ -51,7 +51,7 @@ Rust stable et les outils de compilation C++ Windows sont nécessaires. Le `Carg
 cargo build --locked -j 2
 ```
 
-Compiler l'interface ne lance pas de périphérique graphique. Les tests numériques et la validation syntaxique/sémantique WGSL sont exécutés sur CPU. Aucun test ne crée d'adaptateur wgpu.
+Compiler l'interface ne lance pas de périphérique graphique. Les tests numériques et la validation syntaxique/sémantique WGSL sont exécutés sur CPU. Aucun test ordinaire ne crée d'adaptateur wgpu ; `tests/gpu_motion.rs` est ignoré par défaut et exige un lancement explicite avec `--ignored`.
 
 Pour un exécutable compilé **sans bibliothèque graphique** :
 

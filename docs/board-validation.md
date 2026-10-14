@@ -1,5 +1,7 @@
 # Unified board validation — 2026-10-14
 
+Historical report before the GPU inertial-prediction fix. Current motion, sewing workflow and performance limits are recorded in [apron validation](apron-validation.md); the old realtime figures do not validate the corrected dynamics.
+
 A real native-window run exercises the new drafting workflow; the screenshots below are application captures. Local host: Windows, RTX 3090 / Vulkan, Rust 1.97.1. Ordinary checks remain CPU-only, two jobs/threads. Machine-readable results: [board-validation.json](board-validation.json).
 
 ## CPU and build

@@ -91,6 +91,19 @@ fn objective(v:u32,p:vec3f)->f32 {
     let q=p-targets[v].xyz;var e=0.5*targets[v].w*dot(q,q);
     for(var i=ranges[v].x;i<ranges[v].y;i++){e+=evaluate(terms[incident[i]],v,p).e;}return e;
 }
+// Initialize all moving vertices together. Without this translation-invariant
+// warm start, a stiff flat panel barely falls at a fixed local iteration budget.
+// Each target remains inside its OGC ball; fixed vertices are never displaced.
+@compute @workgroup_size(64)
+fn predict(@builtin(global_invocation_id) id:vec3u) {
+    let v=id.x;
+    if v>=config.moving {return;}
+    if positions[v].w>0.5 {return;}
+    let d=targets[v].xyz-balls[v].xyz;
+    let scale=min(1.0,balls[v].w/max(length(d),1e-20));
+    positions[v]=vec4f(balls[v].xyz+scale*d,positions[v].w);
+}
+
 // One 32-lane workgroup per vertex, rather than one serial invocation.
 // Coloring still prevents all inter-group energy dependencies. Reductions are
 // explicitly synchronized, portable to devices without subgroup extensions.

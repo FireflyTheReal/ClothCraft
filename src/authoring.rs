@@ -8,7 +8,7 @@ use crate::{
         seam::{BoundaryRef, SeamSpec},
         template::{Panel, Placement},
     },
-    model::Pattern,
+    model::{Pattern, State},
 };
 use glam::{DQuat, DVec2, DVec3, EulerRot};
 
@@ -54,6 +54,43 @@ pub struct Edit {
     pub garment: CompiledGarment,
     pub selected: Option<String>,
     pub reset_simulation: bool,
+}
+
+impl Edit {
+    /// Keep the drape of panels whose compiled rest geometry and arrangement
+    /// are unchanged. Match by panel ID and local indices, never global offsets.
+    /// New/remeshed/moved panels start from their new arrangement. Solver/contact
+    /// caches must still be rebuilt, even when all positions are preserved.
+    pub fn state_after(&self, previous: &CompiledGarment, state: &State) -> State {
+        let mut next = self.garment.initial_state.clone();
+        next.time = state.time;
+        if state.x.len() != previous.mesh.uv.len() || state.v.len() != state.x.len() {
+            return next;
+        }
+        for new in &self.garment.panels {
+            let Some(old) = previous.panels.iter().find(|p| p.id == new.id) else {
+                continue;
+            };
+            let a = old.vertices.clone();
+            let b = new.vertices.clone();
+            if previous.mesh.uv[a.clone()] != self.garment.mesh.uv[b.clone()]
+                || previous.initial_state.x[a.clone()] != self.garment.initial_state.x[b.clone()]
+                || previous.mesh.pins[a.clone()] != self.garment.mesh.pins[b.clone()]
+                || previous.mesh.masses[a.clone()] != self.garment.mesh.masses[b.clone()]
+                || !previous.mesh.triangles[old.triangles.clone()]
+                    .iter()
+                    .map(|t| t.vertices.map(|i| i - a.start))
+                    .eq(self.garment.mesh.triangles[new.triangles.clone()]
+                        .iter()
+                        .map(|t| t.vertices.map(|i| i - b.start)))
+            {
+                continue;
+            }
+            next.x[b.clone()].copy_from_slice(&state.x[a.clone()]);
+            next.v[b].copy_from_slice(&state.v[a]);
+        }
+        next
+    }
 }
 
 pub fn layout(template: &GarmentTemplate, index: usize) -> DVec2 {

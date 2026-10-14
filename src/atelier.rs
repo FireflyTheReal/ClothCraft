@@ -228,6 +228,8 @@ impl Atelier {
                 self.authoring.edge = None;
                 self.authoring.board.clear_preview();
                 self.authoring.preview = None;
+                self.authoring.preview_state = None;
+                self.authoring.error = None;
                 self.authoring.drag = None;
                 self.authoring.ends.clear();
                 self.authoring.selected = p.template.panels.first().map(|p| p.id.clone());
@@ -404,9 +406,11 @@ impl eframe::App for Atelier {
             }
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Space)) && !ctx.egui_wants_keyboard_input() {
-            self.commit_placement();
-            self.authoring.tool = Tool::Grab;
-            self.playing = !self.playing;
+            if self.playing {
+                self.playing = false;
+            } else if self.prepare_simulation() {
+                self.playing = true;
+            }
         }
         egui::Panel::top("toolbar").show(ui, |ui| {
             ui.horizontal(|ui| {
@@ -415,24 +419,26 @@ impl eframe::App for Atelier {
                     egui::RichText::new("CLOTHCRAFT").strong().size(18.),
                 );
                 ui.separator();
-                if ui
-                    .button(if self.playing {
-                        "⏸ Pause"
-                    } else {
-                        "▶ Simuler"
-                    })
-                    .clicked()
-                {
-                    self.commit_placement();
-                    self.authoring.tool = Tool::Grab;
-                    self.playing = !self.playing;
+                let play = ui.button(if self.playing {
+                    "⏸ Pause"
+                } else if self.authoring.ends.len() == 2 {
+                    "▶ Coudre et simuler"
+                } else {
+                    "▶ Simuler"
+                });
+                self.smoke_target("simulate", play.rect.center());
+                if play.clicked() {
+                    if self.playing {
+                        self.playing = false;
+                    } else if self.prepare_simulation() {
+                        self.playing = true;
+                    }
                 }
                 if ui
                     .add_enabled(!self.pending && !self.playing, egui::Button::new("Un pas"))
                     .clicked()
+                    && self.prepare_simulation()
                 {
-                    self.commit_placement();
-                    self.authoring.tool = Tool::Grab;
                     self.step(&ctx);
                 }
                 if ui.button("Réinitialiser").clicked() {

@@ -14,6 +14,12 @@ Implémentation Rust indépendante du contact normal décrit par Chen et al., **
 - `vbd.rs` : Euler implicite, même membrane anisotrope, flexion et coutures que la référence. Newton local 3×3, Hessienne exacte régularisée SPD, recherche locale décroissante. Coloration comprenant aussi les contacts et l'attachement souris : aucun élément partagé dans une couleur.
 - `gpu_vbd.rs`, `vbd.wgsl` : calcul des énergies, forces et itérations VBD sur GPU, Hessiennes locales positives approchées. Le gradient conserve les dérivées du filtre EE. Le mode `--check-gpu-gradients` compare énergies/forces GPU à l'AD f64 à géométrie identique arrondie en f32.
 
+## Prédiction et candidats conservatifs
+
+Le CPU et le GPU commencent maintenant le pas par la prédiction inertielle avec gravité et amortissement, tronquée aux **bornes de la détection initiale**. Cette prédiction collective évite qu'un panneau raide en chute libre soit presque immobilisé par le budget de huit itérations locales. Elle respecte les sommets fixés et les marges f32 du backend GPU ; les centres ne sont pas déplacés entre prédiction et solve. Les recherches énergétiques locales s'appliquent ensuite. Le test opt-in `tests/gpu_motion.rs` vérifie la chute libre analytique à deux résolutions, l'agrandissement des buffers et les bornes sous forte vitesse.
+
+La construction des candidats utilise une borne inférieure de distance entre AABB ; le calcul exact VF/EE reste dans la détection à chaque pas, y compris le premier. Cela peut retenir des faux positifs mais ne doit retirer aucune paire proche. `tests/ogc_bvh.rs` compare cette borne aux distances géométriques et `tests/ogc_cache.rs` compare les résultats mis en cache à une reconstruction fraîche.
+
 ## Coefficient du raccord logarithmique
 
 Le PDF affiche à l'équation 19 `k' = tau * k * (tau-r)^2`. Ce coefficient ne satisfait pas la continuité de la dérivée annoncée : `g'_quadratique(tau) = k*(tau-r)`, `g'_log(tau) = -k'/tau`. Le code utilise donc le coefficient **dérivé des conditions de raccord** `k' = k*tau*(r-tau)`. Avec `tau=r/2`, les deux dérivées secondes valent `k`. Le logarithme porte sur le rapport sans dimension `d/tau`. Des tests de différences finies et des deux côtés du raccord vérifient ce choix. À `d=r`, la loi est C1, pas C2 ; ne pas annoncer C2 partout.
