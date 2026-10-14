@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-14",
+  "baseline_commit": "66052f378ae0adc83e91570b3cfe0d2abf3d490f",
+  "hardware": {
+    "gpu": "NVIDIA RTX 3090",
+    "isolated_host": false,
+    "post_first_run_gpu_memory_used_mib": 13277,
+    "os": "Windows",
+    "cpu": "AMD Ryzen 7 2700X",
+    "post_first_run_gpu_utilization_percent": 34
+  },
+  "cpu_validation": {
+    "test_threads": 2,
+    "template_validations": 5,
+    "tests_passed": 80,
+    "jobs": 2,
+    "no_default_features_clippy": true,
+    "release_build": true,
+    "desktop_clippy": true
+  },
+  "visibility": {
+    "bvh_ms": 0.47126666666666667,
+    "equal_results": true,
+    "exhaustive_ms": 1851.4732666666666,
+    "hits": 251,
+    "rays": 4096,
+    "scope": "CPU avatar visibility only, identical rays and triangle predicate; not simulation FPS",
+    "speedup": 3928.7167916254066,
+    "triangles": 26756
+  },
+  "authoring": {
+    "anchor_edited": true,
+    "bezier_drawn": true,
+    "completed_pointer_actions": 41,
+    "expected_actions": 41,
+    "export_reload_compiles": true,
+    "fabric_applied_preserving_drape": true,
+    "handle_edited": true,
+    "layout_preserved_physics": true,
+    "new_panel_simulated": true,
+    "panels": 2,
+    "passed": true,
+    "pending_seam_committed_on_play": true,
+    "rectangle_drawn": true,
+    "redo_observed": true,
+    "rotated_with_gizmo": true,
+    "rotation_2d_preserved_physics": true,
+    "rotation_axes_xyz": [
+      true,
+      true,
+      true
+    ],
+    "seam_removed_preserving_drape": true,
+    "seams": 1,
+    "sewing_selected_in_2d_and_3d": true,
+    "status": "Simulation dynamique · contacts OGC",
+    "translated_with_gizmo": true,
+    "undo_observed": true
+  },
+  "native_capture_sizes": [
+    "1600x980",
+    "1100x700"
+  ],
+  "board_vertices": {
+    "after": 2454,
+    "before": 13710,
+    "triangles": 4570,
+    "unchanged_mesh": true
+  },
+  "realtime_fixture": {
+    "sha256": "93329f179f8f8001455b0a7760520eafe687b4bddd7bc3254fad03e2afa10b5a",
+    "dt": 0.016666666666666666,
+    "vertices": 2454,
+    "distributed": false,
+    "iterations": 16,
+    "path": "output/jitter-audit/ui-shirt-final/fitting-project.json",
+    "triangles": 4570
+  },
+  "realtime_first_polished": {
+    "passed": false,
+    "physics_steps_per_second": 42.65356859287886,
+    "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+    "simulated_seconds": 3.5666666666667464,
+    "simulation_speed": 0.7108928098813143,
+    "ui_frame_interval_p95_ms": 20.883300000000002,
+    "ui_frames_per_second": 59.994038067552566,
+    "wall_seconds": 5.0171652
+  },
+  "realtime_comparison_baseline": {
+    "passed": false,
+    "physics_steps_per_second": 45.24151174571393,
+    "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+    "simulated_seconds": 3.7833333333334203,
+    "simulation_speed": 0.7540251957618987,
+    "ui_frame_interval_p95_ms": 25.0527,
+    "ui_frames_per_second": 57.79752601875215,
+    "wall_seconds": 5.0175158
+  },
+  "realtime_comparison_polished": {
+    "passed": false,
+    "physics_steps_per_second": 51.45959455464207,
+    "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+    "simulated_seconds": 4.300000000000052,
+    "simulation_speed": 0.8576599092440345,
+    "ui_frame_interval_p95_ms": 20.9424,
+    "ui_frames_per_second": 59.238370475691895,
+    "wall_seconds": 5.0136423
+  },
+  "interpretation": "Short sequential native runs on a shared host. Both baseline and polished builds fail the physical realtime threshold. No controlled solver throughput improvement or universal realtime claim. CPU visibility equivalence and indexed board vertex reduction are separate from simulation performance."
+}

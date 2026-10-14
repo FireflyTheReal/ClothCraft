@@ -26,7 +26,10 @@ const COLORS: [Color32; 3] = [
     Color32::from_rgb(98, 160, 255),
 ];
 pub(super) fn project(camera: &Camera, rect: egui::Rect, p: DVec3) -> Option<egui::Pos2> {
-    let clip = camera.matrix(rect.width() / rect.height()) * p.as_vec3().extend(1.);
+    project_matrix(camera.matrix(rect.width() / rect.height()), rect, p)
+}
+pub(super) fn project_matrix(matrix: glam::Mat4, rect: egui::Rect, p: DVec3) -> Option<egui::Pos2> {
+    let clip = matrix * p.as_vec3().extend(1.);
     if clip.w <= 0. {
         return None;
     }
@@ -196,14 +199,7 @@ impl Atelier {
                     }
                 }
             }
-            if self.scene.collider.surface.triangles.iter().any(|t| {
-                picking::ray_triangle(
-                    origin,
-                    dir,
-                    t.map(|i| self.scene.collider.surface.vertices[i]),
-                )
-                .is_some_and(|(d, _)| d < best - 1e-5)
-            }) {
+            if self.scene.collider.occludes_ray(origin, dir, best - 1e-5) {
                 selected = None;
             }
             if let Some(id) = selected

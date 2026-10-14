@@ -153,19 +153,57 @@ impl Atelier {
     }
     pub(super) fn authoring_toolbar(&mut self, ui: &mut egui::Ui) {
         self.history_shortcuts(ui.ctx());
-        ui.horizontal(|ui| {
-            for (tool, label, rotate) in [
-                (Tool::Edit, "Modifier", false),
-                (Tool::Grab, "Saisir", false),
-                (Tool::Place, "Déplacer 3D", false),
-                (Tool::Place, "Tourner 3D", true),
-                (Tool::Draw, "Plume", false),
-                (Tool::Rectangle, "Rectangle", false),
-                (Tool::Sew, "Coudre", false),
+        ui.horizontal_wrapped(|ui| {
+            for (tool, label, rotate, help) in [
+                (
+                    Tool::Edit,
+                    "Modifier",
+                    false,
+                    "Sélection, points et poignées Bézier · rotation 2D avec la poignée ronde",
+                ),
+                (
+                    Tool::Draw,
+                    "Plume",
+                    false,
+                    "Cliquer pour un coin, cliquer-glisser pour une courbe",
+                ),
+                (
+                    Tool::Rectangle,
+                    "Rectangle",
+                    false,
+                    "Glisser entre deux coins pour créer du tissu",
+                ),
+                (
+                    Tool::Sew,
+                    "Coudre",
+                    false,
+                    "Choisir deux bords dans les vues 2D ou 3D",
+                ),
+                (
+                    Tool::Place,
+                    "Déplacer 3D",
+                    false,
+                    "G · déplacer l’arrangement à plat du panneau sélectionné",
+                ),
+                (
+                    Tool::Place,
+                    "Tourner 3D",
+                    true,
+                    "R · anneaux X/Y/Z · Maj pour 15°",
+                ),
+                (
+                    Tool::Grab,
+                    "Saisir",
+                    false,
+                    "Tirer le tissu simulé à la souris",
+                ),
             ] {
+                if tool == Tool::Sew || (tool == Tool::Place && !rotate) || tool == Tool::Grab {
+                    ui.separator();
+                }
                 let active = self.authoring.tool == tool
                     && (tool != Tool::Place || self.authoring.rotate == rotate);
-                let button = ui.selectable_label(active, label);
+                let button = ui.selectable_label(active, label).on_hover_text(help);
                 self.smoke_target(label, button.rect.center());
                 if button.clicked() {
                     self.set_authoring_tool(tool, rotate);
@@ -258,7 +296,7 @@ impl Atelier {
             .find(|p| Some(&p.id) == self.authoring.selected.as_ref())
             .cloned()
         else {
-            ui.small("Sélectionner un patron en 2D ou en 3D.");
+            ui.small("Sélectionner une pièce dans la liste ou dans une vue. Plume / Rectangle pour dessiner ; Coudre pour assembler.");
             return;
         };
         ui.label(&panel.name);

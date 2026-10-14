@@ -173,10 +173,14 @@ pub struct CompiledSeam {
     pub samples: Vec<StitchSample>,
     /// Endpoints of every linear interval; maxima occur here, not at Gauss nodes.
     pub probes: Vec<StitchPoint>,
+    /// Sparse display correspondences, derived from the same rest-arclength map.
+    /// These are transient attachments, never persisted or used by the solver.
+    pub guides: Vec<StitchGuide>,
     pub stiffness: f64,
     pub lengths: [f64; 2],
     pub notches: Vec<[f64; 2]>,
 }
+pub type StitchGuide = [[(usize, f64); 2]; 2];
 
 fn interpolate(knots: &[[f64; 2]], u: f64, from: usize) -> f64 {
     let i = knots
@@ -274,10 +278,17 @@ impl CompiledSeam {
             .iter()
             .map(|s| StitchPoint::new(&a, &b, *s, interpolate(&knots, *s, 0)))
             .collect();
+        let guides = (0..=8)
+            .map(|i| {
+                let t = i as f64 / 8.;
+                [a.point(t), b.point(interpolate(&knots, t, 0))]
+            })
+            .collect();
         Ok(Self {
             id: spec.id.clone(),
             samples,
             probes,
+            guides,
             stiffness: spec.stiffness,
             lengths: [a.length, b.length],
             notches: spec.notches.clone(),

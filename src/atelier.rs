@@ -22,10 +22,14 @@ mod fabrics_ui;
 mod gizmo;
 #[path = "atelier/perf.rs"]
 mod perf;
+#[path = "atelier/seam_links.rs"]
+mod seam_links;
 #[path = "atelier/seams_ui.rs"]
 mod seams_ui;
 #[path = "atelier/worker.rs"]
 mod worker;
+#[path = "atelier/workspace.rs"]
+mod workspace;
 use authoring_ui::{AuthoringUi, Tool};
 use worker::Work;
 fn camera() -> Camera {
@@ -48,10 +52,19 @@ pub fn run(
     let smoke_report = output.join("interaction.json");
     let authoring_report = output.join("authoring.json");
     let perf_report = output.join("ui-perf.json");
+    let smoke_size = (smoke || drag_test || perf_test || authoring_test)
+        .then(|| std::env::var("CLOTHCRAFT_SMOKE_SIZE").ok())
+        .flatten()
+        .and_then(|v| {
+            let (w, h) = v.split_once('x')?;
+            let (w, h) = (w.parse::<u32>().ok()?, h.parse::<u32>().ok()?);
+            ((1100..=3840).contains(&w) && (700..=2160).contains(&h))
+                .then_some([w as f32, h as f32])
+        });
     let options = eframe::NativeOptions {
         renderer: eframe::Renderer::Wgpu,
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([1600., 980.])
+            .with_inner_size(smoke_size.unwrap_or([1600., 980.]))
             .with_min_inner_size([1100., 700.]),
         ..Default::default()
     };
@@ -63,6 +76,7 @@ pub fn run(
             let mut visuals = egui::Visuals::dark();
             visuals.panel_fill = Color32::from_rgb(33, 34, 37);
             cc.egui_ctx.set_visuals(visuals);
+            workspace::style(&cc.egui_ctx);
             let (tx, receive) = worker::start(render.device.clone(), render.queue.clone())?;
             let m = project
                 .template
@@ -102,6 +116,7 @@ pub fn run(
                 wire: false,
                 heat: false,
                 seams: false,
+                seam_links: true,
                 gpu: true,
                 settings: VbdSettings {
                     dt: 1. / 60.,
@@ -172,6 +187,7 @@ struct Atelier {
     wire: bool,
     heat: bool,
     seams: bool,
+    seam_links: bool,
     gpu: bool,
     settings: VbdSettings,
     metrics: Option<VbdMetrics>,
@@ -317,19 +333,8 @@ impl Atelier {
                     picked = Some((t.vertices, w));
                 }
             }
-            if picked.is_some() {
-                for t in &self.scene.collider.surface.triangles {
-                    if picking::ray_triangle(
-                        origin,
-                        dir,
-                        t.map(|i| self.scene.collider.surface.vertices[i]),
-                    )
-                    .is_some_and(|(d, _)| d < best - 1e-5)
-                    {
-                        picked = None;
-                        break;
-                    }
-                }
+            if picked.is_some() && self.scene.collider.occludes_ray(origin, dir, best - 1e-5) {
+                picked = None;
             }
             if let Some((vertices, weights)) = picked {
                 let target = origin + best * dir;
@@ -418,11 +423,13 @@ impl eframe::App for Atelier {
             }
         }
         egui::Panel::top("toolbar").show(ui, |ui| {
-            ui.horizontal(|ui| {
+            ui.horizontal_wrapped(|ui| {
                 ui.colored_label(
-                    Color32::from_rgb(235, 194, 93),
+                    workspace::ACCENT,
                     egui::RichText::new("CLOTHCRAFT").strong().size(18.),
                 );
+                ui.label(egui::RichText::new("ALPHA").small().color(Color32::GRAY))
+                    .on_hover_text("Prototype de recherche · la plupart des fonctions de production restent à construire");
                 ui.separator();
                 let play = ui.button(if self.playing {
                     "⏸ Pause"
@@ -439,17 +446,14 @@ impl eframe::App for Atelier {
                         self.playing = true;
                     }
                 }
-                if ui
-                    .add_enabled(!self.pending && !self.playing, egui::Button::new("Un pas"))
-                    .clicked()
-                    && self.prepare_simulation()
-                {
-                    self.step(&ctx);
-                }
-                if ui.button("Réinitialiser").clicked() {
-                    self.reset();
-                }
-                let export_button = ui.button("Exporter");
+                ui.menu_button("Simulation", |ui| {
+                    if ui.add_enabled(!self.pending && !self.playing, egui::Button::new("Avancer d’un pas")).clicked()
+                        && self.prepare_simulation() { self.step(&ctx); ui.close(); }
+                    if ui.button("Rétablir l’arrangement à plat").on_hover_text("Réinitialise le drapé de toutes les pièces").clicked() {
+                        self.reset(); ui.close();
+                    }
+                });
+                let export_button = ui.button("Exporter").on_hover_text("Enregistrer le projet JSON, les patrons, le vêtement OBJ et les aperçus dans le dossier de la session.");
                 self.smoke_target("export", export_button.rect.center());
                 if export_button.clicked() {
                     self.export();
@@ -458,7 +462,8 @@ impl eframe::App for Atelier {
                 ui.menu_button("Affichage", |ui| {
                     ui.checkbox(&mut self.wire, "Maillage");
                     ui.checkbox(&mut self.heat, "Tension");
-                    ui.checkbox(&mut self.seams, "Coutures");
+                    ui.checkbox(&mut self.seam_links, "Liens de couture 2D + 3D");
+                    ui.checkbox(&mut self.seams, "Tous les échantillons de couture (diagnostic)");
                 });
                 ui.menu_button("Exemples", |ui| {
                     if ui.button("T-shirt").clicked() {
@@ -470,14 +475,19 @@ impl eframe::App for Atelier {
                         ui.close();
                     }
                 });
-                if self.pending {
-                    ui.spinner();
-                }
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.small(format!("{} pièces · {} coutures", self.project.template.panels.len(), self.project.template.seams.len()));
+                });
             });
         });
         egui::Panel::top("authoring-tools").show(ui, |ui| self.authoring_toolbar(ui));
         egui::Panel::bottom("status").show(ui, |ui| {
-            ui.label(&self.status);
+            ui.horizontal(|ui| {
+                ui.colored_label(if self.playing { workspace::ACCENT } else { Color32::GRAY },
+                    if self.playing { "Simulation" } else { "Pause" });
+                ui.separator();
+                ui.add(egui::Label::new(&self.status).truncate()).on_hover_text(&self.status);
+            });
             if let Some(m) = &self.metrics {
                 ui.small(format!(
                     "Coutures : écart max {:.1} mm · Allongement : 95 % de la surface ≤ {:.1} % (max {:.1} %) · Pas {:.1} ms",
@@ -486,12 +496,14 @@ impl eframe::App for Atelier {
             }
         });
         egui::Panel::right("properties")
-            .default_size(220.)
+            .default_size(290.)
+            .size_range(250.0..=420.0)
             .resizable(true)
             .show(ui, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    ui.strong("INSPECTEUR");
+                    ui.strong("OBJETS & PROPRIÉTÉS");
                     ui.separator();
+                    self.panel_browser(ui);
                     self.authoring_properties(ui);
                     ui.collapsing("Résolution du tissu", |ui| {
                         ui.add(egui::Slider::new(&mut self.mesh_mm, 8.0..=60.0).text("mm"));
@@ -531,16 +543,23 @@ impl eframe::App for Atelier {
                             ));
                         }
                     });
+                    self.export_information(ui);
                 });
             });
         egui::Panel::right("patterns")
-            .default_size(610.)
+            .default_size((ui.available_width() * 0.45).max(280.))
+            .size_range(260.0..=900.0)
             .resizable(true)
             .show(ui, |ui| {
                 self.patterns(ui);
             });
         egui::CentralPanel::default().show(ui, |ui| {
-            ui.strong("VÊTEMENT 3D");
+            ui.horizontal(|ui| {
+                ui.strong("VÊTEMENT 3D");
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if ui.small_button("Vue générale").on_hover_text("Recadrer le mannequin").clicked() { self.camera = camera(); }
+                });
+            });
             ui.small(match self.authoring.tool {
                 Tool::Sew=>"Cliquer les bords à coudre · droit : orbite · milieu : déplacer · molette : zoom",
                 Tool::Place=>"G : déplacer · R : tourner · anneaux X/Y/Z · Maj : 15° · Échap : annuler",
@@ -607,6 +626,7 @@ impl eframe::App for Atelier {
                 Color32::WHITE,
             );
             self.paint_edges_3d(ui, rect);
+            self.paint_seam_links(&ui.painter().with_clip_rect(rect), rect, true);
             self.paint_gizmo(ui, rect);
             if let Some(g) = &self.grab {
                 let clip = self.camera.matrix(rect.width() / rect.height())

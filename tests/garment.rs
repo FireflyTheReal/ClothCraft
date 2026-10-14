@@ -132,6 +132,44 @@ fn reversal_trimming_notches_and_explicit_ease() {
 }
 
 #[test]
+fn seam_display_guides_follow_trimming_reversal_and_notch_correspondence() {
+    for reverse in [false, true] {
+        let mut t = parallel(3, 7);
+        t.seams[0].a.range = [0.2, 0.8];
+        t.seams[0].b.range = [0.1, 0.7];
+        t.seams[0].notches = vec![[0.4, 0.6]];
+        t.seams[0].reverse_b = reverse;
+        t.seams[0].allow_ease = true;
+        let g = t.compile().unwrap();
+        let guides = &g.seams[0].guides;
+        assert_eq!(guides.len(), 9);
+        for (i, pair) in guides.iter().enumerate() {
+            let s = i as f64 / 8.;
+            let u = if s <= 0.4 {
+                s * 1.5
+            } else {
+                0.6 + (s - 0.4) * 2. / 3.
+            };
+            let point = |side: usize| {
+                pair[side]
+                    .iter()
+                    .map(|(v, w)| g.mesh.uv[*v] * *w)
+                    .sum::<glam::DVec2>()
+            };
+            close(point(0).y, 0.6 * (0.2 + 0.6 * s), 1e-13);
+            close(
+                point(1).y,
+                0.6 * (1. - (0.1 + 0.6 * if reverse { 1. - u } else { u })),
+                1e-13,
+            );
+            for side in pair {
+                close(side.iter().map(|(_, w)| w).sum(), 1., 1e-14);
+            }
+        }
+    }
+}
+
+#[test]
 fn partial_edges_and_ease_keep_original_rest_patterns() {
     let mut t = parallel(3, 7);
     t.seams[0].a.range = [0.2, 0.8];

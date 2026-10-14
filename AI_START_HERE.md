@@ -21,7 +21,7 @@ If you want to vibe-code a better solver: welcome. A convincing contribution inc
 | Pattern authoring | `src/authoring.rs`, `src/atelier/board.rs` | Extend Bézier editing to dimensions, holes and multi-selection; preserve named boundaries |
 | Placement tools | `src/atelier/gizmo.rs` | Arrangement points and collision diagnostics before simulation |
 | Sewing | `src/garment/seam.rs`, `src/atelier/edges_3d.rs` | Extend linked 2D/3D sewing to interactive partial boundaries, notches and direction preview |
-| Interoperability | [format roadmap](ROADMAP.md#interoperability) | Small, independently sourced fixtures with units, transforms and round-trip tests |
+| Interoperability | [input/output contracts](docs/interoperability.md), [format roadmap](ROADMAP.md#interoperability) | Small, independently sourced fixtures with units, transforms and round-trip tests |
 | Faster contact | `src/ogc/`, `tests/ogc_cache.rs` | GPU broad phase with conservative coverage and explicit overflow handling |
 | Better physics | `src/energy.rs`, `src/vbd.rs`, `src/solver.rs` | Friction or an alternative backend evaluated on the same physical scenes |
 | Fabric calibration | `src/fabrics.rs`, [fabric evidence](docs/fabrics.md) | Replace estimated mechanical presets with measured directional curves and validate the model fit |

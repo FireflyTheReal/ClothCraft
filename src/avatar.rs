@@ -106,6 +106,28 @@ struct Node {
     children: Option<[usize; 2]>,
 }
 impl Node {
+    fn intersects_ray(&self, origin: DVec3, direction: DVec3, max_t: f64) -> bool {
+        let (mut near, mut far) = (0_f64, max_t);
+        for axis in 0..3 {
+            // Inclusive slabs keep silhouette and zero-thickness triangle boxes.
+            let pad = 1e-10 * self.min[axis].abs().max(self.max[axis].abs()).max(1.);
+            let (lo, hi) = (self.min[axis] - pad, self.max[axis] + pad);
+            if direction[axis] == 0. {
+                if origin[axis] < lo || origin[axis] > hi {
+                    return false;
+                }
+            } else {
+                let a = (lo - origin[axis]) / direction[axis];
+                let b = (hi - origin[axis]) / direction[axis];
+                near = near.max(a.min(b));
+                far = far.min(a.max(b));
+                if near > far {
+                    return false;
+                }
+            }
+        }
+        true
+    }
     fn distance2(&self, p: DVec3) -> f64 {
         (self.min - p)
             .max(p - self.max)
@@ -328,6 +350,38 @@ impl MeshCollider {
     }
     pub fn signed_distance(&self, p: DVec3) -> f64 {
         self.differential(p).0
+    }
+    /// Visibility query on the original surface, not its collision envelope.
+    /// `max_t` is a ray parameter (metres for a unit direction), strictly exclusive.
+    pub fn occludes_ray(&self, origin: DVec3, direction: DVec3, max_t: f64) -> bool {
+        if !origin.is_finite()
+            || !direction.is_finite()
+            || direction == DVec3::ZERO
+            || max_t.is_nan()
+            || max_t <= 0.
+        {
+            return false;
+        }
+        self.occludes_node(0, origin, direction, max_t)
+    }
+    fn occludes_node(&self, index: usize, origin: DVec3, direction: DVec3, max_t: f64) -> bool {
+        let node = &self.nodes[index];
+        if !node.intersects_ray(origin, direction, max_t) {
+            return false;
+        }
+        if let Some([a, b]) = node.children {
+            self.occludes_node(a, origin, direction, max_t)
+                || self.occludes_node(b, origin, direction, max_t)
+        } else {
+            self.order[node.start..node.end].iter().any(|&i| {
+                crate::picking::ray_triangle(
+                    origin,
+                    direction,
+                    self.surface.triangles[i].map(|v| self.surface.vertices[v]),
+                )
+                .is_some_and(|(t, _)| t < max_t)
+            })
+        }
     }
     /// Extreme intersections of a line parallel to Z, for initial front/back
     /// arrangement only. This is not a time-stepping collision projection.

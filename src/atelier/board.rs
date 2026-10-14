@@ -43,7 +43,7 @@ impl Board {
         self.layout = None;
         self.rotation = None;
     }
-    fn screen(&self, rect: egui::Rect, p: DVec2) -> egui::Pos2 {
+    pub(super) fn screen(&self, rect: egui::Rect, p: DVec2) -> egui::Pos2 {
         rect.center()
             + Vec2::new((p.x - self.center.x) as f32, (p.y - self.center.y) as f32) * self.scale
     }
@@ -113,7 +113,7 @@ pub(super) fn same_edge(a: &BoundaryRef, b: &BoundaryRef) -> bool {
     a.panel == b.panel && a.edge == b.edge && (a.edge.is_some() || a.side == b.side)
 }
 impl Atelier {
-    fn board_angle(&self, i: usize) -> f64 {
+    pub(super) fn board_angle(&self, i: usize) -> f64 {
         let panel = &self.project.template.panels[i];
         self.authoring
             .board
@@ -130,7 +130,7 @@ impl Atelier {
             -32. / self.authoring.board.scale as f64,
         )
     }
-    fn board_origin(&self, i: usize) -> DVec2 {
+    pub(super) fn board_origin(&self, i: usize) -> DVec2 {
         let p = &self.project.template.panels[i];
         self.authoring
             .board
@@ -687,19 +687,22 @@ impl Atelier {
                 let range = &self.scene.garment.panels[i];
                 let mut mesh = egui::Mesh::default();
                 let mut wire = Vec::new();
+                // Transform each material vertex once; indices are shared by its triangles.
+                mesh.vertices.reserve(range.vertices.len());
+                mesh.indices.reserve(range.triangles.len() * 3);
+                for &uv in &self.scene.garment.mesh.uv[range.vertices.clone()] {
+                    mesh.colored_vertex(
+                        point(uv),
+                        if selected {
+                            Color32::from_rgb(221, 234, 240)
+                        } else {
+                            Color32::from_gray(193)
+                        },
+                    );
+                }
                 for tri in &self.scene.garment.mesh.triangles[range.triangles.clone()] {
-                    let index = mesh.vertices.len() as u32;
-                    for uv in tri.rest {
-                        mesh.colored_vertex(
-                            point(uv),
-                            if selected {
-                                Color32::from_rgb(221, 234, 240)
-                            } else {
-                                Color32::from_gray(193)
-                            },
-                        );
-                    }
-                    mesh.add_triangle(index, index + 1, index + 2);
+                    let [a, b, c] = tri.vertices.map(|v| (v - range.vertices.start) as u32);
+                    mesh.add_triangle(a, b, c);
                     if self.wire {
                         for k in 0..3 {
                             wire.push(egui::Shape::line_segment(
@@ -754,13 +757,13 @@ impl Atelier {
                         .template
                         .seams
                         .iter()
-                        .any(|s| same_edge(&s.a, &edge) || same_edge(&s.b, &edge));
+                        .find(|s| same_edge(&s.a, &edge) || same_edge(&s.b, &edge));
                     let color = if end.is_some() {
                         Color32::from_rgb(248, 117, 188)
                     } else if active || hover {
                         Color32::GOLD
-                    } else if sewn {
-                        Color32::from_rgb(230, 153, 77)
+                    } else if let Some(seam) = sewn {
+                        super::seam_links::seam_color(&seam.id)
                     } else {
                         Color32::from_rgb(79, 155, 195)
                     };
@@ -831,6 +834,7 @@ impl Atelier {
                 );
             }
         }
+        self.paint_seam_links(&painter, rect, false);
         let point = |uv| board.screen(rect, uv);
         for k in 0..self.authoring.draft.len().saturating_sub(1) {
             let p = [

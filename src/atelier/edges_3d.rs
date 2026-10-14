@@ -2,23 +2,12 @@
 use super::{
     authoring_ui::{Tool, segment_distance},
     board::same_edge,
-    gizmo::project,
+    gizmo::project_matrix,
     *,
 };
-use glam::DVec3;
 use marvelous_cloth::garment::seam::{BoundaryRef, Side};
 
 impl Atelier {
-    fn edge_world(&self, edge: &BoundaryRef) -> Option<Vec<DVec3>> {
-        let panel = self
-            .scene
-            .garment
-            .panels
-            .iter()
-            .find(|p| p.id == edge.panel)?;
-        let ids = panel.boundaries.get(edge.edge.as_ref()?)?;
-        Some(ids.iter().map(|i| self.scene.state.x[*i]).collect())
-    }
     pub(super) fn edge_interaction(&mut self, response: &egui::Response, rect: egui::Rect) {
         if !matches!(self.authoring.tool, Tool::Edit | Tool::Sew) {
             return;
@@ -28,15 +17,13 @@ impl Atelier {
         };
         let mut hits = vec![];
         let matrix = self.camera.matrix(rect.width() / rect.height());
+        let project = |p| project_matrix(matrix, rect, p);
         for panel in &self.scene.garment.panels {
             for (name, ids) in &panel.boundaries {
                 for segment in ids.windows(2) {
                     let a = self.scene.state.x[segment[0]];
                     let b = self.scene.state.x[segment[1]];
-                    let (Some(pa), Some(pb)) = (
-                        project(&self.camera, rect, a),
-                        project(&self.camera, rect, b),
-                    ) else {
+                    let (Some(pa), Some(pb)) = (project(a), project(b)) else {
                         continue;
                     };
                     let distance = segment_distance(pointer, pa, pb);
@@ -57,19 +44,15 @@ impl Atelier {
         // Check visibility along the candidate's own ray, so the click tolerance
         // does not accidentally reject silhouettes. Never pick through the body.
         for (_, world, panel, name) in hits {
-            let Some(screen) = project(&self.camera, rect, world) else {
+            let Some(screen) = project(world) else {
                 continue;
             };
             let (origin, dir) = self.camera.ray(screen, rect);
             let distance = world.distance(origin);
-            let avatar_blocked = self.scene.collider.surface.triangles.iter().any(|t| {
-                picking::ray_triangle(
-                    origin,
-                    dir,
-                    t.map(|i| self.scene.collider.surface.vertices[i]),
-                )
-                .is_some_and(|(d, _)| d < distance - 0.0001)
-            });
+            let avatar_blocked = self
+                .scene
+                .collider
+                .occludes_ray(origin, dir, distance - 0.0001);
             if avatar_blocked {
                 continue;
             }
@@ -109,16 +92,7 @@ impl Atelier {
                     }
                 }
             }
-            if selected.is_some()
-                && !self.scene.collider.surface.triangles.iter().any(|t| {
-                    picking::ray_triangle(
-                        origin,
-                        dir,
-                        t.map(|i| self.scene.collider.surface.vertices[i]),
-                    )
-                    .is_some_and(|(d, _)| d < best - 0.0001)
-                })
-            {
+            if selected.is_some() && !self.scene.collider.occludes_ray(origin, dir, best - 0.0001) {
                 self.cancel_preview();
                 self.authoring.selected = selected;
                 self.authoring.edge = None;
@@ -127,6 +101,8 @@ impl Atelier {
     }
     pub(super) fn paint_edges_3d(&mut self, ui: &egui::Ui, rect: egui::Rect) {
         let painter = ui.painter().with_clip_rect(rect);
+        let matrix = self.camera.matrix(rect.width() / rect.height());
+        let project = |p| project_matrix(matrix, rect, p);
         let show = matches!(self.authoring.tool, Tool::Edit | Tool::Sew);
         for panel in &self.scene.garment.panels {
             for (name, ids) in &panel.boundaries {
@@ -152,13 +128,21 @@ impl Atelier {
                     Color32::from_rgb(248, 117, 188)
                 } else if active || hover || selected {
                     Color32::GOLD
+                } else if let Some(s) = self
+                    .project
+                    .template
+                    .seams
+                    .iter()
+                    .find(|s| same_edge(&edge, &s.a) || same_edge(&edge, &s.b))
+                {
+                    super::seam_links::seam_color(&s.id)
                 } else {
                     Color32::from_rgb(81, 166, 206)
                 };
                 for pair in ids.windows(2) {
                     if let (Some(a), Some(b)) = (
-                        project(&self.camera, rect, self.scene.state.x[pair[0]]),
-                        project(&self.camera, rect, self.scene.state.x[pair[1]]),
+                        project(self.scene.state.x[pair[0]]),
+                        project(self.scene.state.x[pair[1]]),
                     ) {
                         painter.line_segment(
                             [a, b],
@@ -175,7 +159,7 @@ impl Atelier {
                 }
                 if let Some(n) = endpoint {
                     for (id, k) in [(ids[0], 0), (ids[ids.len() - 1], 1)] {
-                        if let Some(p) = project(&self.camera, rect, self.scene.state.x[id]) {
+                        if let Some(p) = project(self.scene.state.x[id]) {
                             let k = if n == 1 && self.authoring.reverse {
                                 1 - k
                             } else {
@@ -196,27 +180,9 @@ impl Atelier {
                     && let Some(smoke) = &mut self.authoring_smoke
                 {
                     let mid = ids[ids.len() / 2];
-                    if let Some(p) = project(&self.camera, rect, self.scene.state.x[mid]) {
+                    if let Some(p) = project(self.scene.state.x[mid]) {
                         smoke.target(&format!("edge3d_{}", panel.id), p);
                     }
-                }
-            }
-        }
-        if self.authoring.ends.len() == 2
-            && let (Some(a), Some(mut b)) = (
-                self.edge_world(&self.authoring.ends[0]),
-                self.edge_world(&self.authoring.ends[1]),
-            )
-        {
-            if self.authoring.reverse {
-                b.reverse();
-            }
-            for (a, b) in [(a[0], b[0]), (a[a.len() - 1], b[b.len() - 1])] {
-                if let (Some(a), Some(b)) = (
-                    project(&self.camera, rect, a),
-                    project(&self.camera, rect, b),
-                ) {
-                    painter.line_segment([a, b], Stroke::new(1., Color32::from_rgb(248, 117, 188)));
                 }
             }
         }

@@ -35,7 +35,7 @@ impl Atelier {
         let selected = self.edge_seams();
         let mut remove = None;
         for id in &selected {
-            ui.colored_label(Color32::GOLD, format!("Couture : {id}"));
+            ui.colored_label(super::seam_links::seam_color(id), format!("Couture : {id}"));
             let button = ui.button("Supprimer la couture").on_hover_text("Libérer les deux bords sans supprimer le tissu. Raccourci : Suppr. Annuler : Ctrl+Z.");
             self.smoke_target("remove_seam", button.rect.center());
             if button.clicked() {
@@ -55,6 +55,13 @@ impl Atelier {
             }
             for seam in &self.project.template.seams {
                 ui.horizontal(|ui| {
+                    let (swatch, _) =
+                        ui.allocate_exact_size(Vec2::splat(10.), egui::Sense::hover());
+                    ui.painter().circle_filled(
+                        swatch.center(),
+                        3.5,
+                        super::seam_links::seam_color(&seam.id),
+                    );
                     if ui
                         .selectable_label(selected.contains(&seam.id), &seam.id)
                         .clicked()

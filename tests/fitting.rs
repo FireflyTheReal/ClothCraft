@@ -53,6 +53,45 @@ fn avatar_bvh_distance_matches_analytic_box_inside_and_outside() {
     assert!(c.z_bounds(2.0, 0.0).is_none());
 }
 #[test]
+fn avatar_ray_bvh_matches_exhaustive_visibility_including_parallel_and_boundary_rays() {
+    let surface = cube();
+    let collider = MeshCollider::new(surface.clone(), 1000.).unwrap();
+    for i in 0..600 {
+        let origin = DVec3::new(
+            (i as f64 * 1.23).sin(),
+            (i as f64 * 2.47).cos(),
+            (i as f64 * 3.31).sin(),
+        ) * 2.;
+        for direction in [
+            DVec3::X,
+            -DVec3::Y,
+            DVec3::Z,
+            -origin,
+            DVec3::new(1e-16, 0., -1.),
+        ] {
+            for max_t in [0.1, 1., 3., f64::INFINITY] {
+                let expected = surface.triangles.iter().any(|tri| {
+                    marvelous_cloth::picking::ray_triangle(
+                        origin,
+                        direction,
+                        tri.map(|v| surface.vertices[v]),
+                    )
+                    .is_some_and(|(t, _)| t < max_t)
+                });
+                assert_eq!(
+                    collider.occludes_ray(origin, direction, max_t),
+                    expected,
+                    "{origin:?} {direction:?} {max_t}"
+                );
+            }
+        }
+    }
+    assert!(!collider.occludes_ray(DVec3::new(1., 1., 2.), -DVec3::Z, 1.));
+    assert!(collider.occludes_ray(DVec3::new(1., 1., 2.), -DVec3::Z, 1.001));
+    assert!(!collider.occludes_ray(DVec3::ZERO, DVec3::ZERO, 3.));
+    assert!(!collider.occludes_ray(DVec3::NAN, DVec3::X, 3.));
+}
+#[test]
 fn avatar_contact_derivatives_cover_face_edge_and_vertex_regions() {
     let c = MeshCollider::new(cube(), 1000.0).unwrap();
     let eps = 1e-7;
