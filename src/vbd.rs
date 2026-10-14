@@ -12,6 +12,7 @@ use glam::{DMat3, DVec3};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, sync::Arc, time::Instant};
+mod prediction;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VbdSettings {
@@ -25,7 +26,7 @@ impl Default for VbdSettings {
     fn default() -> Self {
         Self {
             dt: 1.0 / 240.0,
-            iterations: 8,
+            iterations: 16,
             damping: 1.5,
             gravity: DVec3::new(0.0, -9.81, 0.0),
             contact: Default::default(),
@@ -73,6 +74,8 @@ pub struct VbdMetrics {
     pub truncated_vertices: usize,
     pub minimum_distance_m: f64,
     pub max_seam_gap_m: f64,
+    pub extension_p95_percent: f64,
+    pub extension_max_percent: f64,
     pub residual_rms_n: Option<f64>,
 }
 #[derive(Clone)]
@@ -82,6 +85,7 @@ struct Stitch {
 }
 #[derive(Clone)]
 pub struct VbdSolver {
+    pub(crate) prediction: prediction::Prediction,
     pub garment: Arc<CompiledGarment>,
     pub world: OgcWorld,
     triangles: Vec<Vec<usize>>,
@@ -170,6 +174,7 @@ impl VbdSolver {
             connect(&ids);
         }
         Ok(Self {
+            prediction: Default::default(),
             garment,
             world,
             triangles,
@@ -305,6 +310,8 @@ impl VbdSolver {
             ..Default::default()
         };
         let dt = settings.dt;
+        let old_velocity = state.v.clone();
+        let guess = self.prediction.guess(state, settings);
         let damp = 1.0 + settings.damping * dt;
         let target: Vec<_> = state
             .x
@@ -341,7 +348,7 @@ impl VbdSolver {
         let mut clipped = 0;
         for i in 0..n {
             if self.garment.mesh.pins[i].is_none() {
-                let (p, b) = contacts.truncate(i, target[i]);
+                let (p, b) = contacts.truncate(i, guess[i]);
                 x[i] = p;
                 clipped += usize::from(b);
             }
@@ -432,10 +439,13 @@ impl VbdSolver {
             state.x[i] = *position;
         }
         state.time += dt;
+        self.prediction.record(&old_velocity, state, settings);
         metrics.time_s = state.time;
         metrics.contacts = contacts.contacts.len();
         metrics.minimum_distance_m = contacts.minimum_distance;
         metrics.max_seam_gap_m = self.garment.max_seam_gap(&state.x);
+        [metrics.extension_p95_percent, metrics.extension_max_percent] =
+            crate::garment::diagnostics::extension_percent(&self.garment, state);
         metrics.step_ms = start.elapsed().as_secs_f64() * 1000.0;
         metrics.solve_ms = metrics.step_ms - metrics.detection_ms;
         Ok(metrics)

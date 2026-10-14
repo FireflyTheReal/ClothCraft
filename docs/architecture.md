@@ -48,6 +48,8 @@ Le chemin courant de `cloth-fit` passe par `VbdSolver` + `OgcWorld`, ou `GpuVbd:
 | `editor.rs`, `render.rs` | Interface et affichage | restent consommateurs du modèle CPU |
 | `ogc/` | Régions admissibles, VF/EE, barrières et bornes | topologie + positions → contacts + rayons conservatifs |
 | `vbd.rs` | Euler implicite par blocs de sommets, coloration avec contacts | mêmes énergies FEM/coutures, référence f64 |
+| `vbd/prediction.rs` | Initialisation adaptative CPU/GPU, historique de pas acceptés | vitesses/accélération précédente → estimation initiale, cible inertielle inchangée |
+| `garment/diagnostics.rs` | Mesure d'allongement indépendante du rendu | repos matériel + état → percentile par aire et maximum |
 | `gpu_vbd.rs`, `vbd.wgsl` | Solve local f32, gradients exacts, Hessiennes positives approchées | candidats/bornes CPU → compute GPU → état validé |
 | `picking.rs` | Rayons et attachement barycentrique | souris → force de saisie, sans téléportation |
 | `bin/cloth-fit.rs`, `atelier.rs`, `gpu_bench.rs` | CLI, atelier et mesure du rendu | projets / rapports / captures opt-in |
@@ -63,6 +65,8 @@ Le chemin courant de `cloth-fit` passe par `VbdSolver` + `OgcWorld`, ou `GpuVbd:
 **Référence Newton.** Ses deux API entrent dans le même `Problem` privé. Matériaux, inertie, gravité, damping, contacts et coutures sont assemblés ensemble. Les contraintes fixées éliminent les DOF correspondants. Les erreurs conservent l'état précédent ; atteindre le budget d'itérations produit un état avec `converged=false`. Les métriques de couture sont ajoutées, pas substituées aux résidus.
 
 **VBD/OGC.** Les mêmes énergies sont minimisées par blocs de sommets. La coloration inclut toutes les dépendances des éléments, contacts et saisies. Les centres des bornes ne changent qu'à une nouvelle détection ; les propositions locales sont tronquées puis contrôlées énergétiquement. Le backend GPU f32 vérifie les résultats et les bornes avant de modifier `State`. Le budget fixe ne signifie pas convergence. Les réglages VBD de la CLI sont enregistrés dans `run.json` ; `FittingProject.solver` conserve les réglages du Newton historique.
+
+L'initialisation adaptative conserve un historique de l'état accepté dans `VbdSolver`, partagé par les chemins CPU/GPU. Il n'appartient pas aux fichiers d'édition ; une reconstruction ou un état extérieur différent l'invalide. L'accélération corrigée de l'amortissement choisit seulement le point de départ du solveur ; la gravité reste entière dans l'objectif. Voir [le diagnostic de fausse élasticité](adaptive-initialization.md). Le budget par défaut est 16 itérations depuis cette correction.
 
 **Attachements.** `MaterialPath` garde un ID de panneau et des points 2D. `embed_path` scinde les segments aux traversées de triangles avant interpolation barycentrique : un guide suit donc un pli au lieu de traverser l'espace entre ses extrémités. Les `EmbeddedPoint` sont des caches à reconstruire après remeshing ; ils ne détectent pas automatiquement un autre maillage de même taille. La recherche actuelle parcourt les triangles, adaptée aux petits patrons ; un index spatial pourra la remplacer.
 

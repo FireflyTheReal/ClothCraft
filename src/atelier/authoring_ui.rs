@@ -207,6 +207,14 @@ impl Atelier {
         if ctx.egui_wants_keyboard_input() {
             return;
         }
+        if matches!(self.authoring.tool, Tool::Edit | Tool::Sew)
+            && ctx.input(|i| i.key_pressed(egui::Key::Delete))
+        {
+            let seams = self.edge_seams();
+            if seams.len() == 1 {
+                self.remove_seam(seams[0].clone());
+            }
+        }
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Z)) {
             if self.authoring.tool == Tool::Draw && !self.authoring.draft.is_empty() {
                 self.authoring.draft.pop();
@@ -217,6 +225,7 @@ impl Atelier {
         }
     }
     pub(super) fn authoring_properties(&mut self, ui: &mut egui::Ui) {
+        self.existing_seams(ui);
         if self.authoring.tool == Tool::Sew || !self.authoring.ends.is_empty() {
             self.sewing_controls(ui);
         }
@@ -251,7 +260,7 @@ impl Atelier {
                     panel: panel.id.clone(),
                 });
             }
-            if ui.button("Supprimer").clicked() {
+            if ui.button("Supprimer le panneau").clicked() {
                 self.edit(Command::RemovePanel {
                     panel: panel.id.clone(),
                 });
@@ -393,21 +402,6 @@ impl Atelier {
             }
             if ui.button("Effacer sélection").clicked() {
                 self.authoring.ends.clear();
-            }
-        });
-        ui.collapsing("Coutures existantes", |ui| {
-            let mut remove = None;
-            for seam in &self.project.template.seams {
-                ui.horizontal(|ui| {
-                    if ui.small_button("×").clicked() {
-                        remove = Some(seam.id.clone());
-                    }
-                    ui.label(&seam.id)
-                        .on_hover_text(format!("{} ↔ {}", seam.a.panel, seam.b.panel));
-                });
-            }
-            if let Some(seam) = remove {
-                self.edit(Command::RemoveSeam { seam });
             }
         });
         ui.separator();

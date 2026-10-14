@@ -2,7 +2,7 @@
 use super::*;
 use std::{collections::BTreeMap, time::Instant};
 
-const ACTIONS: [(&str, Vec2); 35] = [
+const ACTIONS: [(&str, Vec2); 37] = [
     ("Plume", Vec2::ZERO),
     ("replace", Vec2::ZERO),
     ("Rectangle", Vec2::ZERO),
@@ -28,6 +28,8 @@ const ACTIONS: [(&str, Vec2); 35] = [
     ("simulate", Vec2::ZERO),
     ("undo", Vec2::ZERO),
     ("redo", Vec2::ZERO),
+    ("remove_seam", Vec2::ZERO),
+    ("undo", Vec2::ZERO),
     ("Placer 3D", Vec2::ZERO),
     ("focus", Vec2::ZERO),
     ("turn", Vec2::ZERO),
@@ -62,6 +64,8 @@ pub(super) struct Smoke {
     layout_preserved_physics: bool,
     fabric_before: Option<(Vec<glam::DVec3>, Vec<f64>)>,
     fabric_applied: bool,
+    seam_before: Option<Vec<glam::DVec3>>,
+    seam_removed: bool,
 }
 impl Smoke {
     pub fn new() -> Self {
@@ -85,6 +89,8 @@ impl Smoke {
             layout_preserved_physics: false,
             fabric_before: None,
             fabric_applied: false,
+            seam_before: None,
+            seam_removed: false,
         }
     }
     pub fn target(&mut self, name: &str, p: egui::Pos2) {
@@ -133,6 +139,15 @@ impl Atelier {
             return;
         };
         let key = ACTIONS.get(smoke.action).map(|a| a.0);
+        if key == Some("remove_seam") && smoke.seam_before.is_none() {
+            smoke.seam_before = Some(self.scene.state.x.clone());
+        }
+        if key == Some("undo")
+            && let Some(before) = &smoke.seam_before
+        {
+            smoke.seam_removed |=
+                self.project.template.seams.is_empty() && self.scene.state.x == *before;
+        }
         let panel = &self.project.template.panels[0];
         let poly = panel.polygon.as_ref();
         if smoke.action == 4 {
@@ -212,7 +227,7 @@ impl Atelier {
             return;
         }
         smoke.finished = true;
-        let complete = smoke.action == ACTIONS.len() && smoke.fabric_applied;
+        let complete = smoke.action == ACTIONS.len() && smoke.fabric_applied && smoke.seam_removed;
         let moved = self.project.template.panels.first().is_some_and(|p| {
             smoke
                 .translation_before
@@ -232,7 +247,7 @@ impl Atelier {
             .and_then(|p| p.compile().map(|_| p))
             .is_ok_and(|p| p.template.panels.len() == 2 && p.template.seams.len() == 1);
         let report = serde_json::json!({"passed":complete&&simulated&&moved&&curved&&smoke.rectangle_drawn&&smoke.handle_edited&&smoke.anchor_edited&&smoke.layout_preserved_physics&&smoke.mixed_sewing&&rotated&&exported&&smoke.undo_observed&&smoke.redo_observed&&self.project.template.seams.len()==1,
-            "fabric_applied_preserving_drape":smoke.fabric_applied,"new_panel_simulated":simulated,"pending_seam_committed_on_play":smoke.mixed_sewing&&smoke.undo_observed,"completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
+            "seam_removed_preserving_drape":smoke.seam_removed,"fabric_applied_preserving_drape":smoke.fabric_applied,"new_panel_simulated":simulated,"pending_seam_committed_on_play":smoke.mixed_sewing&&smoke.undo_observed,"completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
             "export_reload_compiles":exported,"undo_observed":smoke.undo_observed,"redo_observed":smoke.redo_observed,"panels":self.project.template.panels.len(),"seams":self.project.template.seams.len(),"status":self.status});
         if let Err(e) = std::fs::write(
             self.output.join("authoring.json"),

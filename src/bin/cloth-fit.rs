@@ -56,7 +56,7 @@ struct Args {
     #[arg(long)]
     reference: bool,
     /// VBD local iterations per physical time step.
-    #[arg(long, default_value_t = 8)]
+    #[arg(long, default_value_t = 16)]
     iterations: usize,
     /// Physical time step in seconds; independent of rendering rate.
     #[arg(long, default_value_t = 1.0 / 60.0)]

@@ -151,6 +151,8 @@ impl GpuVbd {
             return Err("Invalid GPU mouse attachment".into());
         }
         let dt = settings.dt;
+        let old_velocity = state.v.clone();
+        let guess = solver.prediction.guess(state, settings);
         let damp = 1. + settings.damping * dt;
         let motion = state
             .v
@@ -262,6 +264,10 @@ impl GpuVbd {
                     p.y as f32,
                     p.z as f32,
                     (contacts.radii[i] - roundoff).max(0.) as f32,
+                    guess[i].x as f32,
+                    guess[i].y as f32,
+                    guess[i].z as f32,
+                    0.,
                 ]
             })
             .collect();
@@ -439,6 +445,9 @@ impl GpuVbd {
             }
         }
         state.time += dt;
+        solver.prediction.record(&old_velocity, state, settings);
+        let [extension_p95_percent, extension_max_percent] =
+            crate::garment::diagnostics::extension_percent(g, state);
         let step_ms = start.elapsed().as_secs_f64() * 1000.;
         Ok(VbdMetrics {
             time_s: state.time,
@@ -454,6 +463,8 @@ impl GpuVbd {
             broad_phase_rebuilds: usize::from(contacts.broad_phase_rebuilt),
             minimum_distance_m: contacts.minimum_distance,
             max_seam_gap_m: g.max_seam_gap(&state.x),
+            extension_p95_percent,
+            extension_max_percent,
             ..Default::default()
         })
     }

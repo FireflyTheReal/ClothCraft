@@ -6,7 +6,7 @@ A native Rust garment lab: pattern authoring, 3D placement and cloth simulation,
 
 **Start here:** [AI contributor welcome](AI_START_HERE.md) · [Product & format roadmap](ROADMAP.md) · [Draw / sew / arrange guide](docs/authoring.md) · [Solver challenge](docs/solver-challenge.md) · [Contributing](CONTRIBUTING.md)
 
-Current fabric, motion/sewing regression checks and measured window cadence: [performance and fabric validation](docs/perf-fabrics-validation.md). Earlier drawing checks: [board validation](docs/board-validation.md).
+Current physical correction and seam deletion: [adaptive initialization and validation](docs/adaptive-initialization.md). Earlier fabric/performance checks: [performance and fabric validation](docs/perf-fabrics-validation.md). Earlier drawing checks: [board validation](docs/board-validation.md).
 
 Current authoring: one unified 2D board, rectangle/pen drawing with Bézier handles, editable anchors, linked 2D/3D boundary selection and sewing, rigid placement gizmos, duplicate/delete and undo/redo. Current physics: CPU reference Newton and CPU/hybrid GPU VBD with OGC contact. No common backend plugin API yet. OBJ and preview SVG are partial exchange paths; DXF, glTF, Alembic, USD and the other requested formats are tracked in the roadmap, not advertised as implemented.
 
@@ -32,7 +32,7 @@ cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view --output o
 
 **Simuler / Espace** assemble les panneaux et fait évoluer le tissu. **Bouton gauche** : saisir le tissu ; **droit** : orbite ; **milieu** : déplacer la caméra ; **molette** : zoom. **Plume / Rectangle / Modifier / Coudre / Placer 3D** ouvrent les outils d’édition, avec annuler/rétablir. Tous les patrons partagent un tableau 2D avec zoom/pan à droite de la vue 3D. La couture se sélectionne dans les deux vues. La résolution et l'anisotropie se règlent dans les propriétés ; remailler reconstruit l'arrangement.
 
-Le T-shirt et la robe sont des patrons d'essai, élargis pour le mannequin MakeHuman CC0 de 1,75 m. OGC part d'un état séparé et ne répare pas un ancien cache traversé. Pas de friction ni de calibration industrielle. Les coutures restent des pénalités finies. Après optimisation de la détection, le snapshot T-shirt à 25 mm et huit itérations atteint **60 images/s et environ 60 pas physiques/s** sur RTX 3090. Le cas T-shirt + tablier reste à **46 pas physiques/s** ; son coût moyen baisse de **26,7 %** à réglages identiques. Voir [protocole, mesures et limites actuelles](docs/perf-fabrics-validation.md) ; les anciens résultats [Turbo](docs/turbo-perf.md) sont historiques.
+Le T-shirt et la robe sont des patrons d'essai, élargis pour le mannequin MakeHuman CC0 de 1,75 m. OGC part d'un état séparé et ne répare pas un ancien cache traversé. Pas de friction ni de calibration industrielle. Les coutures restent des pénalités finies. L'initialisation adaptative VBD corrige la fausse élasticité causée par une prédiction systématique de chute libre ; le défaut est maintenant **16 itérations**. Le T-shirt assemblé à 25 mm atteint **60 images/s et environ 60 pas physiques/s** sur RTX 3090. Le tablier reste à **52 pas physiques/s** et son assemblage demeure plus difficile. Voir [qualité, mesures et limites actuelles](docs/adaptive-initialization.md) ; les anciens résultats [Turbo](docs/turbo-perf.md) et [matières/performance](docs/perf-fabrics-validation.md) sont historiques.
 
 ```powershell
 # Calcul physique et benchmark GPU explicitement demandés

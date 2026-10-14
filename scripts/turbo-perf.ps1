@@ -12,7 +12,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
     foreach ($garment in @('tshirt', 'dress')) {
         $destination = "output/turbo-repro/$garment"
-        & .\target\release\cloth-fit.exe --garment $garment --mesh-mm $MeshMm --gpu-sim --iterations 8 --dt '0.016666666666666666' --steps $Steps --output $destination
+        & .\target\release\cloth-fit.exe --garment $garment --mesh-mm $MeshMm --gpu-sim --iterations 16 --dt '0.016666666666666666' --steps $Steps --output $destination
         if ($LASTEXITCODE -ne 0) { throw "GPU simulation failed: $garment" }
         if ($UiPerf) {
             & .\target\release\cloth-fit.exe --project "$destination/fitting-project.json" --steps 0 --ui-perf-smoke --output "$destination/ui"

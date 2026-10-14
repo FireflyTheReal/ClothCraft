@@ -20,7 +20,7 @@ For an apron added to an existing shirt: draw the rectangle, place it outside th
 
 3D picking follows compiled boundary chains, including curves and the current drape. It rejects hits hidden by the avatar or other cloth: orbit to reach the back. Highlight lines are overlays and may remain visible through geometry. A whole panel can be selected by clicking its visible surface in **Modifier** or **Placer 3D**.
 
-Expand **Coutures existantes** to remove a seam before reusing a boundary. This editor handles whole named edges; partial/free sewing, interactive notches and M:N relationships remain planned. Editing one member of an equal-length seam can be rejected if it changes that length: remove/recreate the relation with explicit easing when appropriate.
+**Coutures existantes (N)** is always available at the top of the inspector: select a named seam or press its **Supprimer** button. In **Modifier** or **Coudre**, click a sewn boundary in either view: both sides highlight and **Supprimer la couture** appears. **Suppr** removes the seam if exactly one is associated with the selected edge and no text field owns keyboard input. **Ctrl+Z** restores it. Removal preserves the cloth and drape. This editor handles whole named edges; partial/free sewing, interactive notches and M:N relationships remain planned. Editing one member of an equal-length seam can be rejected if it changes that length: remove/recreate the relation with explicit easing when appropriate.
 
 ## Place and simulate
 
@@ -59,6 +59,8 @@ The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --ui-authoring-smoke --output output/board-smoke
 ```
 
-It uses 35 real egui pointer actions and writes `authoring.json` plus `ui.png`, including pending-seam commitment on Play, a denim material assignment preserving the drape, export and actual new-panel motion. CPU coverage is in `tests/authoring.rs`, `tests/pattern_board.rs`, `tests/editing_state.rs` and `tests/fabrics.rs`. GPU free-fall regression is explicitly ignored by default; see [apron correction validation](apron-validation.md).
+It uses 37 real egui pointer actions and writes `authoring.json` plus `ui.png`, including pending-seam commitment on Play, seam deletion/restoration preserving the drape, a denim material assignment, export and actual new-panel motion. CPU coverage is in `tests/authoring.rs`, `tests/pattern_board.rs`, `tests/editing_state.rs` and `tests/fabrics.rs`. GPU free-fall and supported-cloth regressions are explicitly ignored by default; see [adaptive initialization](adaptive-initialization.md).
+
+During simulation the status bar displays maximum seam gap and positive axial extension (95% of rest area and maximum). Large gap means assembly is incomplete; persistent excessive extension may indicate incompatible sewing, material choice or insufficient convergence. Advanced settings allow up to 128 iterations. The default is now 16; adaptive initialization and the larger solve budget address artificial gravity stretch without changing mass or gravity.
 
 Measured outcomes and example captures: [board validation](board-validation.md). The reusable [curved-panels fixture](../examples/templates/curved-panels.json) is a saved result from the native drawing workflow.

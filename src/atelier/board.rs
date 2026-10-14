@@ -619,11 +619,7 @@ impl Atelier {
                         range: [0., 1.],
                     };
                     let end = self.authoring.ends.iter().position(|e| same_edge(e, &edge));
-                    let active = self
-                        .authoring
-                        .edge
-                        .as_ref()
-                        .is_some_and(|e| same_edge(e, &edge));
+                    let active = self.seam_edge_highlighted(&edge);
                     let hover = self
                         .authoring
                         .hover_edge

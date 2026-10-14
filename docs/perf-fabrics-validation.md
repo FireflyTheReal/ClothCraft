@@ -1,5 +1,7 @@
 # Fabric controls and dual-BVH validation — 2026-10-14
 
+Historical eight-iteration results, before the subsequent [adaptive initialization and supported-cloth correction](adaptive-initialization.md). Current default: 16 iterations. Equal trajectories in this optimization comparison did not establish accurate supported-cloth dynamics.
+
 This pass adds [fabric controls with explicit evidence](fabrics.md) and a conservative dual-hierarchy candidate traversal. [Research and implementation boundaries](performance-research.md). It preserves the corrected GPU inertial prediction from [the previous pass](apron-validation.md).
 
 ## Measured performance

@@ -7,7 +7,8 @@ struct Config { offset:u32, count:u32, moving:u32, pad:u32 }
 @group(0) @binding(2) var<storage,read> ranges:array<vec2u>;
 @group(0) @binding(3) var<storage,read> terms:array<Term>;
 @group(0) @binding(4) var<storage,read> incident:array<u32>;
-@group(0) @binding(5) var<storage,read> balls:array<vec4f>;
+struct Ball { center_radius:vec4f, guess:vec4f }
+@group(0) @binding(5) var<storage,read> balls:array<Ball>;
 @group(0) @binding(6) var<storage,read> order:array<u32>;
 @group(0) @binding(7) var<uniform> config:Config;
 @group(0) @binding(8) var<storage,read_write> probes:array<vec4f>;
@@ -91,17 +92,17 @@ fn objective(v:u32,p:vec3f)->f32 {
     let q=p-targets[v].xyz;var e=0.5*targets[v].w*dot(q,q);
     for(var i=ranges[v].x;i<ranges[v].y;i++){e+=evaluate(terms[incident[i]],v,p).e;}return e;
 }
-// Initialize all moving vertices together. Without this translation-invariant
-// warm start, a stiff flat panel barely falls at a fixed local iteration budget.
-// Each target remains inside its OGC ball; fixed vertices are never displaced.
+// Adaptive initialization from the previous accepted acceleration. The inertia
+// target still contains full gravity. Keep the ORIGINAL OGC balls and fixed pins.
 @compute @workgroup_size(64)
 fn predict(@builtin(global_invocation_id) id:vec3u) {
     let v=id.x;
     if v>=config.moving {return;}
     if positions[v].w>0.5 {return;}
-    let d=targets[v].xyz-balls[v].xyz;
-    let scale=min(1.0,balls[v].w/max(length(d),1e-20));
-    positions[v]=vec4f(balls[v].xyz+scale*d,positions[v].w);
+    let ball=balls[v].center_radius;
+    let d=balls[v].guess.xyz-ball.xyz;
+    let scale=min(1.0,ball.w/max(length(d),1e-20));
+    positions[v]=vec4f(ball.xyz+scale*d,positions[v].w);
 }
 
 // One 32-lane workgroup per vertex, rather than one serial invocation.
@@ -149,8 +150,9 @@ fn iterate(@builtin(workgroup_id) group:vec3u,@builtin(local_invocation_index) l
     var alpha=1.0;
     for(var attempt=0u;attempt<8u;attempt++) {
         if lane==0u {
-            candidate=old+alpha*direction;let d=candidate-balls[v].xyz;let len=length(d);
-            if len>balls[v].w {candidate=balls[v].xyz+d*(balls[v].w/max(len,1e-20));}
+            let ball=balls[v].center_radius;
+            candidate=old+alpha*direction;let d=candidate-ball.xyz;let len=length(d);
+            if len>ball.w {candidate=ball.xyz+d*(ball.w/max(len,1e-20));}
         }
         workgroupBarrier();
         var e=0.0;

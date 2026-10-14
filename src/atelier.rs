@@ -22,6 +22,8 @@ mod fabrics_ui;
 mod gizmo;
 #[path = "atelier/perf.rs"]
 mod perf;
+#[path = "atelier/seams_ui.rs"]
+mod seams_ui;
 #[path = "atelier/worker.rs"]
 mod worker;
 use authoring_ui::{AuthoringUi, Tool};
@@ -476,6 +478,12 @@ impl eframe::App for Atelier {
         egui::Panel::top("authoring-tools").show(ui, |ui| self.authoring_toolbar(ui));
         egui::Panel::bottom("status").show(ui, |ui| {
             ui.label(&self.status);
+            if let Some(m) = &self.metrics {
+                ui.small(format!(
+                    "Coutures : écart max {:.1} mm · Allongement : 95 % de la surface ≤ {:.1} % (max {:.1} %) · Pas {:.1} ms",
+                    1000. * m.max_seam_gap_m, m.extension_p95_percent, m.extension_max_percent, m.step_ms
+                ));
+            }
         });
         egui::Panel::right("properties")
             .default_size(220.)
@@ -499,7 +507,7 @@ impl eframe::App for Atelier {
                     ui.collapsing("Réglages avancés", |ui| {
                         ui.checkbox(&mut self.gpu, "Calcul GPU");
                         ui.add(
-                            egui::Slider::new(&mut self.settings.iterations, 2..=24)
+                            egui::Slider::new(&mut self.settings.iterations, 2..=128)
                                 .text("itérations"),
                         );
                         ui.add(

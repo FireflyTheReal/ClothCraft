@@ -11,6 +11,83 @@ use std::sync::Arc;
 
 #[test]
 #[ignore = "uses a hardware GPU; run explicitly with --ignored"]
+fn supported_cloth_does_not_accumulate_artificial_gravity_stretch() {
+    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
+    let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
+        power_preference: wgpu::PowerPreference::HighPerformance,
+        ..Default::default()
+    }))
+    .unwrap();
+    assert_ne!(adapter.get_info().device_type, wgpu::DeviceType::Cpu);
+    let (device, queue) =
+        pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).unwrap();
+    let gpu = GpuVbd::new(device, queue);
+    let mut t = GarmentTemplate::two_panel_demo();
+    t.version = 2;
+    t.panels.truncate(1);
+    t.seams.clear();
+    let panel = &mut t.panels[0];
+    panel.pattern = marvelous_cloth::model::Pattern {
+        width: 0.2,
+        height: 0.4,
+        nx: 4,
+        ny: 16,
+    };
+    panel.grain_degrees = 90.;
+    panel.pins.clear();
+    panel.pin_points = (0..=4)
+        .map(|i| glam::DVec2::new(i as f64 * 0.05, 0.))
+        .collect();
+    let g = Arc::new(t.compile().unwrap());
+    let mut state = g.initial_state.clone();
+    let mut solver = VbdSolver::new(g.clone(), None, &state).unwrap();
+    let settings = VbdSettings {
+        dt: 1. / 60.,
+        iterations: 16,
+        ..Default::default()
+    };
+    let hem: Vec<_> = g
+        .mesh
+        .uv
+        .iter()
+        .enumerate()
+        .filter_map(|(i, uv)| (uv.y > 0.399).then_some(i))
+        .collect();
+    let extension = |s: &marvelous_cloth::model::State| {
+        hem.iter()
+            .map(|i| (g.initial_state.x[*i].y - s.x[*i].y) / 0.4)
+            .sum::<f64>()
+            / hem.len() as f64
+    };
+    let mut middle = 0.;
+    for i in 0..300 {
+        gpu.step(&mut solver, &mut state, &settings, None).unwrap();
+        if i == 179 {
+            middle = extension(&state);
+        }
+    }
+    let final_extension = extension(&state);
+    eprintln!("supported cloth: extension at 3s={middle:.6}, 5s={final_extension:.6}");
+    // The self-weight load is <0.8 N/m; this material's tangent modulus near
+    // rest is ~127 N/m. A 2% mean extension bound leaves room for dynamics,
+    // transverse coupling and incomplete convergence, not rubber-like creep.
+    assert!(
+        (0.0001..0.02).contains(&final_extension),
+        "{final_extension}"
+    );
+    assert!(
+        (final_extension - middle).abs() < 0.003,
+        "creep {middle} -> {final_extension}"
+    );
+    for (i, pin) in g.mesh.pins.iter().enumerate() {
+        if let Some(p) = pin {
+            assert!(state.x[i].distance(*p) < 1e-7);
+        }
+    }
+}
+
+#[test]
+#[ignore = "uses a hardware GPU; run explicitly with --ignored"]
 fn gpu_dense_free_panel_falls_and_rebuilds_after_topology_growth() {
     let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
     let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
