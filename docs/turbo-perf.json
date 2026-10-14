@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-14",
+  "hardware": "RTX 3090 / Vulkan",
+  "cpu_threads": 2,
+  "comparison_steps": 120,
+  "comparison_dt_s": 0.016666666666666666,
+  "comparison_iterations": 8,
+  "comparison_mesh_mm": 30,
+  "runs": {
+    "baseline-tshirt": {
+      "mean_wall_step_ms": 50.56544999999999,
+      "median_step_ms": 48.98415,
+      "p95_step_ms": 59.5604,
+      "max_step_ms": 74.2939,
+      "detection_median_ms": 32.7597,
+      "gpu_compute_median_ms": 13.2128,
+      "vertices": 1744,
+      "triangles": 3212,
+      "max_seam_gap_mm": 2.439868359718715,
+      "broadphase_rebuilds": null,
+      "raw_path": "output/turbo/baseline-tshirt"
+    },
+    "baseline-dress": {
+      "mean_wall_step_ms": 56.90539583333334,
+      "median_step_ms": 54.6595,
+      "p95_step_ms": 69.7817,
+      "max_step_ms": 86.8777,
+      "detection_median_ms": 37.6558,
+      "gpu_compute_median_ms": 13.502559999999999,
+      "vertices": 2808,
+      "triangles": 5324,
+      "max_seam_gap_mm": 2.264560533506483,
+      "broadphase_rebuilds": null,
+      "raw_path": "output/turbo/baseline-dress"
+    },
+    "final-tshirt": {
+      "mean_wall_step_ms": 6.1816466666666665,
+      "median_step_ms": 4.2081,
+      "p95_step_ms": 14.171700000000001,
+      "max_step_ms": 17.3738,
+      "detection_median_ms": 1.75805,
+      "gpu_compute_median_ms": 1.1124960000000002,
+      "vertices": 1744,
+      "triangles": 3212,
+      "max_seam_gap_mm": 2.3977293921925913,
+      "broadphase_rebuilds": 18,
+      "raw_path": "output/turbo/final-tshirt",
+      "baseline_vertex_difference_max_mm": 6.0298142747265775,
+      "baseline_vertex_difference_rms_mm": 0.49386294974196593
+    },
+    "final-dress": {
+      "mean_wall_step_ms": 5.350365,
+      "median_step_ms": 4.309900000000001,
+      "p95_step_ms": 5.3142,
+      "max_step_ms": 16.3191,
+      "detection_median_ms": 1.46625,
+      "gpu_compute_median_ms": 1.066608,
+      "vertices": 2808,
+      "triangles": 5324,
+      "max_seam_gap_mm": 2.261339665408074,
+      "broadphase_rebuilds": 6,
+      "raw_path": "output/turbo/final-dress",
+      "baseline_vertex_difference_max_mm": 1.1864360780220122,
+      "baseline_vertex_difference_rms_mm": 0.08880052393281938
+    },
+    "assembly25-tshirt": {
+      "steps": 360,
+      "wall_ms": 4444.9673,
+      "mean_wall_step_ms": 12.34713138888889,
+      "median_step_ms": 8.2843,
+      "p95_step_ms": 26.0781,
+      "vertices": 2454,
+      "triangles": 4570,
+      "max_seam_gap_mm": 3.2400352763831037,
+      "broadphase_rebuilds": 111,
+      "raw_path": "output/turbo-repro/tshirt"
+    },
+    "ui25-tshirt": {
+      "passed": true,
+      "physics_steps_per_second": 59.824423691885876,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 5.000000000000187,
+      "simulation_speed": 0.9970737281980979,
+      "ui_frame_interval_p95_ms": 20.4342,
+      "ui_frames_per_second": 60.023838437523246,
+      "wall_seconds": 5.0146743
+    },
+    "assembly25-dress": {
+      "steps": 360,
+      "wall_ms": 4308.8414,
+      "mean_wall_step_ms": 11.96900388888889,
+      "median_step_ms": 7.815099999999999,
+      "p95_step_ms": 24.7824,
+      "vertices": 4094,
+      "triangles": 7800,
+      "max_seam_gap_mm": 4.402168436753798,
+      "broadphase_rebuilds": 104,
+      "raw_path": "output/turbo-repro/dress"
+    },
+    "ui25-dress": {
+      "passed": true,
+      "physics_steps_per_second": 60.00847455228226,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 5.0166666666668585,
+      "simulation_speed": 1.0001412425380376,
+      "ui_frame_interval_p95_ms": 18.2117,
+      "ui_frames_per_second": 60.008474552279964,
+      "wall_seconds": 5.0159582
+    }
+  },
+  "executables_sha256": {
+    "output\\turbo\\baseline.exe": "64115c259af4f68cf10476cb8edbf433bd4dfd0cbfdb04308f8e04bd98bc675c",
+    "target\\release\\cloth-fit.exe": "db21935ac99d711817c0737360b0b6cc2cfddc3db66852ba9fcbd75c3b9c86b0"
+  },
+  "interaction": {
+    "accepted_step_with_grab": true,
+    "max_vertex_displacement_m": 0.008067348794256598,
+    "passed": true,
+    "pointer_picked_cloth": true,
+    "state_time_s": 6.06666666666665,
+    "status": "Simulation dynamique · contacts OGC"
+  }
+}

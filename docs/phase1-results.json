@@ -1,0 +1,42 @@
+[
+  {
+    "scene": "sphere",
+    "vertices": 121,
+    "steps": 120,
+    "converged_steps": 120,
+    "mean_step_ms": 31.33043333333332,
+    "last_residual_n": 3.417839965117283E-10,
+    "last_strain": 0.021600330425580738,
+    "max_vertex_penetration_m": 0.0007503304685744228
+  },
+  {
+    "scene": "hanging-0",
+    "vertices": 121,
+    "steps": 120,
+    "converged_steps": 120,
+    "mean_step_ms": 12.313373333333338,
+    "last_residual_n": 9.042726513468994E-12,
+    "last_strain": 0.07233739295481567,
+    "max_vertex_penetration_m": 0.0
+  },
+  {
+    "scene": "hanging-45",
+    "vertices": 121,
+    "steps": 120,
+    "converged_steps": 120,
+    "mean_step_ms": 16.720719999999996,
+    "last_residual_n": 2.560140326064477E-09,
+    "last_strain": 0.05908997404541072,
+    "max_vertex_penetration_m": 0.0
+  },
+  {
+    "scene": "hanging-90",
+    "vertices": 121,
+    "steps": 120,
+    "converged_steps": 120,
+    "mean_step_ms": 9.934607499999995,
+    "last_residual_n": 6.282827835513683E-07,
+    "last_strain": 0.04414388423327176,
+    "max_vertex_penetration_m": 0.0
+  }
+]

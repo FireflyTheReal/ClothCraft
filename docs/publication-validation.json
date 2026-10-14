@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-14",
+  "cpu_tests": 63,
+  "cpu_check_script": "passed",
+  "desktop_clippy": "passed",
+  "release_build": "passed",
+  "authoring": {
+    "completed_pointer_actions": 20,
+    "expected_actions": 20,
+    "export_reload_compiles": true,
+    "panels": 2,
+    "passed": true,
+    "redo_observed": true,
+    "rotated_with_gizmo": true,
+    "seams": 1,
+    "status": "Export : output/authoring-release",
+    "translated_with_gizmo": true,
+    "undo_observed": true
+  },
+  "window_performance": {
+    "passed": true,
+    "physics_steps_per_second": 59.991480010011294,
+    "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+    "simulated_seconds": 5.000000000000193,
+    "simulation_speed": 0.9998580001668549,
+    "ui_frame_interval_p95_ms": 17.576700000000002,
+    "ui_frames_per_second": 59.99148001000898,
+    "wall_seconds": 5.0007101
+  },
+  "cloth_grab": {
+    "accepted_step_with_grab": true,
+    "max_vertex_displacement_m": 0.0133861784432506,
+    "passed": true,
+    "pointer_picked_cloth": true,
+    "state_time_s": 6.0999999999999845,
+    "status": "Simulation dynamique \u00b7 contacts OGC"
+  }
+}

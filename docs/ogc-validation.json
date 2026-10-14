@@ -1,0 +1,70 @@
+{
+  "tshirt": {
+    "vertices": 1744,
+    "triangles": 3212,
+    "steps": 360,
+    "physical_time_s": 5.999999999999984,
+    "wall_ms": 17793.848,
+    "mean_step_ms": 49.42735555555556,
+    "steady_last_60_median_ms": 53.10275,
+    "steady_last_60_p95_ms": 67.429,
+    "steady_last_60_detection_median_ms": 34.96455,
+    "steady_last_60_gpu_compute_median_ms": 14.825712,
+    "max_seam_gap_m": 0.0027764386129543973,
+    "minimum_last_detection_distance_m": 0.0016582039676936555,
+    "render": {
+      "adapter": "NVIDIA GeForce RTX 3090",
+      "avatar_triangles": 26756,
+      "backend": "Vulkan",
+      "cloth_triangles": 3212,
+      "cpu_prepare_submit_and_wait_median_ms": 1.2804,
+      "device_type": "DiscreteGpu",
+      "driver": "NVIDIA",
+      "driver_info": "616.56",
+      "gpu_render_median_ms": 0.018432,
+      "gpu_render_p95_ms": 0.019456,
+      "measured_frames": 60,
+      "resolution": [
+        1200,
+        1200
+      ],
+      "scope": "Offscreen static 3D render pass; no window presentation, no physics solve, no FPS claim",
+      "timestamp_query": true,
+      "warmup_frames": 12
+    }
+  },
+  "dress": {
+    "vertices": 2808,
+    "triangles": 5324,
+    "steps": 360,
+    "physical_time_s": 5.999999999999984,
+    "wall_ms": 20873.840699999997,
+    "mean_step_ms": 57.98289083333332,
+    "steady_last_60_median_ms": 55.979749999999996,
+    "steady_last_60_p95_ms": 79.8215,
+    "steady_last_60_detection_median_ms": 37.1318,
+    "steady_last_60_gpu_compute_median_ms": 15.04936,
+    "max_seam_gap_m": 0.00253148626849692,
+    "minimum_last_detection_distance_m": 0.002709721004726967,
+    "render": {
+      "adapter": "NVIDIA GeForce RTX 3090",
+      "avatar_triangles": 26756,
+      "backend": "Vulkan",
+      "cloth_triangles": 5324,
+      "cpu_prepare_submit_and_wait_median_ms": 1.0929,
+      "device_type": "DiscreteGpu",
+      "driver": "NVIDIA",
+      "driver_info": "616.56",
+      "gpu_render_median_ms": 0.019456,
+      "gpu_render_p95_ms": 0.02048,
+      "measured_frames": 60,
+      "resolution": [
+        1200,
+        1200
+      ],
+      "scope": "Offscreen static 3D render pass; no window presentation, no physics solve, no FPS claim",
+      "timestamp_query": true,
+      "warmup_frames": 12
+    }
+  }
+}

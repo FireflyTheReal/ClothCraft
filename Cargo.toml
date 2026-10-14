@@ -1,0 +1,33 @@
+[package]
+name = "marvelous-cloth"
+version = "0.1.0"
+edition = "2024"
+description = "Native garment editor with a double-precision CPU FEM reference"
+default-run = "marvelous-cloth"
+
+[features]
+default = ["desktop"]
+desktop = ["dep:eframe", "dep:bytemuck", "dep:pollster", "dep:image"]
+
+[dependencies]
+glam = { version = "0.34.1", features = ["serde"] }
+rayon = "1.11"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+spade = "=2.15.1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+clap = { version = "4.5", features = ["derive"] }
+eframe = { version = "0.36.2", optional = true, default-features = false, features = ["default_fonts", "wgpu", "x11", "wayland"] }
+bytemuck = { version = "1", optional = true }
+pollster = { version = "1.0.1", optional = true }
+image = { version = "0.25.10", optional = true, default-features = false, features = ["png"] }
+
+[dev-dependencies]
+naga = { version = "30.0.1", features = ["wgsl-in"] }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 2

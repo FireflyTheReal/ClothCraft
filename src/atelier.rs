@@ -1,0 +1,643 @@
+//! Garment workspace: library | 3D | 2D patterns | properties.
+use crate::render::{Camera, DrawModel, Viewport};
+use eframe::egui::{self, Color32, Stroke, Vec2};
+use marvelous_cloth::{
+    fitting::{FittingProject, FittingScene},
+    garment::{export, presets::GarmentKind},
+    picking,
+    vbd::{Grab, VbdMetrics, VbdSettings},
+};
+use std::{path::PathBuf, sync::mpsc, time::Duration};
+#[path = "atelier/authoring_smoke.rs"]
+mod authoring_smoke;
+#[path = "atelier/authoring_ui.rs"]
+mod authoring_ui;
+#[path = "atelier/gizmo.rs"]
+mod gizmo;
+#[path = "atelier/perf.rs"]
+mod perf;
+#[path = "atelier/worker.rs"]
+mod worker;
+use authoring_ui::{AuthoringUi, Tool};
+use worker::Work;
+fn camera() -> Camera {
+    Camera {
+        yaw: 0.10,
+        pitch: 0.05,
+        distance: 2.75,
+        target: glam::Vec3::new(0., 0.95, 0.),
+    }
+}
+pub fn run(
+    project: FittingProject,
+    scene: FittingScene,
+    output: PathBuf,
+    smoke: bool,
+    drag_test: bool,
+    perf_test: bool,
+    authoring_test: bool,
+) -> Result<(), String> {
+    let smoke_report = output.join("interaction.json");
+    let authoring_report = output.join("authoring.json");
+    let perf_report = output.join("ui-perf.json");
+    let options = eframe::NativeOptions {
+        renderer: eframe::Renderer::Wgpu,
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([1600., 980.])
+            .with_min_inner_size([1100., 700.]),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "ClothCraft | Atelier de simulation",
+        options,
+        Box::new(move |cc| {
+            let render = cc.wgpu_render_state.clone().ok_or("wgpu unavailable")?;
+            let mut visuals = egui::Visuals::dark();
+            visuals.panel_fill = Color32::from_rgb(33, 34, 37);
+            cc.egui_ctx.set_visuals(visuals);
+            let (tx, receive) = worker::start(render.device.clone(), render.queue.clone())?;
+            let m = project
+                .template
+                .panels
+                .iter()
+                .find_map(|p| p.polygon.as_ref())
+                .map(|p| p.meshing_settings())
+                .unwrap_or_default();
+            Ok(Box::new(Atelier {
+                authoring: AuthoringUi::default(),
+                authoring_smoke: authoring_test.then(authoring_smoke::Smoke::new),
+                mesh_mm: m.target_edge_m * 1000.,
+                anisotropy: m.anisotropy,
+                mesh_axis: m.axis_degrees,
+                project,
+                smoke_initial: if drag_test {
+                    scene.state.x.clone()
+                } else {
+                    Vec::new()
+                },
+                scene,
+                output,
+                viewport: Viewport::new(render),
+                camera: camera(),
+                send: tx,
+                receive,
+                generation: 0,
+                pending: false,
+                playing: perf_test,
+                wire: false,
+                heat: false,
+                seams: false,
+                gpu: true,
+                settings: VbdSettings {
+                    dt: 1. / 60.,
+                    ..Default::default()
+                },
+                metrics: None,
+                status: "Prêt · Espace pour lancer la simulation".into(),
+                grab: None,
+                drag_plane: None,
+                smoke: smoke || drag_test || perf_test || authoring_test,
+                perf: perf_test.then(perf::PerfRun::new),
+                drag_test,
+                smoke_point: None,
+                smoke_tick: 0,
+                smoke_grabbed: false,
+                smoke_applied: false,
+                smoke_captured: false,
+                frames: 0,
+            }))
+        }),
+    )
+    .map_err(|e| e.to_string())?;
+    if drag_test {
+        let report: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(smoke_report).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
+        if report["passed"] != true {
+            return Err(format!("UI drag smoke failed: {report}"));
+        }
+    }
+    if authoring_test {
+        let report: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(authoring_report).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
+        if report["passed"] != true {
+            return Err(format!("Authoring smoke failed: {report}"));
+        }
+    }
+    if perf_test {
+        let report: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(perf_report).map_err(|e| e.to_string())?)
+                .map_err(|e| e.to_string())?;
+        if report["passed"] != true {
+            return Err(format!("UI realtime check failed: {report}"));
+        }
+    }
+    Ok(())
+}
+struct Atelier {
+    authoring: AuthoringUi,
+    authoring_smoke: Option<authoring_smoke::Smoke>,
+    perf: Option<perf::PerfRun>,
+    mesh_mm: f64,
+    anisotropy: f64,
+    mesh_axis: f64,
+    project: FittingProject,
+    scene: FittingScene,
+    output: PathBuf,
+    viewport: Viewport,
+    camera: Camera,
+    send: mpsc::Sender<Work>,
+    receive: worker::Latest,
+    generation: u64,
+    pending: bool,
+    playing: bool,
+    wire: bool,
+    heat: bool,
+    seams: bool,
+    gpu: bool,
+    settings: VbdSettings,
+    metrics: Option<VbdMetrics>,
+    status: String,
+    grab: Option<Grab>,
+    drag_plane: Option<(glam::DVec3, glam::DVec3)>,
+    smoke: bool,
+    frames: u32,
+    drag_test: bool,
+    smoke_point: Option<egui::Pos2>,
+    smoke_tick: u32,
+    smoke_grabbed: bool,
+    smoke_applied: bool,
+    smoke_captured: bool,
+    smoke_initial: Vec<glam::DVec3>,
+}
+impl Atelier {
+    fn step(&mut self, ctx: &egui::Context) {
+        self.submit(ctx, true);
+    }
+    fn submit(&mut self, ctx: &egui::Context, once: bool) {
+        let scene = FittingScene {
+            garment: self.scene.garment.clone(),
+            collider: self.scene.collider.clone(),
+            state: self.scene.state.clone(),
+            quasistatic: false,
+            next_dt: self.settings.dt,
+        };
+        self.pending = self
+            .send
+            .send(Work {
+                generation: self.generation,
+                playing: self.playing,
+                once,
+                scene,
+                settings: self.settings.clone(),
+                grab: self.grab.clone(),
+                gpu: self.gpu,
+                ctx: ctx.clone(),
+            })
+            .is_ok()
+            && (self.playing || once);
+    }
+    fn load(&mut self, p: FittingProject) {
+        match p.compile() {
+            Ok(scene) => {
+                if let Some(poly) = p.template.panels.iter().find_map(|p| p.polygon.as_ref()) {
+                    let m = poly.meshing_settings();
+                    self.mesh_mm = m.target_edge_m * 1000.;
+                    self.anisotropy = m.anisotropy;
+                    self.mesh_axis = m.axis_degrees;
+                }
+                self.authoring.history.record(self.project.template.clone());
+                self.authoring.preview = None;
+                self.authoring.drag = None;
+                self.authoring.ends.clear();
+                self.authoring.selected = p.template.panels.first().map(|p| p.id.clone());
+                self.scene = scene;
+                self.project = p;
+                self.generation += 1;
+                self.playing = false;
+                self.pending = false;
+                self.metrics = None;
+                self.grab = None;
+                self.drag_plane = None;
+                self.status = "Arrangement neuf · lancer pour assembler les coutures".into();
+            }
+            Err(e) => self.status = e,
+        }
+    }
+    fn preset(&mut self, kind: GarmentKind) {
+        self.load(FittingProject::basic(
+            kind,
+            2,
+            self.project.avatar_path.clone(),
+        ));
+    }
+    fn reset(&mut self) {
+        let mut p = self.project.clone();
+        p.state = None;
+        p.mesh_signature = None;
+        p.prearrange = false;
+        self.load(p);
+    }
+    fn remesh(&mut self) {
+        let mut p = self.project.clone();
+        p.state = None;
+        p.mesh_signature = None;
+        p.prearrange = false;
+        for panel in &mut p.template.panels {
+            if let Some(poly) = &mut panel.polygon {
+                let mut m = poly.meshing_settings();
+                m.target_edge_m = self.mesh_mm * 0.001;
+                m.anisotropy = self.anisotropy;
+                m.axis_degrees = self.mesh_axis;
+                poly.meshing = Some(m);
+            }
+        }
+        self.load(p);
+    }
+    fn export(&mut self) {
+        self.commit_placement();
+        let result = (|| -> Result<(), Box<dyn std::error::Error>> {
+            std::fs::create_dir_all(&self.output)?;
+            export::write_artifacts(
+                &self.project.template,
+                &self.scene.garment,
+                &self.scene.state,
+                &self.output,
+            )?;
+            let mut p = self.project.clone();
+            p.state = Some(self.scene.state.clone());
+            p.save(&self.output.join("fitting-project.json"))?;
+            Ok(())
+        })();
+        self.status = result.map_or_else(
+            |e| e.to_string(),
+            |_| format!("Export : {}", self.output.display()),
+        );
+    }
+    fn pick_and_drag(&mut self, response: &egui::Response, rect: egui::Rect) {
+        if response.drag_started_by(egui::PointerButton::Primary)
+            && let Some(pos) = response.interact_pointer_pos()
+        {
+            let (origin, dir) = self.camera.ray(pos, rect);
+            let mut best = f64::INFINITY;
+            let mut picked = None;
+            for t in &self.scene.garment.mesh.triangles {
+                if let Some((d, w)) =
+                    picking::ray_triangle(origin, dir, t.vertices.map(|i| self.scene.state.x[i]))
+                    && d < best
+                {
+                    best = d;
+                    picked = Some((t.vertices, w));
+                }
+            }
+            if picked.is_some() {
+                for t in &self.scene.collider.surface.triangles {
+                    if picking::ray_triangle(
+                        origin,
+                        dir,
+                        t.map(|i| self.scene.collider.surface.vertices[i]),
+                    )
+                    .is_some_and(|(d, _)| d < best - 1e-5)
+                    {
+                        picked = None;
+                        break;
+                    }
+                }
+            }
+            if let Some((vertices, weights)) = picked {
+                let target = origin + best * dir;
+                self.grab = Some(Grab {
+                    vertices,
+                    weights,
+                    target,
+                    stiffness: 150.,
+                });
+                self.drag_plane = Some((target, dir));
+                self.playing = true;
+            }
+        }
+        if response.dragged_by(egui::PointerButton::Primary)
+            && let (Some(g), Some((point, normal)), Some(pos)) = (
+                &mut self.grab,
+                self.drag_plane,
+                response.interact_pointer_pos(),
+            )
+        {
+            let (origin, dir) = self.camera.ray(pos, rect);
+            if let Some(target) = picking::ray_plane(origin, dir, point, normal) {
+                g.target = target;
+            }
+        }
+        if !response.ctx.input(|i| i.pointer.primary_down()) {
+            self.grab = None;
+            self.drag_plane = None;
+        }
+    }
+}
+impl eframe::App for Atelier {
+    fn raw_input_hook(&mut self, _ctx: &egui::Context, input: &mut egui::RawInput) {
+        if let Some(smoke) = &mut self.authoring_smoke {
+            smoke.input(input);
+        }
+        if !self.drag_test {
+            return;
+        }
+        let Some(origin) = self.smoke_point else {
+            return;
+        };
+        self.smoke_tick += 1;
+        let tick = self.smoke_tick;
+        let pos = origin + Vec2::new((tick.saturating_sub(2).min(12) * 5) as f32, 0.);
+        if tick <= 15 {
+            input.events.push(egui::Event::PointerMoved(pos));
+        }
+        if tick == 2 || tick == 15 {
+            input.events.push(egui::Event::PointerButton {
+                pos,
+                button: egui::PointerButton::Primary,
+                pressed: tick == 2,
+                modifiers: Default::default(),
+            });
+        }
+        if tick >= 15 {
+            self.playing = false;
+        }
+    }
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let ctx = ui.ctx().clone();
+        self.frames += 1;
+        let done = self.receive.lock().unwrap().take();
+        if let Some(done) = done.filter(|d| d.generation == self.generation) {
+            self.pending = false;
+            match done.result {
+                Ok((state, m)) => {
+                    self.smoke_applied |= done.had_grab;
+                    self.scene.state = state;
+                    self.status = "Simulation dynamique · contacts OGC".into();
+                    self.metrics = Some(m);
+                }
+                Err(e) => {
+                    self.playing = false;
+                    self.status = e;
+                }
+            }
+        }
+        if ctx.input(|i| i.key_pressed(egui::Key::Space)) && !ctx.egui_wants_keyboard_input() {
+            self.commit_placement();
+            self.authoring.tool = Tool::Grab;
+            self.playing = !self.playing;
+        }
+        egui::Panel::top("toolbar").show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.colored_label(
+                    Color32::from_rgb(235, 194, 93),
+                    egui::RichText::new("CLOTHCRAFT").strong().size(18.),
+                );
+                ui.separator();
+                if ui
+                    .button(if self.playing {
+                        "⏸ Pause"
+                    } else {
+                        "▶ Simuler"
+                    })
+                    .clicked()
+                {
+                    self.commit_placement();
+                    self.authoring.tool = Tool::Grab;
+                    self.playing = !self.playing;
+                }
+                if ui
+                    .add_enabled(!self.pending && !self.playing, egui::Button::new("Un pas"))
+                    .clicked()
+                {
+                    self.commit_placement();
+                    self.authoring.tool = Tool::Grab;
+                    self.step(&ctx);
+                }
+                if ui.button("Réinitialiser").clicked() {
+                    self.reset();
+                }
+                let export_button = ui.button("Exporter");
+                self.smoke_target("export", export_button.rect.center());
+                if export_button.clicked() {
+                    self.export();
+                }
+                ui.separator();
+                ui.checkbox(&mut self.wire, "Maillage");
+                ui.checkbox(&mut self.heat, "Tension");
+                ui.checkbox(&mut self.seams, "Coutures");
+                if self.pending {
+                    ui.spinner();
+                }
+            });
+        });
+        egui::Panel::top("authoring-tools").show(ui, |ui| self.authoring_toolbar(ui));
+        egui::Panel::bottom("status").show(ui,|ui|{ui.label(&self.status);
+            if let Some(m)=&self.metrics{ui.small(format!("Temps simulé {:.3} s  |  pas {:.1} ms  |  détection {:.1} ms  |  calcul/transferts {:.1} ms  |  ouverture couture {:.1} mm",m.time_s,m.step_ms,m.detection_ms,m.solve_ms,m.max_seam_gap_m*1000.));}
+            else{ui.small("Simuler assemble les deux panneaux. Glisser le tissu avec le bouton gauche pour le saisir.");}
+        });
+        egui::Panel::left("library")
+            .default_size(120.)
+            .resizable(false)
+            .show(ui, |ui| {
+                ui.strong("BIBLIOTHÈQUE");
+                ui.separator();
+                ui.label("Vêtements");
+                if ui
+                    .add_sized([100., 55.], egui::Button::new("T-SHIRT"))
+                    .clicked()
+                {
+                    self.preset(GarmentKind::Tshirt);
+                }
+                if ui
+                    .add_sized([100., 55.], egui::Button::new("ROBE"))
+                    .clicked()
+                {
+                    self.preset(GarmentKind::Dress);
+                }
+                ui.add_space(20.);
+                ui.small("Mannequin");
+                ui.label("MakeHuman");
+                ui.small("1,75 m · CC0");
+            });
+        egui::Panel::right("properties").default_size(235.).resizable(true).show(ui,|ui|{egui::ScrollArea::vertical().show(ui,|ui|{
+            ui.strong("PROPRIÉTÉS");ui.separator();self.authoring_properties(ui);ui.label("Tissu tissé");ui.small("Matériau de référence non calibré");
+            ui.add_space(14.);ui.strong("Simulation");ui.checkbox(&mut self.gpu,"Calcul VBD sur GPU");ui.small("OGC : détection CPU · forces GPU");
+            ui.add(egui::Slider::new(&mut self.settings.iterations,2..=24).text("itérations"));ui.label("Pas physique : 1/60 s");
+            ui.add(egui::Slider::new(&mut self.settings.damping,0.0..=10.0).text("amortissement"));ui.small("Plus d’itérations améliore la relaxation et augmente le coût.");
+            ui.separator();ui.strong("Maillage Delaunay");ui.add(egui::Slider::new(&mut self.mesh_mm,8.0..=60.0).text("mm"));
+            ui.horizontal(|ui|{ui.label("Anisotropie");ui.add(egui::DragValue::new(&mut self.anisotropy).range(1.0..=4.0).speed(0.05));});
+            ui.horizontal(|ui|{ui.label("Axe");ui.add(egui::DragValue::new(&mut self.mesh_axis).range(0.0..=180.0).suffix("°"));});
+            if ui.button("Re-mailler et réinitialiser").clicked(){self.remesh();}
+            ui.separator();ui.strong("État");ui.label(format!("{} sommets",self.scene.state.x.len()));ui.label(format!("{} triangles",self.scene.garment.mesh.triangles.len()));
+            if let Some(m)=&self.metrics{ui.label(format!("{} contacts en cache",m.contacts));ui.label(format!("Capacité calcul {:.0} pas/s",1000./m.step_ms));ui.small("Lecture cadencée à 60 pas/s");}
+            ui.separator();ui.small("OGC normal VF/EE et auto-contact. Friction non implémentée. Voisinages cousus exclus localement.");
+        });});
+        egui::Panel::right("patterns")
+            .default_size(400.)
+            .resizable(true)
+            .show(ui, |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| self.patterns(ui));
+            });
+        egui::CentralPanel::default().show(ui, |ui| {
+            ui.strong("VÊTEMENT 3D");
+            ui.small("Gauche : tissu · droit : orbite · milieu : déplacer · molette : zoom");
+            let (rect, response) = ui.allocate_exact_size(
+                ui.available_size().max(Vec2::splat(1.)),
+                egui::Sense::click_and_drag(),
+            );
+            if self.authoring.tool == Tool::Grab {
+                self.pick_and_drag(&response, rect);
+            }
+            self.place_interaction(&response, rect);
+            self.smoke_grabbed |= self.grab.is_some();
+            if self.drag_test && self.smoke_point.is_none() {
+                let aim = glam::DVec3::new(0., 1.12, 0.30);
+                let front = &self.scene.garment.panels[0];
+                let point = self.scene.garment.mesh.triangles[front.triangles.clone()]
+                    .iter()
+                    .map(|t| {
+                        t.vertices
+                            .iter()
+                            .map(|i| self.scene.state.x[*i] / 3.)
+                            .sum::<glam::DVec3>()
+                    })
+                    .min_by(|a, b| a.distance_squared(aim).total_cmp(&b.distance_squared(aim)))
+                    .unwrap();
+                let clip =
+                    self.camera.matrix(rect.width() / rect.height()) * point.as_vec3().extend(1.);
+                let ndc = clip.truncate() / clip.w;
+                self.smoke_point = Some(egui::pos2(
+                    rect.center().x + ndc.x * rect.width() * 0.5,
+                    rect.center().y - ndc.y * rect.height() * 0.5,
+                ));
+            }
+            self.camera.garment_interact(&response);
+            let size = rect.size() * ctx.pixels_per_point();
+            let texture = self.viewport.draw_scene(
+                [size.x as u32, size.y as u32],
+                &self.camera,
+                DrawModel {
+                    mesh: &self.scene.garment.mesh,
+                    state: &self.scene.state,
+                    materials: &self.scene.garment.materials,
+                    sphere: None,
+                    avatar: Some(&self.scene.collider.surface),
+                    collider: None,
+                    seams: if self.seams {
+                        &self.scene.garment.seams
+                    } else {
+                        &[]
+                    },
+                },
+                self.wire,
+                self.heat,
+                false,
+            );
+            ui.painter().image(
+                texture,
+                rect,
+                egui::Rect::from_min_max(egui::Pos2::ZERO, egui::pos2(1., 1.)),
+                Color32::WHITE,
+            );
+            self.paint_gizmo(ui, rect);
+            if let Some(g) = &self.grab {
+                let clip = self.camera.matrix(rect.width() / rect.height())
+                    * g.target.as_vec3().extend(1.);
+                if clip.w > 0. {
+                    let ndc = clip.truncate() / clip.w;
+                    let p = egui::pos2(
+                        rect.center().x + ndc.x * rect.width() * 0.5,
+                        rect.center().y - ndc.y * rect.height() * 0.5,
+                    );
+                    ui.painter().circle_stroke(
+                        p,
+                        8.,
+                        Stroke::new(2., Color32::from_rgb(255, 194, 64)),
+                    );
+                }
+            }
+        });
+        if let Some(perf) = &mut self.perf
+            && let Some(report) = perf.tick(
+                self.scene.state.time,
+                ctx.cumulative_frame_nr(),
+                self.settings.dt,
+                self.metrics.is_some(),
+            )
+        {
+            self.playing = false;
+            if let Err(e) = std::fs::write(
+                self.output.join("ui-perf.json"),
+                serde_json::to_string_pretty(&report).unwrap(),
+            ) {
+                eprintln!("UI performance report: {e}");
+            }
+        }
+        self.submit(&ctx, false);
+        if self.playing {
+            ctx.request_repaint_after(Duration::from_millis(16));
+        }
+        if self.pending {
+            ctx.request_repaint_after(Duration::from_millis(16));
+        }
+        self.authoring_smoke_tick();
+        if self.smoke {
+            let drag_finished = self.drag_test && self.smoke_tick >= 20 && !self.pending;
+            if !self.smoke_captured
+                && ((self.authoring_smoke.is_none()
+                    && !self.drag_test
+                    && self.perf.is_none()
+                    && self.frames == 8)
+                    || self.authoring_smoke.as_ref().is_some_and(|s| s.finished)
+                    || drag_finished
+                    || (self.authoring_smoke.is_none() && self.perf.is_none() && self.frames > 110)
+                    || self.perf.as_ref().is_some_and(|p| p.finished))
+            {
+                self.smoke_captured = true;
+                if self.drag_test {
+                    let displacement = self
+                        .scene
+                        .state
+                        .x
+                        .iter()
+                        .zip(&self.smoke_initial)
+                        .map(|(a, b)| a.distance(*b))
+                        .fold(0., f64::max);
+                    let report = serde_json::json!({"passed":self.smoke_grabbed&&self.smoke_applied&&displacement>1e-5,"pointer_picked_cloth":self.smoke_grabbed,"accepted_step_with_grab":self.smoke_applied,"max_vertex_displacement_m":displacement,"status":self.status,"state_time_s":self.scene.state.time});
+                    if let Err(e) = std::fs::write(
+                        self.output.join("interaction.json"),
+                        serde_json::to_string_pretty(&report).unwrap(),
+                    ) {
+                        eprintln!("Interaction report: {e}");
+                    }
+                }
+                ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot(Default::default()));
+            }
+            for event in ctx.input(|i| i.events.clone()) {
+                if let egui::Event::Screenshot { image, .. } = event {
+                    let pixels: Vec<u8> = image.pixels.iter().flat_map(|p| p.to_array()).collect();
+                    if let Err(e) = image::save_buffer(
+                        self.output.join("ui.png"),
+                        &pixels,
+                        image.size[0] as u32,
+                        image.size[1] as u32,
+                        image::ColorType::Rgba8,
+                    ) {
+                        eprintln!("UI capture: {e}");
+                    }
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                }
+            }
+            if (self.authoring_smoke.is_none() && self.perf.is_none() && self.frames > 120)
+                || self.perf.as_ref().is_some_and(|p| p.expired())
+            {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+            ctx.request_repaint_after(Duration::from_millis(30));
+        }
+    }
+}

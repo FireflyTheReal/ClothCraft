@@ -1,0 +1,502 @@
+use super::polygon::PolygonPattern;
+use super::seam::{BoundaryCurve, BoundaryRef, CompiledSeam, SeamSpec, Side};
+use crate::{
+    energy,
+    model::{Material, Mesh, Pattern, Scene, State},
+};
+use glam::{DQuat, DVec2, DVec3, EulerRot};
+use serde::{Deserialize, Serialize};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fs,
+    ops::Range,
+    path::Path,
+};
+
+/// Fabric properties are independent of how an individual panel is cut on the roll.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FabricProperties {
+    pub warp: f64,
+    pub weft: f64,
+    pub shear: f64,
+    pub compression_ratio: f64,
+    pub compression_transition: f64,
+    pub bend_warp: f64,
+    pub bend_weft: f64,
+    pub density: f64,
+    pub thickness: f64,
+}
+impl Default for FabricProperties {
+    fn default() -> Self {
+        Self::from(&Material::default())
+    }
+}
+impl From<&Material> for FabricProperties {
+    fn from(m: &Material) -> Self {
+        Self {
+            warp: m.warp,
+            weft: m.weft,
+            shear: m.shear,
+            compression_ratio: m.compression_ratio,
+            compression_transition: m.compression_transition,
+            bend_warp: m.bend_warp,
+            bend_weft: m.bend_weft,
+            density: m.density,
+            thickness: m.thickness,
+        }
+    }
+}
+impl FabricProperties {
+    pub fn bind(&self, grain_degrees: f64) -> Material {
+        Material {
+            warp: self.warp,
+            weft: self.weft,
+            shear: self.shear,
+            compression_ratio: self.compression_ratio,
+            compression_transition: self.compression_transition,
+            bend_warp: self.bend_warp,
+            bend_weft: self.bend_weft,
+            density: self.density,
+            thickness: self.thickness,
+            grain_degrees,
+        }
+    }
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Fabric {
+    pub id: String,
+    pub name: String,
+    pub properties: FabricProperties,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Placement {
+    pub translation: DVec3,
+    /// R = Rx * Ry * Rz (column vectors); rotates the local (u,-v,0) panel.
+    pub rotation_degrees: DVec3,
+}
+impl Default for Placement {
+    fn default() -> Self {
+        Self {
+            translation: DVec3::ZERO,
+            rotation_degrees: DVec3::ZERO,
+        }
+    }
+}
+impl Placement {
+    pub fn transform(&self, p: DVec3) -> DVec3 {
+        let r = self.rotation_degrees * (std::f64::consts::PI / 180.0);
+        DQuat::from_euler(EulerRot::XYZ, r.x, r.y, r.z) * p + self.translation
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Corner {
+    TopLeft,
+    TopRight,
+    BottomRight,
+    BottomLeft,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Panel {
+    pub id: String,
+    pub name: String,
+    pub pattern: Pattern,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub polygon: Option<PolygonPattern>,
+    pub fabric: String,
+    pub grain_degrees: f64,
+    pub placement: Placement,
+    #[serde(default)]
+    pub pins: Vec<Corner>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub pin_points: Vec<DVec2>,
+}
+impl Panel {
+    pub fn boundary_vertices(&self, side: Side, offset: usize) -> Vec<usize> {
+        let (nx, ny) = (self.pattern.nx, self.pattern.ny);
+        let vertices: Vec<_> = match side {
+            Side::Top => (0..=nx).collect(),
+            Side::Right => (0..=ny).map(|j| j * (nx + 1) + nx).collect(),
+            Side::Bottom => (0..=nx).rev().map(|i| ny * (nx + 1) + i).collect(),
+            Side::Left => (0..=ny).rev().map(|j| j * (nx + 1)).collect(),
+        };
+        vertices.into_iter().map(|i| i + offset).collect()
+    }
+    fn corner(&self, corner: Corner) -> usize {
+        let (nx, ny) = (self.pattern.nx, self.pattern.ny);
+        match corner {
+            Corner::TopLeft => 0,
+            Corner::TopRight => nx,
+            Corner::BottomRight => ny * (nx + 1) + nx,
+            Corner::BottomLeft => ny * (nx + 1),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GarmentTemplate {
+    pub format: String,
+    pub version: u32,
+    pub name: String,
+    pub fabrics: Vec<Fabric>,
+    pub panels: Vec<Panel>,
+    pub seams: Vec<SeamSpec>,
+}
+#[derive(Clone, Debug)]
+pub struct PanelRange {
+    pub id: String,
+    pub vertices: Range<usize>,
+    pub triangles: Range<usize>,
+    pub material: usize,
+    pub boundaries: BTreeMap<String, Vec<usize>>,
+}
+#[derive(Clone, Debug)]
+pub struct CompiledGarment {
+    pub mesh: Mesh,
+    pub initial_state: State,
+    /// One orientation-bound material per panel, derived from shared fabric properties.
+    pub materials: Vec<Material>,
+    pub vertex_material: Vec<usize>,
+    pub seams: Vec<CompiledSeam>,
+    pub panels: Vec<PanelRange>,
+    pub warnings: Vec<String>,
+}
+
+fn valid_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 80
+        && id
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
+}
+fn unique_ids<'a>(ids: impl Iterator<Item = &'a str>, kind: &str) -> Result<(), String> {
+    let mut seen = BTreeSet::new();
+    for id in ids {
+        if !valid_id(id) || !seen.insert(id) {
+            return Err(format!("Invalid or duplicate {kind} id: {id}"));
+        }
+    }
+    Ok(())
+}
+impl GarmentTemplate {
+    pub fn load(path: &Path) -> Result<Self, String> {
+        let template: Self =
+            serde_json::from_str(&fs::read_to_string(path).map_err(|e| e.to_string())?)
+                .map_err(|e| e.to_string())?;
+        template.compile()?;
+        Ok(template)
+    }
+    pub fn save(&self, path: &Path) -> Result<(), String> {
+        self.compile()?;
+        fs::write(
+            path,
+            serde_json::to_string_pretty(self).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())
+    }
+    pub fn compile(&self) -> Result<CompiledGarment, String> {
+        if self.format != "marvelous-cloth-template" || !(1..=2).contains(&self.version) {
+            return Err("Unsupported garment template format/version".into());
+        }
+        if self.version == 1
+            && (self
+                .panels
+                .iter()
+                .any(|p| p.polygon.is_some() || !p.pin_points.is_empty())
+                || self
+                    .seams
+                    .iter()
+                    .any(|s| s.a.edge.is_some() || s.b.edge.is_some()))
+        {
+            return Err("Polygon geometry and material pins require template version 2".into());
+        }
+        if self.panels.is_empty()
+            || self.panels.len() > 128
+            || self.fabrics.is_empty()
+            || self.seams.len() > 512
+        {
+            return Err("Template needs 1..128 panels, fabrics and at most 512 seams".into());
+        }
+        unique_ids(self.panels.iter().map(|p| p.id.as_str()), "panel")?;
+        unique_ids(self.fabrics.iter().map(|f| f.id.as_str()), "fabric")?;
+        unique_ids(self.seams.iter().map(|s| s.id.as_str()), "seam")?;
+        for f in &self.fabrics {
+            f.properties.bind(0.0).validate()?;
+        }
+        let mut out = CompiledGarment {
+            mesh: Mesh {
+                uv: vec![],
+                triangles: vec![],
+                hinges: vec![],
+                rest_area: vec![],
+                masses: vec![],
+                pins: vec![],
+            },
+            initial_state: State {
+                x: vec![],
+                v: vec![],
+                time: 0.0,
+            },
+            materials: vec![],
+            vertex_material: vec![],
+            seams: vec![],
+            panels: vec![],
+            warnings: vec![],
+        };
+        for panel in &self.panels {
+            let f = self
+                .fabrics
+                .iter()
+                .find(|f| f.id == panel.fabric)
+                .ok_or_else(|| {
+                    format!(
+                        "Panel {} references missing fabric {}",
+                        panel.id, panel.fabric
+                    )
+                })?;
+            if !panel.placement.translation.is_finite()
+                || !panel.placement.rotation_degrees.is_finite()
+            {
+                return Err(format!("Non-finite placement for {}", panel.id));
+            }
+            if panel
+                .pins
+                .iter()
+                .enumerate()
+                .any(|(i, p)| panel.pins[..i].contains(p))
+            {
+                return Err(format!("Duplicate pin in {}", panel.id));
+            }
+            let material = f.properties.bind(panel.grain_degrees);
+            let (mut mesh, mut boundaries) = if let Some(polygon) = &panel.polygon {
+                if !panel.pins.is_empty() {
+                    return Err("Polygon panels use pin_points, not rectangle corners".into());
+                }
+                if polygon.points.iter().any(|p| {
+                    p.x < 0.0
+                        || p.y < 0.0
+                        || p.x > panel.pattern.width + 1e-9
+                        || p.y > panel.pattern.height + 1e-9
+                }) {
+                    return Err("Polygon outside declared pattern bounds".into());
+                }
+                let built = polygon.build(&material)?;
+                (built.mesh, built.boundaries)
+            } else {
+                (
+                    panel.pattern.build(&material, Scene::Sphere)?.0,
+                    BTreeMap::new(),
+                )
+            };
+            let vertex_start = out.mesh.uv.len();
+            let tri_start = out.mesh.triangles.len();
+            let material_id = out.materials.len();
+            let x: Vec<_> = mesh
+                .uv
+                .iter()
+                .map(|p| panel.placement.transform(DVec3::new(p.x, -p.y, 0.0)))
+                .collect();
+            if x.iter().any(|p| !p.is_finite()) {
+                return Err("Placement overflow".into());
+            }
+            mesh.pins.fill(None);
+            for corner in &panel.pins {
+                let i = panel.corner(*corner);
+                mesh.pins[i] = Some(x[i]);
+            }
+            for point in &panel.pin_points {
+                let i = mesh
+                    .uv
+                    .iter()
+                    .position(|p| p.distance(*point) < 1e-9)
+                    .ok_or("Pin point must coincide with a rest mesh vertex")?;
+                mesh.pins[i] = Some(x[i]);
+            }
+            for ids in boundaries.values_mut() {
+                for i in ids {
+                    *i += vertex_start;
+                }
+            }
+            for t in &mut mesh.triangles {
+                t.vertices = t.vertices.map(|i| i + vertex_start);
+                t.material = material_id;
+            }
+            for h in &mut mesh.hinges {
+                h.vertices = h.vertices.map(|i| i + vertex_start);
+                h.material = material_id;
+            }
+            out.vertex_material
+                .extend(std::iter::repeat_n(material_id, x.len()));
+            out.initial_state
+                .v
+                .extend(std::iter::repeat_n(DVec3::ZERO, x.len()));
+            out.initial_state.x.extend(x);
+            out.mesh.uv.extend(mesh.uv);
+            out.mesh.triangles.extend(mesh.triangles);
+            out.mesh.hinges.extend(mesh.hinges);
+            out.mesh.rest_area.extend(mesh.rest_area);
+            out.mesh.masses.extend(mesh.masses);
+            out.mesh.pins.extend(mesh.pins);
+            out.materials.push(material);
+            out.panels.push(PanelRange {
+                id: panel.id.clone(),
+                vertices: vertex_start..out.mesh.uv.len(),
+                triangles: tri_start..out.mesh.triangles.len(),
+                material: material_id,
+                boundaries,
+            });
+        }
+        let curve = |reference: &BoundaryRef, reverse: bool| -> Result<BoundaryCurve, String> {
+            let i = self
+                .panels
+                .iter()
+                .position(|p| p.id == reference.panel)
+                .ok_or_else(|| format!("Missing seam panel {}", reference.panel))?;
+            let vertices = if let Some(edge) = &reference.edge {
+                out.panels[i]
+                    .boundaries
+                    .get(edge)
+                    .cloned()
+                    .ok_or_else(|| format!("Unknown boundary {edge} on {}", reference.panel))?
+            } else {
+                if self.panels[i].polygon.is_some() {
+                    return Err("Polygon seam requires a named edge".into());
+                }
+                self.panels[i].boundary_vertices(reference.side, out.panels[i].vertices.start)
+            };
+            BoundaryCurve::new(&out.mesh, vertices, reference.range, reverse)
+        };
+        for (i, spec) in self.seams.iter().enumerate() {
+            // Reject overlapping seam ownership, including sewing an interval to itself.
+            let refs = [&spec.a, &spec.b];
+            let previous: Vec<_> = self.seams[..i].iter().flat_map(|s| [&s.a, &s.b]).collect();
+            for (j, r) in refs.iter().enumerate() {
+                for other in previous.iter().copied().chain(refs[..j].iter().copied()) {
+                    if r.panel == other.panel
+                        && (if r.edge.is_some() || other.edge.is_some() {
+                            r.edge == other.edge
+                        } else {
+                            r.side == other.side
+                        })
+                        && r.range[0].max(other.range[0]) < r.range[1].min(other.range[1]) - 1e-12
+                    {
+                        return Err(format!(
+                            "Overlapping seam ownership on {} {:?}",
+                            r.panel, r.side
+                        ));
+                    }
+                }
+            }
+            let seam = CompiledSeam::compile(
+                spec,
+                curve(&spec.a, false)?,
+                curve(&spec.b, spec.reverse_b)?,
+            )?;
+            if (seam.lengths[0] - seam.lengths[1]).abs()
+                > 1e-8 * seam.lengths[0].max(seam.lengths[1])
+                || seam.notches.iter().any(|k| (k[0] - k[1]).abs() > 1e-8)
+            {
+                out.warnings.push(format!(
+                    "{}: unequal total or notch-interval lengths ({:.3} / {:.3} m total); no physical gathering model",
+                    seam.id, seam.lengths[0], seam.lengths[1]
+                ));
+            }
+            out.seams.push(seam);
+        }
+        Ok(out)
+    }
+
+    /// Deterministic small fixture: 3x4 and 4x7 cells, independent 3D placements.
+    pub fn two_panel_demo() -> Self {
+        let properties = FabricProperties::default();
+        Self {
+            format: "marvelous-cloth-template".into(),
+            version: 1,
+            name: "Two panels / nonmatching seam".into(),
+            fabrics: vec![Fabric {
+                id: "woven-demo".into(),
+                name: "Uncalibrated woven reference".into(),
+                properties,
+            }],
+            panels: vec![
+                Panel {
+                    polygon: None,
+                    pin_points: vec![],
+                    id: "left".into(),
+                    name: "Left panel".into(),
+                    pattern: Pattern {
+                        width: 0.4,
+                        height: 0.6,
+                        nx: 3,
+                        ny: 4,
+                    },
+                    fabric: "woven-demo".into(),
+                    grain_degrees: 0.0,
+                    placement: Placement {
+                        translation: DVec3::new(-0.4, 1.0, 0.0),
+                        ..Default::default()
+                    },
+                    pins: vec![Corner::TopLeft, Corner::TopRight],
+                },
+                Panel {
+                    polygon: None,
+                    pin_points: vec![],
+                    id: "right".into(),
+                    name: "Right panel".into(),
+                    pattern: Pattern {
+                        width: 0.4,
+                        height: 0.6,
+                        nx: 4,
+                        ny: 7,
+                    },
+                    fabric: "woven-demo".into(),
+                    grain_degrees: 45.0,
+                    placement: Placement {
+                        translation: DVec3::new(0.08, 1.0, 0.03),
+                        rotation_degrees: DVec3::new(8.0, 12.0, 0.0),
+                    },
+                    pins: vec![],
+                },
+            ],
+            seams: vec![SeamSpec {
+                id: "centre-seam".into(),
+                a: BoundaryRef {
+                    edge: None,
+                    panel: "left".into(),
+                    side: Side::Right,
+                    range: [0.0, 1.0],
+                },
+                b: BoundaryRef {
+                    edge: None,
+                    panel: "right".into(),
+                    side: Side::Left,
+                    range: [0.0, 1.0],
+                },
+                reverse_b: true,
+                notches: vec![[0.5, 0.5]],
+                stiffness: 5000.0,
+                allow_ease: false,
+            }],
+        }
+    }
+}
+
+impl CompiledGarment {
+    pub fn max_seam_gap(&self, x: &[DVec3]) -> f64 {
+        self.seams.iter().map(|s| s.max_gap(x)).fold(0.0, f64::max)
+    }
+    pub fn fiber_frames(&self, x: &[DVec3]) -> Vec<energy::FiberFrame> {
+        self.mesh
+            .triangles
+            .iter()
+            .map(|t| energy::fiber_frame(x, t, &self.materials[t.material]))
+            .collect()
+    }
+}

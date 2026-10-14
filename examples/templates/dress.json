@@ -1,0 +1,304 @@
+{
+  "format": "marvelous-cloth-template",
+  "version": 2,
+  "name": "dress / MakeHuman 1.75 m engineering fixture",
+  "fabrics": [
+    {
+      "id": "woven-reference",
+      "name": "Uncalibrated woven reference",
+      "properties": {
+        "warp": 350.0,
+        "weft": 180.0,
+        "shear": 45.0,
+        "compression_ratio": 0.15,
+        "compression_transition": 0.005,
+        "bend_warp": 0.00008,
+        "bend_weft": 0.00004,
+        "density": 0.2,
+        "thickness": 0.001
+      }
+    }
+  ],
+  "panels": [
+    {
+      "id": "front",
+      "name": "dress front",
+      "pattern": {
+        "width": 1.0,
+        "height": 1.08,
+        "nx": 1,
+        "ny": 1
+      },
+      "polygon": {
+        "points": [
+          [
+            0.42,
+            0.0
+          ],
+          [
+            0.46,
+            0.065
+          ],
+          [
+            0.54,
+            0.065
+          ],
+          [
+            0.58,
+            0.0
+          ],
+          [
+            0.72,
+            0.035
+          ],
+          [
+            0.74,
+            0.23
+          ],
+          [
+            0.94,
+            1.08
+          ],
+          [
+            0.06,
+            1.08
+          ],
+          [
+            0.26,
+            0.23
+          ],
+          [
+            0.28,
+            0.035
+          ]
+        ],
+        "edges": [
+          "neck-left",
+          "neck-bottom",
+          "neck-right",
+          "shoulder-right",
+          "armhole-right",
+          "side-right",
+          "hem",
+          "side-left",
+          "armhole-left",
+          "shoulder-left"
+        ],
+        "subdivisions": 2,
+        "meshing": {
+          "target_edge_m": 0.03,
+          "anisotropy": 1.0,
+          "axis_degrees": 0.0,
+          "min_angle_degrees": 25.0,
+          "max_vertices": 20000
+        }
+      },
+      "fabric": "woven-reference",
+      "grain_degrees": 90.0,
+      "placement": {
+        "translation": [
+          -0.5,
+          1.5,
+          0.38
+        ],
+        "rotation_degrees": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "pins": []
+    },
+    {
+      "id": "back",
+      "name": "dress back",
+      "pattern": {
+        "width": 1.0,
+        "height": 1.08,
+        "nx": 1,
+        "ny": 1
+      },
+      "polygon": {
+        "points": [
+          [
+            0.42,
+            0.0
+          ],
+          [
+            0.46,
+            0.065
+          ],
+          [
+            0.54,
+            0.065
+          ],
+          [
+            0.58,
+            0.0
+          ],
+          [
+            0.72,
+            0.035
+          ],
+          [
+            0.74,
+            0.23
+          ],
+          [
+            0.94,
+            1.08
+          ],
+          [
+            0.06,
+            1.08
+          ],
+          [
+            0.26,
+            0.23
+          ],
+          [
+            0.28,
+            0.035
+          ]
+        ],
+        "edges": [
+          "neck-left",
+          "neck-bottom",
+          "neck-right",
+          "shoulder-right",
+          "armhole-right",
+          "side-right",
+          "hem",
+          "side-left",
+          "armhole-left",
+          "shoulder-left"
+        ],
+        "subdivisions": 2,
+        "meshing": {
+          "target_edge_m": 0.03,
+          "anisotropy": 1.0,
+          "axis_degrees": 0.0,
+          "min_angle_degrees": 25.0,
+          "max_vertices": 20000
+        }
+      },
+      "fabric": "woven-reference",
+      "grain_degrees": 90.0,
+      "placement": {
+        "translation": [
+          -0.5,
+          1.5,
+          -0.15
+        ],
+        "rotation_degrees": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "pins": []
+    }
+  ],
+  "seams": [
+    {
+      "id": "shoulder-right",
+      "a": {
+        "panel": "front",
+        "side": "top",
+        "edge": "shoulder-right",
+        "range": [
+          0.0,
+          1.0
+        ]
+      },
+      "b": {
+        "panel": "back",
+        "side": "top",
+        "edge": "shoulder-right",
+        "range": [
+          0.0,
+          1.0
+        ]
+      },
+      "reverse_b": false,
+      "notches": [],
+      "stiffness": 50000.0,
+      "allow_ease": false
+    },
+    {
+      "id": "side-right",
+      "a": {
+        "panel": "front",
+        "side": "top",
+        "edge": "side-right",
+        "range": [
+          0.0,
+          1.0
+        ]
+      },
+      "b": {
+        "panel": "back",
+        "side": "top",
+        "edge": "side-right",
+        "range": [
+          0.0,
+          1.0
+        ]
+      },
+      "reverse_b": false,
+      "notches": [],
+      "stiffness": 50000.0,
+      "allow_ease": false
+    },
+    {
+      "id": "side-left",
+      "a": {
+        "panel": "front",
+        "side": "top",
+        "edge": "side-left",
+        "range": [
+          0.0,
+          1.0
+        ]
+      },
+      "b": {
+        "panel": "back",
+        "side": "top",
+        "edge": "side-left",
+        "range": [
+          0.0,
+          1.0
+        ]
+      },
+      "reverse_b": false,
+      "notches": [],
+      "stiffness": 50000.0,
+      "allow_ease": false
+    },
+    {
+      "id": "shoulder-left",
+      "a": {
+        "panel": "front",
+        "side": "top",
+        "edge": "shoulder-left",
+        "range": [
+          0.0,
+          1.0
+        ]
+      },
+      "b": {
+        "panel": "back",
+        "side": "top",
+        "edge": "shoulder-left",
+        "range": [
+          0.0,
+          1.0
+        ]
+      },
+      "reverse_b": false,
+      "notches": [],
+      "stiffness": 50000.0,
+      "allow_ease": false
+    }
+  ]
+}

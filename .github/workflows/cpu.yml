@@ -1,0 +1,22 @@
+name: CPU reference
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    env:
+      RAYON_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --all -- --check
+      - run: cargo test --locked --no-default-features -j 2 -- --test-threads=2
+      - run: cargo clippy --locked --no-default-features --all-targets -j 2 -- -D warnings
+      - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/two-panel.json
+      - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/local-ease.json
+      - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/tshirt.json
+      - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/dress.json
+      - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- simulate examples/templates/two-panel.json --steps 30 --threads 2 --output output/ci-template

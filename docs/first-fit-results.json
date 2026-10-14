@@ -1,0 +1,360 @@
+{
+  "date": "2026-10-14",
+  "cpu_profile": "release",
+  "cpu_threads": 2,
+  "gpu_host_profile": "dev opt-level=1",
+  "cases": [
+    {
+      "garment": "tshirt",
+      "cpu": {
+        "avatar_triangles": 26756,
+        "backend": "cpu-f64",
+        "completed_steps": 5,
+        "contact": "discrete vertex/avatar local-signed-distance penalty; no CCD, no friction, no self-collision; face interiors can intersect",
+        "contact_clearance_m": 0.0,
+        "converged_steps": 5,
+        "error": null,
+        "initial_penetration_m": 0.0,
+        "initial_seam_gap_m": 0.008,
+        "last_step": {
+          "assembly_ms": 227.2871,
+          "bending_j": 0.011845138987062326,
+          "contact_j": 0.056665815505089805,
+          "contacting_vertices": 805,
+          "converged": true,
+          "dt_s": 0.0010416666666666667,
+          "element_storage_bytes": 9334896,
+          "gravity_j": 1.3173469721501738,
+          "initial_penetrating_vertices": 797,
+          "kinetic_j": 0.0,
+          "line_search_backtracks": 0,
+          "line_search_ms": 13.2403,
+          "max_regularization": 0.0,
+          "max_seam_gap_m": 0.030428426415456355,
+          "max_strain": 0.4521311515533879,
+          "max_vertex_penetration_m": 0.005052686550372281,
+          "membrane_j": 0.9335990941714202,
+          "min_y_m": 0.9081994049392639,
+          "newton_iterations": 3,
+          "objective_final_j": 2.5100795972029895,
+          "objective_initial_j": 2.52203826779762,
+          "pcg_iterations": 111,
+          "pcg_ms": 339.8134,
+          "residual_rms_n": 3.0321655731688855E-08,
+          "rms_seam_gap_m": 0.0064183122343874485,
+          "seam_j": 0.17905746285430155,
+          "seam_samples": 168,
+          "step_ms": 608.7069,
+          "time_s": 0.014583333333333334,
+          "tolerance_n": 1.8107683557542534E-06,
+          "triangles": 3140,
+          "vertices": 1704
+        },
+        "mean_accepted_step_ms": 3190.34038,
+        "meshes": [
+          {
+            "panel": "front",
+            "quality": {
+              "max_edge_m": 0.034197253752030574,
+              "max_metric_triangle_area": 0.43264245956761443,
+              "max_triangle_area_m2": 0.0002704015372297581,
+              "median_edge_m": 0.02030130559712125,
+              "min_angle_degrees": 25.077823882489326,
+              "min_metric_angle_degrees": 25.077823882489326,
+              "triangles": 1570
+            },
+            "settings": {
+              "anisotropy": 1.0,
+              "axis_degrees": 0.0,
+              "max_vertices": 20000,
+              "min_angle_degrees": 25.0,
+              "target_edge_m": 0.025
+            },
+            "vertices": 852
+          },
+          {
+            "panel": "back",
+            "quality": {
+              "max_edge_m": 0.034197253752030574,
+              "max_metric_triangle_area": 0.43264245956761443,
+              "max_triangle_area_m2": 0.0002704015372297581,
+              "median_edge_m": 0.02030130559712125,
+              "min_angle_degrees": 25.077823882489326,
+              "min_metric_angle_degrees": 25.077823882489326,
+              "triangles": 1570
+            },
+            "settings": {
+              "anisotropy": 1.0,
+              "axis_degrees": 0.0,
+              "max_vertices": 20000,
+              "min_angle_degrees": 25.0,
+              "target_edge_m": 0.025
+            },
+            "vertices": 852
+          }
+        ],
+        "mode": "incremental assembly relaxation; zero velocity at each accepted step, pseudo-time only",
+        "requested_steps": 5,
+        "retries": 2,
+        "status": "completed",
+        "total_wall_ms_including_retries": 36219.3172
+      },
+      "gpu": {
+        "adapter": "NVIDIA GeForce RTX 3090",
+        "avatar_triangles": 26756,
+        "backend": "Vulkan",
+        "cloth_triangles": 3140,
+        "cpu_prepare_submit_and_wait_median_ms": 6.9482,
+        "device_type": "DiscreteGpu",
+        "driver": "NVIDIA",
+        "driver_info": "616.56",
+        "gpu_render_median_ms": 0.018432,
+        "gpu_render_p95_ms": 0.019456,
+        "measured_frames": 60,
+        "resolution": [
+          1200,
+          1200
+        ],
+        "scope": "Offscreen static 3D render pass; no window presentation, no physics solve, no FPS claim",
+        "timestamp_query": true,
+        "warmup_frames": 12
+      }
+    },
+    {
+      "garment": "dress",
+      "cpu": {
+        "avatar_triangles": 26756,
+        "backend": "cpu-f64",
+        "completed_steps": 5,
+        "contact": "discrete vertex/avatar local-signed-distance penalty; no CCD, no friction, no self-collision; face interiors can intersect",
+        "contact_clearance_m": 0.0,
+        "converged_steps": 5,
+        "error": null,
+        "initial_penetration_m": 0.0,
+        "initial_seam_gap_m": 0.008,
+        "last_step": {
+          "assembly_ms": 952.6797000000001,
+          "bending_j": 0.008001184654029686,
+          "contact_j": 0.07469355941390711,
+          "contacting_vertices": 896,
+          "converged": true,
+          "dt_s": 0.0020833333333333333,
+          "element_storage_bytes": 16700800,
+          "gravity_j": 1.6723476535842619,
+          "initial_penetrating_vertices": 851,
+          "kinetic_j": 0.0,
+          "line_search_backtracks": 0,
+          "line_search_ms": 80.1601,
+          "max_regularization": 1519.191556653051,
+          "max_seam_gap_m": 0.04773590781118222,
+          "max_strain": 0.38580271743945427,
+          "max_vertex_penetration_m": 0.005974401597987185,
+          "membrane_j": 1.0669310869825088,
+          "min_y_m": 0.4133444753492647,
+          "newton_iterations": 9,
+          "objective_final_j": 3.1354898133537352,
+          "objective_initial_j": 3.189945618267712,
+          "pcg_iterations": 427,
+          "pcg_ms": 2261.1893000000005,
+          "residual_rms_n": 2.634193449821959E-07,
+          "rms_seam_gap_m": 0.0073723537440811,
+          "seam_j": 0.26436113121835547,
+          "seam_samples": 202,
+          "step_ms": 3386.7562,
+          "time_s": 0.016666666666666666,
+          "tolerance_n": 1.5068526781503596E-06,
+          "triangles": 5664,
+          "vertices": 3000
+        },
+        "mean_accepted_step_ms": 4052.07094,
+        "meshes": [
+          {
+            "panel": "front",
+            "quality": {
+              "max_edge_m": 0.03260469972498051,
+              "max_metric_triangle_area": 0.432984729399047,
+              "max_triangle_area_m2": 0.000270615455874405,
+              "median_edge_m": 0.0199080126797468,
+              "min_angle_degrees": 25.314509661877754,
+              "min_metric_angle_degrees": 25.314509661877754,
+              "triangles": 2832
+            },
+            "settings": {
+              "anisotropy": 1.0,
+              "axis_degrees": 0.0,
+              "max_vertices": 20000,
+              "min_angle_degrees": 25.0,
+              "target_edge_m": 0.025
+            },
+            "vertices": 1500
+          },
+          {
+            "panel": "back",
+            "quality": {
+              "max_edge_m": 0.03260469972498051,
+              "max_metric_triangle_area": 0.432984729399047,
+              "max_triangle_area_m2": 0.000270615455874405,
+              "median_edge_m": 0.0199080126797468,
+              "min_angle_degrees": 25.314509661877754,
+              "min_metric_angle_degrees": 25.314509661877754,
+              "triangles": 2832
+            },
+            "settings": {
+              "anisotropy": 1.0,
+              "axis_degrees": 0.0,
+              "max_vertices": 20000,
+              "min_angle_degrees": 25.0,
+              "target_edge_m": 0.025
+            },
+            "vertices": 1500
+          }
+        ],
+        "mode": "incremental assembly relaxation; zero velocity at each accepted step, pseudo-time only",
+        "requested_steps": 5,
+        "retries": 1,
+        "status": "completed",
+        "total_wall_ms_including_retries": 87702.0883
+      },
+      "gpu": {
+        "adapter": "NVIDIA GeForce RTX 3090",
+        "avatar_triangles": 26756,
+        "backend": "Vulkan",
+        "cloth_triangles": 5664,
+        "cpu_prepare_submit_and_wait_median_ms": 7.724,
+        "device_type": "DiscreteGpu",
+        "driver": "NVIDIA",
+        "driver_info": "616.56",
+        "gpu_render_median_ms": 0.018432,
+        "gpu_render_p95_ms": 0.019456,
+        "measured_frames": 60,
+        "resolution": [
+          1200,
+          1200
+        ],
+        "scope": "Offscreen static 3D render pass; no window presentation, no physics solve, no FPS claim",
+        "timestamp_query": true,
+        "warmup_frames": 12
+      }
+    }
+  ],
+  "mesh_only_15mm": {
+    "avatar_triangles": 26756,
+    "backend": "cpu-f64",
+    "completed_steps": 0,
+    "contact": "discrete vertex/avatar local-signed-distance penalty; no CCD, no friction, no self-collision; face interiors can intersect",
+    "contact_clearance_m": 0.0,
+    "converged_steps": 0,
+    "error": null,
+    "initial_penetration_m": 0.0,
+    "initial_seam_gap_m": 0.008,
+    "last_step": null,
+    "mean_accepted_step_ms": 0.0,
+    "meshes": [
+      {
+        "panel": "front",
+        "quality": {
+          "max_edge_m": 0.02078436745561597,
+          "max_metric_triangle_area": 0.43262604512476593,
+          "max_triangle_area_m2": 9.734086015307268E-05,
+          "median_edge_m": 0.012129351084221291,
+          "min_angle_degrees": 25.156236796773662,
+          "min_metric_angle_degrees": 25.156236796773662,
+          "triangles": 4384
+        },
+        "settings": {
+          "anisotropy": 1.0,
+          "axis_degrees": 0.0,
+          "max_vertices": 20000,
+          "min_angle_degrees": 25.0,
+          "target_edge_m": 0.015
+        },
+        "vertices": 2306
+      },
+      {
+        "panel": "back",
+        "quality": {
+          "max_edge_m": 0.02078436745561597,
+          "max_metric_triangle_area": 0.43262604512476593,
+          "max_triangle_area_m2": 9.734086015307268E-05,
+          "median_edge_m": 0.012129351084221291,
+          "min_angle_degrees": 25.156236796773662,
+          "min_metric_angle_degrees": 25.156236796773662,
+          "triangles": 4384
+        },
+        "settings": {
+          "anisotropy": 1.0,
+          "axis_degrees": 0.0,
+          "max_vertices": 20000,
+          "min_angle_degrees": 25.0,
+          "target_edge_m": 0.015
+        },
+        "vertices": 2306
+      }
+    ],
+    "mode": "incremental assembly relaxation; zero velocity at each accepted step, pseudo-time only",
+    "requested_steps": 0,
+    "retries": 0,
+    "status": "completed",
+    "total_wall_ms_including_retries": 0.0044
+  },
+  "mesh_only_anisotropic": {
+    "avatar_triangles": 26756,
+    "backend": "cpu-f64",
+    "completed_steps": 0,
+    "contact": "discrete vertex/avatar local-signed-distance penalty; no CCD, no friction, no self-collision; face interiors can intersect",
+    "contact_clearance_m": 0.0,
+    "converged_steps": 0,
+    "error": null,
+    "initial_penetration_m": 0.0,
+    "initial_seam_gap_m": 0.008,
+    "last_step": null,
+    "mean_accepted_step_ms": 0.0,
+    "meshes": [
+      {
+        "panel": "front",
+        "quality": {
+          "max_edge_m": 0.06524539197206905,
+          "max_metric_triangle_area": 0.43248565331494654,
+          "max_triangle_area_m2": 0.0005406070666436823,
+          "median_edge_m": 0.030898923194806152,
+          "min_angle_degrees": 13.43744518697724,
+          "min_metric_angle_degrees": 25.540742224816192,
+          "triangles": 798
+        },
+        "settings": {
+          "anisotropy": 2.0,
+          "axis_degrees": 90.0,
+          "max_vertices": 20000,
+          "min_angle_degrees": 25.0,
+          "target_edge_m": 0.025
+        },
+        "vertices": 453
+      },
+      {
+        "panel": "back",
+        "quality": {
+          "max_edge_m": 0.06524539197206905,
+          "max_metric_triangle_area": 0.43248565331494654,
+          "max_triangle_area_m2": 0.0005406070666436823,
+          "median_edge_m": 0.030898923194806152,
+          "min_angle_degrees": 13.43744518697724,
+          "min_metric_angle_degrees": 25.540742224816192,
+          "triangles": 798
+        },
+        "settings": {
+          "anisotropy": 2.0,
+          "axis_degrees": 90.0,
+          "max_vertices": 20000,
+          "min_angle_degrees": 25.0,
+          "target_edge_m": 0.025
+        },
+        "vertices": 453
+      }
+    ],
+    "mode": "incremental assembly relaxation; zero velocity at each accepted step, pseudo-time only",
+    "requested_steps": 0,
+    "retries": 0,
+    "status": "completed",
+    "total_wall_ms_including_retries": 0.0079
+  }
+}
