@@ -1,9 +1,11 @@
 //! Workspace presentation; no physical state or file-format promises live here.
 use super::*;
 
-pub(super) const ACCENT: Color32 = Color32::from_rgb(104, 205, 220);
+/// Workspace accent: a saturated blue that reads on both the light chrome and
+/// the white pattern board.
+pub(super) const ACCENT: Color32 = Color32::from_rgb(30, 136, 229);
 pub(super) fn style(ctx: &egui::Context) {
-    let mut style = (*ctx.style_of(egui::Theme::Dark)).clone();
+    let mut style = (*ctx.style_of(egui::Theme::Light)).clone();
     style.spacing.item_spacing = Vec2::new(8., 6.);
     style.spacing.button_padding = Vec2::new(10., 6.);
     style.spacing.interact_size.y = 28.;
@@ -16,15 +18,15 @@ pub(super) fn style(ctx: &egui::Context) {
     style
         .text_styles
         .insert(egui::TextStyle::Small, egui::FontId::proportional(11.));
-    style.visuals.panel_fill = Color32::from_rgb(32, 37, 45);
-    style.visuals.window_fill = Color32::from_rgb(37, 43, 52);
-    style.visuals.faint_bg_color = Color32::from_rgb(39, 46, 56);
-    style.visuals.extreme_bg_color = Color32::from_rgb(24, 29, 36);
-    style.visuals.selection.bg_fill = Color32::from_rgb(44, 89, 103);
-    style.visuals.selection.stroke = Stroke::new(1., ACCENT);
-    style.visuals.widgets.inactive.bg_fill = Color32::from_rgb(45, 53, 64);
-    style.visuals.widgets.hovered.bg_fill = Color32::from_rgb(61, 75, 89);
-    style.visuals.widgets.active.bg_fill = Color32::from_rgb(44, 89, 103);
+    style.visuals.panel_fill = Color32::from_rgb(0xEC, 0xEC, 0xEC);
+    style.visuals.window_fill = Color32::from_rgb(0xF7, 0xF7, 0xF7);
+    style.visuals.faint_bg_color = Color32::from_rgb(0xDD, 0xDD, 0xDD);
+    style.visuals.extreme_bg_color = Color32::WHITE;
+    style.visuals.selection.bg_fill = ACCENT;
+    style.visuals.selection.stroke = Stroke::new(1., Color32::from_rgb(21, 101, 192));
+    style.visuals.widgets.inactive.bg_fill = Color32::from_rgb(0xDD, 0xDD, 0xDD);
+    style.visuals.widgets.hovered.bg_fill = Color32::from_rgb(0xCB, 0xDD, 0xF0);
+    style.visuals.widgets.active.bg_fill = Color32::from_rgb(0xAE, 0xCC, 0xEC);
     ctx.set_style_of(egui::Theme::Light, style.clone());
     ctx.set_style_of(egui::Theme::Dark, style);
 }

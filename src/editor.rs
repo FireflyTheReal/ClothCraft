@@ -36,7 +36,7 @@ const ACCENT_DEEP: Color32 = Color32::from_rgb(0x15, 0x65, 0xC0);
 const SELECT: Color32 = Color32::from_rgb(0xE8, 0x6A, 0x17);
 /// Neutral backdrop behind the rendered 3D window, matching the wgpu clear
 /// colour in `render.rs` so no seam shows before the first frame lands.
-const VIEW_BG: Color32 = Color32::from_rgb(0x99, 0xA3, 0xB3);
+const VIEW_BG: Color32 = Color32::from_rgb(0xB3, 0xBA, 0xC4);
 const PATTERN_BG: Color32 = Color32::from_rgb(0xFF, 0xFF, 0xFF);
 const PATTERN_GRID: Color32 = Color32::from_rgb(0xE3, 0xE8, 0xEF);
 const PATTERN_MESH: Color32 = Color32::from_rgb(0xB6, 0xC1, 0xCE);

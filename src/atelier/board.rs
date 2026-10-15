@@ -655,7 +655,9 @@ impl Atelier {
     fn paint_board(&mut self, ui: &egui::Ui, rect: egui::Rect, response: &egui::Response) {
         let mut smoke_targets: Vec<(String, egui::Pos2)> = vec![];
         let painter = ui.painter().with_clip_rect(rect);
-        painter.rect_filled(rect, 0., Color32::from_rgb(40, 46, 52));
+        // The pattern board is a white drafting sheet; the 3D window has its own
+        // studio backdrop, so the two do not share a background colour.
+        painter.rect_filled(rect, 0., Color32::from_rgb(0xFA, 0xFA, 0xFB));
         let board = &self.authoring.board;
         let spacing = if board.scale < 140. { 0.25 } else { 0.05 };
         let lo = board.world(rect, rect.min);
@@ -666,7 +668,7 @@ impl Atelier {
                     board.screen(rect, DVec2::new(k as f64 * spacing, lo.y)),
                     board.screen(rect, DVec2::new(k as f64 * spacing, hi.y)),
                 ],
-                Stroke::new(0.5, Color32::from_gray(64)),
+                Stroke::new(0.5, Color32::from_gray(0xDC)),
             );
         }
         for k in (lo.y / spacing).floor() as i32..=(hi.y / spacing).ceil() as i32 {
@@ -675,7 +677,7 @@ impl Atelier {
                     board.screen(rect, DVec2::new(lo.x, k as f64 * spacing)),
                     board.screen(rect, DVec2::new(hi.x, k as f64 * spacing)),
                 ],
-                Stroke::new(0.5, Color32::from_gray(64)),
+                Stroke::new(0.5, Color32::from_gray(0xDC)),
             );
         }
         if !self.authoring.replace {
@@ -694,9 +696,12 @@ impl Atelier {
                     mesh.colored_vertex(
                         point(uv),
                         if selected {
-                            Color32::from_rgb(221, 234, 240)
+                            // Light blue for the active piece, light grey for the
+                            // rest: the board is white, so the fill carries the
+                            // selection instead of a bright outline on dark.
+                            Color32::from_rgb(0xC9, 0xDF, 0xF5)
                         } else {
-                            Color32::from_gray(193)
+                            Color32::from_rgb(0xE9, 0xEC, 0xF1)
                         },
                     );
                 }
@@ -720,18 +725,21 @@ impl Atelier {
                 ));
                 if selected && self.authoring.tool == Tool::Edit {
                     let handle = point(self.rotation_handle(i));
+                    // Amber rather than gold: the board is white now, and gold on
+                    // white does not carry enough contrast for a handle or label.
+                    let handle_color = Color32::from_rgb(0xE0, 0x8A, 0x00);
                     painter.line_segment(
                         [point(DVec2::new(panel.pattern.width * 0.5, 0.)), handle],
-                        Stroke::new(1.5, Color32::GOLD),
+                        Stroke::new(1.5, handle_color),
                     );
-                    painter.circle_filled(handle, 8., Color32::from_rgb(40, 46, 52));
-                    painter.circle_stroke(handle, 8., Stroke::new(2., Color32::GOLD));
+                    painter.circle_filled(handle, 8., Color32::WHITE);
+                    painter.circle_stroke(handle, 8., Stroke::new(2., handle_color));
                     painter.text(
                         handle + Vec2::new(14., 0.),
                         egui::Align2::LEFT_CENTER,
                         format!("↻ {:.0}°", angle.rem_euclid(360.)),
                         egui::FontId::proportional(12.),
-                        Color32::GOLD,
+                        handle_color,
                     );
                     smoke_targets.push(("rotate_2d".into(), handle));
                 }
@@ -826,10 +834,12 @@ impl Atelier {
                     egui::Align2::CENTER_BOTTOM,
                     &panel.name,
                     egui::FontId::proportional(13.),
+                    // Dark labels: the board is a white sheet now, so the old
+                    // white-on-dark piece name would disappear.
                     if selected {
-                        Color32::GOLD
+                        Color32::from_rgb(21, 101, 192)
                     } else {
-                        Color32::WHITE
+                        Color32::from_rgb(0x33, 0x33, 0x33)
                     },
                 );
             }
@@ -875,7 +885,8 @@ impl Atelier {
             egui::Align2::LEFT_BOTTOM,
             format!("Grille {:.0} mm · {:.0} px/m", spacing * 1000., board.scale),
             egui::FontId::proportional(12.),
-            Color32::GRAY,
+            // Dark enough to read on the white board.
+            Color32::from_gray(0x55),
         );
         let targets = [
             ("point0", DVec2::new(0.15, 0.15)),

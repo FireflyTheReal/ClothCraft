@@ -102,7 +102,7 @@ impl Atelier {
                     );
                     let box_rect =
                         egui::Rect::from_center_size(middle, text.size() + Vec2::new(10., 6.));
-                    painter.rect_filled(box_rect, 3., Color32::from_rgb(26, 32, 40));
+                    painter.rect_filled(box_rect, 3., Color32::from_rgb(0xF7, 0xF7, 0xF7));
                     painter.galley(box_rect.min + Vec2::new(5., 3.), text, color);
                 }
             }

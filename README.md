@@ -10,7 +10,7 @@ ClothCraft is an early native Rust experiment in garment authoring and cloth sim
 
 [Contributor entry point](AI_START_HERE.md) · [Roadmap](ROADMAP.md) · [Editing guide](docs/authoring.md) · [Import/export plan](docs/interoperability.md) · [Solver challenge](docs/solver-challenge.md)
 
-![ClothCraft workspace: 3D garment, shared 2D pattern board and properties](docs/images/atelier.png)
+![ClothCraft workspace: 3D garment, shared 2D pattern board and properties](docs/images/atelier-light-theme.png)
 
 ## Behavioral target
 

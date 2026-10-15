@@ -21,3 +21,19 @@ jobs:
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/dress.json
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/curved-panels.json
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- simulate examples/templates/two-panel.json --steps 30 --threads 2 --output output/ci-template
+  # Advisory until it has been verified on this runner: the workflow above only
+  # builds --no-default-features, so editor.rs, render.rs and atelier.rs are
+  # otherwise never compiled on a push. Remove `continue-on-error` once this job
+  # is green on Linux, and drop the same caveat from ROADMAP.md P0.5.
+  desktop:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      RAYON_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: cargo check --locked --features desktop -j 2 --bin cloth-fit --bin marvelous-cloth
+      - run: cargo clippy --locked --features desktop --all-targets -j 2 -- -D warnings

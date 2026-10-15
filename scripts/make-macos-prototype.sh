@@ -3,7 +3,11 @@
 #
 # This is a hand-built prototype, not packaging: no notarization, no installer,
 # no update path, and no Windows equivalent. It exists so a person can open the
-# workspace shell and judge the layout without a terminal.
+# atelier and judge the workspace without a terminal.
+#
+# The bundle launches `cloth-fit --view`, the interactive authoring atelier
+# (draw / sew / arrange / simulate). The older single-panel FEM reference editor
+# is bundled alongside as `marvelous-cloth` if you want to compare.
 #
 # Usage:  scripts/make-macos-prototype.sh [output-directory]
 # Default output directory: prototype/mac
@@ -16,7 +20,8 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 OUT_DIR=${1:-"$ROOT/prototype/mac"}
 APP_NAME="ClothCraft"
 APP="$OUT_DIR/$APP_NAME.app"
-BIN_NAME="marvelous-cloth"
+ATELIER_BIN="cloth-fit"
+EDITOR_BIN="marvelous-cloth"
 ICON_SRC="$ROOT/assets/branding/clothcraft-icon.png"
 
 if [ "$(uname -s)" != "Darwin" ]; then
@@ -24,33 +29,40 @@ if [ "$(uname -s)" != "Darwin" ]; then
   exit 1
 fi
 
-echo "==> Building the desktop feature (release false, dev profile)"
+echo "==> Building the desktop feature"
 cd "$ROOT"
-cargo build --locked --features desktop -j 2
+cargo build --locked --features desktop -j 2 --bin "$ATELIER_BIN" --bin "$EDITOR_BIN"
 
-BIN="$ROOT/target/debug/$BIN_NAME"
-if [ ! -x "$BIN" ]; then
-  echo "Expected binary not found: $BIN" >&2
-  exit 1
-fi
+for name in "$ATELIER_BIN" "$EDITOR_BIN"; do
+  if [ ! -x "$ROOT/target/debug/$name" ]; then
+    echo "Expected binary not found: $ROOT/target/debug/$name" >&2
+    exit 1
+  fi
+done
 
 echo "==> Assembling $APP"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
-cp "$BIN" "$APP/Contents/MacOS/$BIN_NAME"
-chmod +x "$APP/Contents/MacOS/$BIN_NAME"
+cp "$ROOT/target/debug/$ATELIER_BIN" "$APP/Contents/MacOS/$ATELIER_BIN"
+cp "$ROOT/target/debug/$EDITOR_BIN" "$APP/Contents/MacOS/$EDITOR_BIN"
+chmod +x "$APP/Contents/MacOS/$ATELIER_BIN" "$APP/Contents/MacOS/$EDITOR_BIN"
 
-# Launcher: pick a writable working directory so the prototype's output/ folder
-# lands somewhere the user can find, then hand over to the real binary. The
-# bundle executable is this script, not the Rust binary.
+# The atelier resolves `assets/makehuman/mannequin.obj` relative to the working
+# directory, so prefer the repository this bundle was built from and fall back to
+# a writable scratch directory when the bundle has been moved away from it.
 cat > "$APP/Contents/MacOS/$APP_NAME" <<'LAUNCHER'
 #!/bin/sh
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-WORK=${CLOTHCRAFT_WORKDIR:-$HOME/Documents/ClothCraft}
-mkdir -p "$WORK" 2>/dev/null || true
-cd "$WORK" 2>/dev/null || cd "$HOME" || true
-exec "$DIR/marvelous-cloth" "$@"
+ROOT=$(CDPATH= cd -- "$DIR/../../../../.." 2>/dev/null && pwd || true)
+if [ -n "${ROOT:-}" ] && [ -f "$ROOT/assets/makehuman/mannequin.obj" ]; then
+  cd "$ROOT"
+else
+  WORK=${CLOTHCRAFT_WORKDIR:-$HOME/Documents/ClothCraft}
+  mkdir -p "$WORK" 2>/dev/null || true
+  cd "$WORK" 2>/dev/null || cd "$HOME" || true
+fi
+exec "$DIR/cloth-fit" --view "$@"
 LAUNCHER
 chmod +x "$APP/Contents/MacOS/$APP_NAME"
 
@@ -93,8 +105,6 @@ else
   echo "==> No icon source or no sips/iconutil; skipping icon"
 fi
 
-# Ad-hoc signing keeps Gatekeeper quiet for a locally built bundle. It is not a
-# distribution signature and adds no trust beyond "this app was just built here".
 if command -v codesign >/dev/null 2>&1; then
   codesign --force --deep --sign - "$APP" >/dev/null 2>&1 &&
     echo "==> Ad-hoc signed" ||
@@ -102,6 +112,6 @@ if command -v codesign >/dev/null 2>&1; then
 fi
 
 echo
-echo "Built: $APP"
+echo "Built: $APP   (launches cloth-fit --view)"
 echo "Open it with:  open \"$APP\""
-echo "Or run in place: \"$APP/Contents/MacOS/$BIN_NAME\""
+echo "Legacy editor:  \"$APP/Contents/MacOS/$EDITOR_BIN\""

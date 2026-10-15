@@ -77,9 +77,8 @@ pub fn run(
         options,
         Box::new(move |cc| {
             let render = cc.wgpu_render_state.clone().ok_or("wgpu unavailable")?;
-            let mut visuals = egui::Visuals::dark();
-            visuals.panel_fill = Color32::from_rgb(33, 34, 37);
-            cc.egui_ctx.set_visuals(visuals);
+            // `workspace::style` installs the light workspace chrome for both
+            // egui themes, so there is no separate dark override here.
             workspace::style(&cc.egui_ctx);
             let (tx, receive) = worker::start(render.device.clone(), render.queue.clone())?;
             let m = project

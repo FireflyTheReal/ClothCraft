@@ -513,13 +513,13 @@ impl Viewport {
                     depth_slice: None,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        // Studio backdrop for the workspace viewport: light enough
-                        // to read as a garment-CAD window, dark enough to keep the
-                        // near-white cloth clearly separated.
+                        // Studio backdrop for the workspace viewport: a light
+                        // neutral grey that still separates the near-white cloth
+                        // and the grey mannequin.
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.60,
-                            g: 0.64,
-                            b: 0.70,
+                            r: 0.70,
+                            g: 0.73,
+                            b: 0.77,
                             a: 1.0,
                         }),
                         store: wgpu::StoreOp::Store,

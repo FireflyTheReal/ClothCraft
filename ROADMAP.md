@@ -106,21 +106,31 @@ Next reading: darts/pleats, seam allowance, topstitch vs structural sewing, zipp
 
 ## 5. Desktop shell and the macOS prototype
 
-The workspace shell lives in [src/editor.rs](src/editor.rs) and is **presentation only**: it reuses the same solver worker, camera interaction and file I/O as before, and adds no control that does not do something. The 3D garment window and the white 2D pattern window are docked side by side, with a tabbed property inspector on the right, a display palette on the left, a menu bar and tool strip on top, and a status bar below. The light chrome, the accent colour, the pattern-window grid, the cotation marks and the docked title bars are original to this project; no CLO3D icon, screenshot, font or artwork is used, and no CLO3D control is imitated at the pixel level.
+Two desktop applications share the library:
+
+| Binary | Module | What it is |
+|---|---|---|
+| `cloth-fit --view` | [src/atelier.rs](src/atelier.rs) | The interactive authoring atelier: draw, sew, arrange, simulate, export. **This is the app worth testing.** |
+| `marvelous-cloth` | [src/editor.rs](src/editor.rs) | The older single-panel FEM reference editor. |
+
+Both are **presentation only** in their UI layer: they reuse the same solver workers, camera interaction and file I/O, and add no control that does not do something. Both use a light workspace chrome with a blue accent. The atelier's 2D pattern board is a white drafting sheet with a light grid, dark piece names and an amber rotation handle; the 3D window uses a light studio backdrop ([render.rs](src/render.rs)).
 
 Stated plainly, as limits rather than claims:
 
-- **The `desktop` feature is not covered by CI.** `.github/workflows/cpu.yml` builds `--no-default-features`, so `editor.rs`, `render.rs` and `atelier.rs` are never compiled on a push. **A green CI run does not mean the window builds.** That gap is milestone **P0.5**.
+- **The `desktop` feature was not covered by CI.** `.github/workflows/cpu.yml` builds `--no-default-features`, so `editor.rs`, `render.rs` and `atelier.rs` were never compiled on a push, and **a green CI run did not mean the window built**. A `desktop` job now runs `cargo check` and `clippy` with the feature enabled; it is marked `continue-on-error` until it has been verified green on that runner (milestone **P0.5**).
 - The macOS bundle is a **hand-built prototype**, not packaging: no notarization, no installer, no update path, no signing identity. Only the dev profile is built, and no performance claim is attached to it.
-- Docking is **fixed**. Panels resize but cannot be rearranged, torn off or saved as layouts, and there is still no multi-document or multi-view workspace.
-- The displayed physical quantities come from the existing CPU reference and the assembled nodal block-Jacobi solver. Nothing in the shell implies a capability the solvers do not have.
-- **Window appearance was not verified visually by the agent that wrote it.** The GUI process registers as a foreground application, but screen capture is blocked by macOS Screen Recording permission. Layout correctness is therefore reported by the person testing it, not asserted here.
+- Docking is **fixed**. Panels resize but cannot be rearranged, torn off or saved as layouts, and the atelier still has no multi-document workspace.
+- The displayed physical quantities come from the existing solvers. Nothing in the shell implies a capability the solvers do not have.
+- The UI has **no automated visual regression test**. `cargo run --features desktop --bin cloth-fit -- --view --ui-smoke --output <dir>` writes `<dir>/ui.png`, and every colour change here was reviewed on those captures by eye. A pixel-diff baseline would be a real improvement, and is not done.
+- The committed screenshots are **historical evidence, not a mirror of the current theme**. `docs/images/atelier.png` is cited by [publication validation](docs/publication-validation.md) and [turbo](docs/turbo-perf.md) for one specific measured run, so it is deliberately left untouched; `docs/images/atelier-light-theme.png` shows the current light workspace. `authoring.png` and `pattern-board.png` still depict the previous dark theme and should be regenerated from their own runs rather than replaced.
+- No CLO3D icon, screenshot, font, artwork or pixel-level control is copied. The light chrome, accent colour, grid, cotation marks and title strips are original to this project.
 
 Reproduce:
 
 ```sh
-scripts/make-macos-prototype.sh          # -> prototype/mac/ClothCraft.app
-cargo run --features desktop             # or run the binary in place
+scripts/make-macos-prototype.sh                        # -> prototype/mac/ClothCraft.app (launches the atelier)
+cargo run --features desktop --bin cloth-fit -- --view  # the atelier in place
+cargo run --features desktop                           # the legacy FEM editor
 ```
 
 The generated `prototype/` directory is not committed; rebuild it from the script.
