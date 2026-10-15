@@ -28,15 +28,17 @@ impl Atelier {
     }
     pub(super) fn remove_seam(&mut self, seam: String) {
         if self.edit(Command::RemoveSeam { seam }) {
-            self.status = "Couture supprimée · drapé conservé · Ctrl+Z pour annuler".into();
+            self.status = "Seam removed · drape preserved · Ctrl+Z to undo".into();
         }
     }
     pub(super) fn existing_seams(&mut self, ui: &mut egui::Ui) {
         let selected = self.edge_seams();
         let mut remove = None;
         for id in &selected {
-            ui.colored_label(super::seam_links::seam_color(id), format!("Couture : {id}"));
-            let button = ui.button("Supprimer la couture").on_hover_text("Libérer les deux bords sans supprimer le tissu. Raccourci : Suppr. Annuler : Ctrl+Z.");
+            ui.colored_label(super::seam_links::seam_color(id), format!("Seam: {id}"));
+            let button = ui.button("Delete the seam").on_hover_text(
+                "Free both boundaries without deleting the fabric. Shortcut: Del. Undo: Ctrl+Z.",
+            );
             self.smoke_target("remove_seam", button.rect.center());
             if button.clicked() {
                 remove = Some(id.clone());
@@ -44,14 +46,14 @@ impl Atelier {
         }
         let mut select = None;
         egui::CollapsingHeader::new(format!(
-            "Coutures existantes ({})",
+            "Existing seams ({})",
             self.project.template.seams.len()
         ))
         .id_salt("existing_seams")
         .default_open(false)
         .show(ui, |ui| {
             if self.project.template.seams.is_empty() {
-                ui.small("Aucune couture. Coudre relie deux bords.");
+                ui.small("No seams. Sewing links two boundaries.");
             }
             for seam in &self.project.template.seams {
                 ui.horizontal(|ui| {
@@ -69,8 +71,8 @@ impl Atelier {
                         select = Some(seam.a.clone());
                     }
                     if ui
-                        .small_button("Supprimer")
-                        .on_hover_text("Supprimer cette couture uniquement")
+                        .small_button("Delete")
+                        .on_hover_text("Delete this seam only")
                         .clicked()
                     {
                         remove = Some(seam.id.clone());
@@ -79,9 +81,9 @@ impl Atelier {
                 ui.small(format!(
                     "{} / {} ↔ {} / {}",
                     seam.a.panel,
-                    seam.a.edge.as_deref().unwrap_or("bord"),
+                    seam.a.edge.as_deref().unwrap_or("boundary"),
                     seam.b.panel,
-                    seam.b.edge.as_deref().unwrap_or("bord")
+                    seam.b.edge.as_deref().unwrap_or("boundary")
                 ));
             }
         });

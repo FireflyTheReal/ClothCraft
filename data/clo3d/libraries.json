@@ -1,0 +1,1791 @@
+{
+  "scan": {
+    "frameworks": "/Applications/CLO.app/Contents/Frameworks",
+    "pattern": "libClo*.dylib (case-insensitive)",
+    "libraries": 21,
+    "analysed_arch": "arm64",
+    "demangler": "c++filt",
+    "symbol_entries": 90899,
+    "defined": 82778,
+    "undefined": 6965,
+    "debug_entries": 1156,
+    "largest_library": {
+      "name": "libCloScene.dylib",
+      "bytes": 194156592,
+      "symbol_entries": 78098
+    },
+    "note": "nm reads the symbol table of the arm64 slice. Stripped, purely inlined and unnamed local code is invisible; an undefined entry proves an import, not its call sites. `defined + undefined + debug_entries == symbol_entries`; debug entries are stab records, not code symbols, and are excluded from the rankings."
+  },
+  "libraries": [
+    {
+      "name": "libCLOAPIInterface.dylib",
+      "bytes": 121296,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCLOAPIInterface.dylib_arm64",
+      "slice_bytes": 55760,
+      "slice_sha256": "19b46c9f44c04b7a86c204f7195acecfd4e299e40c3f549779b76fb2fae0df6e",
+      "symbol_entries": 121,
+      "defined": 25,
+      "undefined": 3,
+      "debug_entries": 93,
+      "demangled_names": 25,
+      "distinct_top_namespaces": 1,
+      "distinct_engine_classes": 2,
+      "by_symbol_type": {
+        "-": 93,
+        "S": 4,
+        "T": 21,
+        "U": 3
+      },
+      "top_namespaces": [
+        {
+          "name": "CLOAPI",
+          "count": 25
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "APICommand",
+          "count": 24
+        },
+        {
+          "name": "_instance",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "libCloAutoRetopology.dylib",
+      "bytes": 5207536,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloAutoRetopology.dylib_arm64",
+      "slice_bytes": 2405872,
+      "slice_sha256": "d4fc8617689e8e02ab86fb3dea833092222e106c995afeee4119341fd8c5bc6c",
+      "symbol_entries": 2176,
+      "defined": 1963,
+      "undefined": 212,
+      "debug_entries": 1,
+      "demangled_names": 1962,
+      "distinct_top_namespaces": 54,
+      "distinct_engine_classes": 150,
+      "by_symbol_type": {
+        "-": 1,
+        "D": 33,
+        "S": 67,
+        "T": 1863,
+        "U": 212
+      },
+      "top_namespaces": [
+        {
+          "name": "Geometry",
+          "count": 449
+        },
+        {
+          "name": "Marvelous",
+          "count": 338
+        },
+        {
+          "name": "QuadMeshCleanup",
+          "count": 239
+        },
+        {
+          "name": "QuadLayout",
+          "count": 68
+        },
+        {
+          "name": "GlobalParameters",
+          "count": 65
+        },
+        {
+          "name": "FactoryReport",
+          "count": 53
+        },
+        {
+          "name": "PatchesQuadProblem",
+          "count": 50
+        },
+        {
+          "name": "RetopologyProblem",
+          "count": 34
+        },
+        {
+          "name": "CleanUpManager",
+          "count": 33
+        },
+        {
+          "name": "PatchDecomposition",
+          "count": 33
+        },
+        {
+          "name": "RowPaver",
+          "count": 33
+        },
+        {
+          "name": "ComponentProblem",
+          "count": 28
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "QzipMesh",
+          "count": 157
+        },
+        {
+          "name": "PatchGeneratorV2",
+          "count": 132
+        },
+        {
+          "name": "Mesh",
+          "count": 122
+        },
+        {
+          "name": "Node",
+          "count": 109
+        },
+        {
+          "name": "Edge",
+          "count": 73
+        },
+        {
+          "name": "Face",
+          "count": 70
+        },
+        {
+          "name": "QuadLayout",
+          "count": 67
+        },
+        {
+          "name": "PatchGenerator",
+          "count": 64
+        },
+        {
+          "name": "FactoryReport",
+          "count": 53
+        },
+        {
+          "name": "PatchesQuadProblem",
+          "count": 50
+        },
+        {
+          "name": "RetopologyProblem",
+          "count": 34
+        },
+        {
+          "name": "CleanUpManager",
+          "count": 33
+        }
+      ]
+    },
+    {
+      "name": "libCloCV.dylib",
+      "bytes": 504464,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloCV.dylib_arm64",
+      "slice_bytes": 242320,
+      "slice_sha256": "b85589ab00d71129f454bd64f06c2a3edb9bdb9cf426a2a688cb424d200ef9eb",
+      "symbol_entries": 1570,
+      "defined": 381,
+      "undefined": 144,
+      "debug_entries": 1045,
+      "demangled_names": 280,
+      "distinct_top_namespaces": 6,
+      "distinct_engine_classes": 35,
+      "by_symbol_type": {
+        "-": 1045,
+        "S": 1,
+        "T": 24,
+        "U": 144,
+        "b": 2,
+        "d": 1,
+        "s": 131,
+        "t": 222
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 116
+        },
+        {
+          "name": "std",
+          "count": 111
+        },
+        {
+          "name": "void std",
+          "count": 13
+        },
+        {
+          "name": "cv",
+          "count": 11
+        },
+        {
+          "name": "bool std",
+          "count": 5
+        },
+        {
+          "name": "clocv_internal",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "__func<Marvelous",
+          "count": 60
+        },
+        {
+          "name": "vector",
+          "count": 26
+        },
+        {
+          "name": "Marvelous",
+          "count": 25
+        },
+        {
+          "name": "__1",
+          "count": 21
+        },
+        {
+          "name": "CloCVSpiBackendOpenCvDesktop",
+          "count": 16
+        },
+        {
+          "name": "CloCVSpiLegacyCpuBackend",
+          "count": 16
+        },
+        {
+          "name": "CloCVSpiBackendMobileNoOpenCv",
+          "count": 14
+        },
+        {
+          "name": "CloCVSpiBackendOpenCvMobile",
+          "count": 14
+        },
+        {
+          "name": "__shared_ptr_emplace",
+          "count": 7
+        },
+        {
+          "name": "CloCVSpiBackendRegistry",
+          "count": 6
+        },
+        {
+          "name": "CloCVSpiCore",
+          "count": 6
+        },
+        {
+          "name": "ParallelLoopBodyLambdaWrapper",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "name": "libCloCore.dylib",
+      "bytes": 119040,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloCore.dylib_arm64",
+      "slice_bytes": 53504,
+      "slice_sha256": "89601fa782878f5b663d4ca65cba4a4930ece4d127d03f675317f452cdbd08dd",
+      "symbol_entries": 22,
+      "defined": 5,
+      "undefined": 16,
+      "debug_entries": 1,
+      "demangled_names": 5,
+      "distinct_top_namespaces": 1,
+      "distinct_engine_classes": 1,
+      "by_symbol_type": {
+        "-": 1,
+        "T": 5,
+        "U": 16
+      },
+      "top_namespaces": [
+        {
+          "name": "clo",
+          "count": 5
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "clo",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "name": "libCloDeforMarvel.dylib",
+      "bytes": 1839712,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloDeforMarvel.dylib_arm64",
+      "slice_bytes": 905824,
+      "slice_sha256": "c6c409c183c8f2d5a428a9efdd35ada1f9ee4a99d7018560ce8bd25b52df0f05",
+      "symbol_entries": 1294,
+      "defined": 937,
+      "undefined": 356,
+      "debug_entries": 1,
+      "demangled_names": 936,
+      "distinct_top_namespaces": 4,
+      "distinct_engine_classes": 30,
+      "by_symbol_type": {
+        "-": 1,
+        "S": 36,
+        "T": 901,
+        "U": 356
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 912
+        },
+        {
+          "name": "FractureCriterion",
+          "count": 22
+        },
+        {
+          "name": "nanoflann",
+          "count": 1
+        },
+        {
+          "name": "std",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "DeforMarvel",
+          "count": 336
+        },
+        {
+          "name": "Mesh",
+          "count": 89
+        },
+        {
+          "name": "InteractiveMesh",
+          "count": 76
+        },
+        {
+          "name": "DeforMarvelProperty",
+          "count": 65
+        },
+        {
+          "name": "SkinMesh",
+          "count": 55
+        },
+        {
+          "name": "MetalSimBackend",
+          "count": 50
+        },
+        {
+          "name": "RigidMesh",
+          "count": 41
+        },
+        {
+          "name": "SoftBodyMesh",
+          "count": 34
+        },
+        {
+          "name": "Voxel",
+          "count": 33
+        },
+        {
+          "name": "Marvelous",
+          "count": 23
+        },
+        {
+          "name": "FractureCriterion",
+          "count": 22
+        },
+        {
+          "name": "CpuSimBackend",
+          "count": 17
+        }
+      ]
+    },
+    {
+      "name": "libCloKnit_Core.dylib",
+      "bytes": 1263072,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloKnit_Core.dylib_arm64",
+      "slice_bytes": 558560,
+      "slice_sha256": "4c3b42cfc2093abf66cf1de3f9df89cb0d6cbaca0b67ac47e1f1a729b071c866",
+      "symbol_entries": 434,
+      "defined": 273,
+      "undefined": 160,
+      "debug_entries": 1,
+      "demangled_names": 273,
+      "distinct_top_namespaces": 2,
+      "distinct_engine_classes": 26,
+      "by_symbol_type": {
+        "-": 1,
+        "S": 25,
+        "T": 248,
+        "U": 160
+      },
+      "top_namespaces": [
+        {
+          "name": "clo",
+          "count": 272
+        },
+        {
+          "name": "std",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "knit",
+          "count": 61
+        },
+        {
+          "name": "ChartGraphBuilder",
+          "count": 30
+        },
+        {
+          "name": "Graph",
+          "count": 23
+        },
+        {
+          "name": "MissStitchView",
+          "count": 21
+        },
+        {
+          "name": "Simulation",
+          "count": 18
+        },
+        {
+          "name": "PeriodicYarnPattern",
+          "count": 17
+        },
+        {
+          "name": "VertexIncidentRange",
+          "count": 16
+        },
+        {
+          "name": "KnitGraph",
+          "count": 9
+        },
+        {
+          "name": "KnitPurlStitchView",
+          "count": 9
+        },
+        {
+          "name": "Vertex",
+          "count": 9
+        },
+        {
+          "name": "VertexIncidentEdgeIterator",
+          "count": 7
+        },
+        {
+          "name": "VertexIncidentVertexIterator",
+          "count": 7
+        }
+      ]
+    },
+    {
+      "name": "libCloKnit_SwatchEditor.dylib",
+      "bytes": 301664,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloKnit_SwatchEditor.dylib_arm64",
+      "slice_bytes": 137824,
+      "slice_sha256": "7bae2e44ff14a8323a7860396d8362b7b36038725f9c7dd179941f2fee2f4b83",
+      "symbol_entries": 173,
+      "defined": 96,
+      "undefined": 76,
+      "debug_entries": 1,
+      "demangled_names": 96,
+      "distinct_top_namespaces": 3,
+      "distinct_engine_classes": 9,
+      "by_symbol_type": {
+        "-": 1,
+        "S": 1,
+        "T": 95,
+        "U": 76
+      },
+      "top_namespaces": [
+        {
+          "name": "clo",
+          "count": 73
+        },
+        {
+          "name": "Magnum",
+          "count": 22
+        },
+        {
+          "name": "std",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "KnitEditorController",
+          "count": 24
+        },
+        {
+          "name": "ArcBallCamera",
+          "count": 21
+        },
+        {
+          "name": "ArcBall",
+          "count": 20
+        },
+        {
+          "name": "SelectionManager",
+          "count": 15
+        },
+        {
+          "name": "knit",
+          "count": 6
+        },
+        {
+          "name": "ChartRegion",
+          "count": 4
+        },
+        {
+          "name": "HoverPicker",
+          "count": 3
+        },
+        {
+          "name": "DualQuaternion",
+          "count": 2
+        },
+        {
+          "name": "piecewise_construct",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "libCloMath.dylib",
+      "bytes": 859232,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloMath.dylib_arm64",
+      "slice_bytes": 400480,
+      "slice_sha256": "f25a4631166ea802b000abed0527e5ad73fcca73bc66ed6fc1e5046120a9cdbc",
+      "symbol_entries": 754,
+      "defined": 675,
+      "undefined": 78,
+      "debug_entries": 1,
+      "demangled_names": 660,
+      "distinct_top_namespaces": 15,
+      "distinct_engine_classes": 23,
+      "by_symbol_type": {
+        "-": 1,
+        "D": 2,
+        "S": 18,
+        "T": 655,
+        "U": 78
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 149
+        },
+        {
+          "name": "PiecewiseRippedSeam",
+          "count": 40
+        },
+        {
+          "name": "dualQuat",
+          "count": 35
+        },
+        {
+          "name": "mat4",
+          "count": 30
+        },
+        {
+          "name": "UndirectedGraph",
+          "count": 19
+        },
+        {
+          "name": "quat",
+          "count": 19
+        },
+        {
+          "name": "mat3",
+          "count": 14
+        },
+        {
+          "name": "mat2",
+          "count": 5
+        },
+        {
+          "name": "matMixCSR",
+          "count": 4
+        },
+        {
+          "name": "vec2",
+          "count": 3
+        },
+        {
+          "name": "diaMat6",
+          "count": 2
+        },
+        {
+          "name": "symMat6",
+          "count": 2
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "MVVariant",
+          "count": 85
+        },
+        {
+          "name": "MVVariantMap",
+          "count": 45
+        },
+        {
+          "name": "PiecewiseRippedSeam",
+          "count": 40
+        },
+        {
+          "name": "dualQuat",
+          "count": 33
+        },
+        {
+          "name": "mat4",
+          "count": 30
+        },
+        {
+          "name": "UndirectedGraph",
+          "count": 19
+        },
+        {
+          "name": "quat",
+          "count": 18
+        },
+        {
+          "name": "mat3",
+          "count": 14
+        },
+        {
+          "name": "PiecewiseFunction",
+          "count": 11
+        },
+        {
+          "name": "MVVariantArray",
+          "count": 6
+        },
+        {
+          "name": "mat2",
+          "count": 5
+        },
+        {
+          "name": "matMixCSR",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "name": "libCloScene.dylib",
+      "bytes": 194156592,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloScene.dylib_arm64",
+      "slice_bytes": 89954352,
+      "slice_sha256": "a54d7fa89651187e250cdf5b763c326262403dca37feb4d95b85b6ca7ff04b2b",
+      "symbol_entries": 78098,
+      "defined": 73559,
+      "undefined": 4538,
+      "debug_entries": 1,
+      "demangled_names": 72690,
+      "distinct_top_namespaces": 192,
+      "distinct_engine_classes": 3625,
+      "by_symbol_type": {
+        "-": 1,
+        "D": 712,
+        "S": 8487,
+        "T": 64360,
+        "U": 4538
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 60260
+        },
+        {
+          "name": "ceres",
+          "count": 1808
+        },
+        {
+          "name": "MVVRay",
+          "count": 1679
+        },
+        {
+          "name": "clo",
+          "count": 998
+        },
+        {
+          "name": "absl",
+          "count": 979
+        },
+        {
+          "name": "VRay",
+          "count": 590
+        },
+        {
+          "name": "MVUSD",
+          "count": 587
+        },
+        {
+          "name": "MarvelousAvatar",
+          "count": 406
+        },
+        {
+          "name": "Tetgenerate",
+          "count": 324
+        },
+        {
+          "name": "HIK2013",
+          "count": 289
+        },
+        {
+          "name": "MVSubstance",
+          "count": 262
+        },
+        {
+          "name": "MVFbx",
+          "count": 212
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "PatternEditor",
+          "count": 1666
+        },
+        {
+          "name": "Pattern",
+          "count": 1423
+        },
+        {
+          "name": "Shape2D",
+          "count": 1023
+        },
+        {
+          "name": "PBRMaterial",
+          "count": 603
+        },
+        {
+          "name": "AvatarRoot",
+          "count": 577
+        },
+        {
+          "name": "Marvelous",
+          "count": 560
+        },
+        {
+          "name": "Line",
+          "count": 537
+        },
+        {
+          "name": "ThickParametricLine",
+          "count": 524
+        },
+        {
+          "name": "PartitionedMatrixView",
+          "count": 506
+        },
+        {
+          "name": "ClothController",
+          "count": 483
+        },
+        {
+          "name": "UtilityAPI",
+          "count": 463
+        },
+        {
+          "name": "Fabric",
+          "count": 438
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateCommon.dylib",
+      "bytes": 135360,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulateCommon.dylib_arm64",
+      "slice_bytes": 69824,
+      "slice_sha256": "39426e8735d59b0905c0a6fe2f923fbe2b3f3dd64090c4a1189e49ff4952bb0a",
+      "symbol_entries": 21,
+      "defined": 2,
+      "undefined": 18,
+      "debug_entries": 1,
+      "demangled_names": 2,
+      "distinct_top_namespaces": 1,
+      "distinct_engine_classes": 1,
+      "by_symbol_type": {
+        "-": 1,
+        "T": 2,
+        "U": 18
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 2
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "SimInterface",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateCuda.dylib",
+      "bytes": 101008,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulateCuda.dylib_arm64",
+      "slice_bytes": 35472,
+      "slice_sha256": "4f80828a7fb21e4b1da2aa392765834ca59b209587bce29463a0eb98cbb0e7d2",
+      "symbol_entries": 5,
+      "defined": 5,
+      "undefined": 0,
+      "debug_entries": 0,
+      "demangled_names": 3,
+      "distinct_top_namespaces": 2,
+      "distinct_engine_classes": 2,
+      "by_symbol_type": {
+        "S": 2,
+        "T": 3
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 1
+        },
+        {
+          "name": "clo",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "Marvelous",
+          "count": 1
+        },
+        {
+          "name": "clo",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateDataStructures.dylib",
+      "bytes": 158032,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulateDataStructures.dylib_arm64",
+      "slice_bytes": 76112,
+      "slice_sha256": "f7582de56fa00d36922d814c6ab83219a450d4d3496bb6ebd6ae389ee146c37c",
+      "symbol_entries": 97,
+      "defined": 72,
+      "undefined": 24,
+      "debug_entries": 1,
+      "demangled_names": 72,
+      "distinct_top_namespaces": 1,
+      "distinct_engine_classes": 6,
+      "by_symbol_type": {
+        "-": 1,
+        "S": 9,
+        "T": 63,
+        "U": 24
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 72
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "KDTree",
+          "count": 23
+        },
+        {
+          "name": "PLIndex",
+          "count": 19
+        },
+        {
+          "name": "KDTreeInternalNode",
+          "count": 10
+        },
+        {
+          "name": "HashTable",
+          "count": 9
+        },
+        {
+          "name": "KDTreeLeafNode",
+          "count": 6
+        },
+        {
+          "name": "KDSearchInfo",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateEBP.dylib",
+      "bytes": 545696,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulateEBP.dylib_arm64",
+      "slice_bytes": 250784,
+      "slice_sha256": "4f67b8c8093d0f0e83f90d7bdd8409a99fde1dafc2ff9625c91c6c4be23300ec",
+      "symbol_entries": 179,
+      "defined": 68,
+      "undefined": 110,
+      "debug_entries": 1,
+      "demangled_names": 68,
+      "distinct_top_namespaces": 5,
+      "distinct_engine_classes": 5,
+      "by_symbol_type": {
+        "-": 1,
+        "D": 2,
+        "S": 9,
+        "T": 57,
+        "U": 110
+      },
+      "top_namespaces": [
+        {
+          "name": "Parafun",
+          "count": 26
+        },
+        {
+          "name": "BijectivePara",
+          "count": 9
+        },
+        {
+          "name": "LinearSolver",
+          "count": 9
+        },
+        {
+          "name": "ShellData",
+          "count": 4
+        },
+        {
+          "name": "igl",
+          "count": 2
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "Parafun",
+          "count": 26
+        },
+        {
+          "name": "BijectivePara",
+          "count": 9
+        },
+        {
+          "name": "LinearSolver",
+          "count": 9
+        },
+        {
+          "name": "ShellData",
+          "count": 4
+        },
+        {
+          "name": "igl",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateMetal.dylib",
+      "bytes": 729232,
+      "architectures": [
+        "arm64"
+      ],
+      "analysed_slice": "/Applications/CLO.app/Contents/Frameworks/libCloSimulateMetal.dylib",
+      "slice_bytes": 729232,
+      "slice_sha256": "c6cc786897c1ac851de5461d95d57313c3479f28ee4151a0e40bc51dd3f78513",
+      "symbol_entries": 2377,
+      "defined": 2320,
+      "undefined": 56,
+      "debug_entries": 1,
+      "demangled_names": 2269,
+      "distinct_top_namespaces": 5,
+      "distinct_engine_classes": 1903,
+      "by_symbol_type": {
+        "-": 1,
+        "S": 1975,
+        "T": 345,
+        "U": 56
+      },
+      "top_namespaces": [
+        {
+          "name": "MTL",
+          "count": 1668
+        },
+        {
+          "name": "Marvelous",
+          "count": 368
+        },
+        {
+          "name": "NS",
+          "count": 209
+        },
+        {
+          "name": "CA",
+          "count": 22
+        },
+        {
+          "name": "std",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "GpuCooMatrixBuilder",
+          "count": 46
+        },
+        {
+          "name": "ConjugateGradientMetal",
+          "count": 36
+        },
+        {
+          "name": "ForceComputationMetal",
+          "count": 28
+        },
+        {
+          "name": "ThreadPerElementEEProximity",
+          "count": 28
+        },
+        {
+          "name": "ClothSoftBodyProximityMetal",
+          "count": 27
+        },
+        {
+          "name": "SelfCollisionMetal",
+          "count": 27
+        },
+        {
+          "name": "ThreadPerElementVTProximity",
+          "count": 27
+        },
+        {
+          "name": "ClothClothProximityMetal",
+          "count": 20
+        },
+        {
+          "name": "ProximityForceAssemblyMetal",
+          "count": 19
+        },
+        {
+          "name": "ClothRigidBodyProximityMetal",
+          "count": 16
+        },
+        {
+          "name": "IntersectionDetectionMetal",
+          "count": 16
+        },
+        {
+          "name": "MetalProxy",
+          "count": 13
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulatePhysics.dylib",
+      "bytes": 212320,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulatePhysics.dylib_arm64",
+      "slice_bytes": 97632,
+      "slice_sha256": "e6fd6f889b396b976810cc4267fd2b6823e99ec3767a1a781d5b91ce55d2ede1",
+      "symbol_entries": 132,
+      "defined": 81,
+      "undefined": 50,
+      "debug_entries": 1,
+      "demangled_names": 80,
+      "distinct_top_namespaces": 2,
+      "distinct_engine_classes": 6,
+      "by_symbol_type": {
+        "-": 1,
+        "S": 5,
+        "T": 76,
+        "U": 50
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 79
+        },
+        {
+          "name": "std",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "WindProperty",
+          "count": 62
+        },
+        {
+          "name": "PhysicalProperty",
+          "count": 8
+        },
+        {
+          "name": "DeforMarvelSpring",
+          "count": 4
+        },
+        {
+          "name": "Marvelous",
+          "count": 3
+        },
+        {
+          "name": "NonlinearStiffness",
+          "count": 2
+        },
+        {
+          "name": "piecewise_construct",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateRootParity.dylib",
+      "bytes": 304960,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulateRootParity.dylib_arm64",
+      "slice_bytes": 141120,
+      "slice_sha256": "9f5ab1c38e3c716590ebe754c0ca2262437dbef61e3af29b2cba125690922018",
+      "symbol_entries": 74,
+      "defined": 32,
+      "undefined": 41,
+      "debug_entries": 1,
+      "demangled_names": 32,
+      "distinct_top_namespaces": 2,
+      "distinct_engine_classes": 2,
+      "by_symbol_type": {
+        "-": 1,
+        "D": 1,
+        "T": 31,
+        "U": 41
+      },
+      "top_namespaces": [
+        {
+          "name": "rootparity",
+          "count": 12
+        },
+        {
+          "name": "Interval",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "RootParityCollisionTest",
+          "count": 12
+        },
+        {
+          "name": "s_previous_rounding_mode",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateSolvers.dylib",
+      "bytes": 151808,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulateSolvers.dylib_arm64",
+      "slice_bytes": 69888,
+      "slice_sha256": "3050227736cfcd66db262f552660551e735909900e1f8632a301b7c564143446",
+      "symbol_entries": 19,
+      "defined": 8,
+      "undefined": 10,
+      "debug_entries": 1,
+      "demangled_names": 7,
+      "distinct_top_namespaces": 1,
+      "distinct_engine_classes": 1,
+      "by_symbol_type": {
+        "-": 1,
+        "S": 1,
+        "T": 7,
+        "U": 10
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 7
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "Marvelous",
+          "count": 7
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateUtils.dylib",
+      "bytes": 161184,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulateUtils.dylib_arm64",
+      "slice_bytes": 79264,
+      "slice_sha256": "f8fc6a28ffd2e152ab855a59c73006065d8287923d0dd4fcdf06beb138a2a945",
+      "symbol_entries": 117,
+      "defined": 30,
+      "undefined": 86,
+      "debug_entries": 1,
+      "demangled_names": 30,
+      "distinct_top_namespaces": 3,
+      "distinct_engine_classes": 5,
+      "by_symbol_type": {
+        "-": 1,
+        "S": 3,
+        "T": 27,
+        "U": 86
+      },
+      "top_namespaces": [
+        {
+          "name": "Marvelous",
+          "count": 17
+        },
+        {
+          "name": "timer",
+          "count": 9
+        },
+        {
+          "name": "DataExportImport",
+          "count": 4
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "CriticalSection",
+          "count": 13
+        },
+        {
+          "name": "timer",
+          "count": 9
+        },
+        {
+          "name": "DataExportImport",
+          "count": 4
+        },
+        {
+          "name": "SoftSelection",
+          "count": 3
+        },
+        {
+          "name": "Marvelous",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "libCloSimulateWRAPD.dylib",
+      "bytes": 608368,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSimulateWRAPD.dylib_arm64",
+      "slice_bytes": 280688,
+      "slice_sha256": "cfc93552314c410b1dfabd7aeb199450f2304224ef1b08ffdfe54a24cba6eadf",
+      "symbol_entries": 260,
+      "defined": 126,
+      "undefined": 133,
+      "debug_entries": 1,
+      "demangled_names": 124,
+      "distinct_top_namespaces": 2,
+      "distinct_engine_classes": 10,
+      "by_symbol_type": {
+        "-": 1,
+        "D": 4,
+        "S": 8,
+        "T": 114,
+        "U": 133
+      },
+      "top_namespaces": [
+        {
+          "name": "wrapd",
+          "count": 121
+        },
+        {
+          "name": "Eigen",
+          "count": 3
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "TriElements",
+          "count": 27
+        },
+        {
+          "name": "BoundaryEdgeAlignElements",
+          "count": 25
+        },
+        {
+          "name": "System",
+          "count": 25
+        },
+        {
+          "name": "AlgorithmData",
+          "count": 13
+        },
+        {
+          "name": "Solver",
+          "count": 12
+        },
+        {
+          "name": "ADMM",
+          "count": 8
+        },
+        {
+          "name": "ProblemSetup",
+          "count": 8
+        },
+        {
+          "name": "internal",
+          "count": 3
+        },
+        {
+          "name": "Settings",
+          "count": 2
+        },
+        {
+          "name": "RotAwareGS",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "libCloSketch.dylib",
+      "bytes": 928672,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloSketch.dylib_arm64",
+      "slice_bytes": 437152,
+      "slice_sha256": "0965b9cd02d6f7fa5daad04e3bb50767acc5092ef6ddfbf9f91d2ea536f8ac12",
+      "symbol_entries": 530,
+      "defined": 344,
+      "undefined": 185,
+      "debug_entries": 1,
+      "demangled_names": 343,
+      "distinct_top_namespaces": 6,
+      "distinct_engine_classes": 18,
+      "by_symbol_type": {
+        "-": 1,
+        "D": 1,
+        "S": 5,
+        "T": 338,
+        "U": 185
+      },
+      "top_namespaces": [
+        {
+          "name": "Sketch",
+          "count": 290
+        },
+        {
+          "name": "Resorting",
+          "count": 24
+        },
+        {
+          "name": "SimpleBVH",
+          "count": 13
+        },
+        {
+          "name": "SketchUtility",
+          "count": 11
+        },
+        {
+          "name": "neighbour_search",
+          "count": 1
+        },
+        {
+          "name": "std",
+          "count": 1
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "Stroke",
+          "count": 101
+        },
+        {
+          "name": "Drawing",
+          "count": 85
+        },
+        {
+          "name": "SketchManager",
+          "count": 57
+        },
+        {
+          "name": "VoxelGraph",
+          "count": 25
+        },
+        {
+          "name": "MortonCode64",
+          "count": 20
+        },
+        {
+          "name": "Node",
+          "count": 12
+        },
+        {
+          "name": "BVH",
+          "count": 11
+        },
+        {
+          "name": "SketchUtility",
+          "count": 7
+        },
+        {
+          "name": "Sketch",
+          "count": 6
+        },
+        {
+          "name": "StrokeGraphEdge",
+          "count": 4
+        },
+        {
+          "name": "StrokePoint",
+          "count": 4
+        },
+        {
+          "name": "SimpleBVH",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "libCloWrapper.dylib",
+      "bytes": 1172048,
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysed_slice": "clo3d_target/libscan/libCloWrapper.dylib_arm64",
+      "slice_bytes": 582224,
+      "slice_sha256": "b8a35b912b5a0ae5b8e73d8b9388009610cc5c0e89246ecaa775164113198e29",
+      "symbol_entries": 2446,
+      "defined": 1776,
+      "undefined": 669,
+      "debug_entries": 1,
+      "demangled_names": 1776,
+      "distinct_top_namespaces": 48,
+      "distinct_engine_classes": 62,
+      "by_symbol_type": {
+        "-": 1,
+        "D": 3,
+        "S": 85,
+        "T": 1688,
+        "U": 669
+      },
+      "top_namespaces": [
+        {
+          "name": "tinyxml2",
+          "count": 219
+        },
+        {
+          "name": "cwstring",
+          "count": 161
+        },
+        {
+          "name": "cwvariant",
+          "count": 103
+        },
+        {
+          "name": "cwcolor",
+          "count": 86
+        },
+        {
+          "name": "cwtextstream",
+          "count": 75
+        },
+        {
+          "name": "cwfileinfo",
+          "count": 71
+        },
+        {
+          "name": "cwimage",
+          "count": 70
+        },
+        {
+          "name": "cwstringlist",
+          "count": 69
+        },
+        {
+          "name": "cwbytearray",
+          "count": 66
+        },
+        {
+          "name": "cwdir",
+          "count": 47
+        },
+        {
+          "name": "cwjsonobject",
+          "count": 47
+        },
+        {
+          "name": "cwjsonvalue",
+          "count": 45
+        }
+      ],
+      "top_engine_classes": [
+        {
+          "name": "cwstring",
+          "count": 159
+        },
+        {
+          "name": "cwvariant",
+          "count": 103
+        },
+        {
+          "name": "cwcolor",
+          "count": 86
+        },
+        {
+          "name": "cwtextstream",
+          "count": 75
+        },
+        {
+          "name": "cwfileinfo",
+          "count": 71
+        },
+        {
+          "name": "cwimage",
+          "count": 70
+        },
+        {
+          "name": "cwstringlist",
+          "count": 69
+        },
+        {
+          "name": "cwbytearray",
+          "count": 66
+        },
+        {
+          "name": "cwdir",
+          "count": 47
+        },
+        {
+          "name": "cwjsonobject",
+          "count": 47
+        },
+        {
+          "name": "XMLElement",
+          "count": 45
+        },
+        {
+          "name": "cwjsonvalue",
+          "count": 45
+        }
+      ]
+    }
+  ],
+  "top_engine_classes": [
+    {
+      "name": "PatternEditor",
+      "count": 1666
+    },
+    {
+      "name": "Pattern",
+      "count": 1423
+    },
+    {
+      "name": "Shape2D",
+      "count": 1023
+    },
+    {
+      "name": "Marvelous",
+      "count": 635
+    },
+    {
+      "name": "PBRMaterial",
+      "count": 603
+    },
+    {
+      "name": "AvatarRoot",
+      "count": 577
+    },
+    {
+      "name": "Line",
+      "count": 537
+    },
+    {
+      "name": "ThickParametricLine",
+      "count": 524
+    },
+    {
+      "name": "PartitionedMatrixView",
+      "count": 506
+    },
+    {
+      "name": "ClothController",
+      "count": 483
+    },
+    {
+      "name": "UtilityAPI",
+      "count": 463
+    },
+    {
+      "name": "Fabric",
+      "count": 438
+    },
+    {
+      "name": "Zipper",
+      "count": 410
+    },
+    {
+      "name": "ColorwayLibrary",
+      "count": 390
+    },
+    {
+      "name": "ZipperStyle",
+      "count": 376
+    },
+    {
+      "name": "SchurEliminator",
+      "count": 374
+    },
+    {
+      "name": "FabricAPI",
+      "count": 349
+    },
+    {
+      "name": "AvatarManager",
+      "count": 343
+    },
+    {
+      "name": "SeamLinePairGroup",
+      "count": 340
+    },
+    {
+      "name": "DeforMarvel",
+      "count": 336
+    }
+  ],
+  "top_namespaces": [
+    {
+      "name": "Marvelous",
+      "count": 62321
+    },
+    {
+      "name": "ceres",
+      "count": 1808
+    },
+    {
+      "name": "MVVRay",
+      "count": 1679
+    },
+    {
+      "name": "MTL",
+      "count": 1668
+    },
+    {
+      "name": "clo",
+      "count": 1349
+    },
+    {
+      "name": "absl",
+      "count": 979
+    },
+    {
+      "name": "VRay",
+      "count": 590
+    },
+    {
+      "name": "MVUSD",
+      "count": 587
+    },
+    {
+      "name": "Geometry",
+      "count": 449
+    },
+    {
+      "name": "MarvelousAvatar",
+      "count": 406
+    },
+    {
+      "name": "Tetgenerate",
+      "count": 324
+    },
+    {
+      "name": "Sketch",
+      "count": 290
+    },
+    {
+      "name": "HIK2013",
+      "count": 289
+    },
+    {
+      "name": "MVSubstance",
+      "count": 262
+    },
+    {
+      "name": "QuadMeshCleanup",
+      "count": 239
+    },
+    {
+      "name": "tinyxml2",
+      "count": 219
+    },
+    {
+      "name": "MVFbx",
+      "count": 212
+    },
+    {
+      "name": "NS",
+      "count": 209
+    },
+    {
+      "name": "nest2",
+      "count": 199
+    },
+    {
+      "name": "MVNetwork",
+      "count": 173
+    }
+  ]
+}

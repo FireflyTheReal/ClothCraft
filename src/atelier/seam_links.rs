@@ -143,7 +143,7 @@ impl Atelier {
                 &guides,
                 Color32::from_rgb(248, 117, 188),
                 true,
-                "Aperçu A ↔ B",
+                "Preview A ↔ B",
             );
         }
     }

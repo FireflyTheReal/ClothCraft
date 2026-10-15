@@ -12,7 +12,7 @@ Reviewed 2026-10-14. This is a requirements document, not a list of implemented 
 | SVG | None | Pattern preview | Not print-to-scale; ignores board arrangement; no allowances, nesting, grading or print tiling |
 | Diagnostic JSON | No general interchange reader | Metrics/fiber frames | Research outputs; fibers are surface directions, not simulated yarns |
 
-The workspace's **Exporter** action writes these supported outputs together to its launch directory. It replaces fixed filenames. A dedicated save/export dialog, portable bundle and autosave are P0 work.
+The workspace's **Export** action writes these supported outputs together to its launch directory. It replaces fixed filenames. A dedicated save/export dialog, portable bundle and autosave are P0 work.
 
 ## Required inputs and outputs
 

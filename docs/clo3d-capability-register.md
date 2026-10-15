@@ -8,7 +8,10 @@ actually implements today.
 **Target.** CLO `2026.1.310`, main binary `CLO_Standalone_OnlineAuth`
 (126,231,984 bytes, universal), analysed through the thinned `arm64` slice
 SHA-256 `b2d545d7baaefa3b303599c2bb51f49b94b04607531d55ba53f5693e9bff128f`,
-50,164 symbol-table entries.
+50,164 symbol-table entries. The 21 `libClo*` libraries in
+`Contents/Frameworks` are inventoried from their own thinned `arm64` slices:
+90,899 `nm` entries (82,778 defined, 6,965 undefined, 1,156 debug/stab records).
+That is **141,063** symbol-table entries for the whole bundle.
 
 **Reproduce.** `python3 scripts/clo3d/extract_surface.py` — reads the shipped
 application, writes [../data/clo3d/](../data/clo3d/README.md). Nothing executes
@@ -44,10 +47,53 @@ Three things this register deliberately does **not** claim:
 | Qt resource names in `Resources_Light.rcc` (1,150 SVG, 205 PNG, 6 XML, 5 Python, 3 ICO, 3 ICNS) | **1,393** |
 | Shipped preset library files across 22 categories | **1,579** |
 | Distinct file extensions under `Contents/` (frameworks excluded) | **71** |
+| Symbols across the 21 `libClo*` libraries (`nm -a` on `arm64` slices) | **90,899** |
+| Whole-bundle symbol-table entries (main executable + libraries) | **141,063** |
 
 The full action list, grouped by view and topic, is
 [../data/clo3d/ACTIONS.md](../data/clo3d/ACTIONS.md). Per-entry data is
 [`actions.json`](../data/clo3d/actions.json).
+
+### Library symbol inventory (**Observed**)
+
+All 21 `libClo*` libraries in `Contents/Frameworks` — case-insensitive, so
+`libCLOAPIInterface` is included — read with `nm -a` on each thinned `arm64`
+slice and demangled with `c++filt`:
+
+| Library | `nm` entries | Defined | Undefined | Debug | Top engine class |
+|---|---:|---:|---:|---:|---|
+| `libCloScene.dylib` | 78,098 | 73,559 | 4,538 | 1 | `PatternEditor` (1666) |
+| `libCloWrapper.dylib` | 2,446 | 1,776 | 669 | 1 | `cwstring` (159) |
+| `libCloSimulateMetal.dylib` | 2,377 | 2,320 | 56 | 1 | `GpuCooMatrixBuilder` (46) |
+| `libCloAutoRetopology.dylib` | 2,176 | 1,963 | 212 | 1 | `QzipMesh` (157) |
+| `libCloCV.dylib` | 1,570 | 381 | 144 | 1,045 | `__func<Marvelous` (60) |
+| `libCloDeforMarvel.dylib` | 1,294 | 937 | 356 | 1 | `DeforMarvel` (336) |
+| `libCloMath.dylib` | 754 | 675 | 78 | 1 | `MVVariant` (85) |
+| `libCloSketch.dylib` | 530 | 344 | 185 | 1 | `Stroke` (101) |
+| `libCloKnit_Core.dylib` | 434 | 273 | 160 | 1 | `knit` (61) |
+| `libCloSimulateWRAPD.dylib` | 260 | 126 | 133 | 1 | `TriElements` (27) |
+| `libCloSimulateEBP.dylib` | 179 | 68 | 110 | 1 | `Parafun` (26) |
+| `libCloKnit_SwatchEditor.dylib` | 173 | 96 | 76 | 1 | `KnitEditorController` (24) |
+| `libCloSimulatePhysics.dylib` | 132 | 81 | 50 | 1 | `WindProperty` (62) |
+| `libCLOAPIInterface.dylib` | 121 | 25 | 3 | 93 | `APICommand` (24) |
+| `libCloSimulateUtils.dylib` | 117 | 30 | 86 | 1 | `CriticalSection` (13) |
+| `libCloSimulateDataStructures.dylib` | 97 | 72 | 24 | 1 | `KDTree` (23) |
+| `libCloSimulateRootParity.dylib` | 74 | 32 | 41 | 1 | `RootParityCollisionTest` (12) |
+| `libCloCore.dylib` | 22 | 5 | 16 | 1 | `clo` (5) |
+| `libCloSimulateCommon.dylib` | 21 | 2 | 18 | 1 | `SimInterface` (2) |
+| `libCloSimulateSolvers.dylib` | 19 | 8 | 10 | 1 | `Marvelous` (7) |
+| `libCloSimulateCuda.dylib` | 5 | 5 | 0 | 0 | `Marvelous` (1) |
+| **All 21 libraries** | **90,899** | **82,778** | **6,965** | **1,156** | — |
+
+"Debug" counts macOS `-` stab records; `defined + undefined + debug == nm
+entries`, and debug records are excluded from the rankings. "Top engine class"
+is the most frequent owner token among *defined* symbols
+(`Marvelous::Fabric::FabricItem::SetColor` counts under `FabricItem`), so it is
+a count of symbol-table occurrences, not of methods, code size or importance.
+The bundle-wide namespace ranking and the top 20 engine classes are in
+[`libraries.json`](../data/clo3d/libraries.json); the engine classes are also
+repeated in [`surface.json`](../data/clo3d/surface.json). The action and screen
+registers below still come from the **main executable only**.
 
 ## B. Command surface by topic, against ClothCraft
 
@@ -188,7 +234,23 @@ files are consistent with the scripting surface found in the symbol table
   reconstructed** — the tree section's child-offset encoding was not decoded.
   Treat them as an inventory, not a path listing.
 - Preset *contents* were not parsed, only counted, named and typed by extension.
-- The register covers the **main executable**. `libCloScene` (194 MB) and the
-  other 20 `libClo*` libraries were not symbol-scanned, so engine-side class
-  names are not included.
+- The **action and screen registers cover the main executable only**. The 21
+  `libClo*` libraries (`libCLOAPIInterface` included) are now symbol-scanned —
+  90,899 `nm` entries, 82,778 defined, 6,965 undefined and 1,156 debug/stab
+  records across their `arm64` slices — and their engine-side namespaces and
+  engine classes are in [`libraries.json`](../data/clo3d/libraries.json). A
+  user-facing command that lives only inside a library would not appear in
+  `ACTIONS.md`.
+- **`nm` reads the symbol table, not the code.** Code stripped of symbols,
+  purely inlined functions and unnamed local labels are invisible, and the
+  counts include symbols that are dead or unreferenced in this build. An
+  undefined entry proves an import exists, not where or whether it is called.
+- The library records are **counts and names, not behaviour**: no signature,
+  parameter, default, cost or call graph is recovered, and this scan does not
+  decompile any library. Cross-library ownership (which code calls which) is not
+  established, so an engine class appearing in two libraries is counted twice.
+- Demangling is `c++filt`; symbols it does not recognise stay as raw names and
+  are counted in the totals, but C symbols and Objective-C runtime names such as
+  `_OBJC_CLASS_$_FinderFilterHandler` carry no `::` scope and therefore do not
+  contribute to the namespace or class rankings.
 - No claim is made that every recovered name is user-visible.

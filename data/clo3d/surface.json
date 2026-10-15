@@ -61,6 +61,101 @@
       "icns": 3
     }
   },
+  "library_counts": {
+    "libraries_scanned": 21,
+    "library_symbol_entries": 90899,
+    "library_defined": 82778,
+    "library_undefined": 6965,
+    "library_debug_entries": 1156,
+    "bundle_symbol_entries": 141063,
+    "largest_library": {
+      "name": "libCloScene.dylib",
+      "bytes": 194156592,
+      "symbol_entries": 78098
+    },
+    "top_engine_classes": [
+      {
+        "name": "PatternEditor",
+        "count": 1666
+      },
+      {
+        "name": "Pattern",
+        "count": 1423
+      },
+      {
+        "name": "Shape2D",
+        "count": 1023
+      },
+      {
+        "name": "Marvelous",
+        "count": 635
+      },
+      {
+        "name": "PBRMaterial",
+        "count": 603
+      },
+      {
+        "name": "AvatarRoot",
+        "count": 577
+      },
+      {
+        "name": "Line",
+        "count": 537
+      },
+      {
+        "name": "ThickParametricLine",
+        "count": 524
+      },
+      {
+        "name": "PartitionedMatrixView",
+        "count": 506
+      },
+      {
+        "name": "ClothController",
+        "count": 483
+      },
+      {
+        "name": "UtilityAPI",
+        "count": 463
+      },
+      {
+        "name": "Fabric",
+        "count": 438
+      },
+      {
+        "name": "Zipper",
+        "count": 410
+      },
+      {
+        "name": "ColorwayLibrary",
+        "count": 390
+      },
+      {
+        "name": "ZipperStyle",
+        "count": 376
+      },
+      {
+        "name": "SchurEliminator",
+        "count": 374
+      },
+      {
+        "name": "FabricAPI",
+        "count": 349
+      },
+      {
+        "name": "AvatarManager",
+        "count": 343
+      },
+      {
+        "name": "SeamLinePairGroup",
+        "count": 340
+      },
+      {
+        "name": "DeforMarvel",
+        "count": 336
+      }
+    ]
+  },
   "extensions_in_bundle": {
     "png": 702,
     "jpg": 569,

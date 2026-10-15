@@ -9,6 +9,7 @@ use marvelous_cloth::{
     garment::{
         polygon::PolygonPattern,
         seam::{BoundaryRef, Side},
+        template::Panel,
     },
 };
 
@@ -111,6 +112,60 @@ fn inside(p: DVec2, poly: &[DVec2]) -> bool {
 }
 pub(super) fn same_edge(a: &BoundaryRef, b: &BoundaryRef) -> bool {
     a.panel == b.panel && a.edge == b.edge && (a.edge.is_some() || a.side == b.side)
+}
+/// Millimetre dimension annotation for a selected piece. Presentation only: the
+/// labels follow the pattern size and never feed back into the rest contour.
+fn paint_panel_dimensions(
+    painter: &egui::Painter,
+    point: &impl Fn(DVec2) -> egui::Pos2,
+    panel: &Panel,
+) {
+    let (w, h) = (panel.pattern.width, panel.pattern.height);
+    let color = Color32::from_rgb(0x15, 0x65, 0xC0);
+    let font = egui::FontId::proportional(12.);
+    let tick = 4.;
+    // Width, below the bottom edge.
+    let a = point(DVec2::new(0., h));
+    let b = point(DVec2::new(w, h));
+    let y = a.y.max(b.y) + 14.;
+    painter.line_segment(
+        [egui::pos2(a.x, y), egui::pos2(b.x, y)],
+        Stroke::new(1., color),
+    );
+    for x in [a.x, b.x] {
+        painter.line_segment(
+            [egui::pos2(x, y - tick), egui::pos2(x, y + tick)],
+            Stroke::new(1., color),
+        );
+    }
+    painter.text(
+        egui::pos2((a.x + b.x) * 0.5, y + 3.),
+        egui::Align2::CENTER_TOP,
+        format!("{:.1} mm", w * 1000.),
+        font.clone(),
+        color,
+    );
+    // Height, beside the right edge.
+    let a = point(DVec2::new(w, 0.));
+    let b = point(DVec2::new(w, h));
+    let x = a.x.max(b.x) + 14.;
+    painter.line_segment(
+        [egui::pos2(x, a.y), egui::pos2(x, b.y)],
+        Stroke::new(1., color),
+    );
+    for y in [a.y, b.y] {
+        painter.line_segment(
+            [egui::pos2(x - tick, y), egui::pos2(x + tick, y)],
+            Stroke::new(1., color),
+        );
+    }
+    painter.text(
+        egui::pos2(x + 3., (a.y + b.y) * 0.5),
+        egui::Align2::LEFT_CENTER,
+        format!("{:.1} mm", h * 1000.),
+        font,
+        color,
+    );
 }
 impl Atelier {
     pub(super) fn board_angle(&self, i: usize) -> f64 {
@@ -259,6 +314,7 @@ impl Atelier {
         self.cancel_preview();
         self.authoring.selected = Some(edge.panel.clone());
         self.authoring.edge = Some(edge.clone());
+        self.authoring.anchor = None;
         if self.authoring.tool == Tool::Sew {
             if self.authoring.ends.len() == 2 {
                 self.authoring.ends.clear();
@@ -291,7 +347,7 @@ impl Atelier {
         else {
             return;
         };
-        ui.label(format!("Bord : {}", poly.edges[k]));
+        ui.label(format!("Boundary: {}", poly.edges[k]));
         let length = poly
             .edge_points(k)
             .unwrap_or_default()
@@ -299,16 +355,16 @@ impl Atelier {
             .map(|p| p[0].distance(p[1]))
             .sum::<f64>();
         ui.small(format!(
-            "{:.1} mm · même sélection en 2D / 3D",
+            "{:.1} mm · same selection in 2D / 3D",
             length * 1000.
         ));
         if self.authoring.tool == Tool::Edit {
             let curved = poly.curves.contains_key(&poly.edges[k]);
             if ui
                 .button(if curved {
-                    "Convertir en segment droit"
+                    "Convert to straight segment"
                 } else {
-                    "Ajouter poignées Bézier"
+                    "Add Bézier handles"
                 })
                 .clicked()
             {
@@ -327,17 +383,17 @@ impl Atelier {
                     polygon: poly,
                 });
             }
-            ui.small("Glisser les points ou poignées sur le plan 2D.");
+            ui.small("Drag the points or handles on the 2D plane.");
         }
         ui.separator();
     }
     pub(super) fn patterns(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            ui.strong("PATRONAGE 2D");
-            if ui.small_button("Tout cadrer").clicked() {
+            ui.strong("2D PATTERN");
+            if ui.small_button("Frame all").clicked() {
                 self.authoring.board.fitted = false;
             }
-            let new = ui.small_button("Nouveau");
+            let new = ui.small_button("New");
             self.smoke_target("replace", new.rect.center());
             if new.clicked() {
                 self.playing = false;
@@ -355,17 +411,17 @@ impl Atelier {
             }
         });
         ui.horizontal(|ui| {
-            ui.checkbox(&mut self.authoring.board.snap, "Aimant 10 mm");
+            ui.checkbox(&mut self.authoring.board.snap, "10 mm snap");
             if matches!(self.authoring.tool, Tool::Draw | Tool::Rectangle) {
                 let create = ui.add_enabled(
                     self.authoring.draft.len() >= 3,
-                    egui::Button::new("Fermer le contour"),
+                    egui::Button::new("Close the contour"),
                 );
                 self.smoke_target("create", create.rect.center());
                 if create.clicked() {
                     self.create_polygon();
                 }
-                if ui.small_button("Annuler tracé").clicked() {
+                if ui.small_button("Cancel trace").clicked() {
                     self.authoring.draft.clear();
                     self.authoring.tangents.clear();
                     self.authoring.replace = false;
@@ -373,21 +429,17 @@ impl Atelier {
                 }
             } else {
                 ui.small(format!(
-                    "{} pièces · molette : zoom · milieu : déplacer",
+                    "{} pieces · wheel: zoom · middle: pan",
                     self.project.template.panels.len()
                 ));
             }
         });
         ui.small(match self.authoring.tool {
-            Tool::Draw => {
-                "Plume : cliquer = coin · cliquer-glisser = Bézier · premier point = fermer"
-            }
-            Tool::Rectangle => "Rectangle : glisser entre deux coins opposés",
-            Tool::Sew => "Choisir deux bords en 2D ou 3D, puis créer la couture →",
-            Tool::Edit => {
-                "Poignée ronde : tourner en 2D · intérieur : déplacer · Maj : angles de 15°"
-            }
-            _ => "Sélection liée à la 3D · Plume ou Rectangle pour créer du tissu",
+            Tool::Draw => "Pen: click = corner · click-drag = Bézier · first point = close",
+            Tool::Rectangle => "Rectangle: drag between two opposite corners",
+            Tool::Sew => "Choose two boundaries in 2D or 3D, then create the seam →",
+            Tool::Edit => "Round handle: rotate in 2D · interior: move · Shift: 15° angles",
+            _ => "Selection linked to 3D · Pen or Rectangle to create fabric",
         });
         let (rect, response) = ui.allocate_exact_size(
             ui.available_size().max(Vec2::splat(1.)),
@@ -608,17 +660,30 @@ impl Atelier {
             } else if let Some(hit) = self.board_hit(rect, pos) {
                 let panel = &self.project.template.panels[hit.index];
                 let id = panel.id.clone();
-                if let Part::Edge(k) = hit.part {
+                let edge = match &hit.part {
+                    Part::Edge(k) => panel
+                        .polygon
+                        .as_ref()
+                        .map(|polygon| polygon.edges[*k].clone()),
+                    _ => None,
+                };
+                let anchor = match &hit.part {
+                    Part::Anchor(k) => Some((id.clone(), *k)),
+                    _ => None,
+                };
+                if let Some(name) = edge {
                     self.select_boundary(BoundaryRef {
                         panel: id,
                         side: Side::Top,
-                        edge: Some(panel.polygon.as_ref().unwrap().edges[k].clone()),
+                        edge: Some(name),
                         range: [0., 1.],
                     });
                 } else {
                     self.cancel_preview();
                     self.authoring.selected = Some(id);
                     self.authoring.edge = None;
+                    // Numeric point entry follows the point clicked on the board.
+                    self.authoring.anchor = anchor;
                 }
             }
         }
@@ -824,7 +889,20 @@ impl Atelier {
                 }
                 if selected && self.authoring.tool == Tool::Edit {
                     for (k, uv) in poly.points.iter().enumerate() {
-                        painter.circle_filled(point(*uv), 4., Color32::WHITE);
+                        let focused = self
+                            .authoring
+                            .anchor
+                            .as_ref()
+                            .is_some_and(|(id, index)| id == &panel.id && *index == k);
+                        painter.circle_filled(
+                            point(*uv),
+                            if focused { 6. } else { 4. },
+                            if focused {
+                                Color32::from_rgb(0x15, 0x65, 0xC0)
+                            } else {
+                                Color32::WHITE
+                            },
+                        );
                         painter.circle_stroke(point(*uv), 4., Stroke::new(1., Color32::BLACK));
                         smoke_targets.push((format!("anchor_{k}"), point(*uv)));
                     }
@@ -842,6 +920,9 @@ impl Atelier {
                         Color32::from_rgb(0x33, 0x33, 0x33)
                     },
                 );
+                if selected {
+                    paint_panel_dimensions(&painter, &point, panel);
+                }
             }
         }
         self.paint_seam_links(&painter, rect, false);
@@ -883,7 +964,7 @@ impl Atelier {
         painter.text(
             rect.left_bottom() + Vec2::new(12., -12.),
             egui::Align2::LEFT_BOTTOM,
-            format!("Grille {:.0} mm · {:.0} px/m", spacing * 1000., board.scale),
+            format!("Grid {:.0} mm · {:.0} px/m", spacing * 1000., board.scale),
             egui::FontId::proportional(12.),
             // Dark enough to read on the white board.
             Color32::from_gray(0x55),

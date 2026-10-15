@@ -47,18 +47,18 @@ Equivalent command:
 cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view --output output/my-session
 ```
 
-The window starts paused. The current UI labels are French:
+The window starts paused. The current UI labels are English:
 
 | Action | Control |
 |---|---|
-| Draw | **Plume**: click corners, drag for Bézier handles; **Rectangle**: drag opposite corners |
-| Edit / rotate in 2D | **Modifier**: select a piece, edit points or drag its round rotation handle |
-| Sew | **Coudre**: choose edge A and B in either view, inspect direction, then validate |
-| Move / rotate in 3D | **Déplacer 3D (G)** / **Tourner 3D (R)**; Shift snaps to 15° |
-| Simulate / pause | **Simuler** or Space; **Saisir** lets you drag the simulated cloth |
-| Remove a seam | Select its edge, **Supprimer la couture** or Delete; Ctrl+Z restores it |
-| Navigate | Right-drag orbits 3D, middle-drag pans, wheel zooms; **Vue générale** / **Tout cadrer** frame the views |
-| Save / export | **Exporter** writes the project and supported artifacts to the session directory |
+| Draw | **Pen**: click corners, drag for Bézier handles; **Rectangle**: drag opposite corners |
+| Edit / rotate in 2D | **Edit**: select a piece, edit points or drag its round rotation handle |
+| Sew | **Sew**: choose edge A and B in either view, inspect direction, then validate |
+| Move / rotate in 3D | **Move 3D (G)** / **Rotate 3D (R)**; Shift snaps to 15° |
+| Simulate / pause | **Simulate** or Space; **Grab** lets you drag the simulated cloth |
+| Remove a seam | Select its edge, **Delete the seam** or Del; Ctrl+Z restores it |
+| Navigate | Right-drag orbits 3D, middle-drag pans, wheel zooms; **Overview** / **Frame all** frame the views |
+| Save / export | **Export** writes the project and supported artifacts to the session directory |
 
 **3D arrangement returns the selected piece to its flat pattern shape.** Other pieces retain their drape. A 2D layout edit preserves the entire physical state. Neither operation repairs intersections; place pieces outside the avatar before simulating.
 

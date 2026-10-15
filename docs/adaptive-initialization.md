@@ -22,7 +22,7 @@ Adaptive initialization alone did not make an eight-iteration budget accurate en
 
 ## Removing seams
 
-The **Coutures existantes (N)** list is available at the top of the inspector in every mode, with named endpoints, selection and explicit **Supprimer** buttons. In **Modifier** or **Coudre**, selecting a sewn boundary in either 2D or 3D highlights both linked sides and exposes **Supprimer la couture**. **Suppr** removes the uniquely associated seam when no text field owns keyboard input. If several partial seams share a named edge, use the individual buttons. **Ctrl+Z** restores the relation.
+The **Existing seams (N)** list is available at the top of the inspector in every mode, with named endpoints, selection and explicit **Delete** buttons. In **Edit** or **Sew**, selecting a sewn boundary in either 2D or 3D highlights both linked sides and exposes **Delete the seam**. **Del** removes the uniquely associated seam when no text field owns keyboard input. If several partial seams share a named edge, use the individual buttons. **Ctrl+Z** restores the relation.
 
 Removal uses the existing transactional command, rebuilds solver/contact caches and preserves compatible positions/velocities. It does not delete the cloth. The native authoring smoke explicitly deletes and restores a seam before completing its other editing, fabric and simulation checks.
 

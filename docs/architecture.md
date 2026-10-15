@@ -1,8 +1,8 @@
-# Architecture et invariants
+# Architecture and invariants
 
-Le dépôt reste un package Rust et trois exécutables. Les modules numériques CPU n'importent ni eframe ni wgpu. La feature `desktop` ajoute le renderer, le backend compute `gpu_vbd` et les interfaces ; elle peut être désactivée pour compiler uniquement le noyau CPU.
+The repository remains one Rust package and three executables. The CPU numerical modules import neither eframe nor wgpu. The `desktop` feature adds the renderer, the `gpu_vbd` compute backend and the interfaces; it can be disabled to compile only the CPU core.
 
-## Chemin des données
+## Data path
 
 ```text
 GarmentTemplate JSON
@@ -21,71 +21,71 @@ Project JSON v1 -> Pattern::build() -> ReferenceSolver::step()
                           same private Newton/PCG implementation
 ```
 
-L'éditeur historique utilise `Project`, un panneau. `cloth-fit` utilise `FittingProject` : template multi-panneaux, avatar, réglages et cache de positions signé. La CLI et l'interface consomment le même `FittingScene`, sans dupliquer le solveur.
+The historical editor uses `Project`, a single panel. `cloth-fit` uses `FittingProject`: multi-panel template, avatar, settings and a position cache with a mesh signature. The CLI and the interface consume the same `FittingScene`, without duplicating the solver.
 
-Le chemin courant de `cloth-fit` passe par `VbdSolver` + `OgcWorld`, ou `GpuVbd::step` avec la même topologie OGC et les mêmes énergies. Le diagramme Newton ci-dessus reste celui du backend `--reference`. Le worker d’atelier reçoit un numéro de génération : un résultat calculé sur un ancien maillage ne remplace jamais la scène courante. Il possède l’état physique et son horloge à pas fixe, indépendamment du rafraîchissement egui. Un seul snapshot de sortie est conservé ; les mises à jour de contrôle ne réinjectent jamais l’ancien état affiché. Les ressources GPU et termes matériels sont réutilisés, et le cache des candidats OGC ne remplace jamais le recalcul des distances et bornes. Voir [Turbo](turbo-perf.md).
+The current `cloth-fit` path goes through `VbdSolver` + `OgcWorld`, or `GpuVbd::step` with the same OGC topology and the same energies. The Newton diagram above remains that of the `--reference` backend. The atelier worker receives a generation number: a result computed on an old mesh never replaces the current scene. It owns the physical state and its fixed-step clock, independently of the egui refresh. A single output snapshot is kept; control updates never inject the old displayed state back. GPU resources and material terms are reused, and the OGC candidate cache never replaces the recomputation of distances and bounds. See [Turbo](turbo-perf.md).
 
-## Responsabilités
+## Responsibilities
 
-| Module | Rôle | Entrées / sorties |
+| Module | Role | Inputs / outputs |
 |---|---|---|
-| `authoring.rs` | Commandes transactionnelles, historique et placements rigides | template + commande → template validé + modèle compilé |
-| `fabrics.rs`, `atelier/fabrics_ui.rs` | Presets documentés, conversion stretch sous charge et contrôles | propriétés SI → compilation par `Command::Fabric`, sans modifier le repos |
-| `atelier/authoring_ui.rs`, `atelier/gizmo.rs` | Dessin, choix des coutures, sélection et gizmos | interactions → commandes ; aperçu sans remeshing par frame |
-| `model.rs` | Géométrie de repos rectangulaire et maillage FEM | `Pattern` → `Mesh`, masse, charnières |
-| `blocksolve/` | Opérateur assemblé mixed block-CSR et PCG à préconditionnement block-Jacobi nodal | contributions élémentaires + masse → opérateur assemblé → direction de Newton |
-| `garment/template.rs` | Modèle d'édition, validation, compilation | `GarmentTemplate` → `CompiledGarment` |
-| `garment/polygon.rs`, `garment/meshing.rs` | Contours validés, Delaunay contrainte et métrique | points/bords → UV et triangles, contrôle qualité |
-| `garment/seam.rs` | Correspondance de bords et énergie de raccord | longueurs au repos → quadrature, éléments |
-| `garment/embedding.rs` | Attachements géométriques en coordonnées du patron | `MaterialPath` → barycentriques temporaires |
-| `garment/export.rs` | Artefacts CPU sans état d'interface | OBJ par panneau, SVG, directions de fibres |
-| `math.rs`, `energy.rs` | AD d'ordre 2, membrane et flexion | géométrie actuelle + repos → énergie/dérivées |
-| `contact.rs` | Pénalité sommets/sphère | contact discret, épaisseur par sommet |
-| `avatar.rs` | OBJ, BVH statique et distance locale signée | mannequin → implémentation du trait Collider |
-| `fitting.rs` | Arrangement, cache et pas transactionnels | FittingProject → FittingScene |
-| `solver.rs` | Euler implicite, Newton/PCG, Armijo | modèle compilé + état → état/métriques |
-| `project.rs` | Ancien format de scène à un panneau | `Project` JSON v1 |
-| `bin/cloth-template.rs` | CLI sans fenêtre | example / validate / bake / simulate |
-| `editor.rs`, `render.rs` | Interface et affichage | restent consommateurs du modèle CPU |
-| `ogc/` | Régions admissibles, VF/EE, barrières et bornes | topologie + positions → contacts + rayons conservatifs |
-| `vbd.rs` | Euler implicite par blocs de sommets, coloration avec contacts | mêmes énergies FEM/coutures, référence f64 |
-| `vbd/prediction.rs` | Initialisation adaptative CPU/GPU, historique de pas acceptés | vitesses/accélération précédente → estimation initiale, cible inertielle inchangée |
-| `garment/diagnostics.rs` | Mesure d'allongement indépendante du rendu | repos matériel + état → percentile par aire et maximum |
-| `gpu_vbd.rs`, `vbd.wgsl` | Solve local f32, gradients exacts, Hessiennes positives approchées | candidats/bornes CPU → compute GPU → état validé |
-| `picking.rs` | Rayons et attachement barycentrique | souris → force de saisie, sans téléportation |
-| `bin/cloth-fit.rs`, `atelier.rs`, `gpu_bench.rs` | CLI, atelier et mesure du rendu | projets / rapports / captures opt-in |
+| `authoring.rs` | Transactional commands, history and rigid placements | template + command → validated template + compiled model |
+| `fabrics.rs`, `atelier/fabrics_ui.rs` | Documented presets, stretch conversion under load and controls | SI properties → compilation through `Command::Fabric`, without changing the rest state |
+| `atelier/authoring_ui.rs`, `atelier/gizmo.rs` | Drawing, seam choice, selection and gizmos | interactions → commands; preview without remeshing per frame |
+| `model.rs` | Rectangular rest geometry and FEM mesh | `Pattern` → `Mesh`, mass, hinges |
+| `blocksolve/` | Assembled mixed block-CSR operator and PCG with nodal block-Jacobi preconditioning | element contributions + mass → assembled operator → Newton direction |
+| `garment/template.rs` | Authoring model, validation, compilation | `GarmentTemplate` → `CompiledGarment` |
+| `garment/polygon.rs`, `garment/meshing.rs` | Validated contours, constrained Delaunay and metric | points/edges → UVs and triangles, quality control |
+| `garment/seam.rs` | Edge correspondence and joining energy | rest lengths → quadrature, elements |
+| `garment/embedding.rs` | Geometric attachments in pattern coordinates | `MaterialPath` → temporary barycentrics |
+| `garment/export.rs` | CPU artifacts without interface state | per-panel OBJ, SVG, fiber directions |
+| `math.rs`, `energy.rs` | Second-order AD, membrane and bending | current geometry + rest state → energy/derivatives |
+| `contact.rs` | Vertex/sphere penalty | discrete contact, per-vertex thickness |
+| `avatar.rs` | OBJ, static BVH and signed local distance | avatar → implementation of the Collider trait |
+| `fitting.rs` | Arrangement, cache and transactional steps | FittingProject → FittingScene |
+| `solver.rs` | Implicit Euler, Newton/PCG, Armijo | compiled model + state → state/metrics |
+| `project.rs` | Legacy single-panel scene format | `Project` JSON v1 |
+| `bin/cloth-template.rs` | Windowless CLI | example / validate / bake / simulate |
+| `editor.rs`, `render.rs` | Interface and display | remain consumers of the CPU model |
+| `ogc/` | Admissible regions, VF/EE, barriers and bounds | topology + positions → contacts + conservative radii |
+| `vbd.rs` | Implicit Euler by vertex blocks, coloring with contacts | same FEM/seam energies, f64 reference |
+| `vbd/prediction.rs` | Adaptive CPU/GPU initialization, history of accepted steps | previous velocities/acceleration → initial estimate, inertial target unchanged |
+| `garment/diagnostics.rs` | Extension measurement independent of rendering | material rest state + state → percentile by area and maximum |
+| `gpu_vbd.rs`, `vbd.wgsl` | Local f32 solve, exact gradients, approximate positive Hessians | CPU candidates/bounds → GPU compute → validated state |
+| `picking.rs` | Rays and barycentric attachment | mouse → grab force, without teleportation |
+| `bin/cloth-fit.rs`, `atelier.rs`, `gpu_bench.rs` | CLI, atelier and render measurement | projects / reports / opt-in captures |
 
-## Contrats à préserver
+## Contracts to preserve
 
-**Repos.** `Mesh.uv` est local au panneau et exprimé en mètres, sans atlas ni normalisation [0,1]. `Triangle.rest`, `inv_dm` et `area` dérivent uniquement du patron. Les placements rigides n'affectent ni ces données ni les masses.
+**Rest state.** `Mesh.uv` is local to the panel and expressed in metres, without an atlas or [0,1] normalization. `Triangle.rest`, `inv_dm` and `area` derive only from the pattern. Rigid placements affect neither this data nor the masses.
 
-**Matières.** Le template sépare `FabricProperties` et `Panel.grain_degrees`. La compilation crée un `Material` orienté par panneau. Triangles et charnières référencent ce matériau ; `vertex_material` fournit l'épaisseur aux contacts. La densité est déjà intégrée dans la masse : reconstruire le modèle quand elle change, ne pas modifier seulement le tableau de matériaux compilés.
+**Materials.** The template separates `FabricProperties` and `Panel.grain_degrees`. Compilation creates a `Material` oriented per panel. Triangles and hinges reference this material; `vertex_material` provides the thickness to contacts. Density is already integrated into mass: rebuild the model when it changes, do not modify only the table of compiled materials.
 
-**Topologie.** Les panneaux conservent des sommets distincts aux coutures. Les plages de sommets/triangles identifient chaque panneau. Le compilateur refuse les coutures qui possèdent des intervalles chevauchants du même bord ; un coin commun reste possible. Le support de coutures multicouches exigera un modèle de relation plus riche.
+**Topology.** Panels keep distinct vertices at seams. Vertex/triangle ranges identify each panel. The compiler rejects seams that have overlapping intervals of the same edge; a shared corner remains possible. Supporting multi-layer seams will require a richer relation model.
 
-**Référence Newton.** Ses deux API entrent dans le même `Problem` privé. Matériaux, inertie, gravité, damping, contacts et coutures sont assemblés ensemble. Les contraintes fixées éliminent les DOF correspondants. Les erreurs conservent l'état précédent ; atteindre le budget d'itérations produit un état avec `converged=false`. Les métriques de couture sont ajoutées, pas substituées aux résidus.
+**Newton reference.** Its two APIs enter the same private `Problem`. Materials, inertia, gravity, damping, contacts and seams are assembled together. Fixed constraints eliminate the corresponding DOFs. Errors keep the previous state; reaching the iteration budget produces a state with `converged=false`. Seam metrics are added, not substituted for the residuals.
 
-**Opérateur assemblé.** `System::assemble_operator` et `System::apply` doivent décrire le même opérateur ; `blocksolve_assembly_matches_the_matrix_free_operator` est la garde. Les blocs sont nodaux et indexés `3 * sommet + composante` : `Element::from_jet` doit rester l'unique source de numérotation des DOF. Le triangle supérieur strict suffit parce que les contributions viennent de Hessiennes symétriques ; ne pas stocker les deux triangles, et ne pas parcourir en plus la paire miroir, ce qui doublerait chaque bloc hors-diagonale. La diagonale nodale doit rester inversible ; sinon `System::pcg` retombe sur `pcg_point_jacobi`. Les dofs fixés restent des lignes identité via `apply_dirichlet`. Le préconditionnement block-Jacobi nodal n'apporte un gain d'itérations que lorsque les blocs nodaux ont une réelle composante hors-diagonale ; sur les fixtures T-shirt il est neutre, et aucun gain de temps n'est revendiqué. Voir [l'analyse CLO3D](clo3d-reverse-engineering.md).
+**Assembled operator.** `System::assemble_operator` and `System::apply` must describe the same operator; `blocksolve_assembly_matches_the_matrix_free_operator` is the guard. The blocks are nodal and indexed `3 * vertex + component`: `Element::from_jet` must remain the single source of DOF numbering. The strict upper triangle is enough because the contributions come from symmetric Hessians; do not store both triangles, and do not additionally traverse the mirror pair, which would double every off-diagonal block. The nodal diagonal must remain invertible; otherwise `System::pcg` falls back to `pcg_point_jacobi`. Fixed dofs remain identity rows through `apply_dirichlet`. Nodal block-Jacobi preconditioning brings an iteration gain only when the nodal blocks have a real off-diagonal component; on the T-shirt fixtures it is neutral, and no time gain is claimed. See [the CLO3D analysis](clo3d-reverse-engineering.md).
 
-**VBD/OGC.** Les mêmes énergies sont minimisées par blocs de sommets. La coloration inclut toutes les dépendances des éléments, contacts et saisies. Les centres des bornes ne changent qu'à une nouvelle détection ; les propositions locales sont tronquées puis contrôlées énergétiquement. Le backend GPU f32 vérifie les résultats et les bornes avant de modifier `State`. Le budget fixe ne signifie pas convergence. Les réglages VBD de la CLI sont enregistrés dans `run.json` ; `FittingProject.solver` conserve les réglages du Newton historique.
+**VBD/OGC.** The same energies are minimized by vertex blocks. Coloring includes all dependencies of the elements, contacts and grabs. Bound centers change only on a new detection; local proposals are truncated and then checked energetically. The f32 GPU backend verifies the results and the bounds before modifying `State`. A fixed budget does not mean convergence. The CLI's VBD settings are recorded in `run.json`; `FittingProject.solver` keeps the historical Newton settings.
 
-L'initialisation adaptative conserve un historique de l'état accepté dans `VbdSolver`, partagé par les chemins CPU/GPU. Il n'appartient pas aux fichiers d'édition ; une reconstruction ou un état extérieur différent l'invalide. L'accélération corrigée de l'amortissement choisit seulement le point de départ du solveur ; la gravité reste entière dans l'objectif. Voir [le diagnostic de fausse élasticité](adaptive-initialization.md). Le budget par défaut est 16 itérations depuis cette correction.
+Adaptive initialization keeps a history of the accepted state in `VbdSolver`, shared by the CPU/GPU paths. It does not belong to the edit files; a rebuild or a different external state invalidates it. The damping-corrected acceleration only chooses the solver's starting point; gravity remains whole in the objective. See [the false-elasticity diagnosis](adaptive-initialization.md). The default budget is 16 iterations since this correction.
 
-**Attachements.** `MaterialPath` garde un ID de panneau et des points 2D. `embed_path` scinde les segments aux traversées de triangles avant interpolation barycentrique : un guide suit donc un pli au lieu de traverser l'espace entre ses extrémités. Les `EmbeddedPoint` sont des caches à reconstruire après remeshing ; ils ne détectent pas automatiquement un autre maillage de même taille. La recherche actuelle parcourt les triangles, adaptée aux petits patrons ; un index spatial pourra la remplacer.
+**Attachments.** `MaterialPath` keeps a panel ID and 2D points. `embed_path` splits segments at triangle crossings before barycentric interpolation: a guide therefore follows a fold instead of crossing the space between its endpoints. `EmbeddedPoint` values are caches to rebuild after remeshing; they do not automatically detect a different mesh of the same size. The current search walks the triangles, which suits small patterns; a spatial index may replace it.
 
-**Unités.** Longueurs m, masse kg, temps s, force N, énergie J, densité kg/m², membrane N/m, flexion N·m, coefficient de couture N/m². Les guides chaîne/trame ne sont pas un modèle de fils explicites.
+**Units.** Lengths m, mass kg, time s, force N, energy J, density kg/m², membrane N/m, bending N·m, seam coefficient N/m². Warp/weft guides are not an explicit yarn model.
 
-## Évolutions localisées
+## Localized evolutions
 
-Depuis la [correction du jitter](jitter.md), `ContactSet.contacts` contient aussi les interactions admissibles proches dont l'énergie est encore nulle : la distance d'activation reste `r`, la sélection va jusqu'à `rq`. Coloration et incidence incluent ces termes dormants. `active_contacts` / `VbdMetrics.contacts` indiquent ceux d'énergie positive à la détection ; `contact_terms` donne le coût en termes retenus. Les identifiants canoniques sont triés/dédupliqués avant la coloration. Le GPU travaille dans un repère translaté, rétabli à la lecture ; l'état et les contacts CPU restent mondiaux en f64. Ne pas oublier ce changement de repère pour une nouvelle cible ou un diagnostic GPU.
+Since the [jitter correction](jitter.md), `ContactSet.contacts` also contains nearby admissible interactions whose energy is still zero: the activation distance remains `r`, the selection goes up to `rq`. Coloring and incidence include these dormant terms. `active_contacts` / `VbdMetrics.contacts` indicate those with positive energy at detection; `contact_terms` gives the cost in retained terms. Canonical identifiers are sorted/deduplicated before coloring. The GPU works in a translated frame, restored on readback; the CPU state and contacts remain global in f64. Do not forget this frame change for a new target or a GPU diagnostic.
 
-1. Étendre les contours Bézier aux trous, puis ajouter une métrique de résolution spatiale.
-2. Transférer l'état lors d'un remeshing dynamique ; aujourd'hui le remeshing explicite reconstruit l'arrangement initial.
-3. Étendre l’édition actuelle (points/poignées Bézier, coutures 2D/3D, gizmos, historique) aux trous, dimensions et coutures partielles.
-4. Porter la détection OGC VF/EE sur GPU, ajouter friction et traitement dédié des coutures. Une couture n'autorise pas à exclure toutes les collisions entre panneaux cousus. Les bornes OGC préservent un état séparé ; elles ne sont pas une réparation d'intersections initiales.
-5. Faire évoluer les lois constitutives à partir de mesures ou d'homogénéisation. Conserver les coordonnées matérielles et tests d'objectivité. Ne pas inventer une calibration.
+1. Extend Bézier contours to holes, then add a spatial-resolution metric.
+2. Transfer the state during dynamic remeshing; today explicit remeshing rebuilds the initial arrangement.
+3. Extend current editing (points/Bézier handles, 2D/3D seams, gizmos, history) to holes, dimensions and partial seams.
+4. Port OGC VF/EE detection to GPU, add friction and dedicated seam handling. A seam does not authorize excluding all collisions between sewn panels. OGC bounds preserve a separate state; they are not a repair of initial intersections.
+5. Evolve the constitutive laws from measurements or homogenization. Keep the material coordinates and objectivity tests. Do not invent a calibration.
 
-L’objectif d’évolution des backends et leur protocole de comparaison sont décrits dans [solver-challenge.md](solver-challenge.md). Aucun trait commun ni ABI de plugin de solveur n’est encore implémenté.
+The goal for backend evolution and its comparison protocol are described in [solver-challenge.md](solver-challenge.md). No common trait or solver-plugin ABI is implemented yet.
 
 ## Unified authoring board
 

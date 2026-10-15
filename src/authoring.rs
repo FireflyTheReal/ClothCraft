@@ -28,6 +28,18 @@ pub enum Command {
         panel: String,
         polygon: PolygonPattern,
     },
+    /// Exact numeric size of a rectangular panel, in metres.
+    Dimensions {
+        panel: String,
+        width: f64,
+        height: f64,
+    },
+    /// Place one contour point at exact material coordinates, in metres.
+    Anchor {
+        panel: String,
+        anchor: usize,
+        position: DVec2,
+    },
     Layout {
         panel: String,
         origin: DVec2,
@@ -158,6 +170,58 @@ fn normalize(panel: &mut Panel) {
     panel.pattern.height = (hi - lo).y;
 }
 
+/// Exact rectangle resize. The four corners are assigned the requested
+/// coordinates directly instead of being scaled, so 400 x 600 mm stays exactly
+/// 0.4 x 0.6 m in memory and through a JSON round trip. Only an axis-aligned
+/// four-corner contour can carry an exact numeric size; a curved or general
+/// polygon keeps its shape and is resized by editing its points.
+fn resize_rectangle(panel: &mut Panel, width: f64, height: f64) -> Result<(), String> {
+    const TOL: f64 = 1e-9;
+    let polygon = panel
+        .polygon
+        .as_mut()
+        .ok_or("This panel has no editable contour")?;
+    if polygon.points.len() != 4 || !polygon.curves.is_empty() {
+        return Err("Exact dimensions require a four-corner rectangle".into());
+    }
+    let lo = polygon
+        .points
+        .iter()
+        .copied()
+        .fold(DVec2::splat(f64::INFINITY), DVec2::min);
+    let hi = polygon
+        .points
+        .iter()
+        .copied()
+        .fold(DVec2::splat(f64::NEG_INFINITY), DVec2::max);
+    if hi.x - lo.x <= TOL || hi.y - lo.y <= TOL {
+        return Err("Exact dimensions require a non-degenerate rectangle".into());
+    }
+    let on_axis =
+        |value: f64, low: f64, high: f64| (value - low).abs() < TOL || (value - high).abs() < TOL;
+    if !polygon
+        .points
+        .iter()
+        .all(|p| on_axis(p.x, lo.x, hi.x) && on_axis(p.y, lo.y, hi.y))
+    {
+        return Err("Exact dimensions require an axis-aligned four-corner rectangle".into());
+    }
+    let mid = (lo + hi) * 0.5;
+    let snapped = |p: DVec2| {
+        DVec2::new(
+            if p.x <= mid.x { 0. } else { width },
+            if p.y <= mid.y { 0. } else { height },
+        )
+    };
+    for p in &mut polygon.points {
+        *p = snapped(*p);
+    }
+    for p in &mut panel.pin_points {
+        *p = snapped(*p);
+    }
+    Ok(())
+}
+
 fn unused_id(prefix: &str, ids: impl Iterator<Item = String>) -> String {
     let ids: std::collections::BTreeSet<_> = ids.collect();
     (1..)
@@ -179,13 +243,13 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
         } => {
             properties.bind(0.).validate()?;
             if name.trim().is_empty() {
-                return Err("Nom de tissu vide".into());
+                return Err("Fabric name is empty".into());
             }
             let index = template
                 .panels
                 .iter()
                 .position(|p| p.id == panel)
-                .ok_or("Panneau absent")?;
+                .ok_or("Panel not found")?;
             let old_id = template.panels[index].fabric.clone();
             let shared = template
                 .panels
@@ -206,7 +270,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                     .fabrics
                     .iter_mut()
                     .find(|f| f.id == old_id)
-                    .ok_or("Tissu absent")?;
+                    .ok_or("Fabric not found")?;
                 f.name = name;
                 f.properties = properties;
                 old_id
@@ -226,7 +290,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             replace,
         } => {
             if !(3..=64).contains(&points.len()) || points.iter().any(|p| !p.is_finite()) {
-                return Err("Dessiner 3 à 64 points finis".into());
+                return Err("Draw 3 to 64 finite points".into());
             }
             if tangents.is_empty() {
                 tangents.resize(points.len(), DVec2::ZERO);
@@ -314,7 +378,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .panels
                 .iter_mut()
                 .find(|p| p.id == panel)
-                .ok_or("Panneau absent")?
+                .ok_or("Panel not found")?
                 .placement = placement;
             selected = Some(panel);
         }
@@ -323,18 +387,69 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .panels
                 .iter()
                 .position(|p| p.id == panel)
-                .ok_or("Panneau absent")?;
+                .ok_or("Panel not found")?;
             let origin = layout(&template, index);
             let p = &mut template.panels[index];
             let old = p
                 .polygon
                 .as_ref()
-                .ok_or("Convertir le patron rectangulaire avant édition")?;
+                .ok_or("Convert the rectangular pattern before editing")?;
             if polygon.edges != old.edges || polygon.points.len() != old.points.len() {
-                return Err("Les bords nommés doivent rester stables".into());
+                return Err("Named boundaries must stay stable".into());
             }
             p.layout_2d = Some(origin);
             p.polygon = Some(polygon);
+            normalize(p);
+            selected = Some(panel);
+        }
+        Command::Dimensions {
+            panel,
+            width,
+            height,
+        } => {
+            if !width.is_finite() || !height.is_finite() || width <= 0. || height <= 0. {
+                return Err("Dimensions must be positive finite values".into());
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            if p.polygon.is_some() {
+                resize_rectangle(p, width, height)?;
+                normalize(p);
+            }
+            // Re-assert the requested size after normalization: the stored value
+            // must be the exact input, never a rounded copy of the contour.
+            p.pattern.width = width;
+            p.pattern.height = height;
+            selected = Some(panel);
+        }
+        Command::Anchor {
+            panel,
+            anchor,
+            position,
+        } => {
+            if !position.is_finite() {
+                return Err("Point coordinates must be finite".into());
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            {
+                let polygon = p
+                    .polygon
+                    .as_mut()
+                    .ok_or("This panel has no editable points")?;
+                if anchor >= polygon.points.len() {
+                    return Err("Point index out of range".into());
+                }
+                polygon.points[anchor] = position;
+            }
+            // Re-basing the local origin keeps every untouched point at the same
+            // board and world position, exactly like a dragged contour edit.
             normalize(p);
             selected = Some(panel);
         }
@@ -343,7 +458,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .panels
                 .iter_mut()
                 .find(|p| p.id == panel)
-                .ok_or("Panneau absent")?
+                .ok_or("Panel not found")?
                 .layout_2d = Some(origin);
             selected = Some(panel);
         }
@@ -356,9 +471,9 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .panels
                 .iter_mut()
                 .find(|p| p.id == panel)
-                .ok_or("Panneau absent")?;
+                .ok_or("Panel not found")?;
             if !rotation_degrees.is_finite() {
-                return Err("Rotation 2D invalide".into());
+                return Err("Invalid 2D rotation".into());
             }
             p.layout_2d = Some(origin);
             p.layout_rotation_degrees = rotation_degrees.rem_euclid(360.);
@@ -369,10 +484,10 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .panels
                 .iter()
                 .find(|p| p.id == panel)
-                .ok_or("Panneau absent")?
+                .ok_or("Panel not found")?
                 .clone();
             copy.id = unused_id("panel", template.panels.iter().map(|p| p.id.clone()));
-            copy.name = format!("{} copie", copy.name);
+            copy.name = format!("{} copy", copy.name);
             copy.placement.translation.x += copy.pattern.width + 0.05;
             let i = template.panels.iter().position(|p| p.id == panel).unwrap();
             copy.layout_2d = Some(layout(&template, i) + DVec2::new(copy.pattern.width + 0.15, 0.));
@@ -381,10 +496,10 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
         }
         Command::RemovePanel { panel } => {
             if template.panels.len() <= 1 {
-                return Err("Conserver au moins un panneau".into());
+                return Err("Keep at least one panel".into());
             }
             if !template.panels.iter().any(|p| p.id == panel) {
-                return Err("Panneau absent".into());
+                return Err("Panel not found".into());
             }
             template.panels.retain(|p| p.id != panel);
             template
@@ -406,22 +521,20 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                     }
             };
             if same_edge(&a, &b) {
-                return Err("Choisir deux bords distincts".into());
+                return Err("Choose two distinct boundaries".into());
             }
             // This first editor supports full boundary segments only. Imported
             // partial seams stay intact; overlapping edits require free sewing.
             for end in [&a, &b] {
                 if end.range != [0., 1.] {
-                    return Err("L'éditeur attend un bord entier".into());
+                    return Err("The editor expects a whole boundary".into());
                 }
                 if template
                     .seams
                     .iter()
                     .any(|s| same_edge(end, &s.a) || same_edge(end, &s.b))
                 {
-                    return Err(
-                        "Bord déjà cousu : supprimer sa couture avant de le réutiliser".into(),
-                    );
+                    return Err("Boundary already sewn: delete its seam before reusing it".into());
                 }
             }
             let id = unused_id("seam", template.seams.iter().map(|s| s.id.clone()));
@@ -437,7 +550,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
         }
         Command::RemoveSeam { seam } => {
             if !template.seams.iter().any(|s| s.id == seam) {
-                return Err("Couture absente".into());
+                return Err("Seam not found".into());
             }
             template.seams.retain(|s| s.id != seam);
         }
@@ -489,7 +602,7 @@ impl History {
         } else {
             (&mut self.undo, &mut self.redo)
         };
-        let template = from.last().ok_or("Historique vide")?;
+        let template = from.last().ok_or("History is empty")?;
         let garment = template.compile()?;
         let template = from.pop().unwrap();
         to.push(current.clone());

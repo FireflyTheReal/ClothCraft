@@ -3,17 +3,25 @@
 
 This reads the *shipped* CLO application and writes a surface inventory: every
 recovered command slot, every dialog/dock/view class, the shipped preset
-libraries, the Qt resource names and the file extensions the bundle handles.
+libraries, the Qt resource names, the file extensions the bundle handles and a
+symbol-table inventory of all 21 `libClo*` libraries (case-insensitive, which
+includes `libCLOAPIInterface`).
+
+The action and screen registers come from the **main executable** only; the
+libraries are inventoried for their engine-side namespaces and classes, not for
+user-facing commands. Widening the scan does not change the classifier or the
+accepted action/screen sets.
 
 What this can and cannot establish:
 
 * **Observed** - symbol names, resource names, preset file names and extension
   counts are read directly from the shipped artifact.
 * **Derived** - the grouping of an action into a topic is a heuristic on its
-  name. It is a navigation aid, not a claim about behaviour.
-* **Unknown** - the semantics, parameters and UI placement of each action. A
-  name such as `OnAddDartFullness` tells you the command exists, not what it
-  does, what it costs, or where it lives in a toolbar.
+  name. The library namespace/class rankings are counts over `nm` output.
+* **Unknown** - the semantics, parameters and UI placement of each action, and
+  anything `nm` cannot see (stripped, purely inlined or unnamed code). A name
+  such as `OnAddDartFullness` tells you the command exists, not what it does,
+  what it costs, or where it lives in a toolbar.
 
 Nothing here executes CLO, modifies it, or copies any of its assets.
 
@@ -23,8 +31,9 @@ Usage:
                                      [--work clo3d_target]
                                      [--skip-resources]
 
-`--work` holds a thinned copy of the target binary. Keep it untracked: it is a
-large fourth-party file, and `/clo3d_target/` is already in `.gitignore`.
+`--work` holds thinned copies of the target binaries (`libscan/` for the
+libraries). Keep it untracked: they are large fourth-party files, and
+`/clo3d_target/` is already in `.gitignore`.
 """
 
 from __future__ import annotations
@@ -160,6 +169,271 @@ def read_symbols(binary: Path) -> list[tuple[str, str, str]]:
             mangled.append(parts[1])
     demangled = demangle(mangled)
     return [(a, t, d) for (a, t, _), d in zip(rows, demangled)]
+
+
+# --------------------------------------------------------------------------- #
+# Clo library inventory
+#
+# `nm` reports the symbol table of one architecture. The main executable is
+# read in full because the action/screen extraction needs every name; the 21
+# `libClo*` libraries are only inventoried, so they are streamed: `nm` output is
+# consumed line by line and folded into counters, and only capped per-library
+# summaries are retained. That keeps the 194 MB `libCloScene` from ever
+# existing in memory as a symbol list.
+#
+# What `nm` can and cannot see is recorded in the register: it reads the symbol
+# table, so stripped or purely inlined code is invisible, local names may be
+# absent, and an undefined entry proves an import exists, not where it is used.
+# --------------------------------------------------------------------------- #
+LIBRARY_GLOB_PREFIX = "libclo"
+NM_BATCH = 4096
+NM_HEX = re.compile(r"[0-9a-fA-F]+$")
+
+# Ancillary names that begin a mangled symbol and hide its real scope.
+SYMBOL_DECORATIONS = (
+    "non-virtual thunk to ",
+    "virtual thunk to ",
+    "construction vtable for ",
+    "VTT for ",
+    "vtable for ",
+    "typeinfo name for ",
+    "typeinfo for ",
+    "guard variable for ",
+    "out-of-line ",
+    "reference to ",
+    "pointer to ",
+)
+
+TEMPLATE_ARGS = re.compile(r"<[^<>]*>")
+
+
+def clo_libraries(frameworks: Path) -> list[Path]:
+    """Every `libClo*.dylib` in the frameworks directory, case-insensitively.
+
+    The bundle ships `libClo...` and one `libCLOAPIInterface`, so a
+    case-sensitive glob would silently drop the API library.
+    """
+    if not frameworks.is_dir():
+        return []
+    return sorted(
+        path
+        for path in frameworks.iterdir()
+        if path.is_file()
+        and path.suffix == ".dylib"
+        and path.name.lower().startswith(LIBRARY_GLOB_PREFIX)
+    )
+
+
+def parse_nm_line(line: str) -> tuple[str, str] | None:
+    """Split one `nm` line into (type, mangled name).
+
+    `nm` prints `<address> <type> <name>` for defined entries and a blank
+    address for undefined ones, so a two-field line is `U <name>`.
+    """
+    if not line.strip():
+        return None
+    parts = line.rstrip("\n").split(None, 2)
+    if len(parts) == 2:
+        return parts[0], parts[1]
+    if len(parts) >= 3:
+        if NM_HEX.fullmatch(parts[0]):
+            return parts[1], parts[2]
+        return parts[0], parts[2]
+    return None
+
+
+def strip_decorations(name: str) -> str:
+    """Remove vtable/thunk/typeinfo prefixes to expose the real scope."""
+    changed = True
+    while changed:
+        changed = False
+        for prefix in SYMBOL_DECORATIONS:
+            if name.startswith(prefix):
+                name = name[len(prefix) :]
+                changed = True
+    return name
+
+
+def owner_scope(name: str) -> tuple[str | None, str | None]:
+    """Return (top_level_namespace, owner_scope) for a demangled name.
+
+    `Marvelous::Fabric::FabricItem::SetColor(FabricColor)` yields
+    `("Marvelous", "FabricItem")`. Data symbols without a parameter list treat
+    their last component as the owner (`vtable for Marvelous::Scene` yields
+    `("Marvelous", "Scene")`). Names with no qualified scope yield `(None, None)`.
+    """
+    text = strip_decorations(name)
+    had_parameters = "(" in text
+    if had_parameters:
+        text = text[: text.find("(")]
+    while True:
+        stripped = TEMPLATE_ARGS.sub("", text)
+        if stripped == text:
+            break
+        text = stripped
+    if "::" not in text:
+        return None, None
+    components = [part.strip() for part in text.split("::") if part.strip()]
+    if len(components) < 2:
+        return None, None
+    top = components[0]
+    owner = components[-2] if had_parameters else components[-1]
+    return top or None, owner or None
+
+
+def top_entries(counter: Counter, limit: int) -> list[dict]:
+    """Deterministic `[{name, count}]`, ties broken by name."""
+    ranked = sorted(counter.items(), key=lambda kv: (-kv[1], kv[0]))
+    return [{"name": name, "count": count} for name, count in ranked[:limit]]
+
+
+def scan_library(library: Path, work: Path) -> tuple[dict, Counter, Counter]:
+    """Inventory one library by streaming `nm -a` output.
+
+    Returns the per-library record plus the namespace and owner-scope counters
+    so the caller can merge them across the bundle. Only counters are kept: no
+    per-symbol list is retained for a library.
+    """
+    thin = thin_arm64(library, work)
+    by_type: Counter[str] = Counter()
+    namespaces: Counter[str] = Counter()
+    classes: Counter[str] = Counter()
+    symbol_entries = 0
+    defined = 0
+    undefined = 0
+    debug_entries = 0
+    demangled_names = 0
+    pending: list[str] = []
+
+    def flush(names: list[str]) -> None:
+        nonlocal demangled_names
+        if not names:
+            return
+        for mangled, text in zip(names, demangle(names)):
+            if text != mangled:
+                demangled_names += 1
+            top, owner = owner_scope(text)
+            if top:
+                namespaces[top] += 1
+            if owner:
+                classes[owner] += 1
+
+    proc = subprocess.Popen(
+        ["nm", "-a", str(thin)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        bufsize=1 << 20,
+    )
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        parsed = parse_nm_line(line)
+        if parsed is None:
+            continue
+        symbol_type, mangled = parsed
+        symbol_entries += 1
+        by_type[symbol_type] += 1
+        if symbol_type == "U":
+            undefined += 1
+            continue
+        if symbol_type == "-":
+            # Debug/stab entry: not a code symbol, and its payload is a field
+            # dump rather than a name, so it must not reach the rankings.
+            debug_entries += 1
+            continue
+        defined += 1
+        pending.append(mangled)
+        if len(pending) >= NM_BATCH:
+            flush(pending)
+            pending.clear()
+    flush(pending)
+    nm_exit = proc.wait()
+
+    record = {
+        "name": library.name,
+        "bytes": library.stat().st_size,
+        "architectures": run(["lipo", "-archs", str(library)]).split(),
+        "analysed_slice": str(thin),
+        "slice_bytes": thin.stat().st_size,
+        "slice_sha256": sha256(thin),
+        "symbol_entries": symbol_entries,
+        "defined": defined,
+        "undefined": undefined,
+        "debug_entries": debug_entries,
+        "demangled_names": demangled_names,
+        "distinct_top_namespaces": len(namespaces),
+        "distinct_engine_classes": len(classes),
+        "by_symbol_type": dict(sorted(by_type.items())),
+        "top_namespaces": top_entries(namespaces, 12),
+        "top_engine_classes": top_entries(classes, 12),
+    }
+    if nm_exit != 0:
+        record["nm_exit_code"] = nm_exit
+    return record, namespaces, classes
+
+
+def scan_libraries(frameworks: Path, work: Path) -> dict:
+    """Inventory every Clo library and merge the bundle-wide totals."""
+    libraries = clo_libraries(frameworks)
+    library_work = work / "libscan"
+    library_work.mkdir(parents=True, exist_ok=True)
+
+    records: list[dict] = []
+    bundle_namespaces: Counter[str] = Counter()
+    bundle_classes: Counter[str] = Counter()
+    total_symbols = 0
+    total_defined = 0
+    total_undefined = 0
+    total_debug = 0
+
+    for library in libraries:
+        print(f"==> Scanning {library.name}", flush=True)
+        record, namespaces, classes = scan_library(library, library_work)
+        print(
+            f"    {record['symbol_entries']} entries "
+            f"({record['defined']} defined, {record['undefined']} undefined)"
+        )
+        records.append(record)
+        bundle_namespaces.update(namespaces)
+        bundle_classes.update(classes)
+        total_symbols += record["symbol_entries"]
+        total_defined += record["defined"]
+        total_undefined += record["undefined"]
+        total_debug += record["debug_entries"]
+
+    largest = max(records, key=lambda r: r["symbol_entries"], default=None)
+    return {
+        "scan": {
+            "frameworks": str(frameworks),
+            "pattern": "libClo*.dylib (case-insensitive)",
+            "libraries": len(records),
+            "analysed_arch": "arm64",
+            "demangler": "c++filt",
+            "symbol_entries": total_symbols,
+            "defined": total_defined,
+            "undefined": total_undefined,
+            "debug_entries": total_debug,
+            "largest_library": (
+                {
+                    "name": largest["name"],
+                    "bytes": largest["bytes"],
+                    "symbol_entries": largest["symbol_entries"],
+                }
+                if largest
+                else None
+            ),
+            "note": (
+                "nm reads the symbol table of the arm64 slice. Stripped, purely "
+                "inlined and unnamed local code is invisible; an undefined entry "
+                "proves an import, not its call sites. `defined + undefined + "
+                "debug_entries == symbol_entries`; debug entries are stab records, "
+                "not code symbols, and are excluded from the rankings."
+            ),
+        },
+        "libraries": records,
+        "top_engine_classes": top_entries(bundle_classes, 20),
+        "top_namespaces": top_entries(bundle_namespaces, 20),
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -380,6 +654,10 @@ def main() -> int:
     topic_counts = Counter(a["topic"] for a in actions)
     view_counts = Counter(a["view"] for a in actions)
 
+    libraries = scan_libraries(app / "Contents/Frameworks", Path(args.work))
+    library_scan = libraries["scan"]
+    bundle_symbols = len(symbols) + library_scan["symbol_entries"]
+
     surface = {
         "target": {
             "app": str(app),
@@ -404,6 +682,16 @@ def main() -> int:
             "candidate_tool_icons": len(icons),
             "by_extension": rcc.get("by_extension", {}),
         },
+        "library_counts": {
+            "libraries_scanned": library_scan["libraries"],
+            "library_symbol_entries": library_scan["symbol_entries"],
+            "library_defined": library_scan["defined"],
+            "library_undefined": library_scan["undefined"],
+            "library_debug_entries": library_scan["debug_entries"],
+            "bundle_symbol_entries": bundle_symbols,
+            "largest_library": library_scan["largest_library"],
+            "top_engine_classes": libraries["top_engine_classes"],
+        },
         "extensions_in_bundle": extensions,
     }
 
@@ -411,6 +699,7 @@ def main() -> int:
     write_json(out / "actions.json", {"actions": actions})
     write_json(out / "screens.json", {"screens": screen_list})
     write_json(out / "namespaces.json", {"namespaces": dict(namespaces.most_common(120))})
+    write_json(out / "libraries.json", libraries)
     write_json(out / "presets.json", presets)
     write_json(out / "resources.json", rcc)
     write_json(out / "tool_icons.json", {"icons": icons})
@@ -418,7 +707,10 @@ def main() -> int:
     write_actions_markdown(out / "ACTIONS.md", actions, surface)
     write_readme(out / "README.md", surface)
 
-    print(f"==> Wrote {out}/ ({len(actions)} actions, {len(screen_list)} screen classes)")
+    print(
+        f"==> Wrote {out}/ ({len(actions)} actions, {len(screen_list)} screen classes, "
+        f"{library_scan['libraries']} libraries, {bundle_symbols} bundle symbol entries)"
+    )
     return 0
 
 
@@ -468,6 +760,7 @@ def write_actions_markdown(path: Path, actions: list[dict], surface: dict) -> No
 
 def write_readme(path: Path, surface: dict) -> None:
     t = surface["target"]
+    lib = surface.get("library_counts", {})
     lines = [
         "# CLO3D surface database",
         "",
@@ -479,6 +772,7 @@ def write_readme(path: Path, surface: dict) -> None:
         "| `actions.json` | Every recovered command slot, with view and topic |",
         "| `screens.json` | Every dialog / dock / view / panel class, by method count |",
         "| `namespaces.json` | Most frequent top-level namespaces |",
+        "| `libraries.json` | Per-library symbol inventory of all 21 `libClo*` libraries |",
         "| `presets.json` | Shipped preset libraries and their file types |",
         "| `resources.json` | The Qt resource name table |",
         "| `tool_icons.json` | Resource names that look like tool / toolbar artwork |",
@@ -492,6 +786,24 @@ def write_readme(path: Path, surface: dict) -> None:
         f"- slice SHA-256 `{t['sha256']}`",
         f"- symbol-table entries `{t['symbol_entries']}`",
         "",
+        "## Library coverage",
+        "",
+        "The action and screen registers come from the **main executable** only. The",
+        "21 `libClo*` libraries in `Contents/Frameworks` are inventoried separately",
+        "(case-insensitive match, so `libCLOAPIInterface` is included): each is thinned",
+        "to `arm64`, read with `nm -a` and demangled with `c++filt`.",
+        "",
+        f"- libraries scanned `{lib.get('libraries_scanned', 0)}`",
+        f"- library symbol entries `{lib.get('library_symbol_entries', 0)}` "
+        f"({lib.get('library_defined', 0)} defined, {lib.get('library_undefined', 0)} undefined, "
+        f"{lib.get('library_debug_entries', 0)} debug)",
+        f"- whole-bundle symbol entries (main + libraries) `{lib.get('bundle_symbol_entries', 0)}`",
+        "",
+        "`libraries.json` carries the per-library records, the bundle-wide namespace",
+        "ranking and the top engine classes. Only counters are retained per library;",
+        "`nm` output is streamed, so `libCloScene` (194 MB) is never held in memory as",
+        "a symbol list.",
+        "",
         "## What this is not",
         "",
         "This is a **surface** inventory. It establishes that a named command exists and",
@@ -499,8 +811,9 @@ def write_readme(path: Path, surface: dict) -> None:
         "cost, or where the control sits in a toolbar. Treat every entry as a question to",
         "ask of the decompiler, not as documentation.",
         "",
-        "Two specific gaps: the resource name table is reported in file order with",
-        "directory nesting not reconstructed, and topic assignment is a name heuristic.",
+        "Named gaps: the resource name table is reported in file order with directory",
+        "nesting not reconstructed, topic assignment is a name heuristic, and `nm` only",
+        "sees the symbol table, so stripped, purely inlined or unnamed code is invisible.",
         "",
     ]
     path.write_text("\n".join(lines), encoding="utf-8")

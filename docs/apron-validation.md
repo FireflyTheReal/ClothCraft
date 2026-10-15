@@ -6,7 +6,7 @@ User reproduction: a newly drawn rectangle stayed almost still while an existing
 
 - GPU `predict` initializes moving vertices from the inertial target, including gravity and damping, clipped to the original OGC balls with their f32 safety margin. Local energy-checked VBD follows. Fixed vertices remain fixed; contacts and centers are not discarded or recentered.
 - Physical edits rebuild solver/contact caches but transfer compatible panels' positions and velocities by panel ID and local mesh. Adding a rectangle or a seam preserves the shirt's current drape. New/remeshed/rearranged panels start at their own arrangement; cancelling a placement restores its previous state.
-- **Coudre et simuler / Space** commits a pending pair before advancing. Unequal edge lengths require explicit easing; failure remains visible and leaves simulation paused. **Valider la couture** also works without starting physics.
+- **Sew and simulate / Space** commits a pending pair before advancing. Unequal edge lengths require explicit easing; failure remains visible and leaves simulation paused. **Commit the seam** also works without starting physics.
 - Candidate construction uses conservative AABB distance bounds instead of duplicating exact closest-feature evaluations. Exact distances, feasible regions and OGC bounds still update every step. No cap silently drops candidates.
 
 ## Regression evidence

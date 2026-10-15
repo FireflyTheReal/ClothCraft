@@ -15,6 +15,11 @@ Each row is a contribution-sized track, not a promised release date. Finish one 
 | P0.3 | Stable cloth at a measured realtime budget | `ogc/`, `vbd.rs`, `gpu_vbd.rs` | Shirt/apron/dress, supported and free cloth, multiple mesh densities; report step P50/P95, delivered physical time, seam gaps, stretch and intersections. Preserve accuracy checks |
 | P0.4 | A workspace shell you can actually open | `editor.rs`, `render.rs`, `scripts/make-macos-prototype.sh` | `cargo build --features desktop` yields a double-clickable macOS bundle; menu bar, tool strip, left palette, 3D/2D window pair, tabbed inspector and status bar all respond; no fake tool buttons |
 | P0.5 | The desktop feature is compiled on every push | `.github/workflows/cpu.yml` | A `cargo check --features desktop` job exists; a green CI run means the window builds, not just the CPU core |
+| P0.6 | One language in the interface | `atelier.rs`, `atelier/*`, `editor.rs`, `bin/` | Every user-visible string and every contributor-facing guide is plain English; no tool label, tooltip, error or panel heading is left in another language |
+| P0.7 | The capability register covers the whole bundle | `scripts/clo3d/extract_surface.py` | Every `libClo*.dylib` is symbol-scanned, not just the main executable; the register states its real coverage and no longer claims a partial scan is complete |
+| P1.4 | Notches, internal lines and darts | `authoring.rs`, `garment/`, `atelier/board.rs` | The three smallest high-count gaps in the register (15 + 26 + 21 commands) become real semantic objects with stable ids, preserved through save/load and remeshing |
+| P1.5 | A graded size run | pattern model + grading adapter | Grade rules attached to stable point identities, reversible, round-tripped; the register counts 26 grading commands and ClothCraft implements none |
+| P2.3 | Measured material calibration | `fabrics.rs`, future material model | Nonlinear, directional stiffness fitted to measured data the project owns; no copied preset numerics. Evidence base: [fabric model evidence](docs/clo3d-fabric-model-evidence.md) |
 | P1.1 | Practical static asset interchange | `avatar.rs`, `garment/export.rs`, future adapters | OBJ+MTL round trip, then static GLB; explicit units/axes, groups, normals and UVs; Blender and a second independent viewer agree |
 | P1.2 | Industrial pattern exchange | canonical pattern model + new format adapters | DXF-AAMA and DXF-ASTM separately; import/export contours, grain and notches with independent fixtures; cutting vs sewing lines are explicit |
 | P1.3 | Usable pattern printing | `garment/export.rs` | Physical SVG/PDF page dimensions, 100 mm ruler, tiling, labels and allowances; printed measurements agree within documented tolerance |
@@ -143,14 +148,63 @@ depend on memory or on someone's summary.
 
 | Artefact | What it gives you |
 |---|---|
-| [CLO3D capability register](docs/clo3d-capability-register.md) | 1,038 command slots, 225 screen classes, 1,579 preset files and 71 file extensions recovered from the shipped CLO 2026.1.310, mapped topic by topic onto ClothCraft's actual state. |
-| [`data/clo3d/`](data/clo3d/README.md) | The machine-readable form: `actions.json`, `screens.json`, `presets.json`, `resources.json`, `tool_icons.json` and a generated `ACTIONS.md`. |
+| [CLO3D capability register](docs/clo3d-capability-register.md) | Every command slot, screen class, preset file and file extension recovered from the shipped CLO 2026.1.310, mapped topic by topic onto ClothCraft's actual state. |
+| [`data/clo3d/`](data/clo3d/README.md) | The machine-readable form: `actions.json`, `screens.json`, `libraries.json`, `presets.json`, `resources.json`, `tool_icons.json` and a generated `ACTIONS.md`. |
 | [`scripts/clo3d/extract_surface.py`](scripts/clo3d/extract_surface.py) | The extractor. Re-run it against a newer CLO and diff the register. |
 | [CLO3D reverse-engineering dossier](docs/clo3d-reverse-engineering.md) | The solver: how the implicit timestep operator and its block-Jacobi preconditioner were recovered and what was implemented from them. |
+| [Fabric model evidence](docs/clo3d-fabric-model-evidence.md) | What REA/Ghidra recovered about the material model, with Evidence IDs, as the base for P2.3. |
 | Earlier-pass documents | [Architecture](docs/clo3d-architecture-earlier-pass.md), [feature catalogue](docs/clo3d-feature-catalog-earlier-pass.md), [format notes](docs/clo3d-format-notes-earlier-pass.md), [prior art](docs/clo3d-prior-art-earlier-pass.md). |
 
 Read the register before proposing a new format, tool or panel: it already
 contains the count, the owning viewport and the likely name of the thing you are
 about to design from scratch. Two limits are worth repeating — the topic
-assignment is a name heuristic with 152 actions still unclassified, and a
-recovered name is a lead to decompile, never a specification to implement.
+assignment is a name heuristic, and a recovered name is a lead to decompile,
+never a specification to implement.
+
+## 7. Where to go next, in dependency order
+
+The register changed the shape of the plan, so the sequence below is stated
+explicitly rather than left implicit in the milestone table.
+
+1. **One language, one register.** Finish the English pass (P0.6) and widen the
+   register to every library (P0.7). Both are cheap, and both remove a source of
+   confusion that costs more than it saves: a half-translated interface, and a
+   register whose coverage is narrower than it looks.
+
+   **Outstanding from the first English pass.** The application UI, the
+   contributor guides (`AGENTS.md`, `architecture.md`, `handoff.md`,
+   `authoring.md`, `interoperability.md`) and the user-visible README are done.
+   The registers and dossiers are English by construction. What remains is ten
+   inherited French documents, none of which describes the current interface
+   directly: `docs/ogc.md`, `docs/research.md`, `docs/validation.md`,
+   `docs/first-fit.md`, `docs/jitter.md`, `docs/turbo-perf.md`,
+   `docs/template-format.md`, `docs/research-patterns.md`,
+   `docs/ogc-validation.md`, `docs/meshing.md`. Translate them when they are next
+   touched for content, rather than in a separate sweep, so that the translation
+   is checked against the code at the same time.
+
+   **The language coupling is a real maintenance cost.** Several documents quote
+   atelier control labels in bold. Every UI string rename therefore invalidates
+   the documents that quote it, and a stale quote is worse than a French one
+   because it looks authoritative. Prefer describing a control by what it does
+   over quoting its current label, and when a label must be quoted, verify it
+   against `src/atelier*.rs` rather than against another document.
+2. **The document model is the bottleneck, not the solver.** The five largest
+   uncontested gaps in the register — notches (15), internal lines (26),
+   darts/pleats (21), grading (26) and animation (20) — total 108 commands, and
+   **none of them needs new physics**. Every one is blocked on the same missing
+   thing: a document model whose objects have stable semantic identities that
+   survive save/load and remeshing. That is DRAW-02/03/04 and SEW-02, and it is
+   the highest-leverage work in the repository.
+3. **Then the smallest real wins.** DRAW-01 (numeric dimensions) is the first
+   slice; P1.4 turns notches, internal lines and darts into first-class objects;
+   P1.5 adds a graded size run. Each is independently reviewable and each has a
+   count behind it.
+4. **Calibration last, and measured.** P2.3 only becomes honest once there is
+   data the project owns. The register shows 1,579 shipped preset files: their
+   *existence* tells us the category matters, their *contents* are proprietary
+   and must not be copied. [The fabric evidence pass](docs/clo3d-fabric-model-evidence.md)
+   exists to describe the mechanics to reimplement, not the numbers to reuse.
+5. **Keep the evidence honest.** Re-run the extractor after any CLO upgrade and
+   diff; treat a change in the register as a prompt to re-open the related
+   roadmap item, and treat a green CI run as evidence only about what CI builds.

@@ -33,7 +33,7 @@ pub(super) fn style(ctx: &egui::Context) {
 impl Atelier {
     pub(super) fn panel_browser(&mut self, ui: &mut egui::Ui) {
         let mut select = None;
-        egui::CollapsingHeader::new(format!("Pièces ({})", self.project.template.panels.len()))
+        egui::CollapsingHeader::new(format!("Pieces ({})", self.project.template.panels.len()))
             .id_salt("panel_browser")
             .default_open(true)
             .show(ui, |ui| {
@@ -47,10 +47,7 @@ impl Atelier {
                                     self.authoring.selected.as_ref() == Some(&panel.id),
                                     &panel.name,
                                 )
-                                .on_hover_text(format!(
-                                    "{} · sélectionner dans les deux vues",
-                                    panel.id
-                                ))
+                                .on_hover_text(format!("{} · select in both views", panel.id))
                                 .clicked()
                             {
                                 select = Some(panel.id.clone());
@@ -67,14 +64,14 @@ impl Atelier {
         ui.separator();
     }
     pub(super) fn export_information(&mut self, ui: &mut egui::Ui) {
-        ui.collapsing("Fichiers & formats", |ui| {
-            ui.label("Export disponible");
-            ui.small("Projet JSON · patrons JSON · OBJ · aperçu SVG · guides de fibres");
-            ui.label("Entrée disponible");
-            ui.small("Projet/patrons JSON ; avatar OBJ via la ligne de commande.");
-            ui.small("DXF, GLB, USD, Alembic, FBX et PDF : prévus, pas encore disponibles.");
+        ui.collapsing("Files & formats", |ui| {
+            ui.label("Export available");
+            ui.small("Project JSON · pattern JSON · OBJ · SVG preview · fiber guides");
+            ui.label("Import available");
+            ui.small("Project/pattern JSON; OBJ avatar via the command line.");
+            ui.small("DXF, GLB, USD, Alembic, FBX and PDF: planned, not yet available.");
             ui.separator();
-            ui.small("Dossier d’export (fichiers remplacés à chaque export) :");
+            ui.small("Export folder (files replaced on every export):");
             ui.label(egui::RichText::new(self.output.display().to_string()).small());
         });
     }

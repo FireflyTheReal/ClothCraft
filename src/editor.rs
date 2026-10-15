@@ -42,7 +42,7 @@ const PATTERN_GRID: Color32 = Color32::from_rgb(0xE3, 0xE8, 0xEF);
 const PATTERN_MESH: Color32 = Color32::from_rgb(0xB6, 0xC1, 0xCE);
 const PATTERN_LINE: Color32 = Color32::from_rgb(0x1B, 0x1B, 0x1B);
 
-const TABS: [&str; 4] = ["Propriétés", "Objets", "Matière", "Simulation"];
+const TABS: [&str; 4] = ["Properties", "Objects", "Fabric", "Simulation"];
 
 /// Light chrome with a blue accent, applied to both egui themes so the
 /// workspace looks the same whatever the host reports.
@@ -133,7 +133,7 @@ pub fn run(project: Project, output: PathBuf) -> eframe::Result {
         ..Default::default()
     };
     eframe::run_native(
-        "MARVELOUS CLOTH | Atelier FEM",
+        "MARVELOUS CLOTH | FEM Workshop",
         options,
         Box::new(move |cc| Ok(Box::new(Editor::new(cc, project, output)?))),
     )
@@ -219,7 +219,7 @@ impl Editor {
             receive,
             project_path,
             output,
-            status: "Prêt. Le menu Simulation démarre le solveur FEM CPU.".into(),
+            status: "Ready. The Simulation menu starts the CPU FEM solver.".into(),
             selected_edge: None,
             tab: 0,
         })
@@ -235,7 +235,7 @@ impl Editor {
                 self.metrics = None;
                 self.playing = false;
                 self.selected_edge = None;
-                self.status = "Patron appliqué, simulation remise au repos.".into();
+                self.status = "Pattern applied, simulation reset to rest.".into();
             }
             Err(e) => self.status = e,
         }
@@ -255,7 +255,7 @@ impl Editor {
             self.pending = true;
         } else {
             self.playing = false;
-            self.status = "Le worker CPU est arrêté.".into();
+            self.status = "The CPU worker has stopped.".into();
         }
     }
     fn poll(&mut self) {
@@ -268,7 +268,9 @@ impl Editor {
                 Ok((state, m)) => {
                     if !m.converged {
                         self.playing = false;
-                        self.status="Tolérance non atteinte : pause. Réduire dt ou augmenter les itérations.".into();
+                        self.status =
+                            "Tolerance not reached: paused. Reduce dt or increase the iterations."
+                                .into();
                     }
                     self.state = state;
                     self.metrics = Some(m);
@@ -290,7 +292,7 @@ impl Editor {
         })();
         self.status = result.map_or_else(
             |e| e,
-            |_| format!("Projet actif sauvegardé : {}", path.display()),
+            |_| format!("Active project saved: {}", path.display()),
         );
     }
     fn load(&mut self) {
@@ -316,14 +318,14 @@ impl Editor {
         })();
         self.status = result.map_or_else(
             |e| e.to_string(),
-            |_| format!("OBJ et métriques exportés : {}", self.output.display()),
+            |_| format!("OBJ and metrics exported: {}", self.output.display()),
         );
     }
     fn playing_label(&self) -> &'static str {
         if self.playing {
             "⏸ Pause"
         } else {
-            "▶ Simuler"
+            "▶ Simulate"
         }
     }
 
@@ -332,38 +334,38 @@ impl Editor {
     fn menu_bar(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         ui.horizontal(|ui| {
-            ui.menu_button("Fichier", |ui| {
-                if ui.button("Sauvegarder le projet").clicked() {
+            ui.menu_button("File", |ui| {
+                if ui.button("Save project").clicked() {
                     self.save();
                     ui.close();
                 }
-                if ui.button("Charger le projet").clicked() {
+                if ui.button("Load project").clicked() {
                     self.load();
                     ui.close();
                 }
                 ui.separator();
-                if ui.button("Exporter OBJ + métriques").clicked() {
+                if ui.button("Export OBJ + metrics").clicked() {
                     self.export();
                     ui.close();
                 }
                 ui.separator();
-                if ui.button("Quitter").clicked() {
+                if ui.button("Quit").clicked() {
                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             });
-            ui.menu_button("Édition", |ui| {
-                if ui.button("Appliquer les paramètres et Reset").clicked() {
+            ui.menu_button("Edit", |ui| {
+                if ui.button("Apply settings and Reset").clicked() {
                     self.reset(self.draft.clone());
                     ui.close();
                 }
-                if ui.button("Réinitialiser la vue 3D").clicked() {
+                if ui.button("Reset the 3D view").clicked() {
                     self.camera = Camera::default();
                     ui.close();
                 }
             });
-            ui.menu_button("Affichage", |ui| {
-                ui.checkbox(&mut self.wire, "Maillage");
-                ui.checkbox(&mut self.heat, "Déformation");
+            ui.menu_button("View", |ui| {
+                ui.checkbox(&mut self.wire, "Wireframe");
+                ui.checkbox(&mut self.heat, "Strain");
                 ui.checkbox(&mut self.contacts, "Contacts");
             });
             ui.menu_button("Simulation", |ui| {
@@ -374,14 +376,14 @@ impl Editor {
                 if ui
                     .add_enabled(
                         !self.pending && !self.playing,
-                        egui::Button::new("Avancer d'un pas"),
+                        egui::Button::new("Advance one step"),
                     )
                     .clicked()
                 {
                     self.step(&ctx);
                     ui.close();
                 }
-                if ui.button("Retour au repos").clicked() {
+                if ui.button("Back to rest").clicked() {
                     self.reset(self.active.clone());
                     ui.close();
                 }
@@ -412,7 +414,7 @@ impl Editor {
             if ui
                 .add_enabled(
                     !self.pending && !self.playing,
-                    egui::Button::new(RichText::new("⏭ Pas").size(12.5)),
+                    egui::Button::new(RichText::new("⏭ Step").size(12.5)),
                 )
                 .clicked()
             {
@@ -420,22 +422,22 @@ impl Editor {
             }
             if ui
                 .button(RichText::new("↺ Reset").size(12.5))
-                .on_hover_text("Reconstruit le patron et remet la simulation au repos")
+                .on_hover_text("Rebuilds the pattern and resets the simulation to rest")
                 .clicked()
             {
                 self.reset(self.active.clone());
             }
             ui.separator();
             if ui
-                .button(RichText::new("Vue par défaut").size(12.5))
-                .on_hover_text("Recadre la caméra 3D")
+                .button(RichText::new("Default view").size(12.5))
+                .on_hover_text("Reframes the 3D camera")
                 .clicked()
             {
                 self.camera = Camera::default();
             }
             ui.separator();
-            ui.checkbox(&mut self.wire, "Maillage");
-            ui.checkbox(&mut self.heat, "Déformation");
+            ui.checkbox(&mut self.wire, "Wireframe");
+            ui.checkbox(&mut self.heat, "Strain");
             ui.checkbox(&mut self.contacts, "Contacts");
             ui.separator();
             ui.label(format!("t = {:.3} s", self.state.time));
@@ -454,48 +456,43 @@ impl Editor {
 
     fn scene_label(&self) -> &'static str {
         match self.active.scene {
-            Scene::Sphere => "Scène : drapé sur sphère",
-            Scene::Hanging => "Scène : suspendu par deux coins",
+            Scene::Sphere => "Scene: draped over a sphere",
+            Scene::Hanging => "Scene: hung by two corners",
         }
     }
 
     fn palette(&mut self, ui: &mut egui::Ui) {
         ui.add_space(4.0);
         ui.label(
-            RichText::new("AFFICHAGE")
+            RichText::new("DISPLAY")
                 .size(10.0)
                 .color(Color32::from_rgb(0x70, 0x70, 0x70)),
         );
-        palette_toggle(
-            ui,
-            &mut self.wire,
-            "Maillage",
-            "Affiche les arêtes des triangles",
-        );
+        palette_toggle(ui, &mut self.wire, "Wireframe", "Shows the triangle edges");
         palette_toggle(
             ui,
             &mut self.heat,
-            "Déform.",
-            "Colore |allongement - 1| de cyan (0 %) à rouge (10 %+)",
+            "Strain",
+            "Colors |elongation - 1| from cyan (0 %) to red (10 %+)",
         );
         palette_toggle(
             ui,
             &mut self.contacts,
             "Contacts",
-            "Surligne les sommets en pénétration de contact",
+            "Highlights the vertices in contact penetration",
         );
         ui.add_space(8.0);
         ui.label(
-            RichText::new("VUE")
+            RichText::new("VIEW")
                 .size(10.0)
                 .color(Color32::from_rgb(0x70, 0x70, 0x70)),
         );
         if ui
             .add_sized(
                 Vec2::new(ui.available_width(), 26.0),
-                egui::Button::new(RichText::new("Défaut").size(11.5)).fill(CHROME_DEEP),
+                egui::Button::new(RichText::new("Default").size(11.5)).fill(CHROME_DEEP),
             )
-            .on_hover_text("Recadre la caméra 3D")
+            .on_hover_text("Reframes the 3D camera")
             .clicked()
         {
             self.camera = Camera::default();
@@ -505,9 +502,9 @@ impl Editor {
     fn status_bar(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             let (badge, color) = match &self.metrics {
-                Some(m) if m.converged => ("Convergé", ACCENT_DEEP),
-                Some(_) => ("Budget atteint", SELECT),
-                None => ("Au repos", Color32::from_rgb(0x66, 0x66, 0x66)),
+                Some(m) if m.converged => ("Converged", ACCENT_DEEP),
+                Some(_) => ("Budget reached", SELECT),
+                None => ("At rest", Color32::from_rgb(0x66, 0x66, 0x66)),
             };
             ui.label(RichText::new(badge).strong().color(color));
             ui.separator();
@@ -517,7 +514,7 @@ impl Editor {
                 if let Some(m) = &self.metrics {
                     ui.label(
                         RichText::new(format!(
-                            "Newton {} · PCG {} · {:.1} ms · déformation max {:.2} %",
+                            "Newton {} · PCG {} · {:.1} ms · max strain {:.2} %",
                             m.newton_iterations,
                             m.pcg_iterations,
                             m.step_ms,
@@ -528,7 +525,7 @@ impl Editor {
                     ui.separator();
                     ui.label(
                         RichText::new(format!(
-                            "résidu {:.2e} / {:.2e} N",
+                            "residual {:.2e} / {:.2e} N",
                             m.residual_rms_n, m.tolerance_n
                         ))
                         .small(),
@@ -560,14 +557,10 @@ impl Editor {
     }
 
     fn tab_properties(&mut self, ui: &mut egui::Ui) {
-        ui.strong("SCÈNE DE DÉPART");
+        ui.strong("STARTING SCENE");
         let old = self.draft.scene;
-        ui.radio_value(&mut self.draft.scene, Scene::Sphere, "Drapé sur sphère");
-        ui.radio_value(
-            &mut self.draft.scene,
-            Scene::Hanging,
-            "Suspendu par deux coins",
-        );
+        ui.radio_value(&mut self.draft.scene, Scene::Sphere, "Draped over a sphere");
+        ui.radio_value(&mut self.draft.scene, Scene::Hanging, "Hung by two corners");
         if old != self.draft.scene {
             self.draft.sphere = if self.draft.scene == Scene::Sphere {
                 Some(Default::default())
@@ -576,19 +569,19 @@ impl Editor {
             };
         }
         ui.separator();
-        ui.strong("PATRON DE REPOS");
-        ui.add(egui::Slider::new(&mut self.draft.pattern.width, 0.1..=2.0).text("Largeur · m"));
-        ui.add(egui::Slider::new(&mut self.draft.pattern.height, 0.1..=2.0).text("Hauteur · m"));
-        ui.add(egui::Slider::new(&mut self.draft.pattern.nx, 2..=32).text("Cellules X"));
-        ui.add(egui::Slider::new(&mut self.draft.pattern.ny, 2..=32).text("Cellules Y"));
+        ui.strong("REST PATTERN");
+        ui.add(egui::Slider::new(&mut self.draft.pattern.width, 0.1..=2.0).text("Width · m"));
+        ui.add(egui::Slider::new(&mut self.draft.pattern.height, 0.1..=2.0).text("Height · m"));
+        ui.add(egui::Slider::new(&mut self.draft.pattern.nx, 2..=32).text("Cells X"));
+        ui.add(egui::Slider::new(&mut self.draft.pattern.ny, 2..=32).text("Cells Y"));
         ui.add(
             egui::Slider::new(&mut self.draft.material.grain_degrees, 0.0..=180.0)
-                .text("Droit-fil · °"),
+                .text("Grain · °"),
         );
         if let Some(s) = &mut self.draft.sphere {
             ui.separator();
-            ui.strong("COLLISION · SPHÈRE");
-            ui.add(egui::Slider::new(&mut s.radius, 0.1..=0.5).text("Rayon · m"));
+            ui.strong("COLLISION · SPHERE");
+            ui.add(egui::Slider::new(&mut s.radius, 0.1..=0.5).text("Radius · m"));
             ui.add(
                 egui::Slider::new(&mut s.stiffness, 1e3..=1e6)
                     .logarithmic(true)
@@ -599,34 +592,34 @@ impl Editor {
         if ui
             .add_sized(
                 Vec2::new(ui.available_width(), 26.0),
-                egui::Button::new(RichText::new("Appliquer et Reset").strong()),
+                egui::Button::new(RichText::new("Apply and Reset").strong()),
             )
             .clicked()
         {
             self.reset(self.draft.clone());
         }
-        ui.small("Les réglages sont appliqués ensemble. Reset reconstruit le patron et sa masse.");
+        ui.small("The settings are applied together. Reset rebuilds the pattern and its mass.");
     }
 
     fn tab_objects(&mut self, ui: &mut egui::Ui) {
-        ui.strong("ARBORESCENCE");
-        ui.collapsing("Patron 2D", |ui| {
+        ui.strong("TREE");
+        ui.collapsing("2D pattern", |ui| {
             let p = &self.active.pattern;
-            ui.label(format!("{} × {} cellules", p.nx, p.ny));
+            ui.label(format!("{} × {} cells", p.nx, p.ny));
             ui.label(format!(
                 "{:.0} × {:.0} mm",
                 p.width * 1000.0,
                 p.height * 1000.0
             ));
         });
-        ui.collapsing("Maillage compilé", |ui| {
-            ui.label(format!("{} sommets", self.mesh.uv.len()));
+        ui.collapsing("Compiled mesh", |ui| {
+            ui.label(format!("{} vertices", self.mesh.uv.len()));
             ui.label(format!("{} triangles", self.mesh.triangles.len()));
-            ui.label(format!("{} charnières", self.mesh.hinges.len()));
+            ui.label(format!("{} hinges", self.mesh.hinges.len()));
             let pins = self.mesh.pins.iter().filter(|p| p.is_some()).count();
-            ui.label(format!("{pins} points fixes"));
+            ui.label(format!("{pins} fixed points"));
         });
-        ui.collapsing("Sélection", |ui| match self.selected_edge {
+        ui.collapsing("Selection", |ui| match self.selected_edge {
             Some(i) => {
                 let p = &self.active.pattern;
                 let mm = if i % 2 == 0 {
@@ -634,126 +627,122 @@ impl Editor {
                 } else {
                     p.height * 1000.0
                 };
-                ui.label(format!("Bord {} · {:.0} mm", i + 1, mm));
-                if ui.button("Effacer la sélection").clicked() {
+                ui.label(format!("Edge {} · {:.0} mm", i + 1, mm));
+                if ui.button("Clear selection").clicked() {
                     self.selected_edge = None;
                 }
             }
             None => {
-                ui.small("Aucun bord sélectionné. Cliquer un bord dans la fenêtre 2D.");
+                ui.small("No edge selected. Click an edge in the 2D window.");
             }
         });
         ui.separator();
-        ui.strong("PROJET JSON");
+        ui.strong("PROJECT JSON");
         ui.text_edit_singleline(&mut self.project_path);
         ui.horizontal(|ui| {
-            if ui.button("Sauvegarder").clicked() {
+            if ui.button("Save").clicked() {
                 self.save();
             }
-            if ui.button("Charger").clicked() {
+            if ui.button("Load").clicked() {
                 self.load();
             }
         });
-        if ui.button("Exporter OBJ + métriques").clicked() {
+        if ui.button("Export OBJ + metrics").clicked() {
             self.export();
         }
-        ui.small("Sauvegarde du patron actif et des réglages ; l'état simulé s'exporte en OBJ.");
+        ui.small("Saves the active pattern and settings; the simulated state is exported as OBJ.");
     }
 
     fn tab_fabric(&mut self, ui: &mut egui::Ui) {
-        ui.strong("MATIÈRE · UNITÉS SI");
+        ui.strong("FABRIC · SI UNITS");
         let m = &mut self.draft.material;
         ui.add(
             egui::Slider::new(&mut m.warp, 10.0..=3000.0)
                 .logarithmic(true)
-                .text("Chaîne · N/m"),
+                .text("Warp · N/m"),
         );
         ui.add(
             egui::Slider::new(&mut m.weft, 10.0..=3000.0)
                 .logarithmic(true)
-                .text("Trame · N/m"),
+                .text("Weft · N/m"),
         );
         ui.add(
             egui::Slider::new(&mut m.shear, 1.0..=500.0)
                 .logarithmic(true)
-                .text("Cisaillement"),
+                .text("Shear"),
         );
         ui.add(
             egui::Slider::new(&mut m.bend_warp, 1e-6..=0.01)
                 .logarithmic(true)
-                .text("Flexion chaîne · N m"),
+                .text("Bending warp · N m"),
         );
         ui.add(
             egui::Slider::new(&mut m.bend_weft, 1e-6..=0.01)
                 .logarithmic(true)
-                .text("Flexion trame · N m"),
+                .text("Bending weft · N m"),
         );
-        ui.add(egui::Slider::new(&mut m.compression_ratio, 0.01..=1.0).text("Ratio compression"));
-        ui.add(egui::Slider::new(&mut m.density, 0.02..=1.0).text("Masse · kg/m²"));
+        ui.add(egui::Slider::new(&mut m.compression_ratio, 0.01..=1.0).text("Compression ratio"));
+        ui.add(egui::Slider::new(&mut m.density, 0.02..=1.0).text("Mass · kg/m²"));
         ui.add(
             egui::Slider::new(&mut m.thickness, 0.0001..=0.01)
                 .logarithmic(true)
-                .text("Épaisseur · m"),
+                .text("Thickness · m"),
         );
         ui.separator();
-        ui.small("Valeurs estimées, non calibrées sur mesures. Modifier la matière exige un Reset : la densité est intégrée à la masse compilée.");
+        ui.small("Estimated values, not calibrated against measurements. Changing the fabric requires a Reset: the density is baked into the compiled mass.");
     }
 
     fn tab_simulation(&mut self, ui: &mut egui::Ui) {
-        ui.strong("RÉFÉRENCE · EULER IMPLICITE");
-        ui.add(egui::Slider::new(&mut self.draft.solver.dt, 0.001..=0.04).text("Pas · s"));
+        ui.strong("REFERENCE · IMPLICIT EULER");
+        ui.add(egui::Slider::new(&mut self.draft.solver.dt, 0.001..=0.04).text("Step · s"));
         ui.add(
             egui::Slider::new(&mut self.draft.solver.gravity.y, -20.0..=0.0)
-                .text("Gravité Y · m/s²"),
+                .text("Gravity Y · m/s²"),
         );
         ui.add(egui::Slider::new(&mut self.draft.solver.damping, 0.0..=5.0).text("Damping · 1/s"));
         ui.add(
             egui::Slider::new(&mut self.draft.solver.newton_iterations, 5..=100)
-                .text("Itérations Newton"),
+                .text("Newton iterations"),
         );
         ui.separator();
-        ui.strong("SOLVEUR LINÉAIRE");
-        ui.label("Opérateur nodal assemblé · 3×3");
-        ui.label("Préconditionneur : block-Jacobi nodal");
+        ui.strong("LINEAR SOLVER");
+        ui.label("Assembled nodal operator · 3×3");
+        ui.label("Preconditioner: nodal block-Jacobi");
         ui.small(
-            "Le chemin matriciel-libre à point-Jacobi reste le repli si un bloc nodal n'est pas inversible.",
+            "The matrix-free point-Jacobi path stays the fallback when a nodal block is not invertible.",
         );
         if let Some(m) = &self.metrics {
             ui.separator();
-            ui.strong("DERNIER PAS");
+            ui.strong("LAST STEP");
             egui::Grid::new("metrics").num_columns(2).show(ui, |ui| {
-                ui.label("Résidu");
+                ui.label("Residual");
                 ui.label(format!("{:.3e} N", m.residual_rms_n));
                 ui.end_row();
-                ui.label("Tolérance");
+                ui.label("Tolerance");
                 ui.label(format!("{:.3e} N", m.tolerance_n));
                 ui.end_row();
                 ui.label("Newton / PCG");
                 ui.label(format!("{} / {}", m.newton_iterations, m.pcg_iterations));
                 ui.end_row();
-                ui.label("Allongement max");
+                ui.label("Max elongation");
                 ui.label(format!("{:.2} %", 100.0 * m.max_strain));
                 ui.end_row();
-                ui.label("Pénétration");
+                ui.label("Penetration");
                 ui.label(format!("{:.3} mm", 1000.0 * m.max_vertex_penetration_m));
                 ui.end_row();
-                ui.label("Coût du pas");
+                ui.label("Step cost");
                 ui.label(format!("{:.2} ms", m.step_ms));
                 ui.end_row();
             });
         }
         ui.separator();
-        ui.small("Contact sphère par pénalité · pas de self-collision · grille sans collision · FEM CPU, affichage wgpu");
+        ui.small("Sphere contact by penalty · no self-collision · no collision grid · CPU FEM, wgpu display");
     }
 
     // -------------------------------------------------------------- viewports
 
     fn window_3d(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
-        title_bar(
-            ui,
-            "3D WINDOW",
-            "glisser : orbite · droit : pan · molette : zoom",
-        );
+        title_bar(ui, "3D WINDOW", "drag: orbit · right: pan · wheel: zoom");
         let size = ui.available_size().max(Vec2::splat(1.0));
         let (rect, response) = ui.allocate_exact_size(size, egui::Sense::click_and_drag());
         let painter = ui.painter_at(rect);
@@ -780,7 +769,7 @@ impl Editor {
             painter.text(
                 rect.left_bottom() + Vec2::new(8.0, -14.0),
                 egui::Align2::LEFT_BOTTOM,
-                "|allongement - 1| : cyan 0 % → rouge 10 %+",
+                "|elongation - 1|: cyan 0 % → red 10 %+",
                 egui::FontId::proportional(11.0),
                 Color32::from_rgb(0x33, 0x33, 0x33),
             );
@@ -796,9 +785,9 @@ impl Editor {
                 } else {
                     p.height * 1000.0
                 };
-                format!("bord {} · {:.0} mm", i + 1, mm)
+                format!("edge {} · {:.0} mm", i + 1, mm)
             }
-            None => "clic sur un bord pour le sélectionner".to_string(),
+            None => "click an edge to select it".to_string(),
         };
         title_bar(ui, "2D PATTERN WINDOW", &hint);
 
@@ -883,7 +872,7 @@ impl Editor {
         painter.text(
             rect.center() + Vec2::new(0.0, 42.0),
             egui::Align2::CENTER_CENTER,
-            "CHAÎNE",
+            "WARP",
             egui::FontId::proportional(11.0),
             ACCENT_DEEP,
         );

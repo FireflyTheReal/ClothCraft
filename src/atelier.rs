@@ -73,7 +73,7 @@ pub fn run(
         ..Default::default()
     };
     eframe::run_native(
-        "ClothCraft | Atelier de simulation",
+        "ClothCraft | Simulation Studio",
         options,
         Box::new(move |cc| {
             let render = cc.wgpu_render_state.clone().ok_or("wgpu unavailable")?;
@@ -126,7 +126,7 @@ pub fn run(
                     ..Default::default()
                 },
                 metrics: None,
-                status: "Prêt · Espace pour lancer la simulation".into(),
+                status: "Ready · Space to start the simulation".into(),
                 grab: None,
                 drag_plane: None,
                 smoke: smoke || drag_test || perf_test || authoring_test,
@@ -265,7 +265,7 @@ impl Atelier {
                 self.metrics = None;
                 self.grab = None;
                 self.drag_plane = None;
-                self.status = "Arrangement neuf · lancer pour assembler les coutures".into();
+                self.status = "New arrangement · run to assemble the seams".into();
             }
             Err(e) => self.status = e,
         }
@@ -317,7 +317,7 @@ impl Atelier {
         })();
         self.status = result.map_or_else(
             |e| e.to_string(),
-            |_| format!("Export : {}", self.output.display()),
+            |_| format!("Export: {}", self.output.display()),
         );
     }
     fn pick_and_drag(&mut self, response: &egui::Response, rect: egui::Rect) {
@@ -409,7 +409,7 @@ impl eframe::App for Atelier {
                 Ok((state, m)) => {
                     self.smoke_applied |= done.had_grab;
                     self.scene.state = state;
-                    self.status = "Simulation dynamique · contacts OGC".into();
+                    self.status = "Dynamic simulation · OGC contacts".into();
                     self.metrics = Some(m);
                 }
                 Err(e) => {
@@ -432,14 +432,14 @@ impl eframe::App for Atelier {
                     egui::RichText::new("CLOTHCRAFT").strong().size(18.),
                 );
                 ui.label(egui::RichText::new("ALPHA").small().color(Color32::GRAY))
-                    .on_hover_text("Prototype de recherche · la plupart des fonctions de production restent à construire");
+                    .on_hover_text("Research prototype · most production features remain to be built");
                 ui.separator();
                 let play = ui.button(if self.playing {
                     "⏸ Pause"
                 } else if self.authoring.ends.len() == 2 {
-                    "▶ Coudre et simuler"
+                    "▶ Sew and simulate"
                 } else {
-                    "▶ Simuler"
+                    "▶ Simulate"
                 });
                 self.smoke_target("simulate", play.rect.center());
                 if play.clicked() {
@@ -450,36 +450,36 @@ impl eframe::App for Atelier {
                     }
                 }
                 ui.menu_button("Simulation", |ui| {
-                    if ui.add_enabled(!self.pending && !self.playing, egui::Button::new("Avancer d’un pas")).clicked()
+                    if ui.add_enabled(!self.pending && !self.playing, egui::Button::new("Advance one step")).clicked()
                         && self.prepare_simulation() { self.step(&ctx); ui.close(); }
-                    if ui.button("Rétablir l’arrangement à plat").on_hover_text("Réinitialise le drapé de toutes les pièces").clicked() {
+                    if ui.button("Reset the flat arrangement").on_hover_text("Resets the drape of every panel").clicked() {
                         self.reset(); ui.close();
                     }
                 });
-                let export_button = ui.button("Exporter").on_hover_text("Enregistrer le projet JSON, les patrons, le vêtement OBJ et les aperçus dans le dossier de la session.");
+                let export_button = ui.button("Export").on_hover_text("Saves the JSON project, the patterns, the OBJ garment and the previews into the session folder.");
                 self.smoke_target("export", export_button.rect.center());
                 if export_button.clicked() {
                     self.export();
                 }
                 ui.separator();
-                ui.menu_button("Affichage", |ui| {
-                    ui.checkbox(&mut self.wire, "Maillage");
+                ui.menu_button("View", |ui| {
+                    ui.checkbox(&mut self.wire, "Wireframe");
                     ui.checkbox(&mut self.heat, "Tension");
-                    ui.checkbox(&mut self.seam_links, "Liens de couture 2D + 3D");
-                    ui.checkbox(&mut self.seams, "Tous les échantillons de couture (diagnostic)");
+                    ui.checkbox(&mut self.seam_links, "2D + 3D seam links");
+                    ui.checkbox(&mut self.seams, "All seam samples (diagnostic)");
                 });
-                ui.menu_button("Exemples", |ui| {
+                ui.menu_button("Examples", |ui| {
                     if ui.button("T-shirt").clicked() {
                         self.preset(GarmentKind::Tshirt);
                         ui.close();
                     }
-                    if ui.button("Robe").clicked() {
+                    if ui.button("Dress").clicked() {
                         self.preset(GarmentKind::Dress);
                         ui.close();
                     }
                 });
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    ui.small(format!("{} pièces · {} coutures", self.project.template.panels.len(), self.project.template.seams.len()));
+                    ui.small(format!("{} panels · {} seams", self.project.template.panels.len(), self.project.template.seams.len()));
                 });
             });
         });
@@ -493,7 +493,7 @@ impl eframe::App for Atelier {
             });
             if let Some(m) = &self.metrics {
                 ui.small(format!(
-                    "Coutures : écart max {:.1} mm · Allongement : 95 % de la surface ≤ {:.1} % (max {:.1} %) · Pas {:.1} ms",
+                    "Seams: max gap {:.1} mm · Stretch: 95% of the surface ≤ {:.1}% (max {:.1}%) · Step {:.1} ms",
                     1000. * m.max_seam_gap_m, m.extension_p95_percent, m.extension_max_percent, m.step_ms
                 ));
             }
@@ -504,42 +504,41 @@ impl eframe::App for Atelier {
             .resizable(true)
             .show(ui, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    ui.strong("OBJETS & PROPRIÉTÉS");
+                    ui.strong("OBJECTS & PROPERTIES");
                     ui.separator();
                     self.panel_browser(ui);
                     self.authoring_properties(ui);
-                    ui.collapsing("Résolution du tissu", |ui| {
+                    ui.collapsing("Fabric resolution", |ui| {
                         ui.add(egui::Slider::new(&mut self.mesh_mm, 8.0..=60.0).text("mm"));
-                        if ui.button("Re-mailler").clicked() {
+                        if ui.button("Remesh").clicked() {
                             self.remesh();
                         }
                         ui.small(format!(
-                            "{} sommets · {} triangles",
+                            "{} vertices · {} triangles",
                             self.scene.state.x.len(),
                             self.scene.garment.mesh.triangles.len()
                         ));
                     });
-                    ui.collapsing("Réglages avancés", |ui| {
-                        ui.checkbox(&mut self.gpu, "Calcul GPU");
+                    ui.collapsing("Advanced settings", |ui| {
+                        ui.checkbox(&mut self.gpu, "GPU compute");
                         ui.add(
                             egui::Slider::new(&mut self.settings.iterations, 2..=128)
-                                .text("itérations"),
+                                .text("iterations"),
                         );
                         ui.add(
                             egui::Slider::new(&mut self.settings.damping, 0.0..=10.0)
-                                .text("amortissement"),
+                                .text("damping"),
                         );
                         ui.add(
-                            egui::Slider::new(&mut self.anisotropy, 1.0..=4.0).text("anisotropie"),
+                            egui::Slider::new(&mut self.anisotropy, 1.0..=4.0).text("anisotropy"),
                         );
                         ui.add(
-                            egui::Slider::new(&mut self.mesh_axis, 0.0..=180.0)
-                                .text("axe maillage"),
+                            egui::Slider::new(&mut self.mesh_axis, 0.0..=180.0).text("mesh axis"),
                         );
-                        ui.small("OGC hybride · sans friction · matériau non calibré");
+                        ui.small("Hybrid OGC · frictionless · uncalibrated material");
                         if let Some(m) = &self.metrics {
                             ui.small(format!(
-                                "Pas {:.2} ms · détection {:.2} ms · coutures {:.2} mm",
+                                "Step {:.2} ms · detection {:.2} ms · seams {:.2} mm",
                                 m.step_ms,
                                 m.detection_ms,
                                 m.max_seam_gap_m * 1000.
@@ -558,16 +557,22 @@ impl eframe::App for Atelier {
             });
         egui::CentralPanel::default().show(ui, |ui| {
             ui.horizontal(|ui| {
-                ui.strong("VÊTEMENT 3D");
+                ui.strong("3D GARMENT");
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui.small_button("Vue générale").on_hover_text("Recadrer le mannequin").clicked() { self.camera = camera(); }
+                    if ui
+                        .small_button("Overview")
+                        .on_hover_text("Reframe the mannequin")
+                        .clicked()
+                    {
+                        self.camera = camera();
+                    }
                 });
             });
             ui.small(match self.authoring.tool {
-                Tool::Sew=>"Cliquer les bords à coudre · droit : orbite · milieu : déplacer · molette : zoom",
-                Tool::Place=>"G : déplacer · R : tourner · anneaux X/Y/Z · Maj : 15° · Échap : annuler",
-                Tool::Grab=>"Gauche : saisir le tissu · droit : orbite · milieu : déplacer · molette : zoom",
-                _=>"Sélectionner un bord · droit : orbite · milieu : déplacer · molette : zoom",
+                Tool::Sew => "Click the edges to sew · right: orbit · middle: pan · wheel: zoom",
+                Tool::Place => "G: move · R: rotate · X/Y/Z rings · Shift: 15° · Esc: cancel",
+                Tool::Grab => "Left: grab the fabric · right: orbit · middle: pan · wheel: zoom",
+                _ => "Select an edge · right: orbit · middle: pan · wheel: zoom",
             });
             let (rect, response) = ui.allocate_exact_size(
                 ui.available_size().max(Vec2::splat(1.)),
