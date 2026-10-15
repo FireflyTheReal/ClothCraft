@@ -20,12 +20,18 @@ mod edges_3d;
 mod fabrics_ui;
 #[path = "atelier/gizmo.rs"]
 mod gizmo;
+#[path = "atelier/icons.rs"]
+mod icons;
 #[path = "atelier/perf.rs"]
 mod perf;
 #[path = "atelier/seam_links.rs"]
 mod seam_links;
 #[path = "atelier/seams_ui.rs"]
 mod seams_ui;
+#[path = "atelier/settings.rs"]
+mod settings;
+#[path = "atelier/view_controls.rs"]
+mod view_controls;
 #[path = "atelier/worker.rs"]
 mod worker;
 #[path = "atelier/workspace.rs"]
@@ -38,6 +44,7 @@ fn camera() -> Camera {
         pitch: 0.05,
         distance: 2.75,
         target: glam::Vec3::new(0., 0.95, 0.),
+        ..Default::default()
     }
 }
 pub fn run(

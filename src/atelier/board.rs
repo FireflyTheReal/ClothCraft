@@ -13,11 +13,30 @@ use marvelous_cloth::{
     },
 };
 
+/// Board magnet step used when no preference has been applied, in millimetres.
+pub(super) const DEFAULT_SNAP_MM: f64 = 10.;
+/// Magnet step limits in millimetres; mirrors the preference range so a
+/// hand-edited value cannot reach the material coordinates as a NaN.
+const SNAP_MM_MIN: f64 = 0.1;
+const SNAP_MM_MAX: f64 = 100.;
+/// Board zoom limits in pixels per metre.
+const MIN_SCALE: f32 = 40.;
+const MAX_SCALE: f32 = 2400.;
+/// Rotation applied by one view-rotation step, in degrees.
+pub(super) const ROTATE_STEP_DEGREES: f64 = 15.;
+
 pub(super) struct Board {
     pub center: DVec2,
     pub scale: f32,
     pub fitted: bool,
     pub snap: bool,
+    /// Magnet step in millimetres. The settings preference drives this value;
+    /// [`Board::snap_grid_mm`] clamps it, so a hand-edited value cannot poison
+    /// the material coordinates.
+    pub snap_mm: f64,
+    /// View-only rotation of the whole board, in radians. Presentation only: it
+    /// transforms the window, never rest geometry, grain, masses or caches.
+    pub view_rotation: f64,
     drag: Option<Drag>,
     pub shape: Option<(String, PolygonPattern)>,
     pub layout: Option<(String, DVec2)>,
@@ -30,6 +49,8 @@ impl Default for Board {
             scale: 300.,
             fitted: false,
             snap: true,
+            snap_mm: DEFAULT_SNAP_MM,
+            view_rotation: 0.,
             drag: None,
             shape: None,
             layout: None,
@@ -44,23 +65,103 @@ impl Board {
         self.layout = None;
         self.rotation = None;
     }
+    /// Magnet step actually in use, in millimetres.
+    pub(super) fn snap_grid_mm(&self) -> f64 {
+        if self.snap_mm.is_finite() {
+            self.snap_mm.clamp(SNAP_MM_MIN, SNAP_MM_MAX)
+        } else {
+            DEFAULT_SNAP_MM
+        }
+    }
+    /// Window position of a material point. The board rotation only affects this
+    /// mapping; material coordinates are never rewritten.
     pub(super) fn screen(&self, rect: egui::Rect, p: DVec2) -> egui::Pos2 {
-        rect.center()
-            + Vec2::new((p.x - self.center.x) as f32, (p.y - self.center.y) as f32) * self.scale
+        let (sin, cos) = self.view_rotation.sin_cos();
+        let d = (p - self.center) * self.scale as f64;
+        egui::pos2(
+            rect.center().x + (cos * d.x - sin * d.y) as f32,
+            rect.center().y + (sin * d.x + cos * d.y) as f32,
+        )
     }
     fn world(&self, rect: egui::Rect, p: egui::Pos2) -> DVec2 {
-        self.center
-            + DVec2::new(
-                (p.x - rect.center().x) as f64,
-                (p.y - rect.center().y) as f64,
-            ) / self.scale as f64
+        let (sin, cos) = self.view_rotation.sin_cos();
+        let v = DVec2::new(
+            (p.x - rect.center().x) as f64,
+            (p.y - rect.center().y) as f64,
+        ) / self.scale as f64;
+        self.center + DVec2::new(cos * v.x + sin * v.y, -sin * v.x + cos * v.y)
+    }
+    /// Pan by a pointer drag in pixels, so the board follows the pointer.
+    pub(super) fn pan_by(&mut self, delta: egui::Vec2) {
+        let (sin, cos) = self.view_rotation.sin_cos();
+        let d = DVec2::new(delta.x as f64, delta.y as f64);
+        self.center -=
+            DVec2::new(cos * d.x + sin * d.y, -sin * d.x + cos * d.y) / self.scale as f64;
+    }
+    /// Zoom by `factor` while keeping the material point under the cursor fixed.
+    pub(super) fn zoom_at(&mut self, rect: egui::Rect, cursor: egui::Pos2, factor: f64) {
+        if !(factor > 0.) {
+            return;
+        }
+        let before = self.world(rect, cursor);
+        self.scale = ((self.scale as f64 * factor) as f32).clamp(MIN_SCALE, MAX_SCALE);
+        let after = self.world(rect, cursor);
+        self.center += before - after;
+    }
+    /// Current view rotation in degrees, wrapped to (-180, 180].
+    pub(super) fn view_rotation_degrees(&self) -> f64 {
+        self.view_rotation.to_degrees()
+    }
+    /// Set the view rotation, wrapped to (-180, 180].
+    pub(super) fn set_view_rotation_degrees(&mut self, degrees: f64) {
+        let wrapped = (degrees + 180.).rem_euclid(360.) - 180.;
+        self.view_rotation = if wrapped == -180. { 180. } else { wrapped }.to_radians();
+    }
+    /// Rotate the view by a delta in degrees. Presentation only.
+    pub(super) fn rotate_view_by(&mut self, degrees: f64) {
+        self.set_view_rotation_degrees(self.view_rotation_degrees() + degrees);
+    }
+    /// Ask for a fit on the next painted frame, when the rectangle is known.
+    pub(super) fn request_fit(&mut self) {
+        self.fitted = false;
+    }
+    /// Reset the view: no rotation, and refit the panels on the next frame.
+    pub(super) fn reset_view(&mut self) {
+        self.view_rotation = 0.;
+        self.request_fit();
+    }
+    /// Centre and scale the board so the given material-space corners fit the
+    /// rectangle under the current view rotation.
+    pub(super) fn fit_corners(&mut self, rect: egui::Rect, corners: &[DVec2]) {
+        let (sin, cos) = self.view_rotation.sin_cos();
+        let rotate = |v: DVec2| DVec2::new(cos * v.x - sin * v.y, sin * v.x + cos * v.y);
+        let mut lo = DVec2::splat(f64::INFINITY);
+        let mut hi = DVec2::splat(f64::NEG_INFINITY);
+        for corner in corners {
+            let q = rotate(*corner);
+            lo = lo.min(q);
+            hi = hi.max(q);
+        }
+        if !lo.is_finite() || !hi.is_finite() {
+            return;
+        }
+        let view_center = (lo + hi) * 0.5;
+        self.center = DVec2::new(
+            cos * view_center.x + sin * view_center.y,
+            -sin * view_center.x + cos * view_center.y,
+        );
+        self.scale = ((rect.width() - 80.) / (hi - lo).x.max(0.1) as f32)
+            .min((rect.height() - 80.) / (hi - lo).y.max(0.1) as f32)
+            .clamp(60., 1600.);
+        self.fitted = true;
     }
     fn snapped(&self, p: DVec2) -> DVec2 {
-        if self.snap {
-            (p * 100.).round() / 100.
-        } else {
-            p
+        if !self.snap {
+            return p;
         }
+        // Work in millimetre units so the stored preference is the magnet step.
+        let grid = 1000. / self.snap_grid_mm();
+        (p * grid).round() / grid
     }
 }
 enum Drag {
@@ -85,6 +186,12 @@ enum Drag {
         origin: DVec2,
         pointer: DVec2,
         angle: f64,
+    },
+    /// Rotating the board window itself: presentation only, no command is
+    /// committed when the drag ends.
+    ViewRotate {
+        pointer_angle: f64,
+        view_rotation: f64,
     },
 }
 #[derive(Clone)]
@@ -112,6 +219,11 @@ fn inside(p: DVec2, poly: &[DVec2]) -> bool {
 }
 pub(super) fn same_edge(a: &BoundaryRef, b: &BoundaryRef) -> bool {
     a.panel == b.panel && a.edge == b.edge && (a.edge.is_some() || a.side == b.side)
+}
+/// Angle of a window position around the board centre, used by the view-rotation
+/// drag so the board follows the pointer.
+fn board_pointer_angle(pos: egui::Pos2, rect: egui::Rect) -> f64 {
+    ((pos.y - rect.center().y) as f64).atan2((pos.x - rect.center().x) as f64)
 }
 /// Millimetre dimension annotation for a selected piece. Presentation only: the
 /// labels follow the pattern size and never feed back into the rest contour.
@@ -206,26 +318,20 @@ impl Atelier {
             .or(p.polygon.as_ref())
     }
     fn fit_board(&mut self, rect: egui::Rect) {
-        let mut lo = DVec2::splat(f64::INFINITY);
-        let mut hi = DVec2::splat(f64::NEG_INFINITY);
+        let mut corners = Vec::with_capacity(self.project.template.panels.len() * 4);
         for (i, p) in self.project.template.panels.iter().enumerate() {
             let origin = authoring::layout(&self.project.template, i);
-            for corner in [
-                DVec2::ZERO,
-                DVec2::new(p.pattern.width, 0.),
-                DVec2::new(p.pattern.width, p.pattern.height),
-                DVec2::new(0., p.pattern.height),
-            ] {
-                let q = origin + authoring::rotate_2d(corner, p.layout_rotation_degrees);
-                lo = lo.min(q);
-                hi = hi.max(q);
-            }
+            corners.extend(
+                [
+                    DVec2::ZERO,
+                    DVec2::new(p.pattern.width, 0.),
+                    DVec2::new(p.pattern.width, p.pattern.height),
+                    DVec2::new(0., p.pattern.height),
+                ]
+                .map(|corner| origin + authoring::rotate_2d(corner, p.layout_rotation_degrees)),
+            );
         }
-        self.authoring.board.center = (lo + hi) * 0.5;
-        self.authoring.board.scale = ((rect.width() - 80.) / (hi - lo).x.max(0.1) as f32)
-            .min((rect.height() - 80.) / (hi - lo).y.max(0.1) as f32)
-            .clamp(60., 1600.);
-        self.authoring.board.fitted = true;
+        self.authoring.board.fit_corners(rect, &corners);
     }
     fn board_hit(&self, rect: egui::Rect, pos: egui::Pos2) -> Option<Hit> {
         let mut edge = None;
@@ -391,7 +497,7 @@ impl Atelier {
         ui.horizontal(|ui| {
             ui.strong("2D PATTERN");
             if ui.small_button("Frame all").clicked() {
-                self.authoring.board.fitted = false;
+                self.authoring.board.request_fit();
             }
             let new = ui.small_button("New");
             self.smoke_target("replace", new.rect.center());
@@ -411,7 +517,9 @@ impl Atelier {
             }
         });
         ui.horizontal(|ui| {
-            ui.checkbox(&mut self.authoring.board.snap, "10 mm snap");
+            // Read the label before the mutable borrow of the checkbox value.
+            let snap_label = format!("Snap to {} mm", self.authoring.board.snap_grid_mm());
+            ui.checkbox(&mut self.authoring.board.snap, snap_label);
             if matches!(self.authoring.tool, Tool::Draw | Tool::Rectangle) {
                 let create = ui.add_enabled(
                     self.authoring.draft.len() >= 3,
@@ -428,10 +536,7 @@ impl Atelier {
                     self.authoring.board.clear_preview();
                 }
             } else {
-                ui.small(format!(
-                    "{} pieces · wheel: zoom · middle: pan",
-                    self.project.template.panels.len()
-                ));
+                ui.small(format!("{} pieces", self.project.template.panels.len()));
             }
         });
         ui.small(match self.authoring.tool {
@@ -441,6 +546,7 @@ impl Atelier {
             Tool::Edit => "Round handle: rotate in 2D · interior: move · Shift: 15° angles",
             _ => "Selection linked to 3D · Pen or Rectangle to create fabric",
         });
+        super::view_controls::board_bar(ui, &mut self.authoring.board);
         let (rect, response) = ui.allocate_exact_size(
             ui.available_size().max(Vec2::splat(1.)),
             egui::Sense::click_and_drag(),
@@ -451,81 +557,90 @@ impl Atelier {
         if response.dragged_by(egui::PointerButton::Middle)
             || response.dragged_by(egui::PointerButton::Secondary)
         {
-            self.authoring.board.center -= ui.input(|i| {
-                let d = i.pointer.delta();
-                DVec2::new(d.x as f64, d.y as f64)
-            }) / self.authoring.board.scale as f64;
+            self.authoring.board.pan_by(ui.input(|i| i.pointer.delta()));
         }
         if let Some(pos) = response.hover_pos() {
-            let before = self.authoring.board.world(rect, pos);
             let zoom = ui.input(|i| i.smooth_scroll_delta.y);
-            self.authoring.board.scale =
-                (self.authoring.board.scale * (zoom * 0.002).exp()).clamp(40., 2400.);
-            let after = self.authoring.board.world(rect, pos);
-            self.authoring.board.center += before - after;
+            if zoom != 0. {
+                self.authoring
+                    .board
+                    .zoom_at(rect, pos, (f64::from(zoom) * 0.002).exp());
+            }
         }
         self.board_events(&response, rect);
         self.paint_board(ui, rect, &response);
+    }
+    /// Begin a tool drag from a primary press that is not a view rotation.
+    fn board_press(&mut self, start: egui::Pos2, rect: egui::Rect) {
+        let p = self
+            .authoring
+            .board
+            .snapped(self.authoring.board.world(rect, start));
+        match self.authoring.tool {
+            Tool::Draw => {
+                if self.authoring.draft.len() < 64 {
+                    let k = self.authoring.draft.len();
+                    self.authoring.draft.push(p);
+                    self.authoring.tangents.push(DVec2::ZERO);
+                    self.authoring.board.drag = Some(Drag::Draft(k));
+                }
+            }
+            Tool::Rectangle => self.authoring.board.drag = Some(Drag::Rectangle(p)),
+            Tool::Edit => {
+                if let Some(hit) = self.board_hit(rect, start) {
+                    let panel = &self.project.template.panels[hit.index];
+                    self.authoring.selected = Some(panel.id.clone());
+                    if matches!(hit.part, Part::Body) {
+                        self.authoring.edge = None;
+                    }
+                    self.authoring.board.drag = match hit.part {
+                        Part::Rotation => {
+                            let pivot = DVec2::new(panel.pattern.width, panel.pattern.height) * 0.5;
+                            let angle = self.board_angle(hit.index);
+                            let center =
+                                self.board_origin(hit.index) + authoring::rotate_2d(pivot, angle);
+                            Some(Drag::Rotate {
+                                panel: panel.id.clone(),
+                                pivot,
+                                center,
+                                vector: self.authoring.board.world(rect, start) - center,
+                                angle,
+                            })
+                        }
+                        Part::Body => Some(Drag::Layout {
+                            panel: panel.id.clone(),
+                            start: self.board_origin(hit.index),
+                            pointer: p,
+                        }),
+                        Part::Anchor(_) | Part::Handle(_, _) => Some(Drag::Shape {
+                            panel: panel.id.clone(),
+                            polygon: panel.polygon.clone().unwrap(),
+                            part: hit.part,
+                            origin: self.board_origin(hit.index),
+                            pointer: p,
+                            angle: self.board_angle(hit.index),
+                        }),
+                        _ => None,
+                    };
+                }
+            }
+            _ => {}
+        }
     }
     fn board_events(&mut self, response: &egui::Response, rect: egui::Rect) {
         let pos = response.interact_pointer_pos();
         if response.drag_started_by(egui::PointerButton::Primary)
             && let Some(start) = response.ctx.input(|i| i.pointer.press_origin())
         {
-            let p = self
-                .authoring
-                .board
-                .snapped(self.authoring.board.world(rect, start));
-            match self.authoring.tool {
-                Tool::Draw => {
-                    if self.authoring.draft.len() < 64 {
-                        let k = self.authoring.draft.len();
-                        self.authoring.draft.push(p);
-                        self.authoring.tangents.push(DVec2::ZERO);
-                        self.authoring.board.drag = Some(Drag::Draft(k));
-                    }
-                }
-                Tool::Rectangle => self.authoring.board.drag = Some(Drag::Rectangle(p)),
-                Tool::Edit => {
-                    if let Some(hit) = self.board_hit(rect, start) {
-                        let panel = &self.project.template.panels[hit.index];
-                        self.authoring.selected = Some(panel.id.clone());
-                        if matches!(hit.part, Part::Body) {
-                            self.authoring.edge = None;
-                        }
-                        self.authoring.board.drag = match hit.part {
-                            Part::Rotation => {
-                                let pivot =
-                                    DVec2::new(panel.pattern.width, panel.pattern.height) * 0.5;
-                                let angle = self.board_angle(hit.index);
-                                let center = self.board_origin(hit.index)
-                                    + authoring::rotate_2d(pivot, angle);
-                                Some(Drag::Rotate {
-                                    panel: panel.id.clone(),
-                                    pivot,
-                                    center,
-                                    vector: self.authoring.board.world(rect, start) - center,
-                                    angle,
-                                })
-                            }
-                            Part::Body => Some(Drag::Layout {
-                                panel: panel.id.clone(),
-                                start: self.board_origin(hit.index),
-                                pointer: p,
-                            }),
-                            Part::Anchor(_) | Part::Handle(_, _) => Some(Drag::Shape {
-                                panel: panel.id.clone(),
-                                polygon: panel.polygon.clone().unwrap(),
-                                part: hit.part,
-                                origin: self.board_origin(hit.index),
-                                pointer: p,
-                                angle: self.board_angle(hit.index),
-                            }),
-                            _ => None,
-                        };
-                    }
-                }
-                _ => {}
+            // Alt + left drag rotates the board window. Presentation only: no
+            // authoring command is created, so nothing physical can change.
+            if response.ctx.input(|i| i.modifiers.alt) {
+                self.authoring.board.drag = Some(Drag::ViewRotate {
+                    pointer_angle: board_pointer_angle(start, rect),
+                    view_rotation: self.authoring.board.view_rotation,
+                });
+            } else {
+                self.board_press(start, rect);
             }
         }
         if response.dragged_by(egui::PointerButton::Primary)
@@ -536,6 +651,18 @@ impl Atelier {
                 .board
                 .snapped(self.authoring.board.world(rect, pos));
             match &self.authoring.board.drag {
+                Some(Drag::ViewRotate {
+                    pointer_angle,
+                    view_rotation,
+                }) => {
+                    let mut delta = board_pointer_angle(pos, rect) - *pointer_angle;
+                    // Take the short way round when the drag crosses the branch cut.
+                    delta = (delta + std::f64::consts::PI).rem_euclid(std::f64::consts::TAU)
+                        - std::f64::consts::PI;
+                    self.authoring
+                        .board
+                        .set_view_rotation_degrees((*view_rotation + delta).to_degrees());
+                }
                 Some(Drag::Draft(k)) => self.authoring.tangents[*k] = p - self.authoring.draft[*k],
                 Some(Drag::Rectangle(start)) => {
                     let lo = start.min(p);
@@ -702,6 +829,23 @@ impl Atelier {
                 && response.ctx.input(|i| i.key_pressed(egui::Key::Enter))
             {
                 self.create_polygon();
+            }
+            // Board navigation keys. They move the window only and never touch
+            // the material coordinates.
+            if response
+                .ctx
+                .input(|i| i.key_pressed(egui::Key::OpenBracket))
+            {
+                self.authoring.board.rotate_view_by(-ROTATE_STEP_DEGREES);
+            }
+            if response
+                .ctx
+                .input(|i| i.key_pressed(egui::Key::CloseBracket))
+            {
+                self.authoring.board.rotate_view_by(ROTATE_STEP_DEGREES);
+            }
+            if response.ctx.input(|i| i.key_pressed(egui::Key::Home)) {
+                self.authoring.board.reset_view();
             }
         }
         if let Some(pos) = response.hover_pos()

@@ -1,11 +1,26 @@
 //! Workspace presentation; no physical state or file-format promises live here.
 use super::*;
+use std::sync::OnceLock;
 
-/// Workspace accent: a saturated blue that reads on both the light chrome and
-/// the white pattern board.
+/// Workspace accent: a saturated blue that reads on the light chrome, on the
+/// white pattern board and on the dark variant.
 pub(super) const ACCENT: Color32 = Color32::from_rgb(30, 136, 229);
-pub(super) fn style(ctx: &egui::Context) {
-    let mut style = (*ctx.style_of(egui::Theme::Light)).clone();
+
+/// Pristine egui base styles, captured before the first install. Deriving each
+/// theme from its own base keeps switching Light -> Dark -> Light idempotent
+/// instead of letting the light palette inherit the dark overrides.
+fn bases(ctx: &egui::Context) -> &'static (egui::Style, egui::Style) {
+    static BASES: OnceLock<(egui::Style, egui::Style)> = OnceLock::new();
+    BASES.get_or_init(|| {
+        (
+            (*ctx.style_of(egui::Theme::Light)).clone(),
+            (*ctx.style_of(egui::Theme::Dark)).clone(),
+        )
+    })
+}
+
+/// Theme-independent geometry and text sizes.
+fn geometry(style: &mut egui::Style) {
     style.spacing.item_spacing = Vec2::new(8., 6.);
     style.spacing.button_padding = Vec2::new(10., 6.);
     style.spacing.interact_size.y = 28.;
@@ -18,17 +33,60 @@ pub(super) fn style(ctx: &egui::Context) {
     style
         .text_styles
         .insert(egui::TextStyle::Small, egui::FontId::proportional(11.));
-    style.visuals.panel_fill = Color32::from_rgb(0xEC, 0xEC, 0xEC);
-    style.visuals.window_fill = Color32::from_rgb(0xF7, 0xF7, 0xF7);
-    style.visuals.faint_bg_color = Color32::from_rgb(0xDD, 0xDD, 0xDD);
-    style.visuals.extreme_bg_color = Color32::WHITE;
-    style.visuals.selection.bg_fill = ACCENT;
-    style.visuals.selection.stroke = Stroke::new(1., Color32::from_rgb(21, 101, 192));
-    style.visuals.widgets.inactive.bg_fill = Color32::from_rgb(0xDD, 0xDD, 0xDD);
-    style.visuals.widgets.hovered.bg_fill = Color32::from_rgb(0xCB, 0xDD, 0xF0);
-    style.visuals.widgets.active.bg_fill = Color32::from_rgb(0xAE, 0xCC, 0xEC);
+}
+
+/// The reviewed light palette. These values are unchanged from the approved pass.
+fn light_visuals(visuals: &mut egui::Visuals) {
+    visuals.panel_fill = Color32::from_rgb(0xEC, 0xEC, 0xEC);
+    visuals.window_fill = Color32::from_rgb(0xF7, 0xF7, 0xF7);
+    visuals.faint_bg_color = Color32::from_rgb(0xDD, 0xDD, 0xDD);
+    visuals.extreme_bg_color = Color32::WHITE;
+    visuals.selection.bg_fill = ACCENT;
+    visuals.selection.stroke = Stroke::new(1., Color32::from_rgb(21, 101, 192));
+    visuals.widgets.inactive.bg_fill = Color32::from_rgb(0xDD, 0xDD, 0xDD);
+    visuals.widgets.hovered.bg_fill = Color32::from_rgb(0xCB, 0xDD, 0xF0);
+    visuals.widgets.active.bg_fill = Color32::from_rgb(0xAE, 0xCC, 0xEC);
+}
+
+/// Dark counterpart of the light palette, carrying the same accent. Text and
+/// stroke colours stay egui's dark defaults so contrast remains readable.
+fn dark_visuals(visuals: &mut egui::Visuals) {
+    visuals.panel_fill = Color32::from_rgb(0x1B, 0x1B, 0x1F);
+    visuals.window_fill = Color32::from_rgb(0x23, 0x23, 0x28);
+    visuals.faint_bg_color = Color32::from_rgb(0x2C, 0x2C, 0x32);
+    visuals.extreme_bg_color = Color32::from_rgb(0x12, 0x12, 0x15);
+    visuals.selection.bg_fill = ACCENT;
+    visuals.selection.stroke = Stroke::new(1., Color32::from_rgb(0x8A, 0xC4, 0xF8));
+    visuals.widgets.inactive.bg_fill = Color32::from_rgb(0x32, 0x32, 0x38);
+    visuals.widgets.hovered.bg_fill = Color32::from_rgb(0x2A, 0x40, 0x57);
+    visuals.widgets.active.bg_fill = Color32::from_rgb(0x23, 0x4E, 0x74);
+}
+
+fn install(ctx: &egui::Context, dark: bool) {
+    let base = bases(ctx);
+    let mut style = if dark { base.1.clone() } else { base.0.clone() };
+    geometry(&mut style);
+    if dark {
+        dark_visuals(&mut style.visuals);
+    } else {
+        light_visuals(&mut style.visuals);
+    }
+    // Both egui theme slots receive the same workspace look, so the active theme
+    // preference cannot pick a half-styled variant.
     ctx.set_style_of(egui::Theme::Light, style.clone());
     ctx.set_style_of(egui::Theme::Dark, style);
+}
+
+/// Install the reviewed light workspace chrome.
+pub(super) fn style(ctx: &egui::Context) {
+    install(ctx, false);
+}
+
+/// Install the dark workspace chrome. `settings::apply` chooses between the two.
+// The only caller is `settings::apply`, which lands with the module declaration.
+#[allow(dead_code)]
+pub(super) fn dark_style(ctx: &egui::Context) {
+    install(ctx, true);
 }
 impl Atelier {
     pub(super) fn panel_browser(&mut self, ui: &mut egui::Ui) {

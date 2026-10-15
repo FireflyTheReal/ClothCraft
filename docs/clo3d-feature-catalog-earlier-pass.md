@@ -25,7 +25,7 @@ the menus, recovered mechanically instead of by hand.
 **This catalog contains no CLO source code, no decompiled logic, and no
 proprietary assets.** It is a list of *what the program can do*, which is
 factual and not itself protected expression. The implementation plan in
-[`ROADMAP.md`](ROADMAP.md) is a clean-room design: it says how *we* would build
+[`ROADMAP.md`](../ROADMAP.md) is a clean-room design: it says how *we* would build
 each capability from published techniques and open formats.
 
 ## Status legend
@@ -326,7 +326,7 @@ These are recorded so the boundary is deliberate rather than accidental.
 | HASP dongle / online activation | `libhasp_darwin`, `libcgauth`, `AuthenticationProcessor`. Circumventing licensing is off the table. |
 | V-Ray renderer | Commercially licensed third-party code. |
 | Substance / AxF material decoding | Licensed SDKs (`libsubstance_linker`, `libAxFDecoding`). |
-| Proprietary `.zprj`/`.zpac`/`.zfab`/`.avt` parsing | Schema is only partially observable; see [`FORMAT-NOTES.md`](FORMAT-NOTES.md). A guessed parser would silently misread real documents. |
+| Proprietary `.zprj`/`.zpac`/`.zfab`/`.avt` parsing | Schema is only partially observable; see [`FORMAT-NOTES.md`](clo3d-format-notes-earlier-pass.md). A guessed parser would silently misread real documents. |
 | PANTONE / YKK branded libraries | Trademarked third-party content. |
 | DAZ Genesis avatar conversion | Third-party licensed character meshes. |
 
@@ -334,7 +334,7 @@ These are recorded so the boundary is deliberate rather than accidental.
 
 ## 11. What the catalog implies
 
-Four conclusions that shaped [`ROADMAP.md`](ROADMAP.md):
+Four conclusions that shaped [`ROADMAP.md`](../ROADMAP.md):
 
 1. **The 2D pattern editor is the largest and most valuable subsystem.** 407 of
    1,028 commands live there, and it is where a garment's design is actually
