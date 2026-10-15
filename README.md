@@ -8,7 +8,7 @@ ClothCraft is an early native Rust experiment in garment authoring and cloth sim
 
 > **Very early alpha. Almost everything needed for a production garment tool is still to be built.** The drawing, sewing and simulation loop is a working prototype, not a CLO or Marvelous Designer replacement. Expect missing tools, rough edges and cases that do not simulate well.
 
-[Contributor entry point](AI_START_HERE.md) · [Roadmap](ROADMAP.md) · [Editing guide](docs/authoring.md) · [Import/export plan](docs/interoperability.md) · [Solver challenge](docs/solver-challenge.md)
+[Contributor entry point](AI_START_HERE.md) · [Roadmap](ROADMAP.md) · [Editing guide](docs/authoring.md) · [Import/export plan](docs/interoperability.md) · [Solver challenge](docs/solver-challenge.md) · [CLO3D capability register](docs/clo3d-capability-register.md)
 
 ![ClothCraft workspace: 3D garment, shared 2D pattern board and properties](docs/images/atelier-light-theme.png)
 

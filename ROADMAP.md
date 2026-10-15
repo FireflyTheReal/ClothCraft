@@ -134,3 +134,23 @@ cargo run --features desktop                           # the legacy FEM editor
 ```
 
 The generated `prototype/` directory is not committed; rebuild it from the script.
+
+## 6. Reverse-engineering inputs
+
+These are not product features. They are the evidence base that decides what to
+build next, and they are kept in the repository so that prioritisation does not
+depend on memory or on someone's summary.
+
+| Artefact | What it gives you |
+|---|---|
+| [CLO3D capability register](docs/clo3d-capability-register.md) | 1,038 command slots, 225 screen classes, 1,579 preset files and 71 file extensions recovered from the shipped CLO 2026.1.310, mapped topic by topic onto ClothCraft's actual state. |
+| [`data/clo3d/`](data/clo3d/README.md) | The machine-readable form: `actions.json`, `screens.json`, `presets.json`, `resources.json`, `tool_icons.json` and a generated `ACTIONS.md`. |
+| [`scripts/clo3d/extract_surface.py`](scripts/clo3d/extract_surface.py) | The extractor. Re-run it against a newer CLO and diff the register. |
+| [CLO3D reverse-engineering dossier](docs/clo3d-reverse-engineering.md) | The solver: how the implicit timestep operator and its block-Jacobi preconditioner were recovered and what was implemented from them. |
+| Earlier-pass documents | [Architecture](docs/clo3d-architecture-earlier-pass.md), [feature catalogue](docs/clo3d-feature-catalog-earlier-pass.md), [format notes](docs/clo3d-format-notes-earlier-pass.md), [prior art](docs/clo3d-prior-art-earlier-pass.md). |
+
+Read the register before proposing a new format, tool or panel: it already
+contains the count, the owning viewport and the likely name of the thing you are
+about to design from scratch. Two limits are worth repeating — the topic
+assignment is a name heuristic with 152 actions still unclassified, and a
+recovered name is a lead to decompile, never a specification to implement.

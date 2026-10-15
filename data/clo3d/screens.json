@@ -1,0 +1,1129 @@
+{
+  "screens": [
+    {
+      "class": "View2DActionSlots",
+      "methods": 407,
+      "kind": "View"
+    },
+    {
+      "class": "DialogCloAvatarEditor",
+      "methods": 351,
+      "kind": "Dialog"
+    },
+    {
+      "class": "View3DActionSlots",
+      "methods": 350,
+      "kind": "View"
+    },
+    {
+      "class": "DialogPreference",
+      "methods": 256,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DockWidgetController",
+      "methods": 222,
+      "kind": "DockWidget"
+    },
+    {
+      "class": "DialogController",
+      "methods": 168,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogExportOBJ",
+      "methods": 144,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogMultiview",
+      "methods": 129,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogImportOBJ",
+      "methods": 127,
+      "kind": "Dialog"
+    },
+    {
+      "class": "View3DBase",
+      "methods": 123,
+      "kind": "View"
+    },
+    {
+      "class": "DialogColorwayList",
+      "methods": 121,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPatternDrafter",
+      "methods": 116,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAIAvatarStudio",
+      "methods": 106,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRegisterZipperObjectManager",
+      "methods": 101,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRegisterZipperObject",
+      "methods": 92,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogGarmentInfo",
+      "methods": 87,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogVideoCapture",
+      "methods": 85,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAIParametricPattern",
+      "methods": 81,
+      "kind": "Dialog"
+    },
+    {
+      "class": "View2DBaseCommon",
+      "methods": 76,
+      "kind": "View"
+    },
+    {
+      "class": "DialogOverrideSettings",
+      "methods": 73,
+      "kind": "Dialog"
+    },
+    {
+      "class": "ViewWidgetController",
+      "methods": 69,
+      "kind": "View"
+    },
+    {
+      "class": "Dialog3DFoldWidget",
+      "methods": 65,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAccessorySaver",
+      "methods": 64,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogModularCreator",
+      "methods": 64,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRegisterTopstitch",
+      "methods": 63,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAIPoseGenerator",
+      "methods": 62,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPlotterOption",
+      "methods": 61,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPreviewWindow",
+      "methods": 60,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogOffsetJoint",
+      "methods": 58,
+      "kind": "Dialog"
+    },
+    {
+      "class": "Editor2D",
+      "methods": 58,
+      "kind": "Editor"
+    },
+    {
+      "class": "DialogVideoCaptureMD",
+      "methods": 56,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRegisterTopstitchManager",
+      "methods": 52,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPlugInManager",
+      "methods": 51,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogImportDXF",
+      "methods": 50,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRegisterButtonHeadObject",
+      "methods": 49,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogExportPltOption",
+      "methods": 48,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogHistory",
+      "methods": 48,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAITextureImageGenerator",
+      "methods": 47,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogFitmapProperties",
+      "methods": 47,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogViewSizeChart",
+      "methods": 46,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogImportPacx",
+      "methods": 45,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSection",
+      "methods": 45,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogGradingPointEditor",
+      "methods": 44,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRegisterPlugin",
+      "methods": 44,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogTextureBake",
+      "methods": 44,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAddFile",
+      "methods": 43,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogDNAImporter",
+      "methods": 43,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogTranslate",
+      "methods": 43,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAIGraphicImageGenerator",
+      "methods": 42,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogExportDxf",
+      "methods": 41,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogFormatBackground",
+      "methods": 40,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAvatarAutoConverter",
+      "methods": 39,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogBrushActionGroup",
+      "methods": 39,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogBrushInfo",
+      "methods": 39,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRegisterButtonHeadObjectManager",
+      "methods": 39,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveFabric",
+      "methods": 39,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEditScale",
+      "methods": 38,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogGroupTools",
+      "methods": 38,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogInputPanelSize",
+      "methods": 38,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogStyleLine",
+      "methods": 38,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreateCircle",
+      "methods": 37,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreateButtonHeadPreset",
+      "methods": 36,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogTraceMode",
+      "methods": 36,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCustomView",
+      "methods": 35,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogMessageBox",
+      "methods": 35,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAIWebBrowser",
+      "methods": 34,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogButtonGroup",
+      "methods": 34,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogExportAIWithOptions",
+      "methods": 34,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSelectTexture",
+      "methods": 34,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogUVSnapshot",
+      "methods": 34,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreatePleats",
+      "methods": 33,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEveryWear",
+      "methods": 33,
+      "kind": "Dialog"
+    },
+    {
+      "class": "Dialog2DBackground",
+      "methods": 32,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogBrushInfoOn3D",
+      "methods": 32,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogResGarmentData",
+      "methods": 32,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSpiral",
+      "methods": 32,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAddGroupForConfigurator",
+      "methods": 31,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogConnect",
+      "methods": 31,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEcoShot",
+      "methods": 31,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveAccessoryWidget",
+      "methods": 31,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSetLineLength",
+      "methods": 31,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogStyleConfigurator",
+      "methods": 31,
+      "kind": "Dialog"
+    },
+    {
+      "class": "Widget",
+      "methods": 31,
+      "kind": "Widget"
+    },
+    {
+      "class": "DialogCalculatorForPOM",
+      "methods": 30,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogFitToUnified",
+      "methods": 30,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogImportAI",
+      "methods": 30,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogLandmarkPredictor",
+      "methods": 30,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEditSizeChart",
+      "methods": 29,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveBlockComponent",
+      "methods": 29,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAddCategory",
+      "methods": 28,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAutoArrangement",
+      "methods": 28,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPosFileLoad2",
+      "methods": 28,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRollUp",
+      "methods": 28,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAddAndEditDart",
+      "methods": 27,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreateRectangle",
+      "methods": 27,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogExportFabric",
+      "methods": 27,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogFullness",
+      "methods": 27,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRetopologyPatch",
+      "methods": 27,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogXrayJoints",
+      "methods": 27,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAddSceneAndProps",
+      "methods": 26,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreateNewBlock",
+      "methods": 26,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogDmixDownloadManager",
+      "methods": 26,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogFitMap",
+      "methods": 26,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogLacing2D",
+      "methods": 26,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogABPLogin",
+      "methods": 25,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogBonding3D",
+      "methods": 25,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogBrushPinching",
+      "methods": 25,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogGraphicOption",
+      "methods": 25,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogLifecycleManager",
+      "methods": 25,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRadioButtonListWidget",
+      "methods": 25,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveHtml",
+      "methods": 25,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSelectAllColorways",
+      "methods": 25,
+      "kind": "Dialog"
+    },
+    {
+      "class": "Dialog",
+      "methods": 24,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAddPunchMark",
+      "methods": 24,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCheckSewingLength",
+      "methods": 24,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogResGarmentProperty",
+      "methods": 24,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAutoSewing",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAvatarMeasureOffset",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCLOFabSaveFabric",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogChangeMultiLength",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCheckBoxListWidget",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogOptimizeCurvePoints",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPatternDrafterGradingSize",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRLCNoticeWindow",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRegistrationFile",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveGradingReviewImage",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSharedBlock",
+      "methods": 23,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogColorwayAdd",
+      "methods": 22,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreatePolygon",
+      "methods": 22,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogGlueFill",
+      "methods": 22,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPOMCalculationNotepad",
+      "methods": 22,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPleatsFold",
+      "methods": 22,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSketchToolBox",
+      "methods": 22,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAssignToColorway",
+      "methods": 21,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogAvatarListWidget",
+      "methods": 21,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogMoveUV",
+      "methods": 21,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DockWidget",
+      "methods": 21,
+      "kind": "DockWidget"
+    },
+    {
+      "class": "DialogCameraPreview",
+      "methods": 20,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogChangeLength",
+      "methods": 20,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogColorwaySelect",
+      "methods": 20,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreateRightAngleInnerShape",
+      "methods": 20,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogOptimizeProperties",
+      "methods": 20,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPoseManager",
+      "methods": 20,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSelectAIGraphicSec",
+      "methods": 20,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogZprjSaveOption",
+      "methods": 20,
+      "kind": "Dialog"
+    },
+    {
+      "class": "ViewBase",
+      "methods": 20,
+      "kind": "View"
+    },
+    {
+      "class": "DialogCloTexSaveOption",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCopyAsGuidelineWithOffset",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCopyAsInternalShapeWithOffset",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreateButtonHolePreset",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogExtrudeByLength",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogKaleidoOption",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogMatchMeasurement",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveThumbnailWithFile",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSelectGradingSizes",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogTableView",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "Dialog_Create_Dart",
+      "methods": 19,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEditName",
+      "methods": 18,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogGLTFMaterialCheckBoxListWidget",
+      "methods": 18,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogOrientJointAxis",
+      "methods": 18,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPaste",
+      "methods": 18,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveTrim",
+      "methods": 18,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSelectJeanWashing",
+      "methods": 18,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSelectSize",
+      "methods": 18,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSoftSelection",
+      "methods": 18,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCheckSewingMessageBox",
+      "methods": 17,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogGarmentDescriptionPage",
+      "methods": 17,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogMorphTargetController",
+      "methods": 17,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPlugInManagerMenu",
+      "methods": 17,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRoundCornerByLength",
+      "methods": 17,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveMetaData",
+      "methods": 17,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSlashAndSpread",
+      "methods": 17,
+      "kind": "Dialog"
+    },
+    {
+      "class": "View2DBase",
+      "methods": 17,
+      "kind": "View"
+    },
+    {
+      "class": "DialogAbout",
+      "methods": 16,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogFbx",
+      "methods": 16,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogMirrorJoint",
+      "methods": 16,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogMotionConverter",
+      "methods": 16,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogTranslate3D",
+      "methods": 16,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogUVPacking",
+      "methods": 16,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogZipperSave",
+      "methods": 16,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogDistribute",
+      "methods": 15,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEveryWearExportOption",
+      "methods": 15,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogFabricInfo",
+      "methods": 15,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogFileInfo",
+      "methods": 15,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogOpenTrim",
+      "methods": 15,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPerformanceTest",
+      "methods": 15,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreateButtonHeadHole",
+      "methods": 14,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogRetopologyMergeLength",
+      "methods": 14,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSaveAnimation",
+      "methods": 14,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogTestWebBrowser",
+      "methods": 14,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogUserCredentials",
+      "methods": 14,
+      "kind": "Dialog"
+    },
+    {
+      "class": "ViewModelItemDelegate",
+      "methods": 14,
+      "kind": "View"
+    },
+    {
+      "class": "DialogAvatarMotionPoseRegister",
+      "methods": 13,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogColorSystemTestViewer",
+      "methods": 13,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCreateImportExportPreset",
+      "methods": 13,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCustomThumbnail",
+      "methods": 13,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogTestViewer",
+      "methods": 13,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogTextInput",
+      "methods": 13,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogGradingTopology",
+      "methods": 12,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCLOVise",
+      "methods": 11,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEveryWearBrushInfo",
+      "methods": 11,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEveryWearMaskingBrushInfo",
+      "methods": 11,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogExecuterCloConcrete",
+      "methods": 11,
+      "kind": "Dialog"
+    },
+    {
+      "class": "View3DWidget",
+      "methods": 11,
+      "kind": "View"
+    },
+    {
+      "class": "Dialog3DGridBrightness",
+      "methods": 10,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogNestGrading",
+      "methods": 10,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPOMExportOptions",
+      "methods": 10,
+      "kind": "Dialog"
+    },
+    {
+      "class": "View2DWidget",
+      "methods": 10,
+      "kind": "View"
+    },
+    {
+      "class": "View3DMode",
+      "methods": 10,
+      "kind": "View"
+    },
+    {
+      "class": "DialogAutoGrading",
+      "methods": 9,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogColorwaySaveImage",
+      "methods": 9,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEveryWearFillHole",
+      "methods": 9,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEveryWearTargetJoints",
+      "methods": 9,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogInsertString",
+      "methods": 9,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPacFileSave",
+      "methods": 9,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogPOMDeleteFolder",
+      "methods": 8,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogEditRotation",
+      "methods": 7,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSelectAvatar",
+      "methods": 7,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSnapshot",
+      "methods": 7,
+      "kind": "Dialog"
+    },
+    {
+      "class": "ViewControlUtility",
+      "methods": 7,
+      "kind": "View"
+    },
+    {
+      "class": "DialogSelectStopper",
+      "methods": 5,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogCodeEditor",
+      "methods": 4,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogInputPolygonCountForRetopology",
+      "methods": 2,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogSelector",
+      "methods": 2,
+      "kind": "Dialog"
+    },
+    {
+      "class": "DialogExecuterInterface",
+      "methods": 1,
+      "kind": "Dialog"
+    }
+  ]
+}

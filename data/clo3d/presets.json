@@ -1,0 +1,365 @@
+{
+  "categories": {
+    "Avatar": {
+      "file_count": 877,
+      "by_extension": {
+        "jpg": 536,
+        "txt": 96,
+        "pos": 39,
+        "cmat": 27,
+        "slist": 21,
+        "map": 19,
+        "png": 18,
+        "bry": 16,
+        "bd": 15,
+        "iks": 10,
+        "rlist": 10,
+        "mkr": 8,
+        "obj": 7,
+        "json": 5,
+        "rindex": 5,
+        "be": 5,
+        "sym": 5,
+        "mtl": 5,
+        "rbary": 5,
+        "arr": 4,
+        "fbx": 4,
+        "cvt": 4,
+        "avt": 4,
+        "pan": 3,
+        "dll": 2,
+        "eom": 2,
+        "tgf": 2
+      },
+      "sample": [
+        "Arrangement/Adult_Auto_Arrangement_Point.arr",
+        "Arrangement/Adult_V1_Arrangement_Bounding_Volume.pan",
+        "Arrangement/Adult_V1_Arrangement_Point.arr",
+        "Arrangement/Adult_V2_Arrangement_Bounding_Volume.pan",
+        "Arrangement/Adult_V2_Arrangement_Point.arr",
+        "Arrangement/Auto_Arrangement_Model_2_2_0.eom",
+        "Arrangement/Kid_Arrangement_Bounding_Volume.pan",
+        "Arrangement/Kid_Arrangement_Point.arr"
+      ]
+    },
+    "Bond": {
+      "file_count": 6,
+      "by_extension": {
+        "zfab": 6
+      },
+      "sample": [
+        "Fusible (Common).zfab",
+        "Fusible (Lapel).zfab",
+        "Fusible (Nonwoven).zfab",
+        "Fusible (Nonwoven_Small Parts).zfab",
+        "Reinforcement (Pocket Bone).zfab",
+        "Reinforcement (Under Collar).zfab"
+      ]
+    },
+    "Bond_Defual": {
+      "file_count": 1,
+      "by_extension": {
+        "zfab": 1
+      },
+      "sample": [
+        "Bond.zfab"
+      ]
+    },
+    "Button": {
+      "file_count": 2,
+      "by_extension": {
+        "btn": 1,
+        "bth": 1
+      },
+      "sample": [
+        "Basic_Button.btn",
+        "ButtonHole01.bth"
+      ]
+    },
+    "Camera": {
+      "file_count": 1,
+      "by_extension": {
+        "obj": 1
+      },
+      "sample": [
+        "3D_camera.obj"
+      ]
+    },
+    "ColorProfile": {
+      "file_count": 2,
+      "by_extension": {
+        "txt": 1,
+        "icc": 1
+      },
+      "sample": [
+        "ISOcoated_v2_eci.icc",
+        "ISOcoated_v2_eci_LICENSE.txt"
+      ]
+    },
+    "DefaultImage": {
+      "file_count": 107,
+      "by_extension": {
+        "pfm": 54,
+        "png": 46,
+        "svg": 5,
+        "jpg": 2
+      },
+      "sample": [
+        "2D_btn_window_uv_edit_auto_none.png",
+        "2D_btn_window_uv_edit_auto_over.png",
+        "2D_btn_window_uv_edit_manual_none.png",
+        "2D_btn_window_uv_edit_manual_over.png",
+        "Button_Lock.png",
+        "Button_Lock_Move.png",
+        "Button_Unlock.png",
+        "CloTex_base.png"
+      ]
+    },
+    "FabricCreator": {
+      "file_count": 224,
+      "by_extension": {
+        "png": 191,
+        "json": 15,
+        "obj": 8,
+        "eom": 6,
+        "onnx": 4
+      },
+      "sample": [
+        "Images/img_sample_pattern.png",
+        "Images/img_sample_pose.png",
+        "Networks/GENERAL_20260306_stiff_to_force_pred_v1_01_2026-03-06_17h48m52s_best.eom",
+        "Networks/cape_2_0_0.eom",
+        "Networks/cir_1_1_0.eom",
+        "Networks/draping_sam_1_1_0.onnx",
+        "Networks/sam_mobile_encoder.onnx",
+        "Networks/sam_vit_h_decoder_1_0_0.onnx"
+      ]
+    },
+    "FabricScanner": {
+      "file_count": 30,
+      "by_extension": {
+        "svg": 25,
+        "png": 4,
+        "json": 1
+      },
+      "sample": [
+        "CLOFAB_Guide_01.png",
+        "CLOFAB_Guide_02.png",
+        "Dark/Complete Hover.svg",
+        "Dark/Complete.svg",
+        "Dark/Reset Hover.svg",
+        "Dark/Reset.svg",
+        "Dark/View OK Hover.svg",
+        "Dark/View OK.svg"
+      ]
+    },
+    "Fold3D": {
+      "file_count": 1,
+      "by_extension": {
+        "zfab": 1
+      },
+      "sample": [
+        "folding fabric.zfab"
+      ]
+    },
+    "Gizmo": {
+      "file_count": 13,
+      "by_extension": {
+        "png": 13
+      },
+      "sample": [
+        "3D_Gizmo_Scale_None.png",
+        "3D_Gizmo_Scale_Over.png",
+        "3D_Gizmo_Scale_Press.png",
+        "Glue.png",
+        "Glue_Over.png",
+        "Toolbar_IK_EditSym.png",
+        "Toolbar_IK_EditSym_Over.png",
+        "Toolbar_IK_EditSym_Over_MD.png"
+      ]
+    },
+    "Knitwear": {
+      "file_count": 52,
+      "by_extension": {
+        "json": 21,
+        "npy": 20,
+        "txt": 10,
+        "jpg": 1
+      },
+      "sample": [
+        "image/normal.jpg",
+        "model/DEV/pyp.json",
+        "model/cartridge_belt_rib/pyp.json",
+        "model/cartridge_belt_rib/pyp_legacy.json",
+        "model/cartridge_belt_rib/sxsasy/axes.txt",
+        "model/cartridge_belt_rib/sxsasy/data.npy",
+        "model/cartridge_belt_rib/sxsasy/data_legacy.npy",
+        "model/garter/pyp.json"
+      ]
+    },
+    "Modular": {
+      "file_count": 35,
+      "by_extension": {
+        "png": 17,
+        "zmdr": 17,
+        "json": 1
+      },
+      "sample": [
+        "Coats/Coat.Basic.png",
+        "Coats/Coat.Basic.zmdr",
+        "Coats/Coat.Dolman.png",
+        "Coats/Coat.Dolman.zmdr",
+        "Coats/Coat.Raglan.png",
+        "Coats/Coat.Raglan.zmdr",
+        "Dresses/Dress.One Piece+.png",
+        "Dresses/Dress.One Piece+.zmdr"
+      ]
+    },
+    "Palette": {
+      "file_count": 6,
+      "by_extension": {
+        "cco": 6
+      },
+      "sample": [
+        "Coloro 3500.cco",
+        "Default_Palette.cco",
+        "PANTONE(R) F+H Nylon Brights TN LAB.cco",
+        "PANTONE(R) FHI Cotton TCX.cco",
+        "PANTONE(R) FHI Polyester TSX.cco",
+        "YKK Global Colors.cco"
+      ]
+    },
+    "Parametric_Pattern": {
+      "file_count": 17,
+      "by_extension": {
+        "eom": 9,
+        "json": 8
+      },
+      "sample": [
+        "Landmark_Predictor.eom",
+        "landmarks_cuffs_arr.eom",
+        "landmarks_hem_arr.eom",
+        "landmarks_hood_arr.eom",
+        "landmarks_leg_arr.eom",
+        "landmarks_leg_dart_arr.eom",
+        "landmarks_leg_yoke_arr.eom",
+        "landmarks_root_arr.eom"
+      ]
+    },
+    "PrintType": {
+      "file_count": 2,
+      "by_extension": {
+        "png": 2
+      },
+      "sample": [
+        "Crack_Print_ALPHA.png",
+        "Vintage_Distress_ALPHA.png"
+      ]
+    },
+    "Project": {
+      "file_count": 2,
+      "by_extension": {
+        "zprj": 1,
+        "json": 1
+      },
+      "sample": [
+        "CLO/Default_DisplaySettings.json",
+        "CLO/Untitled.Zprj"
+      ]
+    },
+    "Render": {
+      "file_count": 47,
+      "by_extension": {
+        "png": 21,
+        "vlp": 20,
+        "hdr": 2,
+        "css": 1,
+        "html": 1,
+        "js": 1,
+        "sbsar": 1
+      },
+      "sample": [
+        "Fur/Fur_Material.sbsar",
+        "HDRI/StudioLight_Gray.hdr",
+        "HDRI/Studio_LowContrast.hdr",
+        "LightPreset/Checkboardhouse.png",
+        "LightPreset/Checkboardhouse.vlp",
+        "LightPreset/Galleryhouse.png",
+        "LightPreset/Galleryhouse.vlp",
+        "LightPreset/Light_1.png"
+      ]
+    },
+    "Sewing": {
+      "file_count": 56,
+      "by_extension": {
+        "png": 22,
+        "jpg": 16,
+        "stp": 6,
+        "ptp": 5,
+        "sap": 5,
+        "txt": 1,
+        "mstp": 1
+      },
+      "sample": [
+        "Multi_Stitch/CLO/1_Single_(Regular).MSTP",
+        "Puckering/Cotton.PTP",
+        "Puckering/Denim.PTP",
+        "Puckering/Leather.PTP",
+        "Puckering/Nylon.PTP",
+        "Puckering/Polyester.PTP",
+        "Puckering_Image/cotton_inner_puckering_0067787e_clo.jpg",
+        "Puckering_Image/cotton_seam_puckering_0078524e_clo.jpg"
+      ]
+    },
+    "Simulation_Property": {
+      "file_count": 3,
+      "by_extension": {
+        "smp": 3
+      },
+      "sample": [
+        "Complete.smp",
+        "Nonlinear.smp",
+        "Normal.smp"
+      ]
+    },
+    "Skinsuit": {
+      "file_count": 82,
+      "by_extension": {
+        "top": 79,
+        "tss": 2,
+        "zpac": 1
+      },
+      "sample": [
+        "10475_20908_3_30076.top",
+        "10475_20908_3_30077.top",
+        "12911_23726_3_31193_V1.top",
+        "13206_26314_3_8424.top",
+        "13206_26314_97_8328.top",
+        "13282_26466_3_5138.top",
+        "13282_26466_97_4922.top",
+        "14047_28090_3442_38371.top"
+      ]
+    },
+    "Zipper": {
+      "file_count": 13,
+      "by_extension": {
+        "png": 5,
+        "zst": 4,
+        "zsl": 1,
+        "zpu": 1,
+        "zfab": 1,
+        "zth": 1
+      },
+      "sample": [
+        "Object/Closed_Bottom_Stopper_01.zst",
+        "Object/Open_Bottom_Stopper_01.zst",
+        "Object/Puller_01.zpu",
+        "Object/Slider_01.zsl",
+        "Object/Top_Stopper_01.zst",
+        "Object/Top_Stopper_03.zst",
+        "Tape/Plastic_01.zth",
+        "Tape/Plastic_01_Tape.png"
+      ]
+    }
+  }
+}

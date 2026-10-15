@@ -1,0 +1,7270 @@
+{
+  "actions": [
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnChangeLength",
+      "action": "ChangeLength",
+      "topic": "arrangement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnChangeRenderingModeOnUVEditor",
+      "action": "ChangeRenderingModeOnUVEditor",
+      "topic": "arrangement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnOptimizeUVArrangement",
+      "action": "OptimizeUVArrangement",
+      "topic": "arrangement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveAllSteam",
+      "action": "RemoveAllSteam",
+      "topic": "arrangement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveLinkedEditing",
+      "action": "RemoveLinkedEditing",
+      "topic": "arrangement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveLinkedEditingForRip",
+      "action": "RemoveLinkedEditingForRip",
+      "topic": "arrangement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderDisplacementMapOnUVEditor",
+      "action": "RenderDisplacementMapOnUVEditor",
+      "topic": "arrangement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTransformPrintTexture",
+      "action": "TransformPrintTexture",
+      "topic": "arrangement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderAvatarOnUVEditor",
+      "action": "RenderAvatarOnUVEditor",
+      "topic": "avatar"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddDartFullness",
+      "action": "AddDartFullness",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateBaselineDart",
+      "action": "CreateBaselineDart",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateDart",
+      "action": "CreateDart",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateOutlineDart",
+      "action": "CreateOutlineDart",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreatePleats",
+      "action": "CreatePleats",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditOutlineDart",
+      "action": "EditOutlineDart",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFoldDart",
+      "action": "FoldDart",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFullness",
+      "action": "Fullness",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPleatsFold",
+      "action": "PleatsFold",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllShapeWithSameFoldAngle",
+      "action": "SelectAllShapeWithSameFoldAngle",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllShapeWithSameFoldRendering",
+      "action": "SelectAllShapeWithSameFoldRendering",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllShapeWithSameFoldStrength",
+      "action": "SelectAllShapeWithSameFoldStrength",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "SetEnableUnfoldFunc",
+      "action": "SetEnableUnfoldFunc",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShiftDart",
+      "action": "ShiftDart",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToUnfoldedLinePoint",
+      "action": "SnapToUnfoldedLinePoint",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSymmetricUnfold",
+      "action": "SymmetricUnfold",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnUnfold",
+      "action": "Unfold",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnUnfoldLine",
+      "action": "UnfoldLine",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnUnfoldPattern",
+      "action": "UnfoldPattern",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnActivateGrid",
+      "action": "ActivateGrid",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignBottomTopology",
+      "action": "AlignBottomTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignCenterTopology",
+      "action": "AlignCenterTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignGrainParallelToSelected",
+      "action": "AlignGrainParallelToSelected",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignLeftTopology",
+      "action": "AlignLeftTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignMiddleTopology",
+      "action": "AlignMiddleTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignRightTopology",
+      "action": "AlignRightTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignTopTopology",
+      "action": "AlignTopTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnBottomAlign",
+      "action": "BottomAlign",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCenterAlign",
+      "action": "CenterAlign",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCopySelectedTopology",
+      "action": "CopySelectedTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCopyTopology",
+      "action": "CopyTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteTopology",
+      "action": "DeleteTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFitSelectedUVtoUnified",
+      "action": "FitSelectedUVtoUnified",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnInstantiationOrSymmetrization",
+      "action": "InstantiationOrSymmetrization",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLeftAlign",
+      "action": "LeftAlign",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMiddleAlign",
+      "action": "MiddleAlign",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMirrorTopology",
+      "action": "MirrorTopology",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackAlignBottom",
+      "action": "RestackAlignBottom",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackAlignCenter",
+      "action": "RestackAlignCenter",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackAlignCenterAndMiddle",
+      "action": "RestackAlignCenterAndMiddle",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackAlignLeft",
+      "action": "RestackAlignLeft",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackAlignMiddle",
+      "action": "RestackAlignMiddle",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackAlignRight",
+      "action": "RestackAlignRight",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackAlignTop",
+      "action": "RestackAlignTop",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRightAlign",
+      "action": "RightAlign",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllWithSameParticleDistance",
+      "action": "SelectAllWithSameParticleDistance",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowSymmetricPan",
+      "action": "ShowSymmetricPan",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSymmetricEdit",
+      "action": "SymmetricEdit",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSymmetrization",
+      "action": "Symmetrization",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTopAlign",
+      "action": "TopAlign",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnUVSnapshot",
+      "action": "UVSnapshot",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnViewGrid",
+      "action": "ViewGrid",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnZoomToSelected",
+      "action": "ZoomToSelected",
+      "topic": "editing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAutoGrading",
+      "action": "AutoGrading",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToGradePoint",
+      "action": "ConvertToGradePoint",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToNonGradePoint",
+      "action": "ConvertToNonGradePoint",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditCurveGrading",
+      "action": "EditCurveGrading",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditCurveGradingEachSize",
+      "action": "EditCurveGradingEachSize",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditGrading",
+      "action": "EditGrading",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditGradingEachSize",
+      "action": "EditGradingEachSize",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFlipHorizontallyForGrading",
+      "action": "FlipHorizontallyForGrading",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFlipVerticallyForGrading",
+      "action": "FlipVerticallyForGrading",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGradingColorView",
+      "action": "GradingColorView",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGradingSizeView",
+      "action": "GradingSizeView",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGradingView",
+      "action": "GradingView",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMirrorPasteGrading",
+      "action": "MirrorPasteGrading",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMirrorPasteGradingXAxis",
+      "action": "MirrorPasteGradingXAxis",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMirrorPasteGradingYAxis",
+      "action": "MirrorPasteGradingYAxis",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPasteGrading",
+      "action": "PasteGrading",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPasteGradingReverseDirection",
+      "action": "PasteGradingReverseDirection",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPasteGradingXAxis",
+      "action": "PasteGradingXAxis",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPasteGradingYAxis",
+      "action": "PasteGradingYAxis",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveGrade",
+      "action": "RemoveGrade",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveGradedSize",
+      "action": "RemoveGradedSize",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackGradingPoint",
+      "action": "RestackGradingPoint",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackGradingPointX",
+      "action": "RestackGradingPointX",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRestackGradingPointY",
+      "action": "RestackGradingPointY",
+      "topic": "grading"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAutoSaved",
+      "action": "AutoSaved",
+      "topic": "interchange"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddAllDivision",
+      "action": "AddAllDivision",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddInternalLineAsAngleAxisX",
+      "action": "AddInternalLineAsAngleAxisX",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddInternalLineAsAngleAxisY",
+      "action": "AddInternalLineAsAngleAxisY",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddInternalLineAsAngleLocal",
+      "action": "AddInternalLineAsAngleLocal",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddPointSplitLineOnEndPoint",
+      "action": "AddPointSplitLineOnEndPoint",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddPointSplitLineOnStartPoint",
+      "action": "AddPointSplitLineOnStartPoint",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddSelectedDivision",
+      "action": "AddSelectedDivision",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignGrainXAxis",
+      "action": "AlignGrainXAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignGrainYAxis",
+      "action": "AlignGrainYAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignPointToXAxis",
+      "action": "AlignPointToXAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAlignPointToYAxis",
+      "action": "AlignPointToYAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToInternalLine",
+      "action": "ConvertToInternalLine",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateTraceInternalLinesAndShapes",
+      "action": "CreateTraceInternalLinesAndShapes",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnOffsetAsInternalLine",
+      "action": "OffsetAsInternalLine",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnOffsetAsInternalLineAlongCurve",
+      "action": "OffsetAsInternalLineAlongCurve",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnOffsetAsReferenceShape",
+      "action": "OffsetAsReferenceShape",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRepeatXAxis",
+      "action": "RepeatXAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRepeatYAxis",
+      "action": "RepeatYAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRotateToCustomAxis",
+      "action": "RotateToCustomAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRotateToXAxis",
+      "action": "RotateToXAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRotateToYAxis",
+      "action": "RotateToYAxis",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSplitLineByPopupMenu",
+      "action": "SplitLineByPopupMenu",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAssignToNewFabric",
+      "action": "AssignToNewFabric",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteTexture",
+      "action": "DeleteTexture",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFlipTextureHorizontally",
+      "action": "FlipTextureHorizontally",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFlipTextureVertically",
+      "action": "FlipTextureVertically",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnInsertPrintTexture",
+      "action": "InsertPrintTexture",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnInsertPrintTextureHandling",
+      "action": "InsertPrintTextureHandling",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderBasecolorMapOnUVEditor",
+      "action": "RenderBasecolorMapOnUVEditor",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderTexture",
+      "action": "RenderTexture",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnResetFabric",
+      "action": "ResetFabric",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnResetFabricAngle",
+      "action": "ResetFabricAngle",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllWithSameFabric",
+      "action": "SelectAllWithSameFabric",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShow2DMonochromeTexture",
+      "action": "Show2DMonochromeTexture",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShow2DOpaqueTexture",
+      "action": "Show2DOpaqueTexture",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShow2DRandomColorSurface",
+      "action": "Show2DRandomColorSurface",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowTransparentTexture",
+      "action": "ShowTransparentTexture",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTextureBake",
+      "action": "TextureBake",
+      "topic": "materials"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToPOM",
+      "action": "ConvertToPOM",
+      "topic": "measurement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreatePatternMeasure",
+      "action": "CreatePatternMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCustomMeasurements",
+      "action": "CustomMeasurements",
+      "topic": "measurement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditPatternMeasure",
+      "action": "EditPatternMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMatchMeasurement",
+      "action": "MatchMeasurement",
+      "topic": "measurement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShow2DMeasure",
+      "action": "Show2DMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShow2DRuler",
+      "action": "Show2DRuler",
+      "topic": "measurement"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddAnnotation",
+      "action": "AddAnnotation",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddInstructionLine",
+      "action": "AddInstructionLine",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddNotch",
+      "action": "AddNotch",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCopyAnnotation",
+      "action": "CopyAnnotation",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteAnnotation",
+      "action": "DeleteAnnotation",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditNotch",
+      "action": "EditNotch",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditPunchMark",
+      "action": "EditPunchMark",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLinkAnnotationToLine",
+      "action": "LinkAnnotationToLine",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPasteAnnotation",
+      "action": "PasteAnnotation",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPunchMarkConvertToButtonMark",
+      "action": "PunchMarkConvertToButtonMark",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPunchMarkConvertToButtonholeMark",
+      "action": "PunchMarkConvertToButtonholeMark",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPunchMarkDuplicateToSymmetricPattern",
+      "action": "PunchMarkDuplicateToSymmetricPattern",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowAnnotation",
+      "action": "ShowAnnotation",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTransformAnnotation",
+      "action": "TransformAnnotation",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "onAnnotationEditingFinished",
+      "action": "onAnnotationEditingFinished",
+      "topic": "notches_marks"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnBringForward",
+      "action": "BringForward",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnBringToFront",
+      "action": "BringToFront",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToHole",
+      "action": "ConvertToHole",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateInnerCircle",
+      "action": "CreateInnerCircle",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateInnerRectangle",
+      "action": "CreateInnerRectangle",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateReferenceCircle",
+      "action": "CreateReferenceCircle",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateReferenceRectangle",
+      "action": "CreateReferenceRectangle",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateTack",
+      "action": "CreateTack",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCutInternal",
+      "action": "CutInternal",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditLacing",
+      "action": "EditLacing",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditLinkMode",
+      "action": "EditLinkMode",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditTack",
+      "action": "EditTack",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditedValueEditor",
+      "action": "EditedValueEditor",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnExcludeMultiGraphic",
+      "action": "ExcludeMultiGraphic",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFitUVtoUnified",
+      "action": "FitUVtoUnified",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGlueBrush",
+      "action": "GlueBrush",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGlueEdit",
+      "action": "GlueEdit",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGlueFill",
+      "action": "GlueFill",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGlueSticker",
+      "action": "GlueSticker",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGluingBrush",
+      "action": "GluingBrush",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGluingFill",
+      "action": "GluingFill",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGluingSticker",
+      "action": "GluingSticker",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnGroup",
+      "action": "Group",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnHorizontallyDistribute",
+      "action": "HorizontallyDistribute",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnInstantiation",
+      "action": "Instantiation",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnIntersectAndMerge",
+      "action": "IntersectAndMerge",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLockToElement",
+      "action": "LockToElement",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMatchUpGrain",
+      "action": "MatchUpGrain",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMergeToAverage",
+      "action": "MergeToAverage",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPuffyGarment",
+      "action": "PuffyGarment",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnReflect",
+      "action": "Reflect",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnReflectLocalLr",
+      "action": "ReflectLocalLr",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnReflectLocalUd",
+      "action": "ReflectLocalUd",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnReflectLr",
+      "action": "ReflectLr",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnReflectUd",
+      "action": "ReflectUd",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRepeatOriginal",
+      "action": "RepeatOriginal",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnResetAlongGrainDirection",
+      "action": "ResetAlongGrainDirection",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnResetGraphic",
+      "action": "ResetGraphic",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnReverseLinking",
+      "action": "ReverseLinking",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRightAngledCorner",
+      "action": "RightAngledCorner",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRollUp",
+      "action": "RollUp",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRoundCorner",
+      "action": "RoundCorner",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSendBackward",
+      "action": "SendBackward",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSendToBack",
+      "action": "SendToBack",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSlashAndSpread",
+      "action": "SlashAndSpread",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSteam",
+      "action": "Steam",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTurnLeftIn45",
+      "action": "TurnLeftIn45",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTurnLeftIn90",
+      "action": "TurnLeftIn90",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTurnRightIn180",
+      "action": "TurnRightIn180",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTurnRightIn45",
+      "action": "TurnRightIn45",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTurnRightIn90",
+      "action": "TurnRightIn90",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnUngroup",
+      "action": "Ungroup",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnUnlockToElement",
+      "action": "UnlockToElement",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnVerticallyDistribute",
+      "action": "VerticallyDistribute",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnWeaving",
+      "action": "Weaving",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "isVaild",
+      "action": "isVaild",
+      "topic": "other"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddPointAtIntersection",
+      "action": "AddPointAtIntersection",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAttachCenterLine",
+      "action": "AttachCenterLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAttachEndLine",
+      "action": "AttachEndLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAttachPoint",
+      "action": "AttachPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAttachStartLine",
+      "action": "AttachStartLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnChangeToCurve",
+      "action": "ChangeToCurve",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCloneAsPatternFromShapeAndPattern",
+      "action": "CloneAsPatternFromShapeAndPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnContourGraphic",
+      "action": "ContourGraphic",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToBaseline",
+      "action": "ConvertToBaseline",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToCubicSpline",
+      "action": "ConvertToCubicSpline",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToCurvePointWithAddingCurvePoints",
+      "action": "ConvertToCurvePointWithAddingCurvePoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToCurvePointWithoutAddingCurvePoints",
+      "action": "ConvertToCurvePointWithoutAddingCurvePoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToInternalShape",
+      "action": "ConvertToInternalShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToParametricPattern",
+      "action": "ConvertToParametricPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToPoint",
+      "action": "ConvertToPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToPointWithAddingCurvePoints",
+      "action": "ConvertToPointWithAddingCurvePoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToPointWithoutAddingCurvePoints",
+      "action": "ConvertToPointWithoutAddingCurvePoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToSegmentPointWithAddingCurvePoints",
+      "action": "ConvertToSegmentPointWithAddingCurvePoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertToSegmentPointWithoutAddingCurvePoints",
+      "action": "ConvertToSegmentPointWithoutAddingCurvePoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCopyAsInnerShapeFromShapeAndPattern",
+      "action": "CopyAsInnerShapeFromShapeAndPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateBaselineEllipse",
+      "action": "CreateBaselineEllipse",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateBaselinePolygon",
+      "action": "CreateBaselinePolygon",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateBaselineRectangle",
+      "action": "CreateBaselineRectangle",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateCirclePattern",
+      "action": "CreateCirclePattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateGuideLineFromLine",
+      "action": "CreateGuideLineFromLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateGuideLineFromPoints",
+      "action": "CreateGuideLineFromPoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateInnerPolygon",
+      "action": "CreateInnerPolygon",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateRectanglePattern",
+      "action": "CreateRectanglePattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateReferenceLine",
+      "action": "CreateReferenceLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateReferencePolygon",
+      "action": "CreateReferencePolygon",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateSpiralPattern",
+      "action": "CreateSpiralPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateTraceInnerShape",
+      "action": "CreateTraceInnerShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateTraceLinkPattern",
+      "action": "CreateTraceLinkPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateTracePattern",
+      "action": "CreateTracePattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCutPattern",
+      "action": "CutPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCutPatternSub",
+      "action": "CutPatternSub",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDefaultPatternEditMode",
+      "action": "DefaultPatternEditMode",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteAllBaseLines",
+      "action": "DeleteAllBaseLines",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteBaseLine",
+      "action": "DeleteBaseLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteCurvePoint",
+      "action": "DeleteCurvePoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeletePattern",
+      "action": "DeletePattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteReferenceLine",
+      "action": "DeleteReferenceLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteShotLine",
+      "action": "DeleteShotLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDummyShapeLock",
+      "action": "DummyShapeLock",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDuplicateAsMirroredReferenceShape",
+      "action": "DuplicateAsMirroredReferenceShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditCurvePoint",
+      "action": "EditCurvePoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditGrainLine",
+      "action": "EditGrainLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnExtrudeLine",
+      "action": "ExtrudeLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFlipLinkLine",
+      "action": "FlipLinkLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnInnerShapeLock",
+      "action": "InnerShapeLock",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnJoinOverlappingPoints",
+      "action": "JoinOverlappingPoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLinkLine",
+      "action": "LinkLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLinkToPatternOutline",
+      "action": "LinkToPatternOutline",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLock2DAllGuideLines",
+      "action": "Lock2DAllGuideLines",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLockAllRemeshPattern",
+      "action": "LockAllRemeshPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMergePatterns",
+      "action": "MergePatterns",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMergeToPoint",
+      "action": "MergeToPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnactionTopologyReplacePattern",
+      "action": "OnactionTopologyReplacePattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnactionTopologyReplacePatternAll",
+      "action": "OnactionTopologyReplacePatternAll",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnactionTopologyTraceToPattern",
+      "action": "OnactionTopologyTraceToPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnactionTopologyTraceToPatternAll",
+      "action": "OnactionTopologyTraceToPatternAll",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnOptimizeCurveFit",
+      "action": "OptimizeCurveFit",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnOptimizeCurvePointsSegment",
+      "action": "OptimizeCurvePointsSegment",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPatternCreate",
+      "action": "PatternCreate",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPatternEdit",
+      "action": "PatternEdit",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPatternFitScreen",
+      "action": "PatternFitScreen",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPatternFitScreenSlot",
+      "action": "PatternFitScreenSlot",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPatternLock",
+      "action": "PatternLock",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPatternWalking",
+      "action": "PatternWalking",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPatterneditorProperty",
+      "action": "PatterneditorProperty",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPointAdd",
+      "action": "PointAdd",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveInstanceOnSelectedPattern",
+      "action": "RemoveInstanceOnSelectedPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveSteamSelectedPattern",
+      "action": "RemoveSteamSelectedPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveSymmetryOnSelectedPattern",
+      "action": "RemoveSymmetryOnSelectedPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRepeatPattern",
+      "action": "RepeatPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectedLineReplaceLine",
+      "action": "SelectedLineReplaceLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectedPatternFitScreen",
+      "action": "SelectedPatternFitScreen",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectedSwapLine",
+      "action": "SelectedSwapLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSetUVFromPatternEditor",
+      "action": "SetUVFromPatternEditor",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShow2DGuideLine",
+      "action": "Show2DGuideLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowCutLine2D",
+      "action": "ShowCutLine2D",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowGrainLine",
+      "action": "ShowGrainLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowGraphicInnerPatternAll",
+      "action": "ShowGraphicInnerPatternAll",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowLineAngle",
+      "action": "ShowLineAngle",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowLineLength",
+      "action": "ShowLineLength",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowPatternLayerName",
+      "action": "ShowPatternLayerName",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowPatternName",
+      "action": "ShowPatternName",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowPatternShrinkage",
+      "action": "ShowPatternShrinkage",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowPatternTexture",
+      "action": "ShowPatternTexture",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowPatternTextureBackSurface",
+      "action": "ShowPatternTextureBackSurface",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowPickedPoint",
+      "action": "ShowPickedPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowReferenceLine",
+      "action": "ShowReferenceLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToInnerPoint",
+      "action": "SnapToInnerPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToInnerPointAndAddPoint",
+      "action": "SnapToInnerPointAndAddPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToInnerShapePoint",
+      "action": "SnapToInnerShapePoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToInnerShapePointAndAddPoint",
+      "action": "SnapToInnerShapePointAndAddPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToReferenceShape",
+      "action": "SnapToReferenceShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToReferenceShapeAndAddPoint",
+      "action": "SnapToReferenceShapeAndAddPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTopologyFitToPattern",
+      "action": "TopologyFitToPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTraceShape",
+      "action": "TraceShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTransformPointAndLine",
+      "action": "TransformPointAndLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTransformShape",
+      "action": "TransformShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnUnLinkLine",
+      "action": "UnLinkLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnUnLinkSeletedLines",
+      "action": "UnLinkSeletedLines",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnViewDummyShape",
+      "action": "ViewDummyShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnViewPrintLayoutGrid",
+      "action": "ViewPrintLayoutGrid",
+      "topic": "print"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderAllObjectOnUVEditor",
+      "action": "RenderAllObjectOnUVEditor",
+      "topic": "render"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderGarmentOnUVEditor",
+      "action": "RenderGarmentOnUVEditor",
+      "topic": "render"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderMeshOnUVEditor",
+      "action": "RenderMeshOnUVEditor",
+      "topic": "render"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderMetalnessMapOnUVEditor",
+      "action": "RenderMetalnessMapOnUVEditor",
+      "topic": "render"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderNormalMapOnUVEditor",
+      "action": "RenderNormalMapOnUVEditor",
+      "topic": "render"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderRoughnessMapOnUVEditor",
+      "action": "RenderRoughnessMapOnUVEditor",
+      "topic": "render"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderSelectedObjectOnUVEditor",
+      "action": "RenderSelectedObjectOnUVEditor",
+      "topic": "render"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRenderTransparentMapOnUVEditor",
+      "action": "RenderTransparentMapOnUVEditor",
+      "topic": "render"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnActivateAllSeamLinePairList",
+      "action": "ActivateAllSeamLinePairList",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnActivateSeamLine",
+      "action": "ActivateSeamLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnActivateSeamlineRipSelected",
+      "action": "ActivateSeamlineRipSelected",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddInternalLineOnTopstitch",
+      "action": "AddInternalLineOnTopstitch",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddSeamlineRipOnSewing",
+      "action": "AddSeamlineRipOnSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAddTopstitchOnSewing",
+      "action": "AddTopstitchOnSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAssignToNewPuckeringStyle",
+      "action": "AssignToNewPuckeringStyle",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnAssignToNewTopStitchStyle",
+      "action": "AssignToNewTopStitchStyle",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnChangeSewingLineType",
+      "action": "ChangeSewingLineType",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnChangingTopStitchStyleDirection",
+      "action": "ChangingTopStitchStyleDirection",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCheckSewingLength",
+      "action": "CheckSewingLength",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCloneAsPatternWithSewing",
+      "action": "CloneAsPatternWithSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnConvertEditLinkSeamLine",
+      "action": "ConvertEditLinkSeamLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateTraceSeamlessBlockLinesAndShapes",
+      "action": "CreateTraceSeamlessBlockLinesAndShapes",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCutAndSewPattern",
+      "action": "CutAndSewPattern",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeActivateSeamLine",
+      "action": "DeActivateSeamLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeactivateSeamlineRipSelected",
+      "action": "DeactivateSeamlineRipSelected",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteAllSeamlineRips",
+      "action": "DeleteAllSeamlineRips",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeletePuckering",
+      "action": "DeletePuckering",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeletePuckeringLines",
+      "action": "DeletePuckeringLines",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteSeamTaping",
+      "action": "DeleteSeamTaping",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteSeamlineRip",
+      "action": "DeleteSeamlineRip",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteStitchLine",
+      "action": "DeleteStitchLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDeleteStitchLines",
+      "action": "DeleteStitchLines",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "DialogCheckSewingLengthClosed",
+      "action": "DialogCheckSewingLengthClosed",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnDivideOverseamInnershape",
+      "action": "DivideOverseamInnershape",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditOuterSeamAllowance",
+      "action": "EditOuterSeamAllowance",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditPuckering",
+      "action": "EditPuckering",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditSeamTaping",
+      "action": "EditSeamTaping",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditStitch",
+      "action": "EditStitch",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFreePuckering",
+      "action": "FreePuckering",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFreeSewing",
+      "action": "FreeSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnFreeStitching",
+      "action": "FreeStitching",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnHalfSymmetrizationWithSewing",
+      "action": "HalfSymmetrizationWithSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnHideSeam",
+      "action": "HideSeam",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnHideSeamLine",
+      "action": "HideSeamLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnHideSeamLineSlot",
+      "action": "HideSeamLineSlot",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnHideSeamlineRipSelected",
+      "action": "HideSeamlineRipSelected",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnOffsetAsSeamlessBlockLine",
+      "action": "OffsetAsSeamlessBlockLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "On1toNFreeSewing",
+      "action": "On1toNFreeSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "On1toNSegmentSewing",
+      "action": "On1toNSegmentSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "On2DSeamingPolygon",
+      "action": "On2DSeamingPolygon",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPleatsSewing",
+      "action": "PleatsSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRefreshCustomSeamAllowance",
+      "action": "RefreshCustomSeamAllowance",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveLinkedEditingForPuckering",
+      "action": "RemoveLinkedEditingForPuckering",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnRemoveLinkedEditingForStitchLine",
+      "action": "RemoveLinkedEditingForStitchLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnReverseSeamLine",
+      "action": "ReverseSeamLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSeamLinePuckering",
+      "action": "SeamLinePuckering",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSeamLineStitching",
+      "action": "SeamLineStitching",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSeamModify",
+      "action": "SeamModify",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSegmentPuckering",
+      "action": "SegmentPuckering",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSegmentSewing",
+      "action": "SegmentSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSegmentStitching",
+      "action": "SegmentStitching",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllPuckeringWithSameProperty",
+      "action": "SelectAllPuckeringWithSameProperty",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllSeamWithSameFoldAngle",
+      "action": "SelectAllSeamWithSameFoldAngle",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllSeamWithSameFoldStrength",
+      "action": "SelectAllSeamWithSameFoldStrength",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllTopStitchWithSameProperty",
+      "action": "SelectAllTopStitchWithSameProperty",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSewingWithLinkLines",
+      "action": "SewingWithLinkLines",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShow2dSeamline",
+      "action": "Show2dSeamline",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowAllSeamLines",
+      "action": "ShowAllSeamLines",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowBlockSewing",
+      "action": "ShowBlockSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowOuterSeamAllowance",
+      "action": "ShowOuterSeamAllowance",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowPuckering",
+      "action": "ShowPuckering",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowSeam",
+      "action": "ShowSeam",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowSeamLine",
+      "action": "ShowSeamLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowSeamLineLength",
+      "action": "ShowSeamLineLength",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowSeamlineRipAll",
+      "action": "ShowSeamlineRipAll",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowStitchLines",
+      "action": "ShowStitchLines",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToSeamlessBlockAndAddPoint",
+      "action": "SnapToSeamlessBlockAndAddPoint",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSnapToSeamlessBlockPoint",
+      "action": "SnapToSeamlessBlockPoint",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSplitMtoNSewing",
+      "action": "SplitMtoNSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSymmetrizationWithSewing",
+      "action": "SymmetrizationWithSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnActivateSmartGuideSnapping",
+      "action": "ActivateSmartGuideSnapping",
+      "topic": "simulation"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnActivateSnapping",
+      "action": "ActivateSnapping",
+      "topic": "simulation"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLayerCloneOver",
+      "action": "LayerCloneOver",
+      "topic": "simulation"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnLayerCloneUnder",
+      "action": "LayerCloneUnder",
+      "topic": "simulation"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSelectAllWithSameLayer",
+      "action": "SelectAllWithSameLayer",
+      "topic": "simulation"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnSetSubLayer",
+      "action": "SetSubLayer",
+      "topic": "simulation"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowPins",
+      "action": "ShowPins",
+      "topic": "simulation"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnCreateTopology",
+      "action": "CreateTopology",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnEditTopology",
+      "action": "EditTopology",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMergeTopology",
+      "action": "MergeTopology",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnMultiGraphicAllShow",
+      "action": "MultiGraphicAllShow",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "On2DBackground",
+      "action": "On2DBackground",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnPatchTopology",
+      "action": "PatchTopology",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowBufferSpacing",
+      "action": "ShowBufferSpacing",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowEditLink",
+      "action": "ShowEditLink",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowMesh",
+      "action": "ShowMesh",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnShowTopology",
+      "action": "ShowTopology",
+      "topic": "view"
+    },
+    {
+      "view": "2d",
+      "class": "View2DActionSlots",
+      "symbol": "OnTopologyLock",
+      "action": "TopologyLock",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothWireframe",
+      "action": "ClothWireframe",
+      "topic": "animation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothWireframeSlot",
+      "action": "ClothWireframeSlot",
+      "topic": "animation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnMotionRepeat",
+      "action": "MotionRepeat",
+      "topic": "animation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRecordAnimation",
+      "action": "RecordAnimation",
+      "topic": "animation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowWireframe",
+      "action": "ShowWireframe",
+      "topic": "animation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnToggleMotionPlay",
+      "action": "ToggleMotionPlay",
+      "topic": "animation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnArrangePlane",
+      "action": "ArrangePlane",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDecreaseGizmoAndBrushScale",
+      "action": "DecreaseGizmoAndBrushScale",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnIncreaseGizmoAndBrushScale",
+      "action": "IncreaseGizmoAndBrushScale",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnMoveBrush",
+      "action": "MoveBrush",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnMoveToGroundCenter",
+      "action": "MoveToGroundCenter",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRemoveAllPins",
+      "action": "RemoveAllPins",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRemovePin",
+      "action": "RemovePin",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnResetGizmoScale",
+      "action": "ResetGizmoScale",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnResetSliderArrangement",
+      "action": "ResetSliderArrangement",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetLocalGizmoMode",
+      "action": "SetLocalGizmoMode",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetLocalGizmoModeSlot",
+      "action": "SetLocalGizmoModeSlot",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetScaleGizmoMode",
+      "action": "SetScaleGizmoMode",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetScreenGizmoMode",
+      "action": "SetScreenGizmoMode",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetScreenGizmoModeSlot",
+      "action": "SetScreenGizmoModeSlot",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetWorldGizmoMode",
+      "action": "SetWorldGizmoMode",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetWorldGizmoModeSlot",
+      "action": "SetWorldGizmoModeSlot",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowArrangement",
+      "action": "ShowArrangement",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSmartArrangement",
+      "action": "SmartArrangement",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSymmetricArrangement",
+      "action": "SymmetricArrangement",
+      "topic": "arrangement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAddCircleAroundAvatar",
+      "action": "AddCircleAroundAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAttachAllPinsToAvatar",
+      "action": "AttachAllPinsToAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAttachToAvatar",
+      "action": "AttachToAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAvatarFill",
+      "action": "AvatarFill",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAvatarHide",
+      "action": "AvatarHide",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAvatarOnlyFill",
+      "action": "AvatarOnlyFill",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAvatarProperty",
+      "action": "AvatarProperty",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAvatarTranslucent",
+      "action": "AvatarTranslucent",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAvatarWireFrame",
+      "action": "AvatarWireFrame",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAvatarXRay",
+      "action": "AvatarXRay",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnBrushOnAvatar",
+      "action": "BrushOnAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutAvatar",
+      "action": "CutAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDetachAllPinsFromAvatar",
+      "action": "DetachAllPinsFromAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDetachFromAvatar",
+      "action": "DetachFromAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowAvatarFittingSuit",
+      "action": "ShowAvatarFittingSuit",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSuperimposeGlueOver",
+      "action": "SuperimposeGlueOver",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSuperimposeGlueUnder",
+      "action": "SuperimposeGlueUnder",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSuperimposeOver",
+      "action": "SuperimposeOver",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSuperimposeSide",
+      "action": "SuperimposeSide",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSuperimposeUnder",
+      "action": "SuperimposeUnder",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnTackOnAvatar",
+      "action": "TackOnAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "superimposeGlue",
+      "action": "superimposeGlue",
+      "topic": "avatar"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFold3DGarment",
+      "action": "Fold3DGarment",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFold3DPattern",
+      "action": "Fold3DPattern",
+      "topic": "darts_pleats_folds"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnBoxSelection",
+      "action": "BoxSelection",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnBrushSelection",
+      "action": "BrushSelection",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteAllFreezeRegions",
+      "action": "DeleteAllFreezeRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteAllSolidifyRegions",
+      "action": "DeleteAllSolidifyRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteAllStrengthenRegions",
+      "action": "DeleteAllStrengthenRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteSelectedFreezeRegions",
+      "action": "DeleteSelectedFreezeRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteSelectedSolidifyRegions",
+      "action": "DeleteSelectedSolidifyRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteSelectedStrengthenRegions",
+      "action": "DeleteSelectedStrengthenRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnIsolateSelection",
+      "action": "IsolateSelection",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLassoSelection",
+      "action": "LassoSelection",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnQuadrangulateGridSelected",
+      "action": "QuadrangulateGridSelected",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnQuadrangulateSelected",
+      "action": "QuadrangulateSelected",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRefreshSelectedBinding",
+      "action": "RefreshSelectedBinding",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSelectAllFreezeRegions",
+      "action": "SelectAllFreezeRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSelectAllSolidifyRegions",
+      "action": "SelectAllSolidifyRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSelectAllStrengthenRegions",
+      "action": "SelectAllStrengthenRegions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSelectAllSubdvisions",
+      "action": "SelectAllSubdvisions",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSnapToMeshEdges",
+      "action": "SnapToMeshEdges",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnTriangulateSelected",
+      "action": "TriangulateSelected",
+      "topic": "editing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowWindowSize",
+      "action": "ShowWindowSize",
+      "topic": "grading"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteAllSubdivisions",
+      "action": "DeleteAllSubdivisions",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteSelectedSubdivisions",
+      "action": "DeleteSelectedSubdivisions",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowInternalLine",
+      "action": "ShowInternalLine",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowSubdivision",
+      "action": "ShowSubdivision",
+      "topic": "internal_lines"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothTexture",
+      "action": "ClothTexture",
+      "topic": "materials"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothTextureSlot",
+      "action": "ClothTextureSlot",
+      "topic": "materials"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothThickRandomColor",
+      "action": "ClothThickRandomColor",
+      "topic": "materials"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothThickRandomColorSlot",
+      "action": "ClothThickRandomColorSlot",
+      "topic": "materials"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnInsertPrintTexture3D",
+      "action": "InsertPrintTexture3D",
+      "topic": "materials"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowKnitwear",
+      "action": "ShowKnitwear",
+      "topic": "materials"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCancelGhostMeasure",
+      "action": "CancelGhostMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCancelWholeGhostMeasure",
+      "action": "CancelWholeGhostMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCheckMeasureLengthVisible",
+      "action": "CheckMeasureLengthVisible",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateBasicCircumMeasure",
+      "action": "CreateBasicCircumMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateBasicTapeMeasure",
+      "action": "CreateBasicTapeMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateHeightMeasure",
+      "action": "CreateHeightMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateLinearMeasure",
+      "action": "CreateLinearMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateSurfaceCircumMeasure",
+      "action": "CreateSurfaceCircumMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateSurfaceTapeMeasure",
+      "action": "CreateSurfaceTapeMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutGarmentMeasure",
+      "action": "CutGarmentMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "CutGarmentMeasureSub",
+      "action": "CutGarmentMeasureSub",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutGarmentMeasureSymmetric",
+      "action": "CutGarmentMeasureSymmetric",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteMeasure",
+      "action": "DeleteMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDetachAllFromAvatarMeasure",
+      "action": "DetachAllFromAvatarMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDetachFromAvatarMeasure",
+      "action": "DetachFromAvatarMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicateSymmetricMeasure",
+      "action": "DuplicateSymmetricMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditGarmentBagMeasure",
+      "action": "EditGarmentBagMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditGarmentMeasure",
+      "action": "EditGarmentMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnHideMeasure",
+      "action": "HideMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLinearDistanceMeasure",
+      "action": "LinearDistanceMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnMeasureEdit",
+      "action": "MeasureEdit",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnMeasureHide",
+      "action": "MeasureHide",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnResetAllResizingMeasure",
+      "action": "ResetAllResizingMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnResetResizingMeasure",
+      "action": "ResetResizingMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRoundGarmentMeasure",
+      "action": "RoundGarmentMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetOffsetForResizingMeasure",
+      "action": "SetOffsetForResizingMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetUnlinkResizingMeasure",
+      "action": "SetUnlinkResizingMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShow3DPatternMeasure",
+      "action": "Show3DPatternMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowGarmentMeasurements",
+      "action": "ShowGarmentMeasurements",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowMeasure",
+      "action": "ShowMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnTraceGarmentMeasureAsCutLine",
+      "action": "TraceGarmentMeasureAsCutLine",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnTraceGarmentMeasureToInternalShape",
+      "action": "TraceGarmentMeasureToInternalShape",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnTraceGarmentMeasureToInternalShapeSymmetric",
+      "action": "TraceGarmentMeasureToInternalShapeSymmetric",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnUpdateAvatarMeasure",
+      "action": "UpdateAvatarMeasure",
+      "topic": "measurement"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnActionBrushGroup",
+      "action": "ActionBrushGroup",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamBack",
+      "action": "CamBack",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamBackSlot",
+      "action": "CamBackSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamBottom",
+      "action": "CamBottom",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamBottomSlot",
+      "action": "CamBottomSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamFront",
+      "action": "CamFront",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamFrontLeft",
+      "action": "CamFrontLeft",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamFrontLeftSlot",
+      "action": "CamFrontLeftSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamFrontRight",
+      "action": "CamFrontRight",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamFrontRightSlot",
+      "action": "CamFrontRightSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamFrontSlot",
+      "action": "CamFrontSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamLeft",
+      "action": "CamLeft",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamLeftSlot",
+      "action": "CamLeftSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamRight",
+      "action": "CamRight",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamRightSlot",
+      "action": "CamRightSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamTop",
+      "action": "CamTop",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCamTopSlot",
+      "action": "CamTopSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothFill",
+      "action": "ClothFill",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothFillSlot",
+      "action": "ClothFillSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothFillThick",
+      "action": "ClothFillThick",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothFillThickSlot",
+      "action": "ClothFillThickSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothGraphicOnOff",
+      "action": "ClothGraphicOnOff",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothPressure",
+      "action": "ClothPressure",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothPressureSlot",
+      "action": "ClothPressureSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothThick",
+      "action": "ClothThick",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothThickBackSurface",
+      "action": "ClothThickBackSurface",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothThickBackSurfaceSlot",
+      "action": "ClothThickBackSurfaceSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothThickSlot",
+      "action": "ClothThickSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothTranslucent",
+      "action": "ClothTranslucent",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothTranslucentSlot",
+      "action": "ClothTranslucentSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnConvertNurbsTo3DPen",
+      "action": "ConvertNurbsTo3DPen",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateBinding",
+      "action": "CreateBinding",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditBasting",
+      "action": "EditBasting",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditBinding",
+      "action": "EditBinding",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditLength3D",
+      "action": "EditLength3D",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditRip",
+      "action": "EditRip",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFitMap",
+      "action": "FitMap",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFitMapSlot",
+      "action": "FitMapSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFlattening",
+      "action": "Flattening",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFlipNormal",
+      "action": "FlipNormal",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFlipWrapDirection",
+      "action": "FlipWrapDirection",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnGlueByBrush",
+      "action": "GlueByBrush",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnPartialFreeze",
+      "action": "PartialFreeze",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnPartialSolidify",
+      "action": "PartialSolidify",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnPartialStrengthen",
+      "action": "PartialStrengthen",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnPress",
+      "action": "Press",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnReleaseBrush",
+      "action": "ReleaseBrush",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnResetLacingPosition3D",
+      "action": "ResetLacingPosition3D",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnReverseX",
+      "action": "ReverseX",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnReverseY",
+      "action": "ReverseY",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRollUpX",
+      "action": "RollUpX",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRollUpY",
+      "action": "RollUpY",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSculptBrush",
+      "action": "SculptBrush",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetCamProperty",
+      "action": "SetCamProperty",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "SetFocus",
+      "action": "SetFocus",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetStraightOnFlattening",
+      "action": "SetStraightOnFlattening",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSmoothBrush",
+      "action": "SmoothBrush",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSolidify",
+      "action": "Solidify",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnStampBrush",
+      "action": "StampBrush",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnStrainMap",
+      "action": "StrainMap",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnStrainMapSlot",
+      "action": "StrainMapSlot",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnTack",
+      "action": "Tack",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnUnlockDanchu",
+      "action": "UnlockDanchu",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnVolumeCalculation",
+      "action": "VolumeCalculation",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "isVaild",
+      "action": "isVaild",
+      "topic": "other"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnActivate3DPattern",
+      "action": "Activate3DPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAddCurvePointOn3DLine",
+      "action": "AddCurvePointOn3DLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAddLinePin",
+      "action": "AddLinePin",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "AddPointOn3DLineSub",
+      "action": "AddPointOn3DLineSub",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAddStraightPointOn3DLine",
+      "action": "AddStraightPointOn3DLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnArchivePattern",
+      "action": "ArchivePattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnBasePolylineHide",
+      "action": "BasePolylineHide",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothFixedpoint",
+      "action": "ClothFixedpoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnConvertCutLineToInternalShape",
+      "action": "ConvertCutLineToInternalShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnConvertCutLineToInternalShapeAfterRemovingSymmetry",
+      "action": "ConvertCutLineToInternalShapeAfterRemovingSymmetry",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnConvertPatternToAvatarAccessory",
+      "action": "ConvertPatternToAvatarAccessory",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnConvertPatternToTrimObject",
+      "action": "ConvertPatternToTrimObject",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCopyJointWeightToSymmetricPattern",
+      "action": "CopyJointWeightToSymmetricPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateChalkShape",
+      "action": "CreateChalkShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutPattern3D",
+      "action": "CutPattern3D",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "CutPattern3DSub",
+      "action": "CutPattern3DSub",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutPatternAfterRemovingSymmetry3D",
+      "action": "CutPatternAfterRemovingSymmetry3D",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteAll3DLine",
+      "action": "DeleteAll3DLine",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteVolumeDummyShape",
+      "action": "DeleteVolumeDummyShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDialogStyleLineClosed",
+      "action": "DialogStyleLineClosed",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDrawCutLineOnAvatar",
+      "action": "DrawCutLineOnAvatar",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDrawCutLineOnPattern",
+      "action": "DrawCutLineOnPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDrawStyleline",
+      "action": "DrawStyleline",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicate3DLineToSymmetry",
+      "action": "Duplicate3DLineToSymmetry",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicateButtonToSymmetricPattern",
+      "action": "DuplicateButtonToSymmetricPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicateButtonToSymmetricPattern_HeadToHead",
+      "action": "DuplicateButtonToSymmetricPattern_HeadToHead",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicateButtonToSymmetricPattern_HeadToHole",
+      "action": "DuplicateButtonToSymmetricPattern_HeadToHole",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicateToSymmetricPattern",
+      "action": "DuplicateToSymmetricPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicateToSymmetricPattern_Zipper",
+      "action": "DuplicateToSymmetricPattern_Zipper",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicateTrimToSymmetricPattern",
+      "action": "DuplicateTrimToSymmetricPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditChalkShape",
+      "action": "EditChalkShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditCutLineOnAvatar",
+      "action": "EditCutLineOnAvatar",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditCutLineOnPattern",
+      "action": "EditCutLineOnPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditGrainline3D",
+      "action": "EditGrainline3D",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditLineTack",
+      "action": "EditLineTack",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditPatternIn3D",
+      "action": "EditPatternIn3D",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditStyleline",
+      "action": "EditStyleline",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnHide3DPattern",
+      "action": "Hide3DPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnHidePatternAndTrim",
+      "action": "HidePatternAndTrim",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLineTack",
+      "action": "LineTack",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLineTackFlip",
+      "action": "LineTackFlip",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLineTackOnAvatar",
+      "action": "LineTackOnAvatar",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnMovePattern",
+      "action": "MovePattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnMoveStyleline",
+      "action": "MoveStyleline",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnPatternStrengthen",
+      "action": "PatternStrengthen",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRearrangeAllPatterns",
+      "action": "RearrangeAllPatterns",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRearrangeSelectedPatterns",
+      "action": "RearrangeSelectedPatterns",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRemoveAllPinsOnSelectedPatterns",
+      "action": "RemoveAllPinsOnSelectedPatterns",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnResetTo2DArrangementForAllPatterns",
+      "action": "ResetTo2DArrangementForAllPatterns",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnResetTo2DArrangementForSelectedPatterns",
+      "action": "ResetTo2DArrangementForSelectedPatterns",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnResetVolumeDummyShape",
+      "action": "ResetVolumeDummyShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnScaleStyleline",
+      "action": "ScaleStyleline",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetFreezePattern",
+      "action": "SetFreezePattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "SetHidePatternShortcutForBrush",
+      "action": "SetHidePatternShortcutForBrush",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowAll3DPattern",
+      "action": "ShowAll3DPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowAllArchivedPattern",
+      "action": "ShowAllArchivedPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowContactPoint",
+      "action": "ShowContactPoint",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowContactPointSlot",
+      "action": "ShowContactPointSlot",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowCurveLine3DAvatar",
+      "action": "ShowCurveLine3DAvatar",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowCutLine3DAvatar",
+      "action": "ShowCutLine3DAvatar",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowCutLine3DPattern",
+      "action": "ShowCutLine3DPattern",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowFeatureLines",
+      "action": "ShowFeatureLines",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowHide3DLineLength",
+      "action": "ShowHide3DLineLength",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowInternalPolygon",
+      "action": "ShowInternalPolygon",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowLineLength",
+      "action": "ShowLineLength",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowPatternName",
+      "action": "ShowPatternName",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnToggleCreateTopologyFaceSelectedPatternAfterRemeshing",
+      "action": "ToggleCreateTopologyFaceSelectedPatternAfterRemeshing",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "ToggleRemeshingSelectedPatterns",
+      "action": "ToggleRemeshingSelectedPatterns",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnTraceCutLineAsInternalShape",
+      "action": "TraceCutLineAsInternalShape",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnTraceCutLineAsInternalShapeAfterRemovingSymmetry",
+      "action": "TraceCutLineAsInternalShapeAfterRemovingSymmetry",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "UpdateBrushPopupProperty",
+      "action": "UpdateBrushPopupProperty",
+      "topic": "project"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnActivateCamera",
+      "action": "ActivateCamera",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeactivateVRayLight",
+      "action": "DeactivateVRayLight",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnHideVRayLight",
+      "action": "HideVRayLight",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLightPreset0",
+      "action": "LightPreset0",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLightPreset1",
+      "action": "LightPreset1",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLightPreset2",
+      "action": "LightPreset2",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLightPreset3",
+      "action": "LightPreset3",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSelectAllVRayLight",
+      "action": "SelectAllVRayLight",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowAllVRayLight",
+      "action": "ShowAllVRayLight",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowCamera",
+      "action": "ShowCamera",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowLight",
+      "action": "ShowLight",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowShadow",
+      "action": "ShowShadow",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowVRayLight",
+      "action": "ShowVRayLight",
+      "topic": "render"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnActivatePatternWithSeamLine",
+      "action": "ActivatePatternWithSeamLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAutoSewing",
+      "action": "AutoSewing",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAutoSewingDebugComplete",
+      "action": "AutoSewingDebugComplete",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAutoSewingDebugResetGraph",
+      "action": "AutoSewingDebugResetGraph",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAutoSewingDebugStepForward",
+      "action": "AutoSewingDebugStepForward",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothSeamline",
+      "action": "ClothSeamline",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateSeamlineRip",
+      "action": "CreateSeamlineRip",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutAndSewGarmentMeasure",
+      "action": "CutAndSewGarmentMeasure",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutAndSewGarmentMeasureSymmetric",
+      "action": "CutAndSewGarmentMeasureSymmetric",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutAndSewPattern3D",
+      "action": "CutAndSewPattern3D",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCutAndSewPatternAfterRemovingSymmetry3D",
+      "action": "CutAndSewPatternAfterRemovingSymmetry3D",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeactivatePatternWithSewings",
+      "action": "DeactivatePatternWithSewings",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditSewingIn3D",
+      "action": "EditSewingIn3D",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFreeSewingIn3D",
+      "action": "FreeSewingIn3D",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnMergePattern3DBySeamLine",
+      "action": "MergePattern3DBySeamLine",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "On1toNFreeSewingIn3D",
+      "action": "On1toNFreeSewingIn3D",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "On1toNSegmentSewingIn3D",
+      "action": "On1toNSegmentSewingIn3D",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSegmentSewingIn3D",
+      "action": "SegmentSewingIn3D",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSetNumberOfSewingLayers",
+      "action": "SetNumberOfSewingLayers",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSewingThreadRedColor",
+      "action": "SewingThreadRedColor",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSewingThreadSeamLineColor",
+      "action": "SewingThreadSeamLineColor",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowPuckering",
+      "action": "ShowPuckering",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowSeamlineSpring",
+      "action": "ShowSeamlineSpring",
+      "topic": "sewing"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnActivatePin",
+      "action": "ActivatePin",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnActivateWind",
+      "action": "ActivateWind",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAdvancedPinching",
+      "action": "AdvancedPinching",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAnimationSimulation",
+      "action": "AnimationSimulation",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnAutoDraping",
+      "action": "AutoDraping",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnBoxPinning",
+      "action": "BoxPinning",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnBrushPinching",
+      "action": "BrushPinching",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreatePin",
+      "action": "CreatePin",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreatePiping",
+      "action": "CreatePiping",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeactivatePin",
+      "action": "DeactivatePin",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDeleteWind",
+      "action": "DeleteWind",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnDuplicateWind",
+      "action": "DuplicateWind",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditPiping",
+      "action": "EditPiping",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFittingSimulation",
+      "action": "FittingSimulation",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnLassoPinning",
+      "action": "LassoPinning",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnNormalSimulation",
+      "action": "NormalSimulation",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnPinchBrush",
+      "action": "PinchBrush",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnPlaySimulationAndAnimation",
+      "action": "PlaySimulationAndAnimation",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRefreshSelectedPiping",
+      "action": "RefreshSelectedPiping",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRobustSimulation",
+      "action": "RobustSimulation",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowHideAll3DPipings",
+      "action": "ShowHideAll3DPipings",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowOrHideSelectedPiping",
+      "action": "ShowOrHideSelectedPiping",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowWind",
+      "action": "ShowWind",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSimulationProperty",
+      "action": "SimulationProperty",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSymmetricPin",
+      "action": "SymmetricPin",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "TurnOnCPUSimulation",
+      "action": "TurnOnCPUSimulation",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "TurnOnGPUSimulation",
+      "action": "TurnOnGPUSimulation",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnWrinkleBrush",
+      "action": "WrinkleBrush",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "onPlaySimulationAndAnimationSub",
+      "action": "onPlaySimulationAndAnimationSub",
+      "topic": "simulation"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnButtonLock",
+      "action": "ButtonLock",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClickedPlayButton",
+      "action": "ClickedPlayButton",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnConvertToButtonHead",
+      "action": "ConvertToButtonHead",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnConvertToButtonHole",
+      "action": "ConvertToButtonHole",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateButton",
+      "action": "CreateButton",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateButtonHole",
+      "action": "CreateButtonHole",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateZipper",
+      "action": "CreateZipper",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditButton",
+      "action": "EditButton",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditZipper",
+      "action": "EditZipper",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFlipButtons",
+      "action": "FlipButtons",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFlipNormalSelectedZipperTeeth",
+      "action": "FlipNormalSelectedZipperTeeth",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFlipSelectedZipperObj",
+      "action": "FlipSelectedZipperObj",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRegisterButtonHeadStyle",
+      "action": "RegisterButtonHeadStyle",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnRegisterButtonHoleStyle",
+      "action": "RegisterButtonHoleStyle",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnReset3DButtonPosition",
+      "action": "Reset3DButtonPosition",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnReverseZipupDirectionSelectedZipperTeeth",
+      "action": "ReverseZipupDirectionSelectedZipperTeeth",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowButton",
+      "action": "ShowButton",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowSelectedZipperBottomStopper",
+      "action": "ShowSelectedZipperBottomStopper",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowSelectedZipperPuller",
+      "action": "ShowSelectedZipperPuller",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowSelectedZipperSlider",
+      "action": "ShowSelectedZipperSlider",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowSelectedZipperTopStopper",
+      "action": "ShowSelectedZipperTopStopper",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnUnlinkGroupButtonButtonHoles",
+      "action": "UnlinkGroupButtonButtonHoles",
+      "topic": "trims"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnClothHide",
+      "action": "ClothHide",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnCreateTopology3D",
+      "action": "CreateTopology3D",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnEditTopology3D",
+      "action": "EditTopology3D",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnFocusZoom",
+      "action": "FocusZoom",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnSceneAndPropsHide",
+      "action": "SceneAndPropsHide",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShow3DPencilSketchToolBoxWidget",
+      "action": "Show3DPencilSketchToolBoxWidget",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowFur",
+      "action": "ShowFur",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowFurDebug",
+      "action": "ShowFurDebug",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowGarmentFittingSuit",
+      "action": "ShowGarmentFittingSuit",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowPan",
+      "action": "ShowPan",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowRetopologyMergeLength",
+      "action": "ShowRetopologyMergeLength",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowStatistics",
+      "action": "ShowStatistics",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnShowTopology",
+      "action": "ShowTopology",
+      "topic": "view"
+    },
+    {
+      "view": "3d",
+      "class": "View3DActionSlots",
+      "symbol": "OnZoomExtentsAll",
+      "action": "ZoomExtentsAll",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportMayaCache2009AndBelow",
+      "action": "ExportMayaCache2009AndBelow",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportMayaCache2010AndAbove",
+      "action": "ExportMayaCache2010AndAbove",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportMayaCacheMcx",
+      "action": "ExportMayaCacheMcx",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportMayaMaxMDDCache",
+      "action": "ExportMayaMaxMDDCache",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportOBJAnimation",
+      "action": "ExportOBJAnimation",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadAnimation",
+      "action": "FileLoadAnimation",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadMotion",
+      "action": "FileLoadMotion",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveAnimation",
+      "action": "FileSaveAnimation",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveMotion",
+      "action": "FileSaveMotion",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportMayaCache",
+      "action": "ImportMayaCache",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportMayaCacheMcx",
+      "action": "ImportMayaCacheMcx",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportMayaMaxMDDCache",
+      "action": "ImportMayaMaxMDDCache",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMotionConverter",
+      "action": "MotionConverter",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowFrameRate",
+      "action": "ShowFrameRate",
+      "topic": "animation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnArrangeReverseX",
+      "action": "ArrangeReverseX",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnArrangeReverseY",
+      "action": "ArrangeReverseY",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAutoArrangement",
+      "action": "AutoArrangement",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAutoHangToBottomHanger",
+      "action": "AutoHangToBottomHanger",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAutoHangToTopHanger",
+      "action": "AutoHangToTopHanger",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnChangeLanguage",
+      "action": "ChangeLanguage",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileOpenCameraTransformation",
+      "action": "FileOpenCameraTransformation",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveCameraTransformation",
+      "action": "FileSaveCameraTransformation",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMoveAvatarsAndGarmentsToCenter",
+      "action": "MoveAvatarsAndGarmentsToCenter",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMoveAvatarsAndGarmentsToGround",
+      "action": "MoveAvatarsAndGarmentsToGround",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMoveAvatarsToCenter",
+      "action": "MoveAvatarsToCenter",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMoveAvatarsToGround",
+      "action": "MoveAvatarsToGround",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMoveUV",
+      "action": "MoveUV",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnRearrangeTools",
+      "action": "RearrangeTools",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnRemoveLinkedEditing",
+      "action": "RemoveLinkedEditing",
+      "topic": "arrangement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAIChatBot",
+      "action": "AIChatBot",
+      "topic": "automation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAIStudioActivation",
+      "action": "AIStudioActivation",
+      "topic": "automation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnCLOFAB",
+      "action": "CLOFAB",
+      "topic": "automation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClosedPythonConsole",
+      "action": "ClosedPythonConsole",
+      "topic": "automation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExecPythonModule",
+      "action": "ExecPythonModule",
+      "topic": "automation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnRefreshPlugIn",
+      "action": "RefreshPlugIn",
+      "topic": "automation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowPluginManagerMenu",
+      "action": "ShowPluginManagerMenu",
+      "topic": "automation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAIPoseGenerator",
+      "action": "AIPoseGenerator",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnActivateAvatar",
+      "action": "ActivateAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAvatarAutoConverter",
+      "action": "AvatarAutoConverter",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedAIAvatarStudio",
+      "action": "ClickedAIAvatarStudio",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDeleteAllAvatars",
+      "action": "DeleteAllAvatars",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDeleteAllAvatarsSlot",
+      "action": "DeleteAllAvatarsSlot",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDeleteAvatar",
+      "action": "DeleteAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileAddAvatar",
+      "action": "FileAddAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadAvatar",
+      "action": "FileLoadAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadHandPose",
+      "action": "FileLoadHandPose",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadPose",
+      "action": "FileLoadPose",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveAvatar",
+      "action": "FileSaveAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveAvatarDisableExportOBJ",
+      "action": "FileSaveAvatarDisableExportOBJ",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveHandPose",
+      "action": "FileSaveHandPose",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSavePose",
+      "action": "FileSavePose",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFlipPose",
+      "action": "FlipPose",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnHideAvatar",
+      "action": "HideAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnHideAvatarMesh",
+      "action": "HideAvatarMesh",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMotionPoseSaver",
+      "action": "MotionPoseSaver",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSelectAvatarAndGarments",
+      "action": "SelectAvatarAndGarments",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShareAvatar",
+      "action": "ShareAvatar",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowAllAvatarMeshes",
+      "action": "ShowAllAvatarMeshes",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowAllAvatars",
+      "action": "ShowAllAvatars",
+      "topic": "avatar"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDelete",
+      "action": "Delete",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDeleteAllSceneProp",
+      "action": "DeleteAllSceneProp",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDeleteSceneProp",
+      "action": "DeleteSceneProp",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditCopy",
+      "action": "EditCopy",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditInstanceMirrorpaste",
+      "action": "EditInstanceMirrorpaste",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditInstancepaste",
+      "action": "EditInstancepaste",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditMirrorpaste",
+      "action": "EditMirrorpaste",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditPaste",
+      "action": "EditPaste",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditRedo",
+      "action": "EditRedo",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditSymmetricpaste",
+      "action": "EditSymmetricpaste",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditUndo",
+      "action": "EditUndo",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnInvertSelection",
+      "action": "InvertSelection",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "On3DGridBrightness",
+      "action": "On3DGridBrightness",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSelectAll",
+      "action": "SelectAll",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSelectAllFaces",
+      "action": "SelectAllFaces",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShareSelectedGarment",
+      "action": "ShareSelectedGarment",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShow3DGrid",
+      "action": "Show3DGrid",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowViewportGrid",
+      "action": "ShowViewportGrid",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSubdivideSelectedTriangle",
+      "action": "SubdivideSelectedTriangle",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "editPaste",
+      "action": "editPaste",
+      "topic": "editing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowGraphicGradingReview",
+      "action": "ShowGraphicGradingReview",
+      "topic": "grading"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDownloadCLOFAB",
+      "action": "DownloadCLOFAB",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDownloadOpenCV",
+      "action": "DownloadOpenCV",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportAdobe",
+      "action": "ExportAdobe",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportAlembic",
+      "action": "ExportAlembic",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportBOM",
+      "action": "ExportBOM",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportBOMJSON",
+      "action": "ExportBOMJSON",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportBoneInformation",
+      "action": "ExportBoneInformation",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportClothOBJ",
+      "action": "ExportClothOBJ",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportDxf",
+      "action": "ExportDxf",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportFbx",
+      "action": "ExportFbx",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportGLB",
+      "action": "ExportGLB",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportGLTF",
+      "action": "ExportGLTF",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportGoZToZBrush",
+      "action": "ExportGoZToZBrush",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportJean",
+      "action": "ExportJean",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportLayout",
+      "action": "ExportLayout",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportSelectedClothOBJ",
+      "action": "ExportSelectedClothOBJ",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportUSD",
+      "action": "ExportUSD",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportVRM",
+      "action": "ExportVRM",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadCloth",
+      "action": "FileLoadCloth",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadMorphTarget",
+      "action": "FileLoadMorphTarget",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadPACX",
+      "action": "FileLoadPACX",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadSceneAndProps",
+      "action": "FileLoadSceneAndProps",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileOpenProject",
+      "action": "FileOpenProject",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileOpenPythonScript",
+      "action": "FileOpenPythonScript",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSave2DScreenCapture",
+      "action": "FileSave2DScreenCapture",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSave2DScreenCaptureForAPI",
+      "action": "FileSave2DScreenCaptureForAPI",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSave3DScreen",
+      "action": "FileSave3DScreen",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveCloth",
+      "action": "FileSaveCloth",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveClothSelected",
+      "action": "FileSaveClothSelected",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveClothWithMetaData",
+      "action": "FileSaveClothWithMetaData",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveHtml",
+      "action": "FileSaveHtml",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveMultiViewCapture",
+      "action": "FileSaveMultiViewCapture",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSavePACX",
+      "action": "FileSavePACX",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveProject",
+      "action": "FileSaveProject",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveProjectWithMetaData",
+      "action": "FileSaveProjectWithMetaData",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveProjectWithOtherFiles",
+      "action": "FileSaveProjectWithOtherFiles",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveProjectover",
+      "action": "FileSaveProjectover",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveSceneAndProps",
+      "action": "FileSaveSceneAndProps",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportAddAlembic",
+      "action": "ImportAddAlembic",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportAddCollada",
+      "action": "ImportAddCollada",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportAddDNA",
+      "action": "ImportAddDNA",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportAddFBX",
+      "action": "ImportAddFBX",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportAddOBJ",
+      "action": "ImportAddOBJ",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportAddUSD",
+      "action": "ImportAddUSD",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportAdobe",
+      "action": "ImportAdobe",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportAlembic",
+      "action": "ImportAlembic",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportCollada",
+      "action": "ImportCollada",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportDNA",
+      "action": "ImportDNA",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportDXF",
+      "action": "ImportDXF",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportFBX",
+      "action": "ImportFBX",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportGLTF",
+      "action": "ImportGLTF",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportGerber",
+      "action": "ImportGerber",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportGoZSettings",
+      "action": "ImportGoZSettings",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportLectra",
+      "action": "ImportLectra",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportMYU",
+      "action": "ImportMYU",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportOBJ",
+      "action": "ImportOBJ",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportOptitex",
+      "action": "ImportOptitex",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportUSD",
+      "action": "ImportUSD",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportVRM",
+      "action": "ImportVRM",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnLoadConfiguration",
+      "action": "LoadConfiguration",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnLoadCusomLayout",
+      "action": "LoadCusomLayout",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMergeDXF",
+      "action": "MergeDXF",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOBJToGarment",
+      "action": "OBJToGarment",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OpenAboutBox",
+      "action": "OpenAboutBox",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OpenClothFileInfoBox",
+      "action": "OpenClothFileInfoBox",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOpenFileWithAnotherExternalApp",
+      "action": "OpenFileWithAnotherExternalApp",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OpenGarmentInfoBox",
+      "action": "OpenGarmentInfoBox",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOpenOneToOneDialog",
+      "action": "OpenOneToOneDialog",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOpenRecentFile",
+      "action": "OpenRecentFile",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOpenToolbarPreset",
+      "action": "OpenToolbarPreset",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OpenWelcomePage",
+      "action": "OpenWelcomePage",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSaveConfiguration",
+      "action": "SaveConfiguration",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSaveToolbarPreset",
+      "action": "SaveToolbarPreset",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowAutoSaveTime",
+      "action": "ShowAutoSaveTime",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowDmixDownloadManager",
+      "action": "ShowDmixDownloadManager",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowSaveAsBlock",
+      "action": "ShowSaveAsBlock",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnVersionUploadGarment",
+      "action": "VersionUploadGarment",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnVersionUploadProject",
+      "action": "VersionUploadProject",
+      "topic": "interchange"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedRTRTOpenPBRVisualEquivalenceTest",
+      "action": "ClickedRTRTOpenPBRVisualEquivalenceTest",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedRTRTReloadMaterialAdapter",
+      "action": "ClickedRTRTReloadMaterialAdapter",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportGLTFFabric",
+      "action": "ExportGLTFFabric",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveAllGarmentRelatedTextures",
+      "action": "FileSaveAllGarmentRelatedTextures",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnLoadBackgroundTexture",
+      "action": "LoadBackgroundTexture",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOpenFabric",
+      "action": "OpenFabric",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOpenSelectMaterial",
+      "action": "OpenSelectMaterial",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOpenTextureEditor",
+      "action": "OpenTextureEditor",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnRefreshTextures",
+      "action": "RefreshTextures",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowColorwayEditor",
+      "action": "ShowColorwayEditor",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnToggleColorwayEditor",
+      "action": "ToggleColorwayEditor",
+      "topic": "materials"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedPOMCalculator",
+      "action": "ClickedPOMCalculator",
+      "topic": "measurement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportPOM",
+      "action": "ExportPOM",
+      "topic": "measurement"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAddAnotherExternalApp",
+      "action": "AddAnotherExternalApp",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClearProceduralFray",
+      "action": "ClearProceduralFray",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedCLOQA",
+      "action": "ClickedCLOQA",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedCustomGarmentTool",
+      "action": "ClickedCustomGarmentTool",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedGameWearStore",
+      "action": "ClickedGameWearStore",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedRTRTFLIPCompare",
+      "action": "ClickedRTRTFLIPCompare",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedResGarmentTool",
+      "action": "ClickedResGarmentTool",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnCloseOneToOneScreen",
+      "action": "CloseOneToOneScreen",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnCreateReferenceCircle",
+      "action": "CreateReferenceCircle",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnCreateReferenceRectangle",
+      "action": "CreateReferenceRectangle",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEditCut",
+      "action": "EditCut",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEnglishTutorial",
+      "action": "EnglishTutorial",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileAddSceneAndProps",
+      "action": "FileAddSceneAndProps",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileMergeCloth",
+      "action": "FileMergeCloth",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnGoZInstallGuide",
+      "action": "GoZInstallGuide",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnGroupTools",
+      "action": "GroupTools",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnKoreanTutorial",
+      "action": "KoreanTutorial",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnLogOut",
+      "action": "LogOut",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMergeAdobe",
+      "action": "MergeAdobe",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOneToOneScreen",
+      "action": "OneToOneScreen",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnPacxFileMergeCloth",
+      "action": "PacxFileMergeCloth",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnPreferenece",
+      "action": "Preferenece",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnResetJoint",
+      "action": "ResetJoint",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnRunCLOVise",
+      "action": "RunCLOVise",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnRunEcoShot",
+      "action": "RunEcoShot",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShareGarment",
+      "action": "ShareGarment",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShareTechPack",
+      "action": "ShareTechPack",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnTakeHeelsDown",
+      "action": "TakeHeelsDown",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnTakeHeelsUp",
+      "action": "TakeHeelsUp",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnUnglue",
+      "action": "Unglue",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "isValidateGUI",
+      "action": "isValidateGUI",
+      "topic": "other"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnCreateReferencePolygon",
+      "action": "CreateReferencePolygon",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportPatternAPIJSON",
+      "action": "ExportPatternAPIJSON",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportPointCache",
+      "action": "ExportPointCache",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportPatternAPIJSON",
+      "action": "ImportPatternAPIJSON",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportPointCache",
+      "action": "ImportPointCache",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOnlineTutorials",
+      "action": "OnlineTutorials",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnOpenParametricPatternEditor",
+      "action": "OpenParametricPatternEditor",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnReplaceShapeOutlines",
+      "action": "ReplaceShapeOutlines",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnReplaceShapeOutlinesWithPoints",
+      "action": "ReplaceShapeOutlinesWithPoints",
+      "topic": "pattern_geometry"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnPrintLayoutVerticalMode",
+      "action": "PrintLayoutVerticalMode",
+      "topic": "print"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnPrintToPlotter",
+      "action": "PrintToPlotter",
+      "topic": "print"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnChineseManual",
+      "action": "ChineseManual",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedCLOFAQ",
+      "action": "ClickedCLOFAQ",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnEnglishManual",
+      "action": "EnglishManual",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileAddProject",
+      "action": "FileAddProject",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnKoreanManual",
+      "action": "KoreanManual",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnNewGarmentFile",
+      "action": "NewGarmentFile",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnNewGarmentFileSlot",
+      "action": "NewGarmentFileSlot",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnNewProjectFile",
+      "action": "NewProjectFile",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShareProject",
+      "action": "ShareProject",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnUpdateGerber",
+      "action": "UpdateGerber",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnUpdateLectra",
+      "action": "UpdateLectra",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnUpdateOptitex",
+      "action": "UpdateOptitex",
+      "topic": "project"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnCameraProperty",
+      "action": "CameraProperty",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedRTRTRenderView",
+      "action": "ClickedRTRTRenderView",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedRenderQuality",
+      "action": "ClickedRenderQuality",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedVRayRenderView",
+      "action": "ClickedVRayRenderView",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportLightWaveMDDCache",
+      "action": "ExportLightWaveMDDCache",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadCameraAnimation",
+      "action": "FileLoadCameraAnimation",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadEnvironment",
+      "action": "FileLoadEnvironment",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileOpenCameraProjection",
+      "action": "FileOpenCameraProjection",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileOpenRenderProperties",
+      "action": "FileOpenRenderProperties",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveCameraAnimation",
+      "action": "FileSaveCameraAnimation",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveCameraProjection",
+      "action": "FileSaveCameraProjection",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveRenderProperties",
+      "action": "FileSaveRenderProperties",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnImportLightWaveMDDCache",
+      "action": "ImportLightWaveMDDCache",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShareClosetRender",
+      "action": "ShareClosetRender",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowGuideImages",
+      "action": "ShowGuideImages",
+      "topic": "render"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSelectAllSewn",
+      "action": "SelectAllSewn",
+      "topic": "sewing"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAdd3DWindow",
+      "action": "Add3DWindow",
+      "topic": "simulation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedDefaultWindowLayout",
+      "action": "ClickedDefaultWindowLayout",
+      "topic": "simulation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnExportToUSDLayer",
+      "action": "ExportToUSDLayer",
+      "topic": "simulation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowTrimSimulationState",
+      "action": "ShowTrimSimulationState",
+      "topic": "simulation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSwichingWindow",
+      "action": "SwichingWindow",
+      "topic": "simulation"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnAccessorySaver",
+      "action": "AccessorySaver",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnActivateTrim",
+      "action": "ActivateTrim",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedAPIReferenceButton",
+      "action": "ClickedAPIReferenceButton",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedEveryWearButton",
+      "action": "ClickedEveryWearButton",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedExploreEveryWearButton",
+      "action": "ClickedExploreEveryWearButton",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedWhatsNewButton",
+      "action": "ClickedWhatsNewButton",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDeactivateTrim",
+      "action": "DeactivateTrim",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDeleteAccessories",
+      "action": "DeleteAccessories",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadAccessories",
+      "action": "FileLoadAccessories",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileLoadTrim",
+      "action": "FileLoadTrim",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveAccessory",
+      "action": "FileSaveAccessory",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFileSaveTrim",
+      "action": "FileSaveTrim",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFreezeTrim",
+      "action": "FreezeTrim",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnHideTrim",
+      "action": "HideTrim",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnMakeZipperObj",
+      "action": "MakeZipperObj",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnRegisterZipperObject",
+      "action": "RegisterZipperObject",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSelectAllTrimObjects",
+      "action": "SelectAllTrimObjects",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnSetAsHeelForRegistAccessory",
+      "action": "SetAsHeelForRegistAccessory",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowAllTrims",
+      "action": "ShowAllTrims",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "onClickedContactUsButton",
+      "action": "onClickedContactUsButton",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "onClickedLiveSyncDownloadButton",
+      "action": "onClickedLiveSyncDownloadButton",
+      "topic": "trims"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnBrowseDirectoryCustomLayout",
+      "action": "BrowseDirectoryCustomLayout",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnClickedCustomView",
+      "action": "ClickedCustomView",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnDeactivateLicense",
+      "action": "DeactivateLicense",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFocusZoom",
+      "action": "FocusZoom",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnFormatBackground",
+      "action": "FormatBackground",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnHideJoint",
+      "action": "HideJoint",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnJapaneseManual",
+      "action": "JapaneseManual",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnResetToolbarDefault",
+      "action": "ResetToolbarDefault",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowAllJoints",
+      "action": "ShowAllJoints",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowBOMCostEditor",
+      "action": "ShowBOMCostEditor",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowBlockLibrary",
+      "action": "ShowBlockLibrary",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowReviewEditor",
+      "action": "ShowReviewEditor",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnShowUVEditor",
+      "action": "ShowUVEditor",
+      "topic": "view"
+    },
+    {
+      "view": "menu",
+      "class": "MainMenuActionSlots",
+      "symbol": "OnUpdateLayoutActionList",
+      "action": "UpdateLayoutActionList",
+      "topic": "view"
+    }
+  ]
+}
