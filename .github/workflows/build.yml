@@ -1,0 +1,73 @@
+name: Cross-platform build
+
+# Produces runnable desktop binaries for macOS, Linux and Windows on every
+# push. The `cpu.yml` workflow only builds the headless numerical core; this
+# one is what actually proves the GUI crates compile and link outside Linux CI,
+# and it is the source of the download artifacts.
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build (${{ matrix.artifact }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One platform failing must not hide the state of the other two.
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            artifact: macos-arm64
+          - os: ubuntu-latest
+            artifact: linux-x86_64
+          - os: windows-latest
+            artifact: windows-x86_64
+    env:
+      RAYON_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      # eframe/winit need X11, Wayland and an OpenGL loader to LINK on Linux,
+      # even though `cargo check` alone would not. Without these the desktop
+      # binaries fail at the link step rather than at compile time.
+      - name: Install Linux windowing and GPU dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev \
+            libxrandr-dev libxi-dev libgl1-mesa-dev libasound2-dev \
+            libssl-dev pkg-config
+
+      # The desktop feature is what the headless CPU job never builds, so this
+      # step is the only compile of render.rs, atelier.rs and editor.rs here.
+      - name: Build the desktop and CLI binaries
+        run: >
+          cargo build --locked --release -j 2 --features desktop
+          --bin cloth-fit --bin marvelous-cloth --bin cloth-template
+
+      # A binary that builds but cannot read a template is not a working build.
+      - name: Validate a shipped template with the built binary
+        run: >
+          cargo run --locked --release -j 2 --no-default-features
+          --bin cloth-template -- validate examples/templates/two-panel.json
+
+      - name: Stage artifacts
+        shell: bash
+        run: |
+          mkdir -p dist
+          suffix=""
+          if [ "${{ runner.os }}" = "Windows" ]; then suffix=".exe"; fi
+          for bin in cloth-fit marvelous-cloth cloth-template; do
+            cp "target/release/${bin}${suffix}" "dist/${bin}${suffix}"
+          done
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clothcraft-${{ matrix.artifact }}
+          path: dist/*
+          if-no-files-found: error

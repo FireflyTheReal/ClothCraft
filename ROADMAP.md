@@ -122,7 +122,7 @@ Both are **presentation only** in their UI layer: they reuse the same solver wor
 
 Stated plainly, as limits rather than claims:
 
-- **The `desktop` feature was not covered by CI.** `.github/workflows/cpu.yml` builds `--no-default-features`, so `editor.rs`, `render.rs` and `atelier.rs` were never compiled on a push, and **a green CI run did not mean the window built**. A `desktop` job now runs `cargo check` and `clippy` with the feature enabled; it is marked `continue-on-error` until it has been verified green on that runner (milestone **P0.5**).
+- **The `desktop` feature was not covered by CI.** `.github/workflows/cpu.yml` builds `--no-default-features`, so `editor.rs`, `render.rs` and `atelier.rs` were never compiled on a push, and **a green CI run did not mean the window built**. A `desktop` job now runs `cargo check`, `clippy --all-targets -- -D warnings` and the desktop test target with the feature enabled, and it is **gating** — the Linux runner installs the X11/Wayland/GL dependencies the test target needs in order to link, and the three GPU tests stay `#[ignore]`d so the job remains GPU-free. A separate `build` workflow compiles and uploads release binaries for **macOS, Linux and Windows** on every push (milestone **P0.5**, closed).
 - The macOS bundle is a **hand-built prototype**, not packaging: no notarization, no installer, no update path, no signing identity. Only the dev profile is built, and no performance claim is attached to it.
 - Docking is **fixed**. Panels resize but cannot be rearranged, torn off or saved as layouts, and the atelier still has no multi-document workspace.
 - The displayed physical quantities come from the existing solvers. Nothing in the shell implies a capability the solvers do not have.
