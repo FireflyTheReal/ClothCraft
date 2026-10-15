@@ -516,6 +516,14 @@ impl eframe::App for Atelier {
         let mut changed = false;
         settings::window(&ctx, &mut self.settings_open, &mut self.prefs, &mut changed);
         if changed {
+            // Apply immediately rather than on the next start: the window edits
+            // the live `Preferences`, so anything less would leave the theme
+            // switch looking broken until a restart. `apply` is idempotent.
+            settings::apply(&ctx, &self.prefs);
+            // The board reads its step at startup, so push the edited value
+            // through here too; otherwise the control would persist without
+            // taking effect, which is a stored value pretending to be live.
+            self.authoring.board.snap_mm = self.prefs.snap_mm;
             // A failed write must not interrupt the session: the status line
             // reports it so the user knows the preference did not stick.
             if let Err(error) = settings::save(&self.output.join(settings::FILE_NAME), &self.prefs)
