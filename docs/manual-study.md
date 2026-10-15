@@ -20,6 +20,12 @@ Implementation choices come from our own data and solver contracts: meters in re
 
 For each new family, record the exact public URL, date, a short paraphrase, an independently written behavior specification, edge cases and status. Do not paste manual pages or treat undocumented internals as known.
 
+## Internal drafting follow-up (2026-10-15)
+
+Read [Internal Polygon/Line](https://support.marvelousdesigner.com/hc/en-us/articles/47358276422297-Internal-Polygon-Line): draw paths within a pattern using successive points and curved gestures. ClothCraft now has its own open internal Bézier paths, editable handles and whole-path sewing in 2D/3D, plus an eased-strip helper for ruffles. Numeric primitives, independent mirrors and polygon booleans/holes are also implemented. Linked symmetry, offsets, joined/crossing paths and fold arrangement remain absent. [Data, tests and limits](drafting-tools.md) supersede the historical status cells below.
+
+Also read the official FreeSewing Teagan, Titan and Jett pages, commercial-use FAQ and export guide linked in [the pattern-library investigation](drafting-tools.md#web-pattern-library-investigation). The UI links to their generator. JSON/YAML are settings exports; SVG carries geometry. No imported online pattern, generator integration or automatic seam inference is claimed.
+
 ## Unified-board follow-up (2026-10-14)
 
 Read [Edit AI Bezier Curve](https://support.marvelousdesigner.com/hc/en-us/articles/47358445584537-Edit-AI-Bezier-Curve) and [3D Segment Sewing](https://support.marvelousdesigner.com/hc/en-us/articles/47358302592409-3D-Segment-Sewing-VER4-2-0). The observed behaviors are editable curve handles, conversion between straight/curved boundaries, and pairing garment segments directly in 3D with shared seam visibility. ClothCraft now provides independent implementations of those basic interactions; modifier conventions and complete feature parity are not claimed.

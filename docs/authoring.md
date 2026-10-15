@@ -4,6 +4,8 @@ Launch `scripts/start-atelier.ps1`. All pieces share **one metric 2D board**, be
 
 ## Draft cloth
 
+For numeric primitives, mirrors, booleans/holes and internal sewing curves with ruffles, see [drafting tools](drafting-tools.md). All use the same board, selections and undo history.
+
 - **Nouveau** starts a blank drawing; the existing garment is replaced only after a valid contour is completed. Cancel the trace to keep it.
 - **Plume**: click for a corner; click and drag to set a Bézier tangent. Continue around the piece, then click its first anchor or **Fermer le contour** / Enter. Backspace removes the last anchor; Escape cancels the trace. The optional magnet snaps to 10 mm.
 - **Rectangle**: drag between opposite corners. Release creates a meshed panel in 2D and 3D.
@@ -11,7 +13,7 @@ Launch `scripts/start-atelier.ps1`. All pieces share **one metric 2D board**, be
 - Drag the interior of a piece to rearrange it on the board. This changes only its 2D layout, never its physical rest shape or 3D placement. Middle/right drag pans the board; the wheel zooms around the pointer; **Tout cadrer** frames all pieces.
 - In **Modifier**, drag the selected piece's gold circular handle to rotate it on the board. **Shift** snaps to 15° increments; Escape cancels the preview and Ctrl+Z undoes the edit. Rotation keeps the piece's center fixed and preserves material coordinates, grain, seams and the complete simulated state. Anchors and Bézier handles remain editable after rotation.
 
-Curves are cubic Béziers with two controls per named edge. They are stored as curves, then subdivided to a 0.25 mm chord-error bound for the constrained Delaunay mesher. Sewing uses that sampled boundary's rest arclength, not the straight chord between its anchors. No holes, internal cuts, automatic smooth-handle coupling or multi-selection yet. Legacy v1 rectangular templates remain readable/simulatable; contour editing targets v2 polygons, including newly drawn rectangles.
+Curves are cubic Béziers with two controls per named edge. They are stored as curves, then subdivided to a 0.25 mm chord-error bound for the constrained Delaunay mesher. Sewing uses that sampled boundary's rest arclength, not the straight chord between its anchors. Boolean cutouts create holes, and internal sewing lines retain material on both sides. Internal cuts, automatic smooth-handle coupling for outer contours and multi-selection remain planned. Legacy v1 rectangular templates remain readable/simulatable; contour editing targets v2 polygons, including newly drawn rectangles.
 
 ## Sew in either view
 
@@ -58,7 +60,7 @@ Reopen with `scripts/start-atelier.ps1 -ProjectPath output/atelier/fitting-proje
 | `src/atelier/edges_3d.rs` | Screen-space edge picking with visibility checks and correspondence overlays |
 | `src/atelier/authoring_ui.rs`, `gizmo.rs` | Inspector, history, mode controls, rigid placement |
 
-Optional `curves`, `layout_2d` and `layout_rotation_degrees` fields extend existing templates; old v1/v2 files still load. Both layout fields are excluded from physical cache signatures and physical-change comparisons. The angle defaults to zero and zero is omitted when serialized, preserving historical cache signatures. JSON uses exact floating-point round trips so near-degenerate Delaunay decisions do not change on reload. Curve intersection validation applies to the sampled contour, not an exact algebraic intersection proof.
+Optional `curves`, `holes`, `lines`, `layout_2d` and `layout_rotation_degrees` fields extend existing templates; old v1/v2 files still load. Empty geometry extensions are omitted when serialized. Both layout fields are excluded from physical cache signatures and physical-change comparisons. The angle defaults to zero and zero is omitted when serialized, preserving historical cache signatures. JSON uses exact floating-point round trips so near-degenerate Delaunay decisions do not change on reload. Curve intersection validation applies to the sampled contour, not an exact algebraic intersection proof.
 
 The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 

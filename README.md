@@ -23,6 +23,8 @@ Compatibility is currently **targeting**, not verified parity. Native Marvelous 
 - One metric 2D board: rectangles, polygon/Bézier drafting, anchor/handle editing, translation and rotation.
 - Linked panel/boundary selection in 2D and 3D; whole-edge sewing, reversal, explicit easing, seam deletion and undo/redo.
 - Colored seam correspondences in both views, including previews before committing a seam.
+- Numeric rectangles, circles/ellipses and arc sectors; independent X/Y mirror copies; union, intersection and subtraction with holes.
+- Editable internal Bézier sewing lines and gathered strips attached with the existing seam model. See [drafting tools and limits](docs/drafting-tools.md).
 - 3D arrangement gizmos and numeric transforms; mouse grabbing during simulation.
 - Constrained Delaunay meshing, material-space rest geometry and per-panel grain direction.
 - Nine indicative fabric presets with mass, thickness, stretch, shear and bending controls. Mechanical values are **estimates**, not calibrated measurements; see [fabric sources](docs/fabrics.md).
@@ -52,6 +54,9 @@ The window starts paused. The current UI labels are French:
 | Action | Control |
 |---|---|
 | Draw | **Plume**: click corners, drag for Bézier handles; **Rectangle**: drag opposite corners |
+| Add a primitive | **Formes**: dimensions in mm, circle/ellipse or closed arc sector |
+| Mirror / boolean | Select a piece → **Symétrie et découpes**; overlap A/B on the 2D board |
+| Add a ruffle | **Ligne intérieure** → click/drag inside the selected piece → Enter → **Créer et coudre un volant** |
 | Edit / rotate in 2D | **Modifier**: select a piece, edit points or drag its round rotation handle |
 | Sew | **Coudre**: choose edge A and B in either view, inspect direction, then validate |
 | Move / rotate in 3D | **Déplacer 3D (G)** / **Tourner 3D (R)**; Shift snaps to 15° |

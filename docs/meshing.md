@@ -24,13 +24,15 @@ La transformation constante utilisée est `q = (dot(p,a)/(h*r), dot(p,b)/h)`, o�
 
 ## Pipeline
 
-1. Valider un contour simple orienté positivement, sans trous, avec un nom unique par segment.
+1. Valider le contour extérieur simple positif et les noms uniques ; valider aussi les trous horaires et les lignes intérieures disjointes s’ils sont présents.
 2. Échantillonner les bords selon leur longueur métrique et les imposer comme contraintes.
 3. Raffiner la Delaunay par insertion de points de Steiner avec une borne d'aire et un angle cible. Les arêtes de contour peuvent être subdivisées.
 4. Vérifier l'aire réellement obtenue. Si nécessaire, ajouter les centres des faces encore trop grandes et recommencer, au plus huit passes, avec un budget global de sommets.
 5. Retirer les faces extérieures, reconstruire les chaînes de bords ordonnées et compiler masses, éléments et coutures depuis les UV.
 
 Une limite de budget produit une erreur explicite. Elle ne renvoie pas silencieusement un maillage incomplet. Les caches d'essayage contiennent une signature du template, des UV et des triangles : une modification de maillage invalide les positions sauvegardées.
+
+Avec `holes`/`lines`, un cadre temporaire distant de deux unités métriques sépare l’enveloppe convexe des contraintes du tissu : cela évite les angles quasi nuls dus aux arrondis. Après raffinement, les faces hors matière et sommets du cadre sont retirés. Une ligne intérieure garde du tissu des deux côtés et produit une chaîne nommée utilisable par le modèle de couture. Le calcul peut raffiner inutilement les vides et épuiser le budget ; il échoue explicitement. Les entrées historiques sans trous/lignes gardent le chemin précédent. Voir [drafting-tools.md](drafting-tools.md) et `tests/drafting_tools.rs`.
 
 Le champ historique `subdivisions` reste accepté (0..4). Sans réglage explicite, il correspond désormais à `h = 0,1 / 2^subdivisions` m. Les nouveaux exemples enregistrent `meshing` explicitement. Le format de template reste v2, encore non publié ; le format v1 rectangulaire ne change pas.
 

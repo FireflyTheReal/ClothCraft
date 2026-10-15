@@ -14,6 +14,7 @@ pub(super) enum Tool {
     Place,
     Draw,
     Rectangle,
+    InternalLine,
     Sew,
 }
 #[derive(Default)]
@@ -36,6 +37,7 @@ pub(super) struct AuthoringUi {
     pub fabric_draft: Option<super::fabrics_ui::FabricDraft>,
     pub rotate: bool,
     pub drag: Option<super::gizmo::Drag>,
+    pub drafting: super::drafting_ui::DraftingUi,
 }
 
 pub(super) fn segment_distance(p: egui::Pos2, a: egui::Pos2, b: egui::Pos2) -> f32 {
@@ -69,6 +71,15 @@ impl Atelier {
         self.authoring.fabric_draft = None;
         self.authoring.drag = None;
         self.authoring.ends.clear();
+        self.authoring.edge = self.authoring.edge.take().filter(|edge| {
+            self.scene.garment.panels.iter().any(|p| {
+                p.id == edge.panel
+                    && edge
+                        .edge
+                        .as_ref()
+                        .is_some_and(|name| p.boundaries.contains_key(name))
+            })
+        });
         if let Some(id) = edit.selected {
             self.authoring.selected = Some(id);
         }
@@ -179,6 +190,8 @@ impl Atelier {
                     false,
                     "Choisir deux bords dans les vues 2D ou 3D",
                 ),
+                (Tool::InternalLine, "Ligne intérieure", false,
+                    "Sur le panneau actif : cliquer / glisser pour une ligne cousable, Entrée pour terminer"),
                 (
                     Tool::Place,
                     "Déplacer 3D",
@@ -210,6 +223,8 @@ impl Atelier {
                 }
             }
             ui.separator();
+            self.primitive_menu(ui);
+            ui.separator();
             let undo = ui.add_enabled(
                 self.authoring.history.can_undo(),
                 egui::Button::new("Annuler"),
@@ -234,6 +249,14 @@ impl Atelier {
         }
         self.cancel_preview();
         self.authoring.board.clear_preview();
+        self.authoring.draft.clear();
+        self.authoring.tangents.clear();
+        self.authoring.replace = false;
+        self.authoring.drafting.line_panel = if tool == Tool::InternalLine {
+            self.authoring.selected.clone()
+        } else {
+            None
+        };
         self.authoring.tool = tool;
         self.authoring.rotate = rotate;
         self.grab = None;
@@ -270,7 +293,9 @@ impl Atelier {
             }
         }
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Z)) {
-            if self.authoring.tool == Tool::Draw && !self.authoring.draft.is_empty() {
+            if matches!(self.authoring.tool, Tool::Draw | Tool::InternalLine)
+                && !self.authoring.draft.is_empty()
+            {
                 self.authoring.draft.pop();
                 self.authoring.tangents.pop();
             } else {
@@ -287,6 +312,7 @@ impl Atelier {
             ui.colored_label(Color32::LIGHT_RED, error);
         }
         self.edge_properties(ui);
+        self.internal_line_properties(ui);
         ui.strong("Panneau actif");
         let Some(panel) = self
             .project
@@ -306,6 +332,7 @@ impl Atelier {
             panel.pattern.height * 1000.
         ));
         self.fabric_properties(ui, &panel);
+        self.drafting_properties(ui, &panel);
         ui.horizontal(|ui| {
             let duplicate = ui.button("Dupliquer");
             self.smoke_target("duplicate", duplicate.rect.center());

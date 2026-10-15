@@ -11,8 +11,45 @@ use crate::{
     model::{Pattern, State},
 };
 use glam::{DQuat, DVec2, DVec3, EulerRot};
+mod geometry;
+use crate::garment::shapes::{BooleanOp, MirrorAxis, Primitive};
 
 pub enum Command {
+    Primitive {
+        kind: Primitive,
+        size: DVec2,
+        sweep_degrees: f64,
+        origin: DVec2,
+        meshing: MeshingSettings,
+        fabric: String,
+        replace: bool,
+    },
+    Mirror {
+        panel: String,
+        axis: MirrorAxis,
+        copy_side: Option<i8>,
+    },
+    Boolean {
+        a: String,
+        b: String,
+        op: BooleanOp,
+        keep_tool: bool,
+    },
+    InternalLine {
+        panel: String,
+        points: Vec<DVec2>,
+        tangents: Vec<DVec2>,
+    },
+    RemoveLine {
+        panel: String,
+        line: String,
+    },
+    Ruffle {
+        panel: String,
+        line: String,
+        width: f64,
+        ratio: f64,
+    },
     Polygon {
         points: Vec<DVec2>,
         tangents: Vec<DVec2>,
@@ -143,12 +180,8 @@ fn normalize(panel: &mut Panel) {
         .chain(poly.curves.values().flatten())
         .copied()
         .fold(DVec2::splat(f64::NEG_INFINITY), DVec2::max);
-    for p in poly
-        .points
-        .iter_mut()
-        .chain(poly.curves.values_mut().flatten())
-        .chain(&mut panel.pin_points)
-    {
+    poly.translate_material(-lo);
+    for p in &mut panel.pin_points {
         *p -= lo;
     }
     panel.layout_2d =
@@ -171,6 +204,91 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
     let mut template = source.clone();
     let mut selected = None;
     match command {
+        Command::Primitive {
+            kind,
+            size,
+            sweep_degrees,
+            origin,
+            meshing,
+            fabric,
+            replace,
+        } => {
+            let polygon = crate::garment::shapes::primitive(kind, size, sweep_degrees, meshing)?;
+            selected = Some(geometry::add_polygon(
+                &mut template,
+                polygon,
+                origin,
+                fabric,
+                replace,
+            )?);
+        }
+        Command::Mirror {
+            panel,
+            axis,
+            copy_side,
+        } => selected = Some(geometry::mirror(&mut template, &panel, axis, copy_side)?),
+        Command::Boolean {
+            a,
+            b,
+            op,
+            keep_tool,
+        } => selected = Some(geometry::boolean(&mut template, &a, &b, op, keep_tool)?),
+        Command::InternalLine {
+            panel,
+            points,
+            tangents,
+        } => {
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panneau absent")?;
+            let poly = p
+                .polygon
+                .as_mut()
+                .ok_or("Les lignes demandent un panneau v2")?;
+            let id = unused_id("line", poly.paths()?.into_iter().map(|(name, _)| name));
+            poly.lines.push(crate::garment::domain::InternalLine {
+                id,
+                points,
+                tangents,
+            });
+            selected = Some(panel);
+        }
+        Command::RemoveLine { panel, line } => {
+            if template.seams.iter().any(|s| {
+                [&s.a, &s.b]
+                    .iter()
+                    .any(|r| r.panel == panel && r.edge.as_ref() == Some(&line))
+            }) {
+                return Err("Supprimer la couture avant de supprimer sa ligne intérieure".into());
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panneau absent")?;
+            let poly = p.polygon.as_mut().ok_or("Panneau v2 requis")?;
+            if !poly.lines.iter().any(|l| l.id == line) {
+                return Err("Ligne absente".into());
+            }
+            poly.lines.retain(|l| l.id != line);
+            selected = Some(panel);
+        }
+        Command::Ruffle {
+            panel,
+            line,
+            width,
+            ratio,
+        } => {
+            selected = Some(geometry::ruffle(
+                &mut template,
+                &panel,
+                &line,
+                width,
+                ratio,
+            )?)
+        }
         Command::Fabric {
             panel,
             name,
@@ -288,6 +406,8 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                     subdivisions: 0,
                     meshing: Some(meshing),
                     curves,
+                    holes: vec![],
+                    lines: vec![],
                 }),
                 fabric,
                 grain_degrees: 90.,

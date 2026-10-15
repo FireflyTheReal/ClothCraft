@@ -20,7 +20,7 @@ Each row is a contribution-sized track, not a promised release date. Finish one 
 | P2.2 | Truly replaceable solvers | `fitting.rs`, `solver.rs`, `vbd.rs` | One lifecycle/capability contract, two real adapters, shared scene suite; no fake backend selector |
 | P3 | Manufacturing and richer appearance | pattern/gradation and material adapters | Named grading dialect, size rules and reversible grades; USDZ packaging; optional legacy caches and SBSAR baking |
 
-The format priorities below remain product priorities: a **critical** animation format is still blocked by an animation/data-model milestone. Format names alone are not deliverables. Friction, layered cloth, calibrated materials, symmetry, holes and internal lines remain substantial research/engineering tasks.
+The format priorities below remain product priorities: a **critical** animation format is still blocked by an animation/data-model milestone. Format names alone are not deliverables. Friction, layered cloth, calibrated materials and linked symmetry remain substantial tasks. Basic independent mirrors, holes and internal sewing now exist; see [their limits](docs/drafting-tools.md).
 
 ## 1. Draw → sew → arrange → simulate
 
@@ -31,7 +31,10 @@ The format priorities below remain product priorities: a **critical** animation 
 - [x] Direct 3D move/rotate tools (G/R), edge-on rotation rings, 15° snapping and 2D board rotation independent of physical rest/grain.
 - [x] Save editable templates/projects and reopen through the CLI; preserve v1/v2 data compatibility.
 - [x] Edit existing anchors and Bézier handles; pan/zoom, snapping and saved 2D layouts.
-- [ ] Exact dimension entry, holes, internal lines, multi-selection and symmetry.
+- [x] Numeric primitives (rectangle, circle/ellipse, arc sector), independent X/Y mirrors and ±X/±Y copies.
+- [x] Union/intersection/subtraction with holes and islands; internal Bézier sewing paths and eased ruffle strips (CPU validation; native/GPU acceptance still pending).
+- [ ] Numeric anchor movement, linked symmetry, multi-selection, line offsets and dedicated hole point editing.
+- [ ] Import verified reusable patterns: FreeSewing Teagan/Titan/Jett are linked from the Web menu; SVG geometry and semantic sewing adapters remain planned ([investigation](docs/drafting-tools.md#web-pattern-library-investigation)).
 - [ ] Partial/free sewing, notch editing, 1:N / M:N relationships and clearer 3D direction preview.
 - [ ] Arrangement points, body-aware placement and useful preflight intersection feedback.
 - [ ] File picker, multi-document projects, portable asset bundles and recovery/autosave.
@@ -72,7 +75,7 @@ Every adapter must declare supported entities, units, axes/handedness, topology 
 
 ## 3. Concrete authoring backlog from the manual study
 
-The nine articles reviewed in the [dated manual ledger](docs/manual-study.md#authoring-backlog-review-2026-10-14) inform the tasks below. **Every task in this table is planned, not implemented.** Existing support for whole-edge seams, curves, numeric 3D placement and static pins in the model is not the complete editor workflow described here. These are independent behavior specifications, not a plan to copy proprietary code or file formats.
+The nine articles reviewed in the [dated manual ledger](docs/manual-study.md#authoring-backlog-review-2026-10-14) inform the tasks below. These are target acceptance criteria, not completed milestones. DRAW-01 has numeric primitive dimensions; DRAW-03 has independent mirrors; DRAW-04 has holes and internal sewing paths. Their remaining scopes still need work. These are independent behavior specifications, not a plan to copy proprietary code or file formats.
 
 | ID / milestone | Small deliverable | Dependencies / starting point | Done when |
 |---|---|---|---|

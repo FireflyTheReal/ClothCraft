@@ -1,4 +1,4 @@
-//! Simple contours with named straight/cubic boundaries. No holes yet.
+//! Named material contours, holes and internal sewing paths.
 use super::meshing::{self, MeshingSettings};
 use crate::model::{Hinge, Material, Mesh, Triangle};
 use glam::{DMat2, DVec2};
@@ -18,6 +18,10 @@ pub struct PolygonPattern {
     /// Two cubic control points per named edge; absent entries are straight.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub curves: BTreeMap<String, [DVec2; 2]>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub holes: Vec<super::domain::Hole>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lines: Vec<super::domain::InternalLine>,
 }
 pub struct MeshedPolygon {
     pub mesh: Mesh,
@@ -56,13 +60,13 @@ impl PolygonPattern {
     pub fn build(&self, m: &Material) -> Result<MeshedPolygon, String> {
         m.validate()?;
         let n = self.points.len();
-        if !(3..=64).contains(&n)
+        if !(3..=4096).contains(&n)
             || self.edges.len() != n
             || self.subdivisions > 4
             || self.points.iter().any(|p| !p.is_finite())
         {
             return Err(
-                "Polygon requires 3..64 points, one edge name per point and 0..4 subdivisions"
+                "Polygon requires 3..4096 points, one edge name per point and 0..4 subdivisions"
                     .into(),
             );
         }
@@ -92,7 +96,7 @@ impl PolygonPattern {
             let samples = self.edge_points(i)?;
             for (j, p) in samples[..samples.len() - 1].iter().enumerate() {
                 points.push(*p);
-                segments.push(format!("part_{i}_{j}"));
+                segments.push(format!("@part_{i}_{j}"));
                 owners.push(i);
             }
             if points.len() > 4096 {
@@ -119,12 +123,17 @@ impl PolygonPattern {
         if area <= 1e-8 {
             return Err("Polygon must have positive signed area in (u,v)".into());
         }
+        super::domain::validate(self, &points)?;
         let settings = self.meshing_settings();
         let meshing::TriangulatedContour {
             uv,
             faces,
             boundaries: parts,
-        } = meshing::triangulate(&points, &segments, &settings)?;
+        } = if self.holes.is_empty() && self.lines.is_empty() {
+            meshing::triangulate(&points, &segments, &settings)?
+        } else {
+            meshing::triangulate_domain(&points, &segments, &self.holes, &self.lines, &settings)?
+        };
         let mut boundaries = BTreeMap::<String, Vec<usize>>::new();
         for (part, owner) in segments.iter().zip(owners) {
             let chain = boundaries.entry(self.edges[owner].clone()).or_default();
@@ -137,6 +146,14 @@ impl PolygonPattern {
                 }
                 chain.extend_from_slice(&ids[1..]);
             }
+        }
+        for hole in &self.holes {
+            for name in &hole.edges {
+                boundaries.insert(name.clone(), parts[name].clone());
+            }
+        }
+        for line in &self.lines {
+            boundaries.insert(line.id.clone(), parts[&line.id].clone());
         }
         let count = uv.len();
         let mut mesh = Mesh {

@@ -37,19 +37,32 @@ pub fn pattern_svg(template: &GarmentTemplate) -> String {
         let (w, h) = (panel.pattern.width, panel.pattern.height);
         let scale = (290.0 / w).min(280.0 / h);
         let pos = |p: DVec2| origin + p * scale;
+        let paths = panel
+            .polygon
+            .as_ref()
+            .and_then(|p| p.paths().ok())
+            .unwrap_or_default();
         write!(out,"<text x=\"{}\" y=\"{}\">{} · {}</text><rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"#233d47\" stroke=\"#75c8d1\"/>",origin.x,origin.y-15.0,xml(&panel.id),xml(&panel.name),origin.x,origin.y,w*scale,h*scale).unwrap();
         if let Some(polygon) = &panel.polygon {
             // Cover the legacy rectangular outline before drawing the actual contour.
-            write!(out,"<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"#141c26\"/><polygon points=\"",origin.x-1.0,origin.y-1.0,w*scale+2.0,h*scale+2.0).unwrap();
-            for k in 0..polygon.points.len() {
-                if let Ok(points) = polygon.edge_points(k) {
-                    for p in &points[..points.len() - 1] {
-                        let p = pos(*p);
-                        write!(out, "{},{} ", p.x, p.y).unwrap();
-                    }
+            write!(out,"<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"#141c26\"/><path fill-rule=\"evenodd\" d=\"",origin.x-1.0,origin.y-1.0,w*scale+2.0,h*scale+2.0).unwrap();
+            let outer = polygon.outer_points().unwrap_or_default();
+            for contour in std::iter::once(&outer).chain(polygon.holes.iter().map(|h| &h.points)) {
+                for (k, p) in contour.iter().enumerate() {
+                    let p = pos(*p);
+                    write!(out, "{} {} {} ", if k == 0 { "M" } else { "L" }, p.x, p.y).unwrap();
                 }
+                out.push_str("Z ");
             }
             out.push_str("\" fill=\"#233d47\" stroke=\"#75c8d1\"/>");
+            for line in &polygon.lines {
+                out.push_str("<polyline points=\"");
+                for p in line.samples().unwrap_or_default() {
+                    let p = pos(p);
+                    write!(out, "{},{} ", p.x, p.y).unwrap();
+                }
+                write!(out,"\" fill=\"none\" stroke=\"#eab1de\" stroke-dasharray=\"5 3\"><title>{}</title></polyline>",xml(&line.id)).unwrap();
+            }
         }
         let centre = pos(DVec2::new(w, h) * 0.5);
         let angle = panel.grain_degrees.to_radians();
@@ -68,13 +81,10 @@ pub fn pattern_svg(template: &GarmentTemplate) -> String {
                 }
                 let edge = |t: f64| {
                     let s = reference.range[0] + t * (reference.range[1] - reference.range[0]);
-                    if let (Some(polygon), Some(name)) = (&panel.polygon, &reference.edge)
-                        && let Some(i) = polygon.edges.iter().position(|e| e == name)
+                    if let Some(name) = &reference.edge
+                        && let Some((_, points)) = paths.iter().find(|(n, _)| n == name)
                     {
-                        return pos(super::curves::arclength_point(
-                            &polygon.edge_points(i).unwrap_or_default(),
-                            s,
-                        ));
+                        return pos(super::curves::arclength_point(points, s));
                     }
                     pos(edge_point(w, h, reference.side, s))
                 };
@@ -157,17 +167,21 @@ pub fn grain_guides_obj(
         let w = panel.pattern.width;
         let h = panel.pattern.height;
         let center = DVec2::new(w, h) * 0.5;
-        let contour = panel.polygon.as_ref().map_or_else(
+        let contours = panel.polygon.as_ref().map_or_else(
             || {
-                vec![
+                Ok(vec![vec![
                     DVec2::ZERO,
                     DVec2::new(w, 0.0),
                     DVec2::new(w, h),
                     DVec2::new(0.0, h),
-                ]
+                ]])
             },
-            |p| p.points.clone(),
-        );
+            |p| -> Result<Vec<Vec<DVec2>>, String> {
+                let mut contours = vec![p.outer_points()?];
+                contours.extend(p.holes.iter().map(|h| h.points.clone()));
+                Ok(contours)
+            },
+        )?;
         let angle = panel.grain_degrees.to_radians();
         for (name, angle) in [
             ("warp", angle),
@@ -175,17 +189,19 @@ pub fn grain_guides_obj(
         ] {
             let direction = DVec2::new(angle.cos(), angle.sin());
             let mut hits = vec![];
-            for i in 0..contour.len() {
-                let a = contour[i];
-                let edge = contour[(i + 1) % contour.len()] - a;
-                let det = direction.perp_dot(edge);
-                if det.abs() < 1e-12 {
-                    continue;
-                }
-                let t = (a - center).perp_dot(edge) / det;
-                let u = (a - center).perp_dot(direction) / det;
-                if (-1e-10..=1.0 + 1e-10).contains(&u) {
-                    hits.push(t);
+            for contour in &contours {
+                for i in 0..contour.len() {
+                    let a = contour[i];
+                    let edge = contour[(i + 1) % contour.len()] - a;
+                    let det = direction.perp_dot(edge);
+                    if det.abs() < 1e-12 {
+                        continue;
+                    }
+                    let t = (a - center).perp_dot(edge) / det;
+                    let u = (a - center).perp_dot(direction) / det;
+                    if (-1e-10..=1.0 + 1e-10).contains(&u) {
+                        hits.push(t);
+                    }
                 }
             }
             hits.sort_by(f64::total_cmp);

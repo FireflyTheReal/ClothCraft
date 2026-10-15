@@ -1,8 +1,10 @@
 # Reprise du dépôt
 
+**Dernière passe du 15 octobre : patronage CPU.** Formes numériques, miroirs X/Y et copies ±X/±Y indépendantes, booléens avec trous/îlots, lignes intérieures Bézier cousables en 2D/3D et volant avec embu. Lire [drafting-tools.md](drafting-tools.md) pour l’UI, les champs optionnels `holes`/`lines`, les tests et les limites. Le solveur est inchangé ; les lignes sont contraintes dans la CDT et utilisent les coutures existantes. Les booléens refusent de perdre des références ; les miroirs migrent les orientations de couture. Cette passe reste CPU et compilation, sans lancement de l’atelier ni test GPU. Le menu Web référence Teagan/Titan/Jett ; l’import FreeSewing/SVG reste à faire. Les paragraphes suivants sont historiques.
+
 Soumission Remade : [PR #49](https://github.com/replicraft/remade/pull/49), ouverte le 15 octobre 2026 depuis `erythrofr/remade:catalog/clothcraft`. Le catalogue local est valide (`uv run --locked --project scripts python scripts/validate_catalog.py`) ; la publication dans l'annuaire reste soumise à la revue et au merge des mainteneurs. Le clone de travail est ignoré sous `output/remade-submission/` ; seules la fiche ClothCraft et la suppression de la demande Marvelous correspondante sont proposées. La licence MIT est publiée dans ClothCraft depuis `a29b85f`.
 
-État au 15 octobre 2026. Cette passe concerne la licence et la soumission documentaire ; aucun GPU nécessaire. Pour une nouvelle charge GPU, suivre l'autorisation de la demande courante. Lire [AGENTS.md](../AGENTS.md), [architecture](architecture.md), [OGC/VBD](ogc.md), puis [maillage](meshing.md).
+Pour une nouvelle charge GPU, suivre l'autorisation de la demande courante. Lire [AGENTS.md](../AGENTS.md), [architecture](architecture.md), [OGC/VBD](ogc.md), puis [maillage](meshing.md). Les notes de licence et de soumission ci-dessous datent de la passe précédente du 15 octobre.
 
 **Passe du 15 octobre : préparation Remade et licence MIT.** Le propriétaire a choisi explicitement MIT. `LICENSE` et les métadonnées Cargo portent cette licence ; README, accueil IA, provenance de l'icône et guide de contribution anglais sont cohérents. Les assets MakeHuman restent CC0. Le README précise la cible comportementale Marvelous Designer et l'absence de compatibilité native/parité vérifiée ; les formats et solveurs disponibles sont inchangés. La soumission Remade vise `status: alpha`, `compatibility: targeting`, catégorie `creative`, Rust, Windows uniquement. Ne pas confondre PR proposée et inscription acceptée au catalogue.
 
@@ -26,7 +28,7 @@ La prédiction inertielle conservatrice manquait au GPU : un rectangle libre tom
 
 **Matières :** `src/fabrics.rs` fournit neuf presets et la conversion extension sous 5 N / 5 cm ↔ coefficient de membrane. `authoring::Command::Fabric` assure l’affectation transactionnelle ; `atelier/fabrics_ui.rs` expose masse surfacique, masse du vêtement, stretch chaîne/trame, épaisseur et rigidités. Modifier une seule pièce détache le matériau partagé. Les valeurs mécaniques sont estimées ; seules les masses/épaisseurs référencées proviennent d’échantillons ou fiches fournisseur. Lire [les sources et limites](fabrics.md), puis [la recherche performance](performance-research.md). AVBD et les modèles de Fabric-101 ne sont pas implémentés.
 
-Prochaines tâches d’édition : dimensions numériques, trous/lignes internes, coutures partielles, multisélection, sauvegarde portable et retours sur les intersections initiales. Voir les limites et gestes dans [authoring.md](authoring.md).
+Prochaines tâches d’édition : déplacement numérique des points, édition dédiée des trous, offsets, coutures partielles, multisélection, sauvegarde portable et retours sur les intersections initiales. Les primitives numériques, trous booléens et lignes internes sont disponibles depuis la passe de patronage décrite en tête de ce document. Voir les limites et gestes dans [authoring.md](authoring.md).
 
 ## Passe Turbo
 

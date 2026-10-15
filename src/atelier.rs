@@ -14,6 +14,8 @@ mod authoring_smoke;
 mod authoring_ui;
 #[path = "atelier/board.rs"]
 mod board;
+#[path = "atelier/drafting_ui.rs"]
+mod drafting_ui;
 #[path = "atelier/edges_3d.rs"]
 mod edges_3d;
 #[path = "atelier/fabrics_ui.rs"]
@@ -258,6 +260,11 @@ impl Atelier {
                 self.authoring.drag = None;
                 self.authoring.ends.clear();
                 self.authoring.selected = p.template.panels.first().map(|p| p.id.clone());
+                self.authoring.drafting.line_panel = if self.authoring.tool == Tool::InternalLine {
+                    self.authoring.selected.clone()
+                } else {
+                    None
+                };
                 self.scene = scene;
                 self.project = p;
                 self.generation += 1;
@@ -479,6 +486,7 @@ impl eframe::App for Atelier {
                         ui.close();
                     }
                 });
+                self.online_patterns(ui);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     ui.small(format!("{} pièces · {} coutures", self.project.template.panels.len(), self.project.template.seams.len()));
                 });

@@ -134,6 +134,19 @@ pub fn triangulate(
     names: &[String],
     settings: &MeshingSettings,
 ) -> Result<TriangulatedContour, String> {
+    triangulate_domain(points, names, &[], &[], settings)
+}
+
+/// Internal constraints do not delimit material. With holes/lines, refine the
+/// hull then select faces by the validated material domain, never by crossing
+/// an arbitrary constraint. Boundary-only legacy inputs keep the old path.
+pub fn triangulate_domain(
+    points: &[DVec2],
+    names: &[String],
+    holes: &[super::domain::Hole],
+    lines: &[super::domain::InternalLine],
+    settings: &MeshingSettings,
+) -> Result<TriangulatedContour, String> {
     settings.validate()?;
     let metric: Vec<_> = points.iter().map(|p| settings.to_metric(*p)).collect();
     let mut cdt = ConstrainedDelaunayTriangulation::<Point2<f64>>::new();
@@ -156,23 +169,98 @@ pub fn triangulate(
     for i in 0..handles.len() {
         cdt.add_constraint(handles[i], handles[(i + 1) % handles.len()]);
     }
+    let mut paths: Vec<(String, Vec<DVec2>)> = vec![];
+    for hole in holes {
+        for (i, name) in hole.edges.iter().enumerate() {
+            paths.push((
+                name.clone(),
+                vec![hole.points[i], hole.points[(i + 1) % hole.points.len()]],
+            ));
+        }
+    }
+    for line in lines {
+        paths.push((line.id.clone(), line.samples()?));
+    }
+    for (_, path) in &paths {
+        for pair in path.windows(2) {
+            let a = settings.to_metric(pair[0]);
+            let b = settings.to_metric(pair[1]);
+            let count = a.distance(b).ceil().max(1.) as usize;
+            if cdt.num_vertices().saturating_add(count.saturating_add(1)) > settings.max_vertices {
+                return Err("Internal constraints exceed meshing vertex budget".into());
+            }
+            let mut previous = None;
+            for k in 0..=count {
+                // Keep shared endpoints bit-identical; rounded lerp(1) can
+                // otherwise create a near-duplicate constraint vertex.
+                let q = if k == count {
+                    b
+                } else {
+                    a.lerp(b, k as f64 / count as f64)
+                };
+                let next = cdt
+                    .insert(Point2::new(q.x, q.y))
+                    .map_err(|e| e.to_string())?;
+                if let Some(prev) = previous {
+                    if prev == next || !cdt.can_add_constraint(prev, next) {
+                        return Err("Intersecting or degenerate material constraints".into());
+                    }
+                    cdt.add_constraint(prev, next);
+                }
+                previous = Some(next);
+            }
+        }
+    }
+    let legacy = holes.is_empty() && lines.is_empty();
+    if !legacy {
+        // The material boundary must not nearly coincide with the hull during
+        // full-domain refinement. Rotated/rounded collinear samples otherwise
+        // form vanishing angles between hull and constraints and cause runaway
+        // encroachment. An external frame separates them without moving cloth.
+        if cdt.num_vertices().saturating_add(4) > settings.max_vertices {
+            return Err("Domain frame exceeds meshing vertex budget".into());
+        }
+        let lo = metric
+            .iter()
+            .copied()
+            .fold(DVec2::splat(f64::INFINITY), DVec2::min)
+            - DVec2::splat(2.);
+        let hi = metric
+            .iter()
+            .copied()
+            .fold(DVec2::splat(f64::NEG_INFINITY), DVec2::max)
+            + DVec2::splat(2.);
+        for p in [lo, DVec2::new(hi.x, lo.y), hi, DVec2::new(lo.x, hi.y)] {
+            cdt.insert(Point2::new(p.x, p.y))
+                .map_err(|e| e.to_string())?;
+        }
+    }
+    let material_face = |p: [Point2<f64>; 3]| {
+        if legacy {
+            return true;
+        }
+        let q = settings.material_point(DVec2::new(
+            (p[0].x + p[1].x + p[2].x) / 3.,
+            (p[0].y + p[1].y + p[2].y) / 3.,
+        ));
+        super::domain::inside(q, points)
+            && !holes.iter().any(|h| super::domain::inside(q, &h.points))
+    };
     let mut excluded = BTreeSet::new();
     let mut complete = false;
     for _ in 0..8 {
-        let result = cdt.refine(
-            RefinementParameters::new()
-                .exclude_outer_faces(true)
-                .with_max_allowed_area(3.0_f64.sqrt() / 4.0)
-                .with_angle_limit(AngleLimit::from_deg(settings.min_angle_degrees))
-                .with_max_additional_vertices(
-                    settings.max_vertices.saturating_sub(cdt.num_vertices()),
-                ),
-        );
+        let parameters = RefinementParameters::new()
+            .exclude_outer_faces(legacy)
+            .with_max_allowed_area(3.0_f64.sqrt() / 4.0)
+            .with_angle_limit(AngleLimit::from_deg(settings.min_angle_degrees))
+            .with_max_additional_vertices(settings.max_vertices.saturating_sub(cdt.num_vertices()));
+        let result = cdt.refine(parameters);
         if !result.refinement_complete {
-            return Err(
-                "Delaunay refinement exhausted vertex budget; increase target size or budget"
-                    .into(),
-            );
+            return Err(format!(
+                "Delaunay refinement incomplete at {} / {} vertices; increase target size or budget",
+                cdt.num_vertices(),
+                settings.max_vertices
+            ));
         }
         excluded = result.excluded_faces.iter().map(|f| f.index()).collect();
         // A refinement pass can leave newly formed triangles over the requested
@@ -180,7 +268,9 @@ pub fn triangulate(
         let oversized: Vec<_> = cdt
             .inner_faces()
             .filter(|f| {
-                !excluded.contains(&f.index()) && f.area() > 3.0_f64.sqrt() / 4.0 * (1.0 + 1e-10)
+                !excluded.contains(&f.index())
+                    && material_face(f.vertices().map(|v| v.position()))
+                    && f.area() > 3.0_f64.sqrt() / 4.0 * (1.0 + 1e-10)
             })
             .map(|f| {
                 let p = f.vertices().map(|v| v.position());
@@ -206,7 +296,9 @@ pub fn triangulate(
     }
     let raw_faces: Vec<_> = cdt
         .inner_faces()
-        .filter(|f| !excluded.contains(&f.index()))
+        .filter(|f| {
+            !excluded.contains(&f.index()) && material_face(f.vertices().map(|v| v.position()))
+        })
         .map(|f| f.vertices().map(|v| v.index()))
         .collect();
     let used: BTreeSet<_> = raw_faces.iter().flatten().copied().collect();
@@ -241,6 +333,35 @@ pub fn triangulate(
             return Err("Missing refined contour edge".into());
         }
         boundaries.insert(names[i].clone(), edge.into_iter().map(|(_, j)| j).collect());
+    }
+    for (name, path) in paths {
+        let mut chain = vec![];
+        for pair in path.windows(2) {
+            let (a, d) = (pair[0], pair[1] - pair[0]);
+            let mut edge: Vec<_> = uv
+                .iter()
+                .enumerate()
+                .filter_map(|(i, p)| {
+                    let t = (*p - a).dot(d) / d.length_squared();
+                    ((-1e-9..=1. + 1e-9).contains(&t) && (*p - a - t * d).length() < 1e-9)
+                        .then_some((t, i))
+                })
+                .collect();
+            edge.sort_by(|a, b| a.0.total_cmp(&b.0));
+            if edge.len() < 2 {
+                return Err("Missing internal constraint segment".into());
+            }
+            let ids: Vec<_> = edge.into_iter().map(|(_, i)| i).collect();
+            if chain.is_empty() {
+                chain.extend(ids);
+            } else {
+                if chain.last() != ids.first() {
+                    return Err("Disconnected internal constraint".into());
+                }
+                chain.extend_from_slice(&ids[1..]);
+            }
+        }
+        boundaries.insert(name, chain);
     }
     Ok(TriangulatedContour {
         uv,

@@ -91,6 +91,9 @@ enum Part {
     Body,
     Anchor(usize),
     Edge(usize),
+    Path(String),
+    LineAnchor(usize, usize),
+    LineHandle(usize, usize),
     Handle(usize, usize),
     Rotation,
 }
@@ -199,6 +202,25 @@ impl Atelier {
             };
             if self.authoring.tool == Tool::Edit && self.authoring.selected.as_ref() == Some(&p.id)
             {
+                for (l, line) in poly.lines.iter().enumerate() {
+                    if self
+                        .authoring
+                        .edge
+                        .as_ref()
+                        .is_some_and(|e| e.panel == p.id && e.edge.as_ref() == Some(&line.id))
+                    {
+                        for (k, uv) in line.points.iter().enumerate() {
+                            for (at, part) in [
+                                (*uv, Part::LineAnchor(l, k)),
+                                (*uv + line.tangents[k], Part::LineHandle(l, k)),
+                            ] {
+                                if point(at).distance(pos) < 8. {
+                                    return Some(Hit { index: i, part });
+                                }
+                            }
+                        }
+                    }
+                }
                 for (k, uv) in poly.points.iter().enumerate() {
                     if point(*uv).distance(pos) < 8. {
                         return Some(Hit {
@@ -246,11 +268,34 @@ impl Atelier {
                     authoring::rotate_2d(self.authoring.board.world(rect, pos) - origin, -angle),
                     &contour,
                 )
+                && !poly.holes.iter().any(|h| {
+                    inside(
+                        authoring::rotate_2d(
+                            self.authoring.board.world(rect, pos) - origin,
+                            -angle,
+                        ),
+                        &h.points,
+                    )
+                })
             {
                 body = Some(Hit {
                     index: i,
                     part: Part::Body,
                 });
+            }
+            if let Ok(paths) = poly.paths() {
+                for (name, points) in paths.into_iter().skip(poly.edges.len()) {
+                    for pair in points.windows(2) {
+                        let d = segment_distance(pos, point(pair[0]), point(pair[1]));
+                        if d < best {
+                            best = d;
+                            edge = Some(Hit {
+                                index: i,
+                                part: Part::Path(name.clone()),
+                            });
+                        }
+                    }
+                }
             }
         }
         edge.or(body)
@@ -356,14 +401,26 @@ impl Atelier {
         });
         ui.horizontal(|ui| {
             ui.checkbox(&mut self.authoring.board.snap, "Aimant 10 mm");
-            if matches!(self.authoring.tool, Tool::Draw | Tool::Rectangle) {
+            if matches!(
+                self.authoring.tool,
+                Tool::Draw | Tool::Rectangle | Tool::InternalLine
+            ) {
+                let internal = self.authoring.tool == Tool::InternalLine;
                 let create = ui.add_enabled(
-                    self.authoring.draft.len() >= 3,
-                    egui::Button::new("Fermer le contour"),
+                    self.authoring.draft.len() >= if internal { 2 } else { 3 },
+                    egui::Button::new(if internal {
+                        "Terminer la ligne"
+                    } else {
+                        "Fermer le contour"
+                    }),
                 );
                 self.smoke_target("create", create.rect.center());
                 if create.clicked() {
-                    self.create_polygon();
+                    if internal {
+                        self.finish_internal_line();
+                    } else {
+                        self.create_polygon();
+                    }
                 }
                 if ui.small_button("Annuler tracé").clicked() {
                     self.authoring.draft.clear();
@@ -383,6 +440,7 @@ impl Atelier {
                 "Plume : cliquer = coin · cliquer-glisser = Bézier · premier point = fermer"
             }
             Tool::Rectangle => "Rectangle : glisser entre deux coins opposés",
+            Tool::InternalLine => "Dans le panneau actif : cliquer / glisser = ligne / courbe · Entrée = terminer · rester à l’intérieur",
             Tool::Sew => "Choisir deux bords en 2D ou 3D, puis créer la couture →",
             Tool::Edit => {
                 "Poignée ronde : tourner en 2D · intérieur : déplacer · Maj : angles de 15°"
@@ -425,7 +483,7 @@ impl Atelier {
                 .board
                 .snapped(self.authoring.board.world(rect, start));
             match self.authoring.tool {
-                Tool::Draw => {
+                Tool::Draw | Tool::InternalLine => {
                     if self.authoring.draft.len() < 64 {
                         let k = self.authoring.draft.len();
                         self.authoring.draft.push(p);
@@ -461,7 +519,10 @@ impl Atelier {
                                 start: self.board_origin(hit.index),
                                 pointer: p,
                             }),
-                            Part::Anchor(_) | Part::Handle(_, _) => Some(Drag::Shape {
+                            Part::Anchor(_)
+                            | Part::Handle(_, _)
+                            | Part::LineAnchor(_, _)
+                            | Part::LineHandle(_, _) => Some(Drag::Shape {
                                 panel: panel.id.clone(),
                                 polygon: panel.polygon.clone().unwrap(),
                                 part: hit.part,
@@ -543,6 +604,13 @@ impl Atelier {
                             poly.curves.get_mut(&poly.edges[k]).unwrap()[j] =
                                 authoring::rotate_2d(p - *origin, -*angle)
                         }
+                        Part::LineAnchor(l, k) => {
+                            poly.lines[l].points[k] += authoring::rotate_2d(p - *pointer, -*angle)
+                        }
+                        Part::LineHandle(l, k) => {
+                            poly.lines[l].tangents[k] =
+                                authoring::rotate_2d(p - *origin, -*angle) - poly.lines[l].points[k]
+                        }
                         _ => {}
                     }
                     self.authoring.board.shape = Some((panel.clone(), poly));
@@ -565,7 +633,9 @@ impl Atelier {
                     }
                 }
                 Some(Drag::Rectangle(_)) => {
-                    if self.authoring.draft[0].distance(self.authoring.draft[2]) > 0.02 {
+                    if self.authoring.draft.len() == 4
+                        && self.authoring.draft[0].distance(self.authoring.draft[2]) > 0.02
+                    {
                         self.create_polygon();
                     }
                 }
@@ -585,8 +655,9 @@ impl Atelier {
         if response.clicked()
             && let Some(pos) = pos
         {
-            if self.authoring.tool == Tool::Draw {
-                let close = self.authoring.draft.len() >= 3
+            if matches!(self.authoring.tool, Tool::Draw | Tool::InternalLine) {
+                let close = self.authoring.tool == Tool::Draw
+                    && self.authoring.draft.len() >= 3
                     && self
                         .authoring
                         .board
@@ -608,11 +679,16 @@ impl Atelier {
             } else if let Some(hit) = self.board_hit(rect, pos) {
                 let panel = &self.project.template.panels[hit.index];
                 let id = panel.id.clone();
-                if let Part::Edge(k) = hit.part {
+                let name = match hit.part {
+                    Part::Edge(k) => Some(panel.polygon.as_ref().unwrap().edges[k].clone()),
+                    Part::Path(name) => Some(name),
+                    _ => None,
+                };
+                if let Some(name) = name {
                     self.select_boundary(BoundaryRef {
                         panel: id,
                         side: Side::Top,
-                        edge: Some(panel.polygon.as_ref().unwrap().edges[k].clone()),
+                        edge: Some(name),
                         range: [0., 1.],
                     });
                 } else {
@@ -633,21 +709,29 @@ impl Atelier {
                 self.authoring.draft.pop();
                 self.authoring.tangents.pop();
             }
-            if self.authoring.tool == Tool::Draw
+            if matches!(self.authoring.tool, Tool::Draw | Tool::InternalLine)
                 && response.ctx.input(|i| i.key_pressed(egui::Key::Enter))
             {
-                self.create_polygon();
+                if self.authoring.tool == Tool::InternalLine {
+                    self.finish_internal_line();
+                } else {
+                    self.create_polygon();
+                }
             }
         }
         if let Some(pos) = response.hover_pos()
             && let Some(hit) = self.board_hit(rect, pos)
-            && let Part::Edge(k) = hit.part
         {
             let panel = &self.project.template.panels[hit.index];
-            self.authoring.hover_edge = Some(BoundaryRef {
+            let name = match hit.part {
+                Part::Edge(k) => Some(panel.polygon.as_ref().unwrap().edges[k].clone()),
+                Part::Path(name) => Some(name),
+                _ => None,
+            };
+            self.authoring.hover_edge = name.map(|name| BoundaryRef {
                 panel: panel.id.clone(),
                 side: Side::Top,
-                edge: Some(panel.polygon.as_ref().unwrap().edges[k].clone()),
+                edge: Some(name),
                 range: [0., 1.],
             });
         }
@@ -738,7 +822,7 @@ impl Atelier {
                 let Some(poly) = self.board_polygon(i) else {
                     continue;
                 };
-                for (k, name) in poly.edges.iter().enumerate() {
+                for (k, (name, points)) in poly.paths().unwrap_or_default().iter().enumerate() {
                     let edge = BoundaryRef {
                         panel: panel.id.clone(),
                         side: Side::Top,
@@ -767,7 +851,7 @@ impl Atelier {
                     } else {
                         Color32::from_rgb(79, 155, 195)
                     };
-                    if let Ok(points) = poly.edge_points(k) {
+                    {
                         painter.add(egui::Shape::line(
                             points.iter().map(|p| point(*p)).collect(),
                             Stroke::new(if active || end.is_some() { 3. } else { 1.5 }, color),
@@ -789,7 +873,7 @@ impl Atelier {
                             }
                         }
                         if k == 0 {
-                            let p = marvelous_cloth::garment::curves::arclength_point(&points, 0.5);
+                            let p = marvelous_cloth::garment::curves::arclength_point(points, 0.5);
                             smoke_targets.push((panel.id.clone(), point(p)));
                         }
                     }
@@ -815,6 +899,25 @@ impl Atelier {
                     }
                 }
                 if selected && self.authoring.tool == Tool::Edit {
+                    for line in &poly.lines {
+                        if self.authoring.edge.as_ref().is_some_and(|e| {
+                            e.panel == panel.id && e.edge.as_ref() == Some(&line.id)
+                        }) {
+                            for (uv, tangent) in line.points.iter().zip(&line.tangents) {
+                                painter.circle_filled(point(*uv), 4., Color32::GOLD);
+                                let h = *uv + *tangent;
+                                painter.line_segment(
+                                    [point(*uv), point(h)],
+                                    Stroke::new(1., Color32::LIGHT_BLUE),
+                                );
+                                painter.circle_stroke(
+                                    point(h),
+                                    6.,
+                                    Stroke::new(1., Color32::LIGHT_BLUE),
+                                );
+                            }
+                        }
+                    }
                     for (k, uv) in poly.points.iter().enumerate() {
                         painter.circle_filled(point(*uv), 4., Color32::WHITE);
                         painter.circle_stroke(point(*uv), 4., Stroke::new(1., Color32::BLACK));

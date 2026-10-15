@@ -76,15 +76,17 @@ L'initialisation adaptative conserve un historique de l'état accepté dans `Vbd
 
 Depuis la [correction du jitter](jitter.md), `ContactSet.contacts` contient aussi les interactions admissibles proches dont l'énergie est encore nulle : la distance d'activation reste `r`, la sélection va jusqu'à `rq`. Coloration et incidence incluent ces termes dormants. `active_contacts` / `VbdMetrics.contacts` indiquent ceux d'énergie positive à la détection ; `contact_terms` donne le coût en termes retenus. Les identifiants canoniques sont triés/dédupliqués avant la coloration. Le GPU travaille dans un repère translaté, rétabli à la lecture ; l'état et les contacts CPU restent mondiaux en f64. Ne pas oublier ce changement de repère pour une nouvelle cible ou un diagnostic GPU.
 
-1. Étendre les contours Bézier aux trous, puis ajouter une métrique de résolution spatiale.
+1. Étendre les trous actuels à segments droits aux contours Bézier, puis ajouter une métrique de résolution spatiale.
 2. Transférer l'état lors d'un remeshing dynamique ; aujourd'hui le remeshing explicite reconstruit l'arrangement initial.
-3. Étendre l’édition actuelle (points/poignées Bézier, coutures 2D/3D, gizmos, historique) aux trous, dimensions et coutures partielles.
+3. Étendre l’édition actuelle (points/poignées Bézier, coutures 2D/3D, gizmos, historique) à l’édition dédiée des points de trous, aux déplacements numériques des points et aux coutures partielles.
 4. Porter la détection OGC VF/EE sur GPU, ajouter friction et traitement dédié des coutures. Une couture n'autorise pas à exclure toutes les collisions entre panneaux cousus. Les bornes OGC préservent un état séparé ; elles ne sont pas une réparation d'intersections initiales.
 5. Faire évoluer les lois constitutives à partir de mesures ou d'homogénéisation. Conserver les coordonnées matérielles et tests d'objectivité. Ne pas inventer une calibration.
 
 L’objectif d’évolution des backends et leur protocole de comparaison sont décrits dans [solver-challenge.md](solver-challenge.md). Aucun trait commun ni ABI de plugin de solveur n’est encore implémenté.
 
 ## Unified authoring board
+
+The CPU drafting extension is documented in [drafting-tools.md](drafting-tools.md). `garment/domain.rs` adds optional hole contours and internal material paths; `shapes.rs` supplies primitives/mirrors/booleans, while `authoring/geometry.rs` migrates semantic references transactionally. Internal paths are CDT constraints with material on both sides, exposed as named chains to the existing seam compiler. No solver-specific drawing or new GPU seam representation is required. `atelier/drafting_ui.rs` only adapts these operations to controls.
 
 The board in `atelier/board.rs` shares selection (`panel` + named edge) with `atelier/edges_3d.rs`. It has one metric camera and persistent per-panel `layout_2d` / `layout_rotation_degrees` metadata. Board positions are `origin + rotation(local_uv)`. Layout does not modify material UV, placement, grain, masses or cache signatures. Shape edits inverse-rotate pointer coordinates into local anchors and controls; moving the local origin compensates both rotated 2D layout and 3D placement so untouched geometry stays fixed. `Command::BoardTransform` commits translation and angle atomically. The zero angle is omitted from serialization to preserve old physical hashes.
 
