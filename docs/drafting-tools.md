@@ -4,12 +4,12 @@ Implemented on 2026-10-15. CPU authoring operations, independent of the physical
 
 ## Use the tools
 
-- **Formes** in the toolbar creates a rectangle, circle/ellipse or arc sector at the board center. Enter dimensions in mm; **Cercle : H = L** makes a circle. An arc is a closed fabric sector, with two radial edges. Its dimensions describe the supporting ellipse. Arcs are cubic approximations, flattened with the existing 0.25 mm tolerance.
-- Select a piece, open **Symétrie et découpes**. **Miroir X/Y** reflects material geometry in place. **−X/+X/−Y/+Y** creates an independent mirrored copy beside it. Axes refer to local 2D coordinates; board rotation is respected. Copies do not copy sewing relationships to other pieces. These are not linked instances.
-- For **Union**, **A − B** or **Intersection**, overlap two pieces on the 2D board. Select A, choose B in the inspector, then the operation. **Conserver B** retains the cutter. Results inherit A's fabric, grain, meshing and 3D frame. Islands become separate panels; cutouts become real holes. Both inputs must have no seams, pins or internal lines: edits never silently discard those references. Empty/invalid results are rejected. Curves become sampled straight boundaries with new names.
-- Select a piece, choose **Ligne intérieure**, click anchors and click-drag for symmetric Bézier tangents. **Terminer la ligne** or Enter commits an open sewing path. Backspace removes an anchor; Escape cancels. Stay strictly inside material. In **Modifier**, select the line and drag anchors/handles; **Lisser les tangentes** provides handles on a straight line. Changing its length can be rejected if an equal-length seam would become invalid.
-- **Coudre** pairs that line with another piece's boundary in 2D or 3D. Alternatively select the line and **Créer et coudre un volant**: width in mm, length ratio 1–4. A ratio of 1.5 creates a strip 50% longer than the receiving line with explicit ease. Adjust its initial 3D placement before simulation, especially along a curve. This is gathered material with a finite seam penalty, not guaranteed folds or collision-free placement.
-- **Supprimer la ligne** removes an unsewn line. Remove its seam first if needed; Ctrl+Z restores edits.
+- **Shapes** in the toolbar creates a rectangle, circle/ellipse or arc sector at the board center. Enter dimensions in mm; **Circle: H = W** makes a circle. An arc is a closed fabric sector, with two radial edges. Its dimensions describe the supporting ellipse. Arcs are cubic approximations, flattened with the existing 0.25 mm tolerance.
+- Select a piece, open **Mirrors and booleans**. **Mirror X/Y** reflects material geometry in place. **−X/+X/−Y/+Y** creates an independent mirrored copy beside it. Axes refer to local 2D coordinates; board rotation is respected. Copies do not copy sewing relationships to other pieces. These are not linked instances.
+- For **Union**, **A − B** or **Intersection**, overlap two pieces on the 2D board. Select A, choose B in the inspector, then the operation. **Keep B** retains the cutter. Results inherit A's fabric, grain, meshing and 3D frame. Islands become separate panels; cutouts become real holes. Both inputs must have no seams, pins, internal lines or target lengths: edits never silently discard those references. Empty/invalid results are rejected. Curves become sampled straight boundaries with new names.
+- Select a piece, choose **Ligne intérieure**, click anchors and click-drag for symmetric Bézier tangents. **Finish line** or Enter commits an open sewing path. Backspace removes an anchor; Escape cancels. Stay strictly inside material. In **Edit**, select the line and drag anchors/handles; **Smooth tangents** provides handles on a straight line. Changing its length can be rejected if an equal-length seam would become invalid.
+- **Sew** pairs that line with another piece's boundary in 2D or 3D. Alternatively select the line and **Create and sew a ruffle**: width in mm, length ratio 1–4. A ratio of 1.5 creates a strip 50% longer than the receiving line with explicit ease. Adjust its initial 3D placement before simulation, especially along a curve. This is gathered material with a finite seam penalty, not guaranteed folds or collision-free placement.
+- **Delete line** removes an unsewn line. Remove its seam first if needed; Ctrl+Z restores edits.
 
 Still missing: partial/1:N sewing, offsets, intersecting/joined paths, darts, allowances, linked symmetry and automatic ruffle arrangement. Internal lines add no fold/crease energy. Hole rims can be selected/sewn; dedicated hole point editing is absent.
 
@@ -37,7 +37,7 @@ CDT inserts internal paths as constraints with fabric on **both** sides, not cut
 
 Named vertex chains are rebuilt from material coordinates after remeshing. Internal seams reuse `BoundaryRef.edge`, two-vertex interpolation per side, rest-arclength integration, the same four-vertex CPU/GPU terms and local contact exclusions. There is no new per-frame solver path or persistent mesh index. Holes remove area/mass; lines do not. Adding/editing a line remeshes and resets that panel to its arrangement; other compatible panels retain their drape.
 
-Mirrors restore contour winding and migrate corresponding seam ranges/directions/notches, pins, grain and meshing axes. Internal path directions stay unchanged. SVG preview uses even-odd holes and line strokes; grain-guide export clips against flattened contours and holes. OBJ contains actual triangulated material.
+Target lengths remain attached to their named edges through reflection. Mirrors restore contour winding and migrate corresponding seam ranges/directions/notches, pins, grain and meshing axes. Internal path directions stay unchanged. SVG preview uses even-odd holes and line strokes; grain-guide export clips against flattened contours and holes. OBJ contains actual triangulated material.
 
 ## Implementation and validation
 
@@ -50,6 +50,8 @@ Mirrors restore contour winding and migrate corresponding seam ranges/directions
 | `src/atelier/drafting_ui.rs`, `board.rs` | Controls, pen, picking and handle previews |
 | `tests/drafting_tools.rs` | Area/mass, holes, mirror inversion, board transforms, remeshing, seam forces, serialization, atomic failures |
 
+Additional point/view editing and Firefly attribution: [integration notes](firefly-integration.md).
+
 Run `scripts/check-cpu.ps1` and `cargo check --locked -j 2`. Neither uses GPU compute. A future explicit UI/GPU pass should exercise controls, undo/reload, sewing in both views and a draped ruffle at multiple densities before production claims.
 
 Validation on 2026-10-15: the CPU check script passes (93 tests including 13 drafting regressions, CPU Clippy, five historical template fixtures). `cargo clippy --locked --all-targets -j 2 -- -D warnings` also passes with desktop code enabled. Shader checks parse/validate shader code on CPU; they do not initialize a GPU.
@@ -60,7 +62,7 @@ Overlay uses [i_overlay 9.0.1](https://docs.rs/i_overlay/9.0.1/i_overlay/), even
 
 ## Web pattern library investigation
 
-**Patrons libres · Web** opens official FreeSewing designs; it does not import or replace the current scene:
+**Free patterns · Web** opens official FreeSewing designs; it does not import or replace the current scene:
 
 | Design | Use | Official source checked 2026-10-15 |
 |---|---|---|

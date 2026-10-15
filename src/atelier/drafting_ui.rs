@@ -36,18 +36,18 @@ impl Default for DraftingUi {
 }
 impl Atelier {
     pub(super) fn primitive_menu(&mut self, ui: &mut egui::Ui) {
-        ui.menu_button("Formes", |ui| {
+        ui.menu_button("Shapes", |ui| {
             let d = &mut self.authoring.drafting;
             ui.horizontal(|ui| {
                 for (kind, label) in [
                     (Primitive::Rectangle, "Rectangle"),
-                    (Primitive::Ellipse, "Cercle / ellipse"),
-                    (Primitive::Sector, "Arc fermé"),
+                    (Primitive::Ellipse, "Circle / ellipse"),
+                    (Primitive::Sector, "Arc sector"),
                 ] {
                     ui.selectable_value(&mut d.kind, kind, label);
                 }
             });
-            for (label, value) in ["Largeur", "Hauteur"].into_iter().zip(d.size_mm.iter_mut()) {
+            for (label, value) in ["Width", "Height"].into_iter().zip(d.size_mm.iter_mut()) {
                 ui.horizontal(|ui| {
                     ui.label(label);
                     ui.add(
@@ -57,15 +57,15 @@ impl Atelier {
                     );
                 });
             }
-            if d.kind == Primitive::Ellipse && ui.small_button("Cercle : H = L").clicked() {
+            if d.kind == Primitive::Ellipse && ui.small_button("Circle: H = W").clicked() {
                 d.size_mm[1] = d.size_mm[0];
             }
             if d.kind == Primitive::Sector {
                 ui.add(egui::Slider::new(&mut d.sweep, 5. ..=355.).text("Angle"));
-                ui.small("Dimensions de l’ellipse support. Arc fermé par deux rayons.");
+                ui.small("Size of the supporting ellipse. The sector is closed by two radii.");
             }
-            if ui.button("Ajouter au centre du plan").clicked() {
-                let size = DVec2::from_array(d.size_mm) * 0.001;
+            if ui.button("Add at board center").clicked() {
+                let size = DVec2::from_array(d.size_mm) / 1000.;
                 let command = Command::Primitive {
                     kind: d.kind,
                     size,
@@ -88,10 +88,10 @@ impl Atelier {
         });
     }
     pub(super) fn drafting_properties(&mut self, ui: &mut egui::Ui, panel: &Panel) {
-        ui.collapsing("Symétrie et découpes", |ui| {
-            ui.small("X : gauche / droite · Y : haut / bas du patron local.");
+        ui.collapsing("Mirrors and booleans", |ui| {
+            ui.small("X: left / right · Y: up / down in local pattern coordinates.");
             ui.horizontal_wrapped(|ui| {
-                for (axis, label) in [(MirrorAxis::X, "Miroir X"), (MirrorAxis::Y, "Miroir Y")] {
+                for (axis, label) in [(MirrorAxis::X, "Mirror X"), (MirrorAxis::Y, "Mirror Y")] {
                     if ui.button(label).clicked() {
                         self.edit(Command::Mirror {
                             panel: panel.id.clone(),
@@ -101,7 +101,7 @@ impl Atelier {
                     }
                 }
             });
-            ui.label("Créer une copie miroir indépendante");
+            ui.label("Create an independent mirrored copy");
             ui.horizontal(|ui| {
                 for (axis, side, label) in [
                     (MirrorAxis::X, -1, "−X"),
@@ -123,7 +123,7 @@ impl Atelier {
         });
     }
     fn boolean_properties(&mut self, ui: &mut egui::Ui, panel: &Panel) {
-        ui.label("Booléen · A = panneau actif");
+        ui.label("Boolean · A = active panel");
         let choices: Vec<_> = self
             .project
             .template
@@ -141,16 +141,16 @@ impl Atelier {
                 choices
                     .iter()
                     .find(|p| p.0 == d.operand)
-                    .map_or("Choisir B", |p| p.1.as_str()),
+                    .map_or("Choose B", |p| p.1.as_str()),
             )
             .show_ui(ui, |ui| {
                 for (id, name) in choices {
                     ui.selectable_value(&mut d.operand, id, name);
                 }
             });
-        ui.checkbox(&mut d.keep_tool, "Conserver B");
-        ui.small("Superposer les pièces dans le plan 2D. A fournit la matière et le placement.");
-        ui.small("Sans coutures, pins ni lignes intérieures.");
+        ui.checkbox(&mut d.keep_tool, "Keep B");
+        ui.small("Overlap the pieces on the 2D board. A supplies fabric and placement.");
+        ui.small("Remove seams, pins, internal lines and target lengths first.");
         ui.horizontal_wrapped(|ui| {
             for (op, label) in [
                 (BooleanOp::Union, "Union"),
@@ -176,11 +176,11 @@ impl Atelier {
     }
     pub(super) fn finish_internal_line(&mut self) {
         let Some(id) = self.authoring.drafting.line_panel.clone() else {
-            self.authoring.error = Some("Sélectionner un panneau avant Ligne intérieure".into());
+            self.authoring.error = Some("Select a panel before using Internal line".into());
             return;
         };
         let Some(i) = self.project.template.panels.iter().position(|p| p.id == id) else {
-            self.authoring.error = Some("Le panneau cible a disparu ; sélectionner une pièce puis réactiver Ligne intérieure".into());
+            self.authoring.error = Some("The target panel no longer exists; select a piece and activate Internal line again".into());
             return;
         };
         let origin = authoring::layout(&self.project.template, i);
@@ -225,8 +225,7 @@ impl Atelier {
                 range: [0., 1.],
             });
             self.status =
-                "Ligne intérieure créée · Coudre à un bord ou ajouter un volant dans l’inspecteur"
-                    .into();
+                "Internal line created · Sew to a boundary or add a ruffle in the inspector".into();
         }
     }
     pub(super) fn internal_line_properties(&mut self, ui: &mut egui::Ui) {
@@ -248,7 +247,7 @@ impl Atelier {
         else {
             return;
         };
-        ui.strong(format!("Ligne intérieure · {name}"));
+        ui.strong(format!("Internal line · {name}"));
         let length: f64 = line
             .samples()
             .unwrap_or_default()
@@ -256,10 +255,10 @@ impl Atelier {
             .map(|p| p[0].distance(p[1]))
             .sum();
         ui.small(format!(
-            "{:.1} mm · cousable en 2D / 3D · points et tangentes déplaçables",
+            "{:.1} mm · sew in 2D / 3D · draggable points and tangents",
             length * 1000.
         ));
-        if ui.small_button("Lisser les tangentes").clicked() {
+        if ui.small_button("Smooth tangents").clicked() {
             let mut poly = self
                 .project
                 .template
@@ -283,15 +282,15 @@ impl Atelier {
         }
         let d = &mut self.authoring.drafting;
         ui.horizontal(|ui| {
-            ui.label("Largeur du volant");
+            ui.label("Ruffle width");
             ui.add(
                 egui::DragValue::new(&mut d.width_mm)
                     .range(5. ..=1000.)
                     .suffix(" mm"),
             );
         });
-        ui.add(egui::Slider::new(&mut d.ratio, 1. ..=4.).text("Longueur ×"));
-        if ui.button("Créer et coudre un volant").clicked() {
+        ui.add(egui::Slider::new(&mut d.ratio, 1. ..=4.).text("Length ×"));
+        if ui.button("Create and sew a ruffle").clicked() {
             let command = Command::Ruffle {
                 panel: edge.panel.clone(),
                 line: name.clone(),
@@ -302,11 +301,11 @@ impl Atelier {
                 self.authoring.edge = None;
                 self.set_authoring_tool(Tool::Place, false);
                 self.status =
-                    "Volant créé avec embu · ajuster son placement 3D avant simulation".into();
+                    "Ruffle created with ease · adjust its 3D placement before simulation".into();
             }
         }
-        ui.small("Le ratio > 1 crée de l’embu. Le placement initial est à ajuster, surtout sur une courbe.");
-        if ui.small_button("Supprimer la ligne").clicked() {
+        ui.small("A ratio > 1 adds ease. Adjust the initial placement, especially along a curve.");
+        if ui.small_button("Delete line").clicked() {
             self.edit(Command::RemoveLine {
                 panel: edge.panel,
                 line: name,
@@ -315,14 +314,14 @@ impl Atelier {
         ui.separator();
     }
     pub(super) fn online_patterns(&mut self, ui: &mut egui::Ui) {
-        ui.menu_button("Patrons libres · Web", |ui| {
-            ui.label("FreeSewing · patrons paramétriques");
-            for (label,url) in [("Teagan · T-shirt","https://freesewing.eu/designs/teagan/"),("Titan · base pantalon","https://freesewing.eu/designs/titan/"),("Jett · bomber","https://freesewing.eu/designs/jett/")] {
+        ui.menu_button("Free patterns · Web", |ui| {
+            ui.label("FreeSewing · parametric patterns");
+            for (label,url) in [("Teagan · T-shirt","https://freesewing.eu/designs/teagan/"),("Titan · trouser block","https://freesewing.eu/designs/titan/"),("Jett · bomber","https://freesewing.eu/designs/jett/")] {
                 ui.hyperlink_to(label,url);
             }
             ui.separator();
-            ui.small("Ouvre le site pour générer un patron à vos mesures. Import FreeSewing / SVG à venir ; ces liens n’ajoutent pas encore de pièces à la scène.");
-            ui.hyperlink_to("Conditions d’utilisation FreeSewing","https://freesewing.eu/docs/about/faq/commercial-use/");
+            ui.small("Open the website to generate a pattern from your measurements. FreeSewing / SVG import is planned; these links do not add pieces to the scene.");
+            ui.hyperlink_to("FreeSewing terms of use","https://freesewing.eu/docs/about/faq/commercial-use/");
         });
     }
 }

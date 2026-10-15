@@ -21,3 +21,26 @@ jobs:
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/dress.json
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/curved-panels.json
       - run: cargo run --locked --no-default-features -j 2 --bin cloth-template -- simulate examples/templates/two-panel.json --steps 30 --threads 2 --output output/ci-template
+  # Compile and test desktop code as well as the headless core.
+  # GPU tests stay ignored; this job does not open a window or initialize a GPU.
+  desktop:
+    runs-on: ubuntu-latest
+    env:
+      RAYON_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      # The desktop test target LINKS, so it needs X11/Wayland and an OpenGL
+      # loader; `check` and `clippy` alone would not require them.
+      - name: Install Linux desktop link dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev \
+            libxcb1-dev libxcursor-dev libxrandr-dev libxi-dev \
+            libgl1-mesa-dev libasound2-dev libssl-dev pkg-config
+      - run: cargo check --locked --features desktop -j 2 --bin cloth-fit --bin marvelous-cloth
+      - run: cargo clippy --locked --features desktop --all-targets -j 2 -- -D warnings
+      - run: cargo test --locked --features desktop -j 2 -- --test-threads=2

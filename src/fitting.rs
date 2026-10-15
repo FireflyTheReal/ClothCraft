@@ -232,6 +232,9 @@ fn mesh_signature(template: &GarmentTemplate, g: &CompiledGarment) -> Result<Str
     for panel in &mut physical_template.panels {
         panel.layout_2d = None;
         panel.layout_rotation_degrees = 0.;
+        if let Some(polygon) = panel.polygon.as_mut() {
+            polygon.target_lengths.clear();
+        }
     }
     append(&serde_json::to_vec(&physical_template).map_err(|e| e.to_string())?);
     for p in &g.mesh.uv {

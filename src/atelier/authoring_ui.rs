@@ -38,6 +38,19 @@ pub(super) struct AuthoringUi {
     pub rotate: bool,
     pub drag: Option<super::gizmo::Drag>,
     pub drafting: super::drafting_ui::DraftingUi,
+    /// Contour point selected for numeric entry: (panel id, point index).
+    pub anchor: Option<(String, usize)>,
+    /// Panel the numeric size draft belongs to; `None` reloads from geometry.
+    pub numeric_panel: Option<String>,
+    pub width_mm: f64,
+    pub height_mm: f64,
+    pub numeric_anchor: Option<usize>,
+    pub anchor_x_mm: f64,
+    pub anchor_y_mm: f64,
+    /// Boundary the target-length draft belongs to: (panel id, boundary name).
+    pub target_edge: Option<(String, String)>,
+    /// Target length draft, in millimetres. The document stores metres.
+    pub target_mm: f64,
 }
 
 pub(super) fn segment_distance(p: egui::Pos2, a: egui::Pos2, b: egui::Pos2) -> f32 {
@@ -45,10 +58,53 @@ pub(super) fn segment_distance(p: egui::Pos2, a: egui::Pos2, b: egui::Pos2) -> f
     p.distance(a + d * ((p - a).dot(d) / d.length_sq().max(1e-12)).clamp(0., 1.))
 }
 
+/// Shared millimetre entry: 0.1 mm steps and a ` mm` suffix. The document stores
+/// metres; convert edits with `authoring::mm_to_m` (division by 1000).
+pub(super) fn millimetre_field(ui: &mut egui::Ui, value_mm: &mut f64) -> bool {
+    ui.add(
+        egui::DragValue::new(value_mm)
+            .speed(0.1)
+            .max_decimals(1)
+            .suffix(" mm"),
+    )
+    .changed()
+}
+
 impl Atelier {
     pub(super) fn install_edit(&mut self, edit: Edit) {
         if edit.reset_simulation {
             self.scene.state = edit.state_after(&self.scene.garment, &self.scene.state);
+        }
+        let point_order_unchanged = |id: &str| {
+            let old = self
+                .project
+                .template
+                .panels
+                .iter()
+                .find(|p| p.id == id)
+                .and_then(|p| p.polygon.as_ref());
+            let new = edit
+                .template
+                .panels
+                .iter()
+                .find(|p| p.id == id)
+                .and_then(|p| p.polygon.as_ref());
+            matches!((old, new), (Some(a), Some(b)) if a.edges == b.edges && a.points.len() == b.points.len())
+        };
+        let point_selection = self
+            .authoring
+            .board
+            .selection_panel
+            .as_ref()
+            .filter(|id| point_order_unchanged(id))
+            .map(|id| (id.clone(), self.authoring.board.selection.clone()));
+        if self
+            .authoring
+            .anchor
+            .as_ref()
+            .is_some_and(|(id, _)| !point_order_unchanged(id))
+        {
+            self.authoring.anchor = None;
         }
         self.project.template = edit.template;
         self.project.state = None;
@@ -58,6 +114,10 @@ impl Atelier {
             self.scene.garment = std::sync::Arc::new(edit.garment);
         }
         self.authoring.board.clear_preview();
+        if let Some((id, indices)) = point_selection {
+            self.authoring.board.selection_panel = Some(id);
+            self.authoring.board.selection = indices;
+        }
         self.scene.next_dt = self.settings.dt;
         self.generation += 1;
         self.playing = false;
@@ -70,6 +130,10 @@ impl Atelier {
         self.authoring.error = None;
         self.authoring.fabric_draft = None;
         self.authoring.drag = None;
+        // Force the numeric fields to re-read the edited geometry next frame.
+        self.authoring.numeric_panel = None;
+        self.authoring.numeric_anchor = None;
+        self.authoring.target_edge = None;
         self.authoring.ends.clear();
         self.authoring.edge = self.authoring.edge.take().filter(|edge| {
             self.scene.garment.panels.iter().any(|p| {
@@ -80,6 +144,7 @@ impl Atelier {
                         .is_some_and(|name| p.boundaries.contains_key(name))
             })
         });
+        let inserted = edit.new_point.zip(edit.selected.clone());
         if let Some(id) = edit.selected {
             self.authoring.selected = Some(id);
         }
@@ -92,10 +157,15 @@ impl Atelier {
         {
             self.authoring.selected = self.project.template.panels.first().map(|p| p.id.clone());
         }
+        // A split selects its new point, so the user keeps editing where they are.
+        if let Some((index, id)) = inserted {
+            self.authoring.board.select_point(id.clone(), index, false);
+            self.authoring.anchor = Some((id, index));
+        }
         self.status = if edit.reset_simulation {
-            "Édition validée · pièces inchangées conservées · prêt à simuler"
+            "Edit applied · unchanged panels retained · ready to simulate"
         } else {
-            "Disposition 2D modifiée · état 3D conservé"
+            "2D layout changed · 3D state preserved"
         }
         .into();
     }
@@ -165,50 +235,64 @@ impl Atelier {
     pub(super) fn authoring_toolbar(&mut self, ui: &mut egui::Ui) {
         self.history_shortcuts(ui.ctx());
         ui.horizontal_wrapped(|ui| {
-            for (tool, label, rotate, help) in [
+            // `key` is the smoke-target protocol name and must not change; `label`
+            // is the translated text shown on the button.
+            for (tool, key, label, rotate, help) in [
                 (
                     Tool::Edit,
                     "Modifier",
+                    "Edit",
                     false,
-                    "Sélection, points et poignées Bézier · rotation 2D avec la poignée ronde",
+                    "Select, points and Bézier handles · 2D rotation with the round handle",
                 ),
                 (
                     Tool::Draw,
                     "Plume",
+                    "Pen",
                     false,
-                    "Cliquer pour un coin, cliquer-glisser pour une courbe",
+                    "Click for a corner, click and drag for a curve",
                 ),
                 (
                     Tool::Rectangle,
                     "Rectangle",
+                    "Rectangle",
                     false,
-                    "Glisser entre deux coins pour créer du tissu",
+                    "Drag between two corners to create fabric",
                 ),
                 (
                     Tool::Sew,
                     "Coudre",
+                    "Sew",
                     false,
-                    "Choisir deux bords dans les vues 2D ou 3D",
+                    "Choose two boundaries in the 2D or 3D views",
                 ),
-                (Tool::InternalLine, "Ligne intérieure", false,
-                    "Sur le panneau actif : cliquer / glisser pour une ligne cousable, Entrée pour terminer"),
+                (
+                    Tool::InternalLine,
+                    "Ligne intérieure",
+                    "Internal line",
+                    false,
+                    "Draw a sewing path inside the selected panel; Enter to finish",
+                ),
                 (
                     Tool::Place,
                     "Déplacer 3D",
+                    "Move 3D",
                     false,
-                    "G · déplacer l’arrangement à plat du panneau sélectionné",
+                    "G · move the selected panel's flat arrangement",
                 ),
                 (
                     Tool::Place,
                     "Tourner 3D",
+                    "Rotate 3D",
                     true,
-                    "R · anneaux X/Y/Z · Maj pour 15°",
+                    "R · X/Y/Z rings · Shift for 15°",
                 ),
                 (
                     Tool::Grab,
                     "Saisir",
+                    "Grab",
                     false,
-                    "Tirer le tissu simulé à la souris",
+                    "Drag the simulated cloth with the mouse",
                 ),
             ] {
                 if tool == Tool::Sew || (tool == Tool::Place && !rotate) || tool == Tool::Grab {
@@ -216,8 +300,17 @@ impl Atelier {
                 }
                 let active = self.authoring.tool == tool
                     && (tool != Tool::Place || self.authoring.rotate == rotate);
-                let button = ui.selectable_label(active, label).on_hover_text(help);
-                self.smoke_target(label, button.rect.center());
+                let icon = match tool {
+                    Tool::Edit => super::icons::Icon::Edit,
+                    Tool::Draw | Tool::InternalLine => super::icons::Icon::Pen,
+                    Tool::Rectangle => super::icons::Icon::Rectangle,
+                    Tool::Sew => super::icons::Icon::Sew,
+                    Tool::Place if rotate => super::icons::Icon::Rotate3d,
+                    Tool::Place => super::icons::Icon::Move3d,
+                    Tool::Grab => super::icons::Icon::Grab,
+                };
+                let button = super::icons::tool_button(ui, icon, label, active, help);
+                self.smoke_target(key, button.rect.center());
                 if button.clicked() {
                     self.set_authoring_tool(tool, rotate);
                 }
@@ -225,18 +318,12 @@ impl Atelier {
             ui.separator();
             self.primitive_menu(ui);
             ui.separator();
-            let undo = ui.add_enabled(
-                self.authoring.history.can_undo(),
-                egui::Button::new("Annuler"),
-            );
+            let undo = ui.add_enabled(self.authoring.history.can_undo(), egui::Button::new("Undo"));
             self.smoke_target("undo", undo.rect.center());
             if undo.clicked() {
                 self.undo_edit(false);
             }
-            let redo = ui.add_enabled(
-                self.authoring.history.can_redo(),
-                egui::Button::new("Rétablir"),
-            );
+            let redo = ui.add_enabled(self.authoring.history.can_redo(), egui::Button::new("Redo"));
             self.smoke_target("redo", redo.rect.center());
             if redo.clicked() {
                 self.undo_edit(true);
@@ -267,9 +354,9 @@ impl Atelier {
             self.generation += 1;
             self.metrics = None;
             self.status = if tool == Tool::Place {
-                "Placement à plat du panneau sélectionné · autres pièces conservées"
+                "Selected panel laid flat · other panels retained"
             } else {
-                "Mode édition · simulation en pause"
+                "Edit mode · simulation paused"
             }
             .into();
         }
@@ -303,6 +390,75 @@ impl Atelier {
             }
         }
     }
+    /// Target length of the selected boundary. The value is a specification in
+    /// metres; the field edits millimetres and the readout shows the deviation
+    /// from the measured material length. It is stored by `TargetLength` and is
+    /// never enforced while loading a document.
+    fn target_length_properties(
+        &mut self,
+        ui: &mut egui::Ui,
+        panel: &marvelous_cloth::garment::template::Panel,
+        polygon: &marvelous_cloth::garment::polygon::PolygonPattern,
+    ) {
+        let Some(name) = self
+            .authoring
+            .edge
+            .as_ref()
+            .filter(|edge| edge.panel == panel.id)
+            .and_then(|edge| edge.edge.clone())
+        else {
+            return;
+        };
+        let Ok(measured) = authoring::edge_length(polygon, &name) else {
+            return;
+        };
+        if self.authoring.target_edge.as_ref() != Some(&(panel.id.clone(), name.clone())) {
+            self.authoring.target_edge = Some((panel.id.clone(), name.clone()));
+            // A stored specification reloads as typed; without one the field
+            // starts from the measured length.
+            self.authoring.target_mm = polygon
+                .target_length(&name)
+                .map(authoring::m_to_mm)
+                .unwrap_or_else(|| authoring::m_to_mm(measured));
+        }
+        ui.separator();
+        ui.strong(format!("Boundary {name}"));
+        ui.horizontal(|ui| {
+            ui.label("Target");
+            millimetre_field(ui, &mut self.authoring.target_mm);
+        });
+        let target_m = authoring::mm_to_m(self.authoring.target_mm);
+        let deviation = authoring::deviation_mm(measured, target_m);
+        ui.small(format!(
+            "Measured {:.1} mm · deviation from target {:+.2} mm",
+            authoring::m_to_mm(measured),
+            deviation
+        ));
+        ui.horizontal(|ui| {
+            if ui
+                .button("Apply target")
+                .on_hover_text("Store this required length and set the boundary to it")
+                .clicked()
+            {
+                self.edit(Command::TargetLength {
+                    panel: panel.id.clone(),
+                    edge: name.clone(),
+                    target_m,
+                });
+            }
+            let stored = polygon.target_lengths.contains_key(&name);
+            if ui
+                .add_enabled(stored, egui::Button::new("Clear target"))
+                .clicked()
+            {
+                self.edit(Command::TargetLength {
+                    panel: panel.id.clone(),
+                    edge: name.clone(),
+                    target_m: 0.,
+                });
+            }
+        });
+    }
     pub(super) fn authoring_properties(&mut self, ui: &mut egui::Ui) {
         self.existing_seams(ui);
         if self.authoring.tool == Tool::Sew || !self.authoring.ends.is_empty() {
@@ -313,7 +469,7 @@ impl Atelier {
         }
         self.edge_properties(ui);
         self.internal_line_properties(ui);
-        ui.strong("Panneau actif");
+        ui.strong("Active panel");
         let Some(panel) = self
             .project
             .template
@@ -322,7 +478,7 @@ impl Atelier {
             .find(|p| Some(&p.id) == self.authoring.selected.as_ref())
             .cloned()
         else {
-            ui.small("Sélectionner une pièce dans la liste ou dans une vue. Plume / Rectangle pour dessiner ; Coudre pour assembler.");
+            ui.small("Select a piece in the list or in a view. Pen / Rectangle to draw; Sew to assemble.");
             return;
         };
         ui.label(&panel.name);
@@ -331,42 +487,154 @@ impl Atelier {
             panel.pattern.width * 1000.,
             panel.pattern.height * 1000.
         ));
+        // Numeric entry stays in a draft until Apply, so one click is exactly one
+        // document edit and one history entry. Millimetres convert by division:
+        // 400 mm / 1000 is the exact f64 0.4, unlike a 0.001 multiplication.
+        if self.authoring.numeric_panel.as_deref() != Some(panel.id.as_str()) {
+            self.authoring.numeric_panel = Some(panel.id.clone());
+            self.authoring.width_mm = panel.pattern.width * 1000.;
+            self.authoring.height_mm = panel.pattern.height * 1000.;
+            self.authoring.numeric_anchor = None;
+        }
+        ui.strong("Dimensions (mm)");
+        ui.horizontal(|ui| {
+            ui.label("Width");
+            millimetre_field(ui, &mut self.authoring.width_mm);
+            ui.label("Height");
+            millimetre_field(ui, &mut self.authoring.height_mm);
+        });
+        if ui
+            .button("Apply dimensions")
+            .on_hover_text("Exact millimetre size; invalid values leave the document unchanged")
+            .clicked()
+        {
+            self.edit(Command::Dimensions {
+                panel: panel.id.clone(),
+                width: authoring::mm_to_m(self.authoring.width_mm),
+                height: authoring::mm_to_m(self.authoring.height_mm),
+            });
+        }
+        if let Some(polygon) = panel.polygon.as_ref() {
+            if !polygon.target_diagnostics().is_empty() {
+                ui.colored_label(
+                    Color32::GOLD,
+                    "A stored target length is invalid and is ignored.",
+                );
+            }
+            if let Some(k) = self
+                .authoring
+                .anchor
+                .as_ref()
+                .filter(|(id, k)| id == &panel.id && *k < polygon.points.len())
+                .map(|(_, k)| *k)
+            {
+                if self.authoring.numeric_anchor != Some(k) {
+                    self.authoring.numeric_anchor = Some(k);
+                    self.authoring.anchor_x_mm = authoring::m_to_mm(polygon.points[k].x);
+                    self.authoring.anchor_y_mm = authoring::m_to_mm(polygon.points[k].y);
+                }
+                ui.strong(format!("Point {} (mm)", k + 1));
+                ui.horizontal(|ui| {
+                    ui.label("X");
+                    millimetre_field(ui, &mut self.authoring.anchor_x_mm);
+                    ui.label("Y");
+                    millimetre_field(ui, &mut self.authoring.anchor_y_mm);
+                });
+                // Visible nudge buttons for discoverability. They dispatch the
+                // same `Command::Nudge` as the board's arrow keys, so the two
+                // paths cannot drift apart in behaviour.
+                for (label, steps) in [
+                    (
+                        "Nudge X",
+                        [
+                            ("-1", DVec2::new(-1., 0.)),
+                            ("+1", DVec2::new(1., 0.)),
+                            ("-10", DVec2::new(-10., 0.)),
+                            ("+10", DVec2::new(10., 0.)),
+                        ],
+                    ),
+                    (
+                        "Nudge Y",
+                        [
+                            ("-1", DVec2::new(0., -1.)),
+                            ("+1", DVec2::new(0., 1.)),
+                            ("-10", DVec2::new(0., -10.)),
+                            ("+10", DVec2::new(0., 10.)),
+                        ],
+                    ),
+                ] {
+                    ui.horizontal(|ui| {
+                        ui.label(label);
+                        for (step_label, step) in steps {
+                            if ui.small_button(step_label).clicked() {
+                                self.edit(Command::Nudge {
+                                    panel: panel.id.clone(),
+                                    points: vec![k],
+                                    delta_mm: step,
+                                });
+                            }
+                        }
+                    });
+                }
+                if ui
+                    .button("Apply point")
+                    .on_hover_text(
+                        "Material coordinates in millimetres; the rest origin is re-based \
+                         without moving the other points",
+                    )
+                    .clicked()
+                {
+                    let position = DVec2::new(
+                        authoring::mm_to_m(self.authoring.anchor_x_mm),
+                        authoring::mm_to_m(self.authoring.anchor_y_mm),
+                    );
+                    self.edit(Command::Anchor {
+                        panel: panel.id.clone(),
+                        anchor: k,
+                        position,
+                    });
+                }
+            } else {
+                ui.small("Click a point on the 2D board to edit its exact position.");
+            }
+            self.target_length_properties(ui, &panel, polygon);
+        }
         self.fabric_properties(ui, &panel);
         self.drafting_properties(ui, &panel);
         ui.horizontal(|ui| {
-            let duplicate = ui.button("Dupliquer");
+            let duplicate = ui.button("Duplicate");
             self.smoke_target("duplicate", duplicate.rect.center());
             if duplicate.clicked() {
                 self.edit(Command::Duplicate {
                     panel: panel.id.clone(),
                 });
             }
-            if ui.button("Supprimer le panneau").clicked() {
+            if ui.button("Delete panel").clicked() {
                 self.edit(Command::RemovePanel {
                     panel: panel.id.clone(),
                 });
             }
         });
         if self.authoring.tool != Tool::Place {
-            ui.small("Déplacer 3D (G) / Tourner 3D (R) dans la barre d’outils.");
+            ui.small("Move 3D (G) / Rotate 3D (R) in the toolbar.");
             return;
         }
         ui.horizontal(|ui| {
             if ui
-                .selectable_label(!self.authoring.rotate, "Déplacer (G)")
+                .selectable_label(!self.authoring.rotate, "Move (G)")
                 .clicked()
             {
                 self.set_authoring_tool(Tool::Place, false);
             }
             if ui
-                .selectable_label(self.authoring.rotate, "Tourner (R)")
+                .selectable_label(self.authoring.rotate, "Rotate (R)")
                 .clicked()
             {
                 self.set_authoring_tool(Tool::Place, true);
             }
         });
-        ui.small("Placement à plat : cette pièce reprend la forme de son patron. Les autres pièces restent en place.");
-        let focus = ui.button("Cadrer le panneau");
+        ui.small("Flat placement: this piece takes the shape of its pattern. The other pieces stay in place.");
+        let focus = ui.button("Frame the panel");
         self.smoke_target("focus", focus.rect.center());
         if focus.clicked() {
             let placement = self.authoring.preview.as_ref().unwrap_or(&panel.placement);
@@ -408,21 +676,16 @@ impl Atelier {
         }
         ui.horizontal(|ui| {
             if ui
-                .add_enabled(
-                    self.authoring.preview.is_some(),
-                    egui::Button::new("Appliquer"),
-                )
+                .add_enabled(self.authoring.preview.is_some(), egui::Button::new("Apply"))
                 .clicked()
             {
                 self.commit_placement();
             }
-            if ui.button("Abandonner").clicked() {
+            if ui.button("Discard").clicked() {
                 self.cancel_preview();
             }
         });
-        ui.small(
-            "Glisser un axe / anneau · Maj : angles de 15° · relâcher : valider · Échap : annuler.",
-        );
+        ui.small("Drag an axis / ring · Shift: 15° angles · release: commit · Escape: cancel.");
         ui.separator();
     }
     pub(super) fn create_polygon(&mut self) {
@@ -447,9 +710,9 @@ impl Atelier {
     }
     pub(super) fn sewing_controls(&mut self, ui: &mut egui::Ui) {
         if self.authoring.ends.len() == 2 {
-            ui.colored_label(Color32::GOLD, "Aperçu seulement — couture à valider");
+            ui.colored_label(Color32::GOLD, "Preview only — seam not committed");
         }
-        ui.small("Choisir deux bords en 2D ou 3D ; 0 ↔ 0, 1 ↔ 1.");
+        ui.small("Choose two boundaries in 2D or 3D; 0 ↔ 0, 1 ↔ 1.");
         let mut lengths = vec![];
         for (i, e) in self.authoring.ends.iter().enumerate() {
             ui.label(format!(
@@ -473,7 +736,7 @@ impl Atelier {
         }
         if lengths.len() == 2 {
             ui.label(format!(
-                "{:.1} / {:.1} mm · écart {:.1} mm",
+                "{:.1} / {:.1} mm · gap {:.1} mm",
                 lengths[0] * 1000.,
                 lengths[1] * 1000.,
                 (lengths[0] - lengths[1]).abs() * 1000.
@@ -481,25 +744,22 @@ impl Atelier {
             if (lengths[0] - lengths[1]).abs() > 1e-5 && !self.authoring.ease {
                 ui.colored_label(
                     Color32::GOLD,
-                    "Longueurs différentes : ajuster le patron ou autoriser l'embu ci-dessous.",
+                    "Different lengths: adjust the pattern or allow easing below.",
                 );
             }
         }
-        ui.checkbox(&mut self.authoring.reverse, "Inverser le sens B");
-        ui.checkbox(
-            &mut self.authoring.ease,
-            "Autoriser l'embu (longueurs différentes)",
-        );
+        ui.checkbox(&mut self.authoring.reverse, "Reverse B's direction");
+        ui.checkbox(&mut self.authoring.ease, "Allow easing (different lengths)");
         ui.horizontal(|ui| {
             let sew = ui.add_enabled(
                 self.authoring.ends.len() == 2,
-                egui::Button::new("Valider la couture"),
+                egui::Button::new("Commit the seam"),
             );
             self.smoke_target("sew", sew.rect.center());
             if sew.clicked() {
                 self.commit_seam();
             }
-            if ui.button("Effacer sélection").clicked() {
+            if ui.button("Clear selection").clicked() {
                 self.authoring.ends.clear();
             }
         });
@@ -515,7 +775,7 @@ impl Atelier {
             reverse: self.authoring.reverse,
             ease: self.authoring.ease,
         }) {
-            self.status = "Couture créée · Simuler pour assembler les pièces".into();
+            self.status = "Seam created · Simulate to assemble the pieces".into();
             true
         } else {
             self.authoring.tool = Tool::Sew;

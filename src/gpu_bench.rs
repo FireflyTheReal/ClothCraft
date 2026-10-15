@@ -48,6 +48,7 @@ async fn run_async(scene: &FittingScene, output: &Path) -> Result<(), Box<dyn st
         pitch: 0.12,
         distance: 2.65,
         target: glam::Vec3::new(0.0, 0.91, 0.0),
+        ..Default::default()
     };
     let mut gpu = vec![];
     let mut total = vec![];

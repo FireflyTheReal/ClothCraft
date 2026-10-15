@@ -87,6 +87,7 @@ pub fn primitive(
         meshing: Some(meshing),
         holes: vec![],
         lines: vec![],
+        target_lengths: Default::default(),
     })
 }
 
@@ -209,6 +210,7 @@ pub fn boolean(
             meshing: Some(a.meshing_settings()),
             holes,
             lines: vec![],
+            target_lengths: Default::default(),
         });
     }
     Ok(out)

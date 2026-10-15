@@ -1,0 +1,77 @@
+name: Cross-platform build
+
+# Build and package desktop binaries for macOS, Linux and Windows.
+# CPU and desktop tests are separate jobs in cpu.yml; a successful build alone
+# does not validate native interaction or GPU simulation on these platforms.
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build (${{ matrix.artifact }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One platform failing must not hide the state of the other two.
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            artifact: macos-arm64
+          - os: ubuntu-latest
+            artifact: linux-x86_64
+          - os: windows-latest
+            artifact: windows-x86_64
+    env:
+      RAYON_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      # eframe/winit need X11, Wayland and an OpenGL loader to LINK on Linux,
+      # even though `cargo check` alone would not. Without these the desktop
+      # binaries fail at the link step rather than at compile time.
+      - name: Install Linux desktop link dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev \
+            libxrandr-dev libxi-dev libgl1-mesa-dev libasound2-dev \
+            libssl-dev pkg-config
+
+      - name: Build the desktop and CLI binaries
+        run: >
+          cargo build --locked --release -j 2 --features desktop
+          --bin cloth-fit --bin marvelous-cloth --bin cloth-template
+
+      # A binary that builds but cannot read a template is not a working build.
+      - name: Validate a shipped template with the built binary
+        shell: bash
+        run: |
+          suffix=""
+          if [ "${{ runner.os }}" = "Windows" ]; then suffix=".exe"; fi
+          "target/release/cloth-template${suffix}" validate examples/templates/two-panel.json
+
+      - name: Stage artifacts
+        shell: bash
+        run: |
+          mkdir -p dist
+          suffix=""
+          if [ "${{ runner.os }}" = "Windows" ]; then suffix=".exe"; fi
+          for bin in cloth-fit marvelous-cloth cloth-template; do
+            cp "target/release/${bin}${suffix}" "dist/${bin}${suffix}"
+          done
+          mkdir -p dist/assets dist/examples
+          cp -R assets/makehuman dist/assets/
+          cp -R examples/templates dist/examples/
+          cp LICENSE README.md dist/
+          printf '%s\n' 'Run from this directory: ./cloth-fit --steps 0 --view --output output/session' > dist/START.txt
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clothcraft-${{ matrix.artifact }}
+          path: dist/
+          if-no-files-found: error

@@ -151,9 +151,11 @@ pub(super) fn boolean(
         if t.seams.iter().any(|s| s.a.panel == id || s.b.panel == id)
             || !p.pins.is_empty()
             || !p.pin_points.is_empty()
-            || p.polygon.as_ref().is_some_and(|p| !p.lines.is_empty())
+            || p.polygon
+                .as_ref()
+                .is_some_and(|p| !p.lines.is_empty() || !p.target_lengths.is_empty())
         {
-            return Err("Booléen : utiliser des pièces sans coutures, pins ni lignes intérieures ; dupliquer au besoin".into());
+            return Err("Boolean operands must have no seams, pins, internal lines or target lengths; clear those relations first".into());
         }
     }
     let original = t.panels[ai].clone();

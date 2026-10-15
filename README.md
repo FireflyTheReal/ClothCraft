@@ -16,10 +16,11 @@ ClothCraft is an early native Rust experiment in garment authoring and cloth sim
 
 ClothCraft independently targets the core pattern-based garment workflow of [Marvelous Designer](https://www.marvelousdesigner.com/): draw material-space 2D pieces, connect their boundaries with seams, arrange them around a 3D avatar, and simulate the assembled cloth. The [public-manual study](docs/manual-study.md) records the behaviors studied, what is implemented, and the next acceptance cases in the [roadmap](ROADMAP.md).
 
-Compatibility is currently **targeting**, not verified parity. Native Marvelous Designer / CLO project and garment files are unsupported; matching their simulation results, full toolset or proprietary implementation is not claimed. ClothCraft uses its own document formats and physics implementation. The editor is currently French, and Windows is the only locally exercised desktop platform.
+Compatibility is currently **targeting**, not verified parity. Native Marvelous Designer / CLO project and garment files are unsupported; matching their simulation results, full toolset or proprietary implementation is not claimed. ClothCraft uses its own document formats and physics implementation. The interface is English, and Windows is the only locally exercised desktop platform.
 
 ## What works today
 
+- Numeric point editing, multi-point selection, exact boundary splits and target lengths; camera presets, orthographic view and light/dark themes. [Integration notes and contributor credit](docs/firefly-integration.md).
 - One metric 2D board: rectangles, polygon/Bézier drafting, anchor/handle editing, translation and rotation.
 - Linked panel/boundary selection in 2D and 3D; whole-edge sewing, reversal, explicit easing, seam deletion and undo/redo.
 - Colored seam correspondences in both views, including previews before committing a seam.
@@ -49,21 +50,21 @@ Equivalent command:
 cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view --output output/my-session
 ```
 
-The window starts paused. The current UI labels are French:
+The window starts paused. The current UI labels are English:
 
 | Action | Control |
 |---|---|
-| Draw | **Plume**: click corners, drag for Bézier handles; **Rectangle**: drag opposite corners |
-| Add a primitive | **Formes**: dimensions in mm, circle/ellipse or closed arc sector |
-| Mirror / boolean | Select a piece → **Symétrie et découpes**; overlap A/B on the 2D board |
-| Add a ruffle | **Ligne intérieure** → click/drag inside the selected piece → Enter → **Créer et coudre un volant** |
-| Edit / rotate in 2D | **Modifier**: select a piece, edit points or drag its round rotation handle |
-| Sew | **Coudre**: choose edge A and B in either view, inspect direction, then validate |
-| Move / rotate in 3D | **Déplacer 3D (G)** / **Tourner 3D (R)**; Shift snaps to 15° |
-| Simulate / pause | **Simuler** or Space; **Saisir** lets you drag the simulated cloth |
-| Remove a seam | Select its edge, **Supprimer la couture** or Delete; Ctrl+Z restores it |
-| Navigate | Right-drag orbits 3D, middle-drag pans, wheel zooms; **Vue générale** / **Tout cadrer** frame the views |
-| Save / export | **Exporter** writes the project and supported artifacts to the session directory |
+| Draw | **Pen**: click corners, drag for Bézier handles; **Rectangle**: drag opposite corners |
+| Add a primitive | **Shapes**: dimensions in mm, circle/ellipse or closed arc sector |
+| Mirror / boolean | Select a piece → **Mirrors and booleans**; overlap A/B on the 2D board |
+| Add a ruffle | **Ligne intérieure** → click/drag inside the selected piece → Enter → **Create and sew a ruffle** |
+| Edit / rotate in 2D | **Edit**: select a piece, edit points or drag its round rotation handle |
+| Sew | **Sew**: choose edge A and B in either view, inspect direction, then validate |
+| Move / rotate in 3D | **Move 3D (G)** / **Rotate 3D (R)**; Shift snaps to 15° |
+| Simulate / pause | **Simulate** or Space; **Grab** lets you drag the simulated cloth |
+| Remove a seam | Select its edge, **Delete seam** or Delete; Ctrl+Z restores it |
+| Navigate | Right-drag orbits 3D, middle-drag pans, wheel zooms; **Overview** / **Frame all** frame the views |
+| Save / export | **Export** writes the project and supported artifacts to the session directory |
 
 **3D arrangement returns the selected piece to its flat pattern shape.** Other pieces retain their drape. A 2D layout edit preserves the entire physical state. Neither operation repairs intersections; place pieces outside the avatar before simulating.
 

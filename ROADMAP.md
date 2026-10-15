@@ -33,7 +33,9 @@ The format priorities below remain product priorities: a **critical** animation 
 - [x] Edit existing anchors and Bézier handles; pan/zoom, snapping and saved 2D layouts.
 - [x] Numeric primitives (rectangle, circle/ellipse, arc sector), independent X/Y mirrors and ±X/±Y copies.
 - [x] Union/intersection/subtraction with holes and islands; internal Bézier sewing paths and eased ruffle strips (CPU validation; native/GPU acceptance still pending).
-- [ ] Numeric anchor movement, linked symmetry, multi-selection, line offsets and dedicated hole point editing.
+- [x] Numeric point movement, rectangle resizing, multi-point selection, unsewn contour splits and target lengths (CPU validation; native interaction pending).
+- [x] Camera presets/orthographic views, board view rotation, English UI and light/dark preferences, adapted from FireflyTheReal; see [integration notes](docs/firefly-integration.md).
+- [ ] Linked symmetry, multi-panel selection, line offsets and dedicated hole point editing.
 - [ ] Import verified reusable patterns: FreeSewing Teagan/Titan/Jett are linked from the Web menu; SVG geometry and semantic sewing adapters remain planned ([investigation](docs/drafting-tools.md#web-pattern-library-investigation)).
 - [ ] Partial/free sewing, notch editing, 1:N / M:N relationships and clearer 3D direction preview.
 - [ ] Arrangement points, body-aware placement and useful preflight intersection feedback.
@@ -90,7 +92,7 @@ The nine articles reviewed in the [dated manual ledger](docs/manual-study.md#aut
 | SEW-02 / P1 authoring | 1:N, then M:N ordered sewing chains and editable notch correspondences | SEW-01; DRAW-04 for internal-line sewing; MD-05 | Sew two short edges to one long edge with visible ordering and explicit ease; cancel partial input; preserve totals, orientation and notches after remeshing |
 | ARR-02 / P1 authoring | Fold placement preview about an internal line | DRAW-04 + ARR-01; MD-08 | Fold a cuff/hem and undo it without changing material rest; preflight initial intersections; distinguish placement from a physical crease constraint |
 
-Recommended first contribution: **SAVE-01**, then **DRAW-01**. Keep DRAW-02 and SEW-01 in separate reviewable changes. ARR-01 and physical performance work can proceed independently once they share the same document transactions. Do not block a usable save/draw/sew loop on automatic sewing, animation or visual trim tools.
+Recommended first contribution: **SAVE-01**, then **SEW-01**. DRAW-01 has numeric dimensions and point editing; DRAW-02 has unsewn boundary splits. Keep DRAW-02 and SEW-01 in separate reviewable changes. ARR-01 and physical performance work can proceed independently once they share the same document transactions. Do not block a usable save/draw/sew loop on automatic sewing, animation or visual trim tools.
 
 ### Release evidence, not feature counts
 

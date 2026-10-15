@@ -2,6 +2,10 @@
 use super::*;
 use std::{collections::BTreeMap, time::Instant};
 
+// The first element of each action is a smoke-target protocol key registered by
+// the authoring widgets (`smoke_target`). These keys are part of the test harness
+// contract and are deliberately left unchanged even where a key still spells a
+// former French button label; only the visible labels themselves were translated.
 const ACTIONS: [(&str, Vec2); 41] = [
     ("Plume", Vec2::ZERO),
     ("replace", Vec2::ZERO),

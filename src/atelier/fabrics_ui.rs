@@ -63,19 +63,19 @@ impl Atelier {
             fabric.properties.density * 1000.
         ));
         ui.small(format!(
-            "Masse : panneau {:.1} g · vêtement {:.1} g",
+            "Mass: panel {:.1} g · garment {:.1} g",
             panel_mass * 1000.,
             self.scene.garment.mesh.masses.iter().sum::<f64>() * 1000.
         ));
         let mut apply = false;
         let mut discard = false;
         let mut targets = vec![];
-        let header = egui::CollapsingHeader::new("Tissu · poids et stretch")
+        let header = egui::CollapsingHeader::new("Fabric · weight and stretch")
             .id_salt("fabric_controls").show(ui, |ui| {
                 let d = self.authoring.fabric_draft.as_mut().unwrap();
                 let old = d.preset;
                 let combo = egui::ComboBox::from_id_salt("fabric_preset")
-                    .selected_text(d.preset.map(|i| PRESETS[i].name).unwrap_or("Choisir un type de tissu"))
+                    .selected_text(d.preset.map(|i| PRESETS[i].name).unwrap_or("Choose a fabric type"))
                     .show_ui(ui, |ui| {
                         for (i, p) in PRESETS.iter().enumerate() {
                             let response = ui.selectable_value(&mut d.preset, Some(i), p.name);
@@ -89,41 +89,41 @@ impl Atelier {
                     d.properties = preset.properties();
                     d.extension = preset.extension;
                 }
-                ui.small("Presets indicatifs. Élasticité et flexion à calibrer sur ton tissu.");
+                ui.small("Indicative presets. Elasticity and bending must be calibrated on your fabric.");
                 if let Some(i) = d.preset {
                     ui.small(PRESETS[i].evidence);
-                    ui.hyperlink_to("Source des mesures", PRESETS[i].source);
+                    ui.hyperlink_to("Measurement source", PRESETS[i].source);
                 }
                 ui.text_edit_singleline(&mut d.name);
                 let p = &mut d.properties;
                 let before_properties = p.clone();
                 let mut gsm = p.density * 1000.;
-                if value(ui, "Masse surfacique", &mut gsm, 1., 10., 2000., " g/m²") { p.density = gsm / 1000.; }
+                if value(ui, "Area weight", &mut gsm, 1., 10., 2000., " g/m²") { p.density = gsm / 1000.; }
                 let mut thickness = p.thickness * 1000.;
-                if value(ui, "Épaisseur", &mut thickness, 0.01, 0.02, 5., " mm") { p.thickness = thickness / 1000.; }
-                ui.label("Stretch sous 5 N sur une bande de 5 cm");
-                ui.small("Plus le % est grand, plus le tissu est extensible. Ce n'est pas l'allongement à rupture.");
-                for (axis, label) in ["Chaîne", "Trame"].iter().enumerate() {
+                if value(ui, "Thickness", &mut thickness, 0.01, 0.02, 5., " mm") { p.thickness = thickness / 1000.; }
+                ui.label("Stretch under 5 N on a 5 cm strip");
+                ui.small("The larger the %, the more the fabric stretches. This is not the strain at failure.");
+                for (axis, label) in ["Warp", "Weft"].iter().enumerate() {
                     if value(ui, label, &mut d.extension[axis], 0.1, 0.1, 100., " %")
                         && let Ok(k) = fabrics::stiffness_for_extension(d.extension[axis], p) {
                             if axis == 0 { p.warp = k; } else { p.weft = k; }
                         }
                 }
-                ui.collapsing("Rigidités avancées", |ui| {
-                    value(ui, "Cisaillement", &mut p.shear, 1., 0.1, 10000., " N/m");
-                    for (label, b) in [("Flexion chaîne", &mut p.bend_warp), ("Flexion trame", &mut p.bend_weft)] {
+                ui.collapsing("Advanced stiffness", |ui| {
+                    value(ui, "Shear", &mut p.shear, 1., 0.1, 10000., " N/m");
+                    for (label, b) in [("Bending warp", &mut p.bend_warp), ("Bending weft", &mut p.bend_weft)] {
                         let mut micro = *b * 1e6;
                         if value(ui, label, &mut micro, 1., 0., 100000., " µN·m") { *b = micro * 1e-6; }
                     }
-                    ui.small(format!("Membrane chaîne/trame : {:.0} / {:.0} N/m", p.warp, p.weft));
-                    ui.small("Le rayon de collision se règle séparément dans Simulation.");
+                    ui.small(format!("Warp/weft membrane: {:.0} / {:.0} N/m", p.warp, p.weft));
+                    ui.small("The collision radius is set separately in Simulation.");
                 });
                 if d.properties != before_properties { d.preset = None; }
-                ui.checkbox(&mut d.all_panels, "Appliquer à tous les panneaux");
-                let button = ui.button("Appliquer le tissu");
+                ui.checkbox(&mut d.all_panels, "Apply to all panels");
+                let button = ui.button("Apply fabric");
                 targets.push(("fabric_apply".into(), button.rect.center()));
                 apply = button.clicked();
-                discard = ui.button("Annuler les réglages").clicked();
+                discard = ui.button("Discard settings").clicked();
             });
         self.smoke_target("fabric_panel", header.header_response.rect.center());
         for (name, p) in targets {

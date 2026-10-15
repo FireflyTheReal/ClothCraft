@@ -25,11 +25,102 @@ struct Timers {
     read: wgpu::Buffer,
 }
 
+/// Vertical field of view of the perspective projection, shared with the
+/// orthographic framing so switching projection does not resize the scene.
+const FOV_Y: f32 = 45.0 * std::f32::consts::PI / 180.;
+const NEAR: f32 = 0.01;
+const FAR: f32 = 100.;
+const MIN_DISTANCE: f32 = 0.15;
+const MAX_DISTANCE: f32 = 30.;
+/// Orbit sensitivity: radians of rotation per pixel of pointer drag.
+const ORBIT_RADIANS_PER_PIXEL: f32 = 0.008;
+/// Orbit stops exactly at the poles. [`Camera::up`] stays defined there, so the
+/// Top and Bottom presets are exact instead of a near-pole approximation.
+const MAX_PITCH: f32 = std::f32::consts::FRAC_PI_2;
+
+/// Canonical viewing directions offered by the 3D view bar.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PresetView {
+    Isometric,
+    Front,
+    Back,
+    Left,
+    Right,
+    Top,
+    Bottom,
+}
+impl PresetView {
+    /// Every preset, in the order the view bar shows them.
+    pub const ALL: [Self; 7] = [
+        Self::Isometric,
+        Self::Front,
+        Self::Back,
+        Self::Left,
+        Self::Right,
+        Self::Top,
+        Self::Bottom,
+    ];
+    /// Short control label.
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Isometric => "Iso",
+            Self::Front => "Front",
+            Self::Back => "Back",
+            Self::Left => "Left",
+            Self::Right => "Right",
+            Self::Top => "Top",
+            Self::Bottom => "Bottom",
+        }
+    }
+    /// Unit direction from the target towards the eye.
+    pub fn direction(self) -> Vec3 {
+        match self {
+            Self::Isometric => Vec3::ONE.normalize(),
+            Self::Front => Vec3::Z,
+            Self::Back => Vec3::NEG_Z,
+            Self::Left => Vec3::NEG_X,
+            Self::Right => Vec3::X,
+            Self::Top => Vec3::Y,
+            Self::Bottom => Vec3::NEG_Y,
+        }
+    }
+    /// Yaw and pitch that produce [`Self::direction`], exact at the poles.
+    pub fn angles(self) -> (f32, f32) {
+        let d = self.direction();
+        (d.x.atan2(d.z), d.y.clamp(-1., 1.).asin())
+    }
+}
+/// A camera pose the view bar can come back to.
+#[derive(Clone, Copy)]
+pub struct CameraPose {
+    yaw: f32,
+    pitch: f32,
+    distance: f32,
+    target: Vec3,
+    orthographic: bool,
+}
+/// Orbit camera for the 3D viewport.
+///
+/// Every field is public on purpose. The authoring adapters write the orbit
+/// fields directly, and the view-history fields must stay reachable from the
+/// binary targets: `cloth-fit` includes `atelier.rs` in the *bin* crate but links
+/// `render` from this *library* crate, so `pub(crate)` would not cross that
+/// boundary. Treat the history fields as internal state and use
+/// [`Camera::save_pose`], [`Camera::restore_pose`] and [`Camera::request_frame`]
+/// instead of writing them, and prefer [`Camera::new`] over a bare literal.
 pub struct Camera {
     pub yaw: f32,
     pub pitch: f32,
     pub distance: f32,
     pub target: Vec3,
+    /// Orthographic projection matched to the perspective framing at the target.
+    pub orthographic: bool,
+    /// Pose remembered by the view bar's Restore button.
+    pub saved: Option<CameraPose>,
+    /// Bounding sphere the next viewport interaction pass should frame. The
+    /// request waits because the viewport rectangle is only known once the
+    /// canvas has been allocated.
+    pub pending_frame: Option<(Vec3, f32)>,
 }
 impl Default for Camera {
     fn default() -> Self {
@@ -38,66 +129,253 @@ impl Default for Camera {
             pitch: 0.4,
             distance: 2.5,
             target: Vec3::new(0.0, 0.4, 0.0),
+            orthographic: false,
+            saved: None,
+            pending_frame: None,
         }
     }
 }
 impl Camera {
+    /// Build a camera from its orbit fields; the view history starts empty.
+    /// Equivalent to `Camera { yaw, pitch, distance, target, ..Default::default() }`.
+    pub fn new(yaw: f32, pitch: f32, distance: f32, target: Vec3) -> Self {
+        Self {
+            yaw,
+            pitch,
+            distance,
+            target,
+            ..Default::default()
+        }
+    }
+    /// Half-height of the view volume per unit of camera distance.
+    fn half_tan() -> f32 {
+        (FOV_Y * 0.5).tan()
+    }
+    fn pose(&self) -> CameraPose {
+        CameraPose {
+            yaw: self.yaw,
+            pitch: self.pitch,
+            distance: self.distance,
+            target: self.target,
+            orthographic: self.orthographic,
+        }
+    }
+    fn set_pose(&mut self, pose: CameraPose) {
+        self.yaw = pose.yaw;
+        self.pitch = pose.pitch;
+        self.distance = pose.distance;
+        self.target = pose.target;
+        self.orthographic = pose.orthographic;
+    }
+    /// Unit vector from the target towards the eye.
+    pub fn direction(&self) -> Vec3 {
+        let (sy, cy) = self.yaw.sin_cos();
+        let (sp, cp) = self.pitch.sin_cos();
+        Vec3::new(sy * cp, sp, cy * cp)
+    }
+    pub fn eye(&self) -> Vec3 {
+        self.target + self.distance * self.direction()
+    }
+    /// View direction, from the eye towards the target.
+    pub fn forward(&self) -> Vec3 {
+        -self.direction()
+    }
+    /// Camera up: world Y made perpendicular to the view direction. The value is
+    /// continuous across the poles, so Top and Bottom never degenerate.
+    pub fn up(&self) -> Vec3 {
+        let (sy, cy) = self.yaw.sin_cos();
+        let (sp, cp) = self.pitch.sin_cos();
+        Vec3::new(-sp * sy, cp, -sp * cy)
+    }
+    /// Screen-right vector, matching the rendered image.
+    pub fn right(&self) -> Vec3 {
+        self.forward().cross(self.up()).normalize_or_zero()
+    }
     pub fn matrix(&self, aspect: f32) -> Mat4 {
-        let eye = self.target
-            + self.distance
-                * Vec3::new(
-                    self.yaw.sin() * self.pitch.cos(),
-                    self.pitch.sin(),
-                    self.yaw.cos() * self.pitch.cos(),
-                );
         // WebGPU uses a [0,1] depth range and Y-up NDC on every backend.
-        glam::camera::rh::proj::directx::perspective(45.0_f32.to_radians(), aspect, 0.01, 100.0)
-            * glam::camera::rh::view::look_at_mat4(eye, self.target, Vec3::Y)
+        let view = glam::camera::rh::view::look_at_mat4(self.eye(), self.target, self.up());
+        let projection = if self.orthographic {
+            // Match the perspective framing at the target plane so switching
+            // projection keeps the same apparent size.
+            let half = self.distance * Self::half_tan();
+            glam::camera::rh::proj::directx::orthographic(
+                -half * aspect,
+                half * aspect,
+                -half,
+                half,
+                NEAR,
+                FAR,
+            )
+        } else {
+            glam::camera::rh::proj::directx::perspective(45.0_f32.to_radians(), aspect, NEAR, FAR)
+        };
+        projection * view
+    }
+    /// Project a world point into window coordinates; `None` behind the camera.
+    pub fn project(&self, world: Vec3, rect: egui::Rect) -> Option<egui::Pos2> {
+        let width = rect.width().max(1.);
+        let height = rect.height().max(1.);
+        let clip = self.matrix(width / height) * world.extend(1.);
+        if clip.w <= 1e-6 {
+            return None;
+        }
+        let ndc = clip.truncate() / clip.w;
+        Some(egui::pos2(
+            rect.left() + (ndc.x * 0.5 + 0.5) * width,
+            rect.top() + (0.5 - ndc.y * 0.5) * height,
+        ))
+    }
+    /// Orbit by a pointer drag in pixels.
+    pub fn orbit_by(&mut self, delta: egui::Vec2) {
+        self.yaw -= delta.x * ORBIT_RADIANS_PER_PIXEL;
+        self.pitch = (self.pitch + delta.y * ORBIT_RADIANS_PER_PIXEL).clamp(-MAX_PITCH, MAX_PITCH);
+    }
+    /// Pan so the scene follows the pointer: the world point under the pointer
+    /// moves with it, at the target plane's exact scale.
+    pub fn pan_by(&mut self, delta: egui::Vec2, rect: egui::Rect) {
+        let world_per_pixel = 2. * self.distance * Self::half_tan() / rect.height().max(1.);
+        self.target += (self.right() * -delta.x + self.up() * delta.y) * world_per_pixel;
+    }
+    /// Multiply the camera distance, clamped to the working range.
+    pub fn zoom(&mut self, factor: f32) {
+        // `!(factor > 0.)` rejected NaN as well as non-positive factors; spell
+        // that out rather than negating a partial-order comparison.
+        if factor <= 0. || factor.is_nan() {
+            return;
+        }
+        self.distance = (self.distance * factor).clamp(MIN_DISTANCE, MAX_DISTANCE);
+    }
+    /// Zoom while keeping the world point under the cursor exactly in place.
+    pub fn zoom_at(&mut self, cursor: egui::Pos2, rect: egui::Rect, factor: f32) {
+        if factor <= 0. || factor.is_nan() {
+            return;
+        }
+        let anchor = self.focal_point(cursor, rect);
+        let distance = (self.distance * factor).clamp(MIN_DISTANCE, MAX_DISTANCE);
+        let scale = distance / self.distance;
+        self.target = anchor + (self.target - anchor) * scale;
+        self.distance = distance;
+    }
+    /// Intersection of the cursor ray with the focal plane through the target.
+    fn focal_point(&self, cursor: egui::Pos2, rect: egui::Rect) -> Vec3 {
+        let (origin, direction) = self.ray(cursor, rect);
+        // `ray` is f64 for picking precision; the camera itself is f32.
+        let (origin, direction) = (origin.as_vec3(), direction.as_vec3());
+        let forward = self.forward();
+        let denominator = direction.dot(forward);
+        if denominator.abs() < 1e-6 {
+            return self.target;
+        }
+        origin + direction * ((self.target - origin).dot(forward) / denominator)
+    }
+    /// Wheel zoom towards the cursor when it is over the viewport.
+    fn wheel_zoom(&mut self, response: &egui::Response) {
+        if !response.hovered() {
+            return;
+        }
+        let scroll = response.ctx.input(|i| i.smooth_scroll_delta.y);
+        if scroll == 0. {
+            return;
+        }
+        let factor = (-scroll * 0.002).exp();
+        match response.hover_pos() {
+            Some(cursor) => self.zoom_at(cursor, response.rect, factor),
+            None => self.zoom(factor),
+        }
+    }
+    /// Ask the next interaction pass to frame this bounding sphere.
+    pub fn request_frame(&mut self, center: Vec3, radius: f32) {
+        self.pending_frame = Some((center, radius));
+    }
+    /// Apply a pending frame request with the real viewport rectangle.
+    pub fn apply_pending_frame(&mut self, rect: egui::Rect) -> bool {
+        match self.pending_frame.take() {
+            Some((center, radius)) => {
+                self.frame_in(center, radius, rect);
+                true
+            }
+            None => false,
+        }
+    }
+    /// Frame a bounding sphere, keeping the current orbit direction and fitting
+    /// both viewport axes.
+    pub fn frame_in(&mut self, center: Vec3, radius: f32, rect: egui::Rect) {
+        self.save_pose();
+        self.target = center;
+        let aspect = (rect.width() / rect.height().max(1.)).max(1e-3);
+        let half_v = FOV_Y * 0.5;
+        let half_h = (half_v.tan() * aspect).atan();
+        let half = half_v.min(half_h);
+        self.distance = (radius.max(1e-3) * 1.2 / half.sin()).clamp(MIN_DISTANCE, MAX_DISTANCE);
+    }
+    /// Frame a bounding sphere without a viewport; assumes a square viewport.
+    pub fn frame(&mut self, center: Vec3, radius: f32) {
+        let rect = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::Vec2::splat(1.));
+        self.frame_in(center, radius, rect);
+    }
+    /// Point the camera along a canonical direction, keeping target and distance.
+    pub fn apply_preset(&mut self, view: PresetView) {
+        self.save_pose();
+        let (yaw, pitch) = view.angles();
+        self.yaw = yaw;
+        self.pitch = pitch;
+    }
+    /// Toggle between the matched perspective and orthographic projections.
+    pub fn toggle_projection(&mut self) {
+        self.orthographic = !self.orthographic;
+    }
+    /// Return to the default framing while keeping the projection mode.
+    pub fn reset_view(&mut self) {
+        let default = Self::default();
+        self.yaw = default.yaw;
+        self.pitch = default.pitch;
+        self.distance = default.distance;
+        self.target = default.target;
+    }
+    /// Remember the current pose for [`Self::restore_pose`].
+    pub fn save_pose(&mut self) {
+        self.saved = Some(self.pose());
+    }
+    pub fn has_saved_pose(&self) -> bool {
+        self.saved.is_some()
+    }
+    /// Swap the current pose with the remembered one, so Restore toggles.
+    pub fn restore_pose(&mut self) -> bool {
+        match self.saved.take() {
+            Some(saved) => {
+                self.saved = Some(self.pose());
+                self.set_pose(saved);
+                true
+            }
+            None => false,
+        }
     }
     pub fn interact(&mut self, response: &egui::Response) {
+        self.apply_pending_frame(response.rect);
         let delta = response.ctx.input(|i| i.pointer.delta());
         if response.dragged_by(egui::PointerButton::Primary) {
-            self.yaw -= delta.x * 0.008;
-            self.pitch = (self.pitch + delta.y * 0.008).clamp(-1.45, 1.45);
+            self.orbit_by(delta);
         }
         if response.dragged_by(egui::PointerButton::Secondary)
             || response.dragged_by(egui::PointerButton::Middle)
         {
-            let right = Vec3::new(self.yaw.cos(), 0.0, -self.yaw.sin());
-            let up = Vec3::new(
-                -self.yaw.sin() * self.pitch.sin(),
-                self.pitch.cos(),
-                -self.yaw.cos() * self.pitch.sin(),
-            );
-            self.target += (-delta.x * right + delta.y * up) * self.distance * 0.0015;
+            self.pan_by(delta, response.rect);
         }
-        if response.hovered() {
-            let scroll = response.ctx.input(|i| i.smooth_scroll_delta.y);
-            self.distance = (self.distance * (-scroll * 0.002).exp()).clamp(0.15, 30.0);
-        }
+        self.wheel_zoom(response);
         if response.double_clicked() {
-            *self = Self::default();
+            self.reset_view();
         }
     }
     pub fn garment_interact(&mut self, response: &egui::Response) {
+        self.apply_pending_frame(response.rect);
         let delta = response.ctx.input(|i| i.pointer.delta());
         if response.dragged_by(egui::PointerButton::Secondary) {
-            self.yaw -= delta.x * 0.008;
-            self.pitch = (self.pitch + delta.y * 0.008).clamp(-1.45, 1.45);
+            self.orbit_by(delta);
         }
         if response.dragged_by(egui::PointerButton::Middle) {
-            let right = Vec3::new(self.yaw.cos(), 0., -self.yaw.sin());
-            let up = Vec3::new(
-                -self.yaw.sin() * self.pitch.sin(),
-                self.pitch.cos(),
-                -self.yaw.cos() * self.pitch.sin(),
-            );
-            self.target += (-delta.x * right + delta.y * up) * self.distance * 0.0015;
+            self.pan_by(delta, response.rect);
         }
-        if response.hovered() {
-            let scroll = response.ctx.input(|i| i.smooth_scroll_delta.y);
-            self.distance = (self.distance * (-scroll * 0.002).exp()).clamp(0.15, 30.);
-        }
+        self.wheel_zoom(response);
     }
     pub fn ray(&self, position: egui::Pos2, rect: egui::Rect) -> (glam::DVec3, glam::DVec3) {
         let inv = self.matrix(rect.width() / rect.height()).inverse();
@@ -513,10 +791,13 @@ impl Viewport {
                     depth_slice: None,
                     resolve_target: None,
                     ops: wgpu::Operations {
+                        // Studio backdrop for the workspace viewport: a light
+                        // neutral grey that still separates the near-white cloth
+                        // and the grey mannequin.
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.12,
-                            g: 0.13,
-                            b: 0.14,
+                            r: 0.70,
+                            g: 0.73,
+                            b: 0.77,
                             a: 1.0,
                         }),
                         store: wgpu::StoreOp::Store,
@@ -665,5 +946,338 @@ impl Drop for Viewport {
             .renderer
             .write()
             .free_texture(&self.texture_id);
+    }
+}
+
+/// Camera navigation is pure math: these tests need no GPU and no window.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn viewport(width: f32, height: f32) -> egui::Rect {
+        egui::Rect::from_min_size(egui::Pos2::ZERO, egui::Vec2::new(width, height))
+    }
+
+    fn close(actual: f32, expected: f32, tolerance: f32, what: &str) {
+        assert!(
+            (actual - expected).abs() <= tolerance,
+            "{what}: {actual} vs {expected}"
+        );
+    }
+
+    /// World point under a window position, on the focal plane through the
+    /// target. This is the inverse of `Camera::project` for that plane.
+    fn unproject(camera: &Camera, position: egui::Pos2, rect: egui::Rect) -> Vec3 {
+        let (origin, direction) = camera.ray(position, rect);
+        let (origin, direction) = (origin.as_vec3(), direction.as_vec3());
+        let forward = camera.forward();
+        let denominator = direction.dot(forward);
+        assert!(
+            denominator.abs() > 1e-6,
+            "cursor ray parallel to the view axis"
+        );
+        origin + direction * ((camera.target - origin).dot(forward) / denominator)
+    }
+
+    #[test]
+    fn presets_point_along_their_canonical_direction() {
+        for preset in PresetView::ALL {
+            let mut camera = Camera::default();
+            let (distance, target) = (camera.distance, camera.target);
+            camera.apply_preset(preset);
+            let expected = preset.direction();
+            let actual = camera.direction();
+            assert!(
+                (actual - expected).length() < 1e-5,
+                "{}: {actual:?} vs {expected:?}",
+                preset.label()
+            );
+            close(camera.distance, distance, 0., preset.label());
+            assert!(
+                (camera.target - target).length() == 0.,
+                "{}",
+                preset.label()
+            );
+        }
+    }
+
+    #[test]
+    fn up_is_defined_and_perpendicular_at_every_preset() {
+        for preset in PresetView::ALL {
+            let mut camera = Camera::default();
+            camera.apply_preset(preset);
+            let up = camera.up();
+            close(up.length(), 1., 1e-5, preset.label());
+            assert!(
+                up.dot(camera.direction()).abs() < 1e-5,
+                "{} up is not perpendicular to the view direction",
+                preset.label()
+            );
+            assert!(
+                camera.right().length() > 0.99,
+                "{} has a degenerate right vector",
+                preset.label()
+            );
+            for orthographic in [false, true] {
+                camera.orthographic = orthographic;
+                assert!(
+                    camera.matrix(1.6).is_finite(),
+                    "{} ({orthographic}) produced a non-finite matrix",
+                    preset.label()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn screen_and_world_round_trip_in_both_projections() {
+        let rect = viewport(1280., 720.);
+        for orthographic in [false, true] {
+            let camera = Camera {
+                orthographic,
+                ..Default::default()
+            };
+            let focal = camera.target;
+            for world in [
+                focal,
+                focal + camera.right() * 0.3 + camera.up() * 0.2,
+                focal - camera.right() * 0.4 - camera.up() * 0.1,
+            ] {
+                let screen = camera.project(world, rect).expect("in front of the camera");
+                let back = unproject(&camera, screen, rect);
+                assert!(
+                    (back - world).length() < 1e-3,
+                    "{orthographic}: {world:?} -> {screen:?} -> {back:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn zoom_keeps_the_world_point_under_the_cursor() {
+        let rect = viewport(1200., 700.);
+        for orthographic in [false, true] {
+            let mut camera = Camera {
+                orthographic,
+                ..Default::default()
+            };
+            let cursor = egui::pos2(
+                rect.left() + 0.18 * rect.width(),
+                rect.top() + 0.72 * rect.height(),
+            );
+            let anchor = unproject(&camera, cursor, rect);
+            let before = camera.project(anchor, rect).unwrap();
+            let (yaw, pitch) = (camera.yaw, camera.pitch);
+            camera.zoom_at(cursor, rect, 0.5);
+            close(
+                camera.distance,
+                Camera::default().distance * 0.5,
+                1e-5,
+                "distance",
+            );
+            let after = camera.project(anchor, rect).unwrap();
+            assert!(
+                (after - before).length() < 0.05,
+                "{orthographic}: anchor moved from {before:?} to {after:?}"
+            );
+            close(camera.yaw, yaw, 0., "yaw");
+            close(camera.pitch, pitch, 0., "pitch");
+        }
+    }
+
+    #[test]
+    fn zoom_towards_the_centre_only_changes_the_distance() {
+        let rect = viewport(900., 600.);
+        let mut camera = Camera::default();
+        let target = camera.target;
+        let centre = camera.project(target, rect).unwrap();
+        camera.zoom_at(rect.center(), rect, 2.);
+        println!("centre drift: {:?}", (camera.target - target).length());
+        // The centre ray is the view axis, so the target may only drift by the
+        // f32 inverse-projection noise, and never along the screen plane.
+        assert!((camera.target - target).length() < 1e-3);
+        let after = camera.project(target, rect).unwrap();
+        assert!((after - centre).length() < 0.05, "{after:?} vs {centre:?}");
+        close(
+            camera.distance,
+            Camera::default().distance * 2.,
+            1e-5,
+            "distance",
+        );
+    }
+
+    #[test]
+    fn zoom_clamps_and_keeps_the_anchor() {
+        let rect = viewport(800., 800.);
+        let cursor = egui::pos2(rect.left() + 40., rect.top() + 660.);
+        let mut camera = Camera::default();
+        let anchor = unproject(&camera, cursor, rect);
+        camera.zoom_at(cursor, rect, 1e6);
+        close(camera.distance, MAX_DISTANCE, 1e-6, "clamped out");
+        let projected = camera.project(anchor, rect).unwrap();
+        assert!((projected - cursor).length() < 0.05, "{projected:?}");
+        let mut camera = Camera::default();
+        let anchor = unproject(&camera, cursor, rect);
+        camera.zoom_at(cursor, rect, 1e-6);
+        close(camera.distance, MIN_DISTANCE, 1e-6, "clamped in");
+        let projected = camera.project(anchor, rect).unwrap();
+        assert!((projected - cursor).length() < 0.05, "{projected:?}");
+        // A non-positive factor is not a zoom and must not flip the distance.
+        camera.zoom_at(cursor, rect, -1.);
+        close(camera.distance, MIN_DISTANCE, 1e-6, "distance unchanged");
+        camera.zoom(-4.);
+        close(camera.distance, MIN_DISTANCE, 1e-6, "distance unchanged");
+    }
+
+    #[test]
+    fn pan_moves_the_scene_with_the_pointer_pixel_for_pixel() {
+        let rect = viewport(1000., 800.);
+        let mut camera = Camera::default();
+        let world = camera.target + camera.right() * 0.25 - camera.up() * 0.15;
+        let delta = egui::Vec2::new(37., -21.);
+        let before = camera.project(world, rect).unwrap();
+        camera.pan_by(delta, rect);
+        let after = camera.project(world, rect).unwrap();
+        assert!(
+            (after - before - delta).length() < 0.05,
+            "moved {:?} instead of {delta:?}",
+            after - before
+        );
+    }
+
+    #[test]
+    fn orbit_clamps_at_the_poles_and_keeps_the_model_upright_below_them() {
+        let mut camera = Camera::default();
+        camera.orbit_by(egui::Vec2::new(0., 100_000.));
+        close(camera.pitch, MAX_PITCH, 1e-6, "pitch");
+        camera.orbit_by(egui::Vec2::new(0., -200_000.));
+        close(camera.pitch, -MAX_PITCH, 1e-6, "pitch");
+        // Below the poles the camera up stays the world Y axis on screen.
+        let mut camera = Camera::default();
+        camera.orbit_by(egui::Vec2::new(20., 10.));
+        close(camera.up().y, camera.pitch.cos(), 1e-5, "up.y");
+        assert!(camera.up().y > 0., "model flipped after a small orbit");
+        // The poles themselves are still upright and finite.
+        for pitch in [MAX_PITCH, -MAX_PITCH] {
+            camera.pitch = pitch;
+            assert!(camera.up().y.abs() < 1e-5, "pole up is not horizontal");
+            assert!(camera.right().length() > 0.99);
+        }
+    }
+
+    #[test]
+    fn orthographic_matches_the_perspective_scale_at_the_focal_plane() {
+        let rect = viewport(1024., 768.);
+        let mut camera = Camera::default();
+        let focal_half_height = camera.distance * (FOV_Y * 0.5).tan();
+        let top = camera.target + camera.up() * focal_half_height;
+        let perspective_top = camera.project(top, rect).unwrap();
+        close(perspective_top.y, rect.top(), 0.01, "perspective framing");
+        camera.orthographic = true;
+        let orthographic_top = camera.project(top, rect).unwrap();
+        close(orthographic_top.y, rect.top(), 0.01, "orthographic framing");
+        let centre = camera.project(camera.target, rect).unwrap();
+        close(centre.x, rect.center().x, 0.01, "target stays centred");
+        close(centre.y, rect.center().y, 0.01, "target stays centred");
+    }
+
+    #[test]
+    fn orthographic_projects_parallel_lines_onto_the_same_screen_point() {
+        let rect = viewport(900., 700.);
+        let mut camera = Camera {
+            orthographic: true,
+            ..Default::default()
+        };
+        let lateral = camera.right() * 0.2;
+        let near = camera.target + lateral - camera.forward() * 0.4;
+        let far = camera.target + lateral + camera.forward() * 0.4;
+        let a = camera.project(near, rect).unwrap();
+        let b = camera.project(far, rect).unwrap();
+        assert!(
+            (a - b).length() < 0.01,
+            "orthographic is not parallel: {a:?} vs {b:?}"
+        );
+        // Perspective is not: the same offset shrinks with depth.
+        camera.orthographic = false;
+        let a = camera.project(near, rect).unwrap();
+        let b = camera.project(far, rect).unwrap();
+        assert!((a.x - b.x).abs() > 1., "perspective should foreshorten");
+    }
+
+    #[test]
+    fn frame_fits_the_bounding_sphere_in_both_projections() {
+        let rect = viewport(900., 600.);
+        let center = Vec3::new(0.1, 0.9, -0.2);
+        let radius = 0.6;
+        for orthographic in [false, true] {
+            let mut camera = Camera {
+                orthographic,
+                ..Default::default()
+            };
+            camera.frame_in(center, radius, rect);
+            assert!((camera.target - center).length() < 1e-6);
+            for axis in [Vec3::X, Vec3::Y, Vec3::Z] {
+                for sign in [1., -1.] {
+                    let extreme = center + axis * (sign * radius);
+                    let screen = camera.project(extreme, rect).unwrap();
+                    assert!(
+                        rect.contains(screen),
+                        "{orthographic}: {screen:?} outside {rect:?}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn pending_frame_waits_for_the_viewport_rectangle() {
+        let mut camera = Camera::default();
+        let rect = viewport(400., 900.);
+        camera.request_frame(Vec3::new(0., 1., 0.), 0.5);
+        assert!(camera.apply_pending_frame(rect));
+        assert!(
+            !camera.apply_pending_frame(rect),
+            "the request is consumed once"
+        );
+        // A narrow viewport needs more distance than a square one.
+        let mut square = Camera::default();
+        square.frame(Vec3::new(0., 1., 0.), 0.5);
+        assert!(camera.distance > square.distance);
+    }
+
+    #[test]
+    fn presets_and_frames_can_be_undone_with_restore() {
+        let mut camera = Camera::default();
+        let original = (camera.yaw, camera.pitch, camera.distance, camera.target);
+        camera.apply_preset(PresetView::Top);
+        assert!(camera.has_saved_pose());
+        let (yaw, pitch) = PresetView::Top.angles();
+        close(camera.yaw, yaw, 1e-6, "yaw");
+        close(camera.pitch, pitch, 1e-6, "pitch");
+        assert!(camera.restore_pose());
+        close(camera.yaw, original.0, 0., "restored yaw");
+        close(camera.pitch, original.1, 0., "restored pitch");
+        close(camera.distance, original.2, 0., "restored distance");
+        assert!((camera.target - original.3).length() == 0.);
+        // Restore toggles back to the preset it replaced.
+        assert!(camera.restore_pose());
+        close(camera.pitch, pitch, 1e-6, "toggled pitch");
+        assert!(!Camera::default().restore_pose(), "nothing saved yet");
+    }
+
+    #[test]
+    fn reset_view_keeps_the_projection_mode() {
+        let mut camera = Camera::default();
+        camera.apply_preset(PresetView::Bottom);
+        camera.toggle_projection();
+        camera.frame_in(Vec3::new(1., 1., 1.), 2., viewport(800., 600.));
+        camera.reset_view();
+        let default = Camera::default();
+        close(camera.yaw, default.yaw, 0., "yaw");
+        close(camera.distance, default.distance, 0., "distance");
+        assert!(
+            camera.orthographic,
+            "the projection choice survives a reset"
+        );
     }
 }

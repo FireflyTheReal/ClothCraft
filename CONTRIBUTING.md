@@ -4,7 +4,7 @@ Humans and AI agents are welcome. Start with [AI_START_HERE.md](AI_START_HERE.md
 
 ## Choose a small, verifiable change
 
-The project is a very early alpha. Pick one bounded task with observable acceptance cases. Reliable save/open (`SAVE-01`) and numeric drawing dimensions (`DRAW-01`) are useful first contributions. The [manual study](docs/manual-study.md) distinguishes public behavioral references, independently implemented features and work that remains planned. Do not describe roadmap formats or solver backends as available.
+The project is a very early alpha. Pick one bounded task with observable acceptance cases. Reliable save/open (`SAVE-01`) and partial-edge sewing (`SEW-01`) are useful first contributions. The [manual study](docs/manual-study.md) distinguishes public behavioral references, independently implemented features and work that remains planned. Do not describe roadmap formats or solver backends as available.
 
 For physics changes, describe the affected energy/contact model, units, assumptions and limits. Add a test that could falsify the implementation: derivatives, objectivity, balance, rest-state preservation, an analytical result or convergence. Use the same scenes and settings when comparing solvers; report quality and full-step cost using the [solver challenge](docs/solver-challenge.md). Documentation and reversible visual changes do not need tests that merely repeat the implementation.
 
@@ -29,3 +29,11 @@ GPU tests and window checks are opt-in. Coordinate their use with the machine's 
 ## License and provenance
 
 ClothCraft's original source and documentation are under the [MIT License](LICENSE), chosen by the project owner. Contributions intended for inclusion must be compatible with that license; retain any applicable third-party notices. The bundled MakeHuman assets retain their [CC0 notice](assets/makehuman/LICENSE.ASSETS.md), and dependencies retain their own licenses. The [artwork record](assets/branding/README.md) documents the generated icon and its references.
+
+## Coordinate across forks
+
+A fork is an independent working copy, not an automatic subscription or a promise to contribute. Keep it synchronized with upstream before starting a change. Announce a small scope in an issue, draft PR or the community Discord when possible; a short message prevents overlapping edits without requiring meetings.
+
+Open one focused PR per feature against `erythrofr/ClothCraft:main`, explain the behavior and tests, and preserve unrelated work. Discuss shared model changes before rewriting authoring, sewing or document schemas. If you import work from another fork, preserve the author and source commit references; credit adapted code and document integration fixes. Do not imply endorsement by that contributor. No Discord message or GitHub mention is sent automatically by these guidelines.
+
+The first selective integration from FireflyTheReal / julienfoss is recorded in [the integration notes](docs/firefly-integration.md).

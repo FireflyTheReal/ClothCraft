@@ -18,7 +18,7 @@ If you want to vibe-code a better solver: welcome. A convincing contribution inc
 
 | Want to help with… | Start here | A useful next contribution |
 |---|---|---|
-| Pattern authoring | `src/authoring.rs`, `src/authoring/geometry.rs`, `src/atelier/board.rs` | Primitives, mirrors, booleans/holes and internal sewing exist; next: splits, offsets, linked symmetry and multi-selection. Read `docs/drafting-tools.md` |
+| Pattern authoring | `src/authoring.rs`, `src/authoring/geometry.rs`, `src/atelier/board.rs` | Primitives, mirrors, booleans/holes and internal sewing exist; numeric point tools and unsewn splits are integrated from Firefly. Next: offsets, linked symmetry and partial sewing. Read `docs/firefly-integration.md` and `docs/drafting-tools.md` |
 | Placement tools | `src/atelier/gizmo.rs` | Arrangement points and collision diagnostics before simulation |
 | Sewing | `src/garment/seam.rs`, `src/atelier/edges_3d.rs` | Extend linked 2D/3D sewing to interactive partial boundaries, notches and direction preview |
 | Interoperability | [input/output contracts](docs/interoperability.md), [format roadmap](ROADMAP.md#interoperability) | Small, independently sourced fixtures with units, transforms and round-trip tests |
