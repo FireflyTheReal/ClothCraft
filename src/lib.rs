@@ -1,6 +1,8 @@
 //! SI units throughout: metres, kilograms, seconds, Newtons.
 pub mod authoring;
 pub mod avatar;
+/// Assembled nodal block-CSR operator and block-Jacobi PCG; pure CPU `f64`.
+pub mod blocksolve;
 pub mod contact;
 pub mod energy;
 pub mod fabrics;

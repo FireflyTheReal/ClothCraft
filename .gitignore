@@ -1,3 +1,5 @@
 /target/
 /output/
 *.tmp
+# Local cargo registry cache used when $CARGO_HOME is redirected into the tree.
+/.cargo-home/

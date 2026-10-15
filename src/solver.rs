@@ -1,5 +1,6 @@
 //! Implicit Euler, regularized Newton, matrix-free element Hessian PCG and Armijo.
 use crate::{
+    blocksolve::{BlockPcgSettings, BlockPcgStatus, MatMixCsr, MatMixCsrBuilder, block_jacobi_pcg},
     contact::{Collider, Sphere},
     energy::{self, Element},
     garment::{CompiledGarment, seam::CompiledSeam},
@@ -186,7 +187,57 @@ impl System {
         }
         out
     }
-    fn pcg(&self, shift: f64, limit: usize) -> (Option<Vec<f64>>, usize) {
+    /// Assemble the operator that [`Self::apply`] represents, as a mixed
+    /// block-CSR matrix with one symmetric 3x3 block per node.
+    ///
+    /// `apply` and this assembly must describe the same linear operator; the
+    /// `blocksolve_assembly_matches_the_matrix_free_operator` test in this module
+    /// is the guard. Dirichlet dofs go through [`MatMixCsr::apply_dirichlet`],
+    /// which reproduces `apply`'s convention of clearing constrained rows and
+    /// columns and leaving a unit diagonal.
+    fn assemble_operator(&self, shift: f64) -> MatMixCsr {
+        let nodes = self.mass_diagonal.len() / 3;
+        let mut builder = MatMixCsrBuilder::new(nodes);
+        for node in 0..nodes {
+            let mut block = [[0.0_f64; 3]; 3];
+            for (k, row) in block.iter_mut().enumerate() {
+                row[k] = self.mass_diagonal[3 * node + k] + shift;
+            }
+            builder.add_block(node, node, block);
+        }
+        for element in &self.elements {
+            let dofs = element.dofs.len();
+            let local = dofs / 3;
+            // One triangle is enough. The element Hessian is symmetric and
+            // `add_block` already stores a lower-ordering block as the transpose
+            // of its upper counterpart, so visiting the mirrored pair as well
+            // would double-count every off-diagonal block.
+            for a in 0..local {
+                // `Element::from_jet` numbers dofs as `3 * vertex + component`.
+                let node_a = element.dofs[3 * a] / 3;
+                debug_assert!(
+                    (0..3).all(|k| element.dofs[3 * a + k] == 3 * node_a + k),
+                    "element dofs must be node-major (3 * vertex + component)"
+                );
+                for b in a..local {
+                    let node_b = element.dofs[3 * b] / 3;
+                    let block = std::array::from_fn(|r| {
+                        std::array::from_fn(|c| element.hessian[(3 * a + r) * dofs + (3 * b + c)])
+                    });
+                    builder.add_block(node_a, node_b, block);
+                }
+            }
+        }
+        let mut matrix = builder.build();
+        matrix.apply_dirichlet(&self.fixed);
+        matrix
+    }
+    /// Matrix-free point-Jacobi CG: the historical reference path.
+    ///
+    /// Retained as the fallback for an assembled operator whose nodal diagonal
+    /// cannot be inverted, so one degenerate element cannot abort a step the
+    /// matrix-free path could still take.
+    fn pcg_point_jacobi(&self, shift: f64, limit: usize) -> (Option<Vec<f64>>, usize) {
         let n = self.gradient.len();
         let diag = self.diagonal(shift);
         let mut x = vec![0.0; n];
@@ -221,6 +272,35 @@ impl System {
         }
         // Inexact Newton direction accepted only if descent and energy decrease are verified.
         (Some(x), limit)
+    }
+    /// Newton linear solve on the assembled nodal operator, preconditioned by the
+    /// inverted nodal diagonal.
+    ///
+    /// Point-Jacobi keeps one scalar per dof and cannot see the coupling between
+    /// the three translational dofs that share a vertex. An assembled 3x3 nodal
+    /// block can, which is the structure the shipped CLO timestep uses; see
+    /// [`crate::blocksolve`]. The matrix-free path is the fallback when no nodal
+    /// preconditioner exists.
+    fn pcg(&self, shift: f64, limit: usize) -> (Option<Vec<f64>>, usize) {
+        let matrix = self.assemble_operator(shift);
+        let Ok(preconditioner) = matrix.block_diagonal_inverse(1e-14) else {
+            return self.pcg_point_jacobi(shift, limit);
+        };
+        let rhs: Vec<f64> = self.gradient.iter().map(|g| -g).collect();
+        let mut direction = vec![0.0; rhs.len()];
+        let settings = BlockPcgSettings {
+            max_iterations: limit,
+            ..BlockPcgSettings::default()
+        };
+        let report = block_jacobi_pcg(&matrix, &preconditioner, &rhs, &mut direction, &settings);
+        match report.status {
+            BlockPcgStatus::Converged | BlockPcgStatus::Exhausted => {
+                (Some(direction), report.iterations)
+            }
+            BlockPcgStatus::NotPositiveDefinite | BlockPcgStatus::SingularBlock(_) => {
+                (None, report.iterations)
+            }
+        }
     }
 }
 fn dot(a: &[f64], b: &[f64]) -> f64 {
@@ -643,5 +723,140 @@ impl ReferenceSolver {
             "CPU FEM step"
         );
         Ok(stats)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::garment::GarmentTemplate;
+
+    fn demo_system(settings: &SolverSettings) -> (CompiledGarment, System) {
+        let garment = GarmentTemplate::two_panel_demo()
+            .compile()
+            .expect("demo template compiles");
+        let state = garment.initial_state.clone();
+        let x = state.x.clone();
+        let problem = Problem {
+            mesh: &garment.mesh,
+            materials: &garment.materials,
+            vertex_material: Some(&garment.vertex_material),
+            seams: &garment.seams,
+        };
+        let system = ReferenceSolver::assemble(&problem, &state, &x, settings, None);
+        (garment, system)
+    }
+
+    /// The assembled mixed block-CSR operator must describe exactly the same
+    /// linear operator as the matrix-free element Hessian path it replaces.
+    ///
+    /// This is the guard that keeps `System::assemble_operator` from drifting
+    /// away from `System::apply`, including the Dirichlet convention for pinned
+    /// dofs and the mass-plus-shift diagonal.
+    #[test]
+    fn blocksolve_assembly_matches_the_matrix_free_operator() {
+        let settings = SolverSettings::default();
+        let (_garment, system) = demo_system(&settings);
+        let n = system.gradient.len();
+        assert!(n > 0, "demo must produce dofs");
+        assert!(
+            system.fixed.iter().any(|f| *f),
+            "demo must exercise pinned dofs"
+        );
+        assert!(
+            system.fixed.iter().any(|f| !*f),
+            "demo must exercise free dofs"
+        );
+
+        // Deterministic, non-trivial probe vector.
+        let probe: Vec<f64> = (0..n)
+            .map(|i| ((i % 7) as f64 - 3.0) * 0.125 + 0.0625)
+            .collect();
+
+        for shift in [0.0, 1e-3, 1.0] {
+            let matrix = system.assemble_operator(shift);
+            let expected = system.apply(&probe, shift);
+            let mut assembled = vec![0.0; n];
+            matrix.spmv(&probe, &mut assembled);
+            for i in 0..n {
+                let scale = expected[i].abs().max(1.0);
+                assert!(
+                    (assembled[i] - expected[i]).abs() <= 1e-9 * scale,
+                    "shift {shift}: assembled[{i}] = {} but matrix-free = {}",
+                    assembled[i],
+                    expected[i]
+                );
+                if system.fixed[i] {
+                    assert_eq!(
+                        assembled[i], probe[i],
+                        "pinned dof {i} must act as an identity row"
+                    );
+                }
+            }
+        }
+    }
+
+    /// A real Newton step must run through the block-Jacobi path and leave a
+    /// finite state with the pinned vertices exactly where they were placed.
+    #[test]
+    fn block_jacobi_pcg_drives_a_real_newton_step() {
+        let garment = GarmentTemplate::two_panel_demo()
+            .compile()
+            .expect("demo template compiles");
+        let mut state = garment.initial_state.clone();
+        let settings = SolverSettings::default();
+        let metrics = ReferenceSolver::step_garment(&garment, &mut state, &settings, None)
+            .expect("step succeeds");
+        assert!(metrics.residual_rms_n.is_finite());
+        assert!(
+            metrics.pcg_iterations > 0,
+            "the linear solve must actually run"
+        );
+        assert!(state.x.iter().all(|p| p.is_finite()));
+        assert!(state.v.iter().all(|v| v.is_finite()));
+        for (i, pin) in garment.mesh.pins.iter().enumerate() {
+            if let Some(p) = pin {
+                assert!(
+                    (state.x[i] - *p).length() < 1e-12,
+                    "pinned vertex {i} moved off its pin"
+                );
+            }
+        }
+    }
+
+    /// The assembled block path must never need more iterations than the
+    /// matrix-free point-Jacobi path on the same operator, and it must beat it
+    /// where the nodal blocks carry real off-diagonal coupling.
+    ///
+    /// Measured on `two_panel_demo` (median nodal off-diagonal/diagonal ratio
+    /// 0.24) the assembled path is strictly better; on the T-shirt fixtures the
+    /// nodal blocks are nearly diagonal (ratio 0.025) and the two agree exactly.
+    /// See `docs/clo3d-reverse-engineering.md` for the full sweep.
+    #[test]
+    fn block_jacobi_bounds_point_jacobi_iterations() {
+        for template in [
+            GarmentTemplate::two_panel_demo(),
+            crate::garment::presets::basic(crate::garment::presets::GarmentKind::Tshirt, 2),
+        ] {
+            let garment = template.compile().expect("fixture compiles");
+            let settings = SolverSettings::default();
+            let state = garment.initial_state.clone();
+            let x = state.x.clone();
+            let problem = Problem {
+                mesh: &garment.mesh,
+                materials: &garment.materials,
+                vertex_material: Some(&garment.vertex_material),
+                seams: &garment.seams,
+            };
+            let system = ReferenceSolver::assemble(&problem, &state, &x, &settings, None);
+            let (block, block_iters) = system.pcg(0.0, 250);
+            let (point, point_iters) = system.pcg_point_jacobi(0.0, 250);
+            assert!(block.is_some() && point.is_some());
+            assert!(
+                block_iters <= point_iters,
+                "assembled block-Jacobi used {block_iters} iterations, \
+                 point-Jacobi used {point_iters}"
+            );
+        }
     }
 }
