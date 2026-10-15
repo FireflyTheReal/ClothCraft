@@ -84,9 +84,23 @@ pub fn run(
         options,
         Box::new(move |cc| {
             let render = cc.wgpu_render_state.clone().ok_or("wgpu unavailable")?;
-            // `workspace::style` installs the light workspace chrome for both
-            // egui themes, so there is no separate dark override here.
-            workspace::style(&cc.egui_ctx);
+            // Preferences choose the theme and the startup display defaults, so
+            // they are loaded and applied before the first frame is drawn.
+            // Applying them afterwards would show a flash of the wrong theme.
+            let prefs = settings::load(&output.join(settings::FILE_NAME));
+            settings::apply(&cc.egui_ctx, &prefs);
+            // Copy the startup values out before `prefs` moves into the struct.
+            let (wire, seam_links) = (prefs.wireframe, prefs.seam_links);
+            let (dt, iterations) = (prefs.dt, prefs.iterations);
+            let mut authoring = AuthoringUi {
+                tool: if drag_test || perf_test {
+                    Tool::Grab
+                } else {
+                    Tool::Edit
+                },
+                ..Default::default()
+            };
+            authoring.board.snap_mm = prefs.snap_mm;
             let (tx, receive) = worker::start(render.device.clone(), render.queue.clone())?;
             let m = project
                 .template
@@ -96,14 +110,9 @@ pub fn run(
                 .map(|p| p.meshing_settings())
                 .unwrap_or_default();
             Ok(Box::new(Atelier {
-                authoring: AuthoringUi {
-                    tool: if drag_test || perf_test {
-                        Tool::Grab
-                    } else {
-                        Tool::Edit
-                    },
-                    ..Default::default()
-                },
+                authoring,
+                prefs,
+                settings_open: false,
                 authoring_smoke: authoring_test.then(authoring_smoke::Smoke::new),
                 mesh_mm: m.target_edge_m * 1000.,
                 anisotropy: m.anisotropy,
@@ -123,13 +132,14 @@ pub fn run(
                 generation: 0,
                 pending: false,
                 playing: perf_test,
-                wire: false,
+                wire,
                 heat: false,
                 seams: false,
-                seam_links: true,
+                seam_links,
                 gpu: true,
                 settings: VbdSettings {
-                    dt: 1. / 60.,
+                    dt,
+                    iterations,
                     ..Default::default()
                 },
                 metrics: None,
@@ -179,6 +189,11 @@ pub fn run(
 }
 struct Atelier {
     authoring: AuthoringUi,
+    /// Loaded from `output/preferences.json` before the first frame and saved
+    /// whenever the preferences window reports a change.
+    prefs: settings::Preferences,
+    /// Whether the preferences window is currently open.
+    settings_open: bool,
     authoring_smoke: Option<authoring_smoke::Smoke>,
     perf: Option<perf::PerfRun>,
     mesh_mm: f64,
@@ -485,11 +500,29 @@ impl eframe::App for Atelier {
                         ui.close();
                     }
                 });
+                ui.separator();
+                if ui
+                    .button("Settings")
+                    .on_hover_text("Preferences: theme, display and solver defaults")
+                    .clicked()
+                {
+                    self.settings_open = true;
+                }
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     ui.small(format!("{} panels · {} seams", self.project.template.panels.len(), self.project.template.seams.len()));
                 });
             });
         });
+        let mut changed = false;
+        settings::window(&ctx, &mut self.settings_open, &mut self.prefs, &mut changed);
+        if changed {
+            // A failed write must not interrupt the session: the status line
+            // reports it so the user knows the preference did not stick.
+            if let Err(error) = settings::save(&self.output.join(settings::FILE_NAME), &self.prefs)
+            {
+                self.status = format!("Preferences could not be saved: {error}");
+            }
+        }
         egui::Panel::top("authoring-tools").show(ui, |ui| self.authoring_toolbar(ui));
         egui::Panel::bottom("status").show(ui, |ui| {
             ui.horizontal(|ui| {
@@ -575,12 +608,8 @@ impl eframe::App for Atelier {
                     }
                 });
             });
-            ui.small(match self.authoring.tool {
-                Tool::Sew => "Click the edges to sew · right: orbit · middle: pan · wheel: zoom",
-                Tool::Place => "G: move · R: rotate · X/Y/Z rings · Shift: 15° · Esc: cancel",
-                Tool::Grab => "Left: grab the fabric · right: orbit · middle: pan · wheel: zoom",
-                _ => "Select an edge · right: orbit · middle: pan · wheel: zoom",
-            });
+            self.show_view_bar(ui);
+            ui.small(view_controls::hint_3d(self.authoring.tool));
             let (rect, response) = ui.allocate_exact_size(
                 ui.available_size().max(Vec2::splat(1.)),
                 egui::Sense::click_and_drag(),

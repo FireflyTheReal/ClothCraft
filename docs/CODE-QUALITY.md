@@ -18,9 +18,43 @@ suggest — and they are recorded so the next contributor does not "fix" them.
 
 ### Revision pin
 
-All `file:line` citations and line counts are pinned to **HEAD `16f6fc4`**
+All `file:line` citations and line counts are pinned to **`16f6fc4`**
 ("Make the interface plain English, widen the CLO3D register, ship DRAW-01")
 unless a finding says otherwise.
+
+**Update, after this audit was written:** that revision is now `HEAD~1`. The Lead
+landed `db46440` ("Add view navigation, an icon set, preferences with a dark
+theme, and the quality audit"), which contains the first version of this file and
+the three CLO3D doc-link fixes, and which also brought `src/atelier/view_controls.rs`,
+`src/atelier/settings.rs` and `src/atelier/icons.rs` into the tree. So:
+
+- **`16f6fc4` is the measurement pin; `db46440` is current HEAD.** Every count in
+  this document describes `16f6fc4`. Nothing here has been re-measured at
+  `db46440`.
+- **Re-pinning is deliberately deferred to the *next* HEAD, not `db46440`.** The
+  Lead ruled on this explicitly, and the reasoning is worth keeping because it is
+  not the obvious answer: the counts here are **structural** — line totals, the
+  desktop-only share, dependency-package counts — and that is exactly what the
+  next commit changes. Pinning to `db46440` now would guarantee a third stale set
+  the moment the pending wiring and docs commit lands. The trigger is therefore:
+  **the Lead lands the wiring and docs commit, then this file re-pins to that
+  HEAD** — which is also the point at which the live tree becomes worth building
+  again, since the feature writers will have stopped.
+- **This is a deliberate asymmetry with `register`, not a disagreement.**
+  `register` proceeds against a `git archive db46440` snapshot now, because for
+  performance the re-pin is documentation hygiene rather than re-measurement — the
+  solver is byte-identical between the two revisions. For this file it *is* a
+  re-measurement, so it waits. A reader should not read one of us as lagging.
+- One distinction from that decision is worth preserving even though it was not
+  acted on here: `git archive db46440` is a snapshot of a **committed** tree, so
+  it cannot go red. The only cost of an earlier re-pin would have been documentary
+  confusion, never a broken build.
+- The conclusions are expected to hold, because they are structural, but that is
+  a prediction to verify, not a fact to assert.
+- **Pending at the re-pin, in one bundle:** line counts and the desktop-only share
+  (Q-15, Q-20); dependency-package counts (Q-22); and the desktop lint plus the
+  `cloth-fit` bin test target from the live tree — the last two were answered by
+  the Lead's manual gate (see Q-31) but have never been reproduced from CI.
 
 The working tree moved substantially during this audit, and kept moving. `register`
 and I therefore pin to the revision and re-pin explicitly when it changes:
@@ -35,16 +69,17 @@ and I therefore pin to the revision and re-pin explicitly when it changes:
 | `src/gpu_bench.rs` | — | modified |
 | `scripts/perf/` | — | new (task-12, `register`) |
 
-**Consequence, stated plainly:** line numbers in this document are valid at HEAD.
-For `src/render.rs`, `src/atelier.rs`, `src/atelier/board.rs`,
-`src/atelier/authoring_ui.rs` and `src/atelier/workspace.rs` the working tree has
-already diverged, so a citation there identifies the code at HEAD, not the code
-you will find today. Re-resolve by symbol name, not by line number, until the
-feature work freezes and this file is re-pinned.
+**Consequence, stated plainly:** line numbers in this document are valid at
+`16f6fc4`. For `src/render.rs`, `src/atelier.rs`, `src/atelier/board.rs`,
+`src/atelier/authoring_ui.rs` and `src/atelier/workspace.rs` the tree has already
+diverged, so a citation there identifies the code at `16f6fc4`, not the code you
+will find today. Re-resolve by symbol name, not by line number, until the feature
+work freezes and this file is re-pinned.
 
-Pinned size: **55 files, 14 539 lines** in `src/`, plus 3 120 lines in `tests/`
-(3 084 in the 17 integration targets, 36 in the shared `tests/common/mod.rs`)
-and approximately 927 lines in in-source `#[cfg(test)]` modules.
+Pinned size at `16f6fc4`: **55 files, 14 539 lines** in `src/`, plus 3 120 lines
+in `tests/` (3 084 in the 17 integration targets, 36 in the shared
+`tests/common/mod.rs`) and approximately 927 lines in in-source `#[cfg(test)]`
+modules.
 
 ## Method and re-verification
 
@@ -59,10 +94,37 @@ export PATH="$HOME/.cargo/bin:$PATH"; export CARGO_HOME="$PWD/.cargo-home"
 | CPU tests green | `cargo test --locked --no-default-features -j 2 -- --test-threads=2` | 106 passed, 0 failed |
 | No dead private code | `cargo clippy --locked --no-default-features --all-targets -j 2 -- -D warnings` | exit 0, no warnings |
 | Desktop code compiles and lints | `cargo clippy --locked --features desktop --all-targets -j 2 -- -D warnings` | exit 0, no warnings |
-| Desktop tests are GPU-free | `cargo test --locked --features desktop -j 2 -- --test-threads=2` | 106 passed, **3 ignored**, 0 failed, 41.6 s |
+| Desktop tests are GPU-free | `cargo test --locked --features desktop -j 2 -- --test-threads=2` | 106 passed, **3 ignored**, 0 failed, 41.6 s ⚠ upper bound |
 | Dependency graph size | `cargo metadata --locked [--no-default-features] --format-version 1` | 83 packages CPU / 174 with `desktop` |
 | Line counts | `git show HEAD:<path> \| wc -l` | see tables below |
 | No broken doc links | a relative-link check over every `*.md` (ignoring code spans) | 0 broken in real prose |
+
+### ⚠ Measurement environment — read before quoting any timing
+
+Every wall-clock figure in this document was taken on a **memory-exhausted,
+swap-thrashing host**, verified at the time of writing:
+
+```
+$ sysctl vm.swapusage
+vm.swapusage: total = 12288.00M  used = 11283.69M  free = 1004.31M  (encrypted)
+$ uptime
+load averages: 44.64 61.71 35.42      # with no cargo or rustc process running
+```
+
+`register` independently observed load 60–130 and 11.3 GB of 12.3 GB swap during
+its own cold builds, and reports that its 216 s cold-desktop figure is therefore
+*double-contended* (build load plus swap). Consequences for this document:
+
+- **Timings are upper bounds, not measurements.** The 41.6 s for
+  `cargo test --features desktop` and the 3.3 s for the CPU check are "this is
+  what it cost once on a thrashing machine", not a baseline. `register` owns the
+  real table and will re-run cold builds in the quiet window the Lead is
+  arranging, recording load and swap per row.
+- **The substantive claims are unaffected.** Exit codes and pass/ignore/fail
+  counts are deterministic and do not depend on load: the desktop feature
+  compiles, lints clean, and its tests pass with the 3 hardware tests ignored.
+  That is what Q-16 turns on, and it is not a timing claim.
+- **Do not size CI budgets from this file.** See the quality + efficiency agenda.
 
 ---
 
@@ -427,7 +489,8 @@ I ran the advisory job's exact commands on this machine:
 ```
 cargo clippy --locked --features desktop --all-targets -j 2 -- -D warnings   # exit 0
 cargo test   --locked --features desktop -j 2 -- --test-threads=2
-  → 106 passed; 3 ignored; 0 failed; 41.6 s
+  → 106 passed; 3 ignored; 0 failed; 41.6 s   # 41.6 s is an UPPER BOUND, see the
+                                              # measurement-environment warning above
 ```
 
 No GPU is touched: the three hardware tests are `#[ignore]`, so
@@ -435,22 +498,60 @@ No GPU is touched: the three hardware tests are `#[ignore]`, so
 `AGENTS.md:22` ("No GPU test may be added to the suite that runs by default").
 
 `src/atelier/settings.rs` — 348 lines with 7 unit tests, added by task-2 — is
-proof that the team is already writing desktop unit tests that currently cannot
-run anywhere.
+proof that the team is already writing desktop unit tests that cannot run
+anywhere.
 
-**Proposed change (recommended to the Lead as the single highest-value change):**
+**The cost of a non-gating job, as an incident rather than a percentage.** When
+`db46440` landed it added or rewrote seven desktop-only files — `board.rs` +338,
+`icons.rs` +848, `settings.rs` +357, `view_controls.rs` +201, `render.rs` +673,
+`workspace.rs` +84, `atelier.rs` +7 — roughly **2 500 lines of code that no
+enforced job compiles**.
 
-1. Drop `continue-on-error: true` from the `desktop` job in
+**Correction to my own earlier wording.** I first wrote that nothing had verified
+`db46440`'s desktop build. That was wrong, and the Lead corrected it: the commit
+**was** gated on a local manual check run on the exact tree that became
+`db46440`, whose output was:
+
+```
+fmt=yes  desktop_errors=0  desktop_warnings=28  cpu_failures=0  bin_tests=13 passed  bin_failures=0
+```
+
+So the accurate statement is **no continuous signal**, not no verification — and
+that distinction is exactly why the CI change is worth more than any manual check.
+A manual gate verifies one tree, once, in one person's session; it leaves nothing
+behind that would report a regression tomorrow. Right now there genuinely is no
+signal, because the tree has moved on and is red from later uncommitted work.
+
+Two useful facts fall out of that gate. First, `bin_tests=13 passed` is the
+**empirical proof of Q-31(c)** that I could not otherwise obtain: 6 tests in
+`src/atelier/icons.rs` plus the 7 in `src/atelier/settings.rs` — both counted at
+`db46440` — are exactly 13, so the `settings.rs` tests really do execute under
+`--features desktop`. Second, `desktop_warnings=28` means the advisory job's
+`cargo clippy --features desktop --all-targets -- -D warnings` step **would fail
+on `db46440`**, so the job cannot simply be flipped to gating: the 28 warnings
+must be cleared first. The Lead is landing that with the wiring commit that drives
+the count to zero, which is the right order — fix the code, then tighten the gate.
+
+**Proposed change (accepted by the Lead as overdue; the single highest-value change):**
+
+1. **Clear the 28 desktop warnings first.** Until then the job's existing
+   `cargo clippy --features desktop --all-targets -- -D warnings` step fails on
+   `db46440`, so the job cannot be made gating as-is. Rewording the gate to pass
+   it would be the wrong fix; the Lead is landing the cleanup in the same commit
+   as the wiring that produces it.
+2. Drop `continue-on-error: true` from the `desktop` job in
    `.github/workflows/cpu.yml`.
-2. Add to that job: `cargo test --locked --features desktop -j 2 -- --test-threads=2`.
-3. Update the three places that carry the stale caveat in the same pull request:
+3. Add to that job: `cargo test --locked --features desktop -j 2 -- --test-threads=2`.
+4. Update the three places that carry the stale caveat in the same pull request:
    `ROADMAP.md:17` (the P0.5 row), `ROADMAP.md:125` (the caveat bullet) and
    `docs/handoff.md:9` — "a **consultative** `desktop` job (`continue-on-error`,
    to be validated on Linux)". The last is `docs-english`'s file: coordinate.
 
-Risk: Low. Cost measured at 41.6 s with warm dependencies. Note the job currently
-uses `--bin cloth-fit --bin marvelous-cloth` for `check`; `--all-targets` on the
-clippy step already covers tests and examples.
+Risk: Low. Cost was 41.6 s with warm dependencies, but that figure is an
+**upper bound** on a swap-thrashing host (see the measurement-environment warning
+above) — the claim that matters here is pass/ignore/fail, not the clock. Note the
+job currently uses `--bin cloth-fit --bin marvelous-cloth` for `check`;
+`--all-targets` on the clippy step already covers tests and examples.
 
 ### Q-17 — No test asserts a budget. Observed. Risk: Medium
 
@@ -460,6 +561,53 @@ for rendering ("The UI has no automated visual regression test"). This is
 `register`'s lane; recorded here because it is a test-structure gap, and because
 item Q-16 is its prerequisite: a perf guard has no home to live in today except
 the CPU targets.
+
+**`register` has now measured the noise floor, and it constrains what such a test
+could ever assert.** Re-running the entire `16f6fc4` CPU matrix a second time on
+the same binary, on an untouched tree, it measured:
+
+| Metric | mean \|Δ\| | max \|Δ\| |
+|---|---:|---:|
+| CPU ms/step | 4.6 % | 10.8 % |
+| single-run step P50 | 6.7 % | 20.3 % |
+| peak RSS | 40.7–58.3 MB absolute movement | — |
+
+Its standing rule, which I adopt: **no round-2 performance claim below ~11 % on
+CPU time or ~20 % on a single-run P50 is a result.** The quality-side consequence
+is the important one here — **any budget assertion in `tests/` must sit above that
+noise or it will flake, and a flaky budget test is worse than none.** So a
+perf guard cannot be written as `step_ms < X`; it needs either a paired
+before/after comparison in the same run, a ratio against a baseline taken on the
+same host, or a documented margin above the measured floor. Whoever implements
+Q-17 must read `docs/PERFORMANCE.md` §1 first.
+
+### Policy adopted by the Lead: no threshold-style budget in `tests/`
+
+The Lead adopted the paragraph above as **repository policy**, and generalised it
+past performance, which is why it is recorded as policy rather than as a finding:
+
+> **No `step_ms < X` style budget in `tests/`.** A performance guard must be a
+> same-run paired comparison, a ratio against a same-machine baseline, or carry a
+> documented margin above the measured floor.
+
+The generalisation is the durable part, and it is worth stating in full because it
+explains *why* a generous-looking threshold is not a compromise: **an assertion
+that can fail on an idle machine is a liability, because the team's response to a
+flaky test is to ignore it — and then it stops guarding anything.** A test that
+everyone learns to re-run is worse than no test, since it also spends the trust
+that the rest of the suite needs.
+
+Two consequences for whoever picks up backlog item 21:
+
+1. Write it as a **paired comparison**, not a threshold — the same run must
+   produce both sides, so machine state cancels.
+2. If an absolute number is unavoidable, it must carry its **measured floor and
+   margin in the comment**, so the next person can tell a real regression from
+   host noise instead of re-deriving `register`'s table.
+
+This also retroactively settles Q-16: if CPU time swings ±20 %, a 41.6 s figure
+**cannot** be a budget, which is precisely why that argument had to rest on
+pass/ignore/fail. That reasoning is now load-bearing rather than rhetorical.
 
 ### Q-33 — The documented CPU baseline measures an engine the product no longer ships by default. Observed. Risk: Medium
 
@@ -475,18 +623,26 @@ wrong one:
 | VBD + OGC, CPU `f64` | `cloth-fit` **default** (no `--gpu-sim`) | yes — `tests/vbd.rs`, `tests/ogc.rs`, `tests/ogc_bvh.rs`, `tests/ogc_cache.rs` all run under `--no-default-features` |
 | VBD + OGC, hybrid GPU | the atelier window's worker (`src/gpu_vbd.rs`) | **no** — `src/gpu_vbd.rs` is desktop-gated, and its only test target has all three tests `#[ignore]` |
 
+One precision on the middle row, since `register` listed it among the non-gated
+targets: `tests/vbd_shader.rs` does run under `--no-default-features`, but it
+parses and validates `src/vbd.wgsl` on CPU through `naga`; it does **not** execute
+the solver. It is shader-source validation, not engagement coverage, so it is not
+counted above.
+
+This is a deliberate correction of `register`'s original phrasing, which it has
+reviewed and accepted. It wrote that "CPU tests are green currently says nothing
+about the solver the CLI ships by default"; as first stated that was too strong.
+The CPU suite **does** exercise VBD+OGC on CPU, so it is not silent about the
+shipped CLI path. What is silent is the **GPU** engine the atelier ships, and what
+is misleading is the benchmark script. The engine mismatch, not the test suite, is
+the finding.
+
 `scripts/bench-cpu.ps1:19` drives `target/release/marvelous-cloth --headless`,
 i.e. the **legacy Newton** engine — while `docs/handoff.md:9` and
 `AGENTS.md:5` describe the shipped default as VBD+OGC, and the atelier's default
 as the hybrid GPU backend. So the script that produces the recorded CPU numbers
 (`bench-cpu.ps1` feeding `output/cpu-suite/suite.json`) benchmarks neither the
 CLI default nor the GUI default.
-
-This is a sharper restatement of `register`'s point, which I am deliberately
-weakening in one place: the CPU suite **does** exercise VBD+OGC on CPU, so
-"CPU tests are green" is not silent about the shipped CLI path. What is silent is
-the **GPU** engine the atelier actually ships, and what is misleading is which
-engine the documented benchmark script measures.
 
 **Proposed change:** none in round 1 (`register` owns the measurement; I own the
 citation). In a window: either point `bench-cpu.ps1` at `cloth-fit` without
@@ -554,8 +710,28 @@ warns, it does not fail, on too-new toolchains).
 `--no-default-features`, **174** default. The 91-package difference is the cost
 of the desktop feature, which is a default feature (`Cargo.toml:11`). Combined
 with Q-07 (15 removable CPU packages for one log line) and Q-23, there is real
-build-time headroom — but all of it needs `register`'s cold-build measurements,
-not estimates.
+build-time headroom.
+
+**`register`'s measured build matrix (`docs/PERFORMANCE.md` §5)** — pinned
+`git archive 16f6fc4`, `--locked -j 2`, swap held at 11.3 GB of 12.3 GB for every
+row, so **every wall figure is an upper bound**:
+
+| Directories measured | wall | user | sys | peak RSS | load 1m before → after |
+|---|---|---|---|---|---|
+| Cold `--features desktop` (`cloth-fit` + `motion_probe`) | 238.1 s | 351.0 s | 25.5 s | 670 MB | 55.1 → 16.6 |
+| Cold `--no-default-features` (`cloth-fit` + `marvelous-cloth` + `motion_probe`) | 53.5 s | 95.1 s | 5.9 s | 686 MB | 13.2 → 8.8 |
+| Incremental, no-op (same target dir, same command) | 0.42 s | 0.08 s | 0.12 s | — | ~9 |
+| Incremental, crate-only (`cargo clean -p marvelous-cloth`) | 21.6 s | 34.8 s | 1.7 s | — | ~9 |
+
+Release binary sizes at the same revision: `cloth-fit` **20 219 984 B** with
+`desktop` vs **2 465 552 B** without (8.2×); `motion_probe` 7 413 200 B vs
+2 174 560 B; `marvelous-cloth` (not built desktop) 2 553 168 B. The load-robust
+conclusions are the **ratios**: `--no-default-features` builds cold **4.4×**
+faster and produces a CLI binary **8.2×** smaller.
+
+`register` also re-measured cold desktop under *less* contention (load 55 → 17)
+and got **238.1 s — slightly worse than the earlier 216 s**, and asks that
+neither be presented as a clean figure. Noted; I have done so.
 
 ### Q-23 — The dev profile is non-default in two ways, undocumented. Observed. Risk: Low
 
@@ -584,6 +760,40 @@ list including the simulate step and the `--features desktop` check, reference
 it from `AGENTS.md` and `CONTRIBUTING.md`, and let the CI `cpu` job invoke the
 same script so there is one definition. Risk: Low (new file; note `AGENTS.md`
 is the Lead's contract document — propose, do not edit unilaterally).
+
+### Q-35 — A compiled helper is committed, and `.gitignore` cannot remove it. Observed. Risk: Low
+
+Raised by `register`, which created the file and self-reported it. Verified
+state at the time of writing:
+
+- `scripts/perf/libmalloc_count.dylib` — a 34 328 B Mach-O compiled from
+  `scripts/perf/malloc_count.c` — **is tracked in `db46440` and still in HEAD**
+  (`git ls-tree -r --name-only HEAD | grep '\.dylib$'` returns it).
+- It is the **only** compiled artifact in the index: the same check for
+  `*.dylib|*.so|*.o|*.a|*.rlib|*.dSYM|__pycache__` over `git ls-files` returns
+  nothing else. So this is an isolated slip, not a pattern.
+- The `.gitignore` rule `register` asked for **already exists** — lines for
+  `scripts/perf/*.dylib`, `scripts/perf/*.so` and `__pycache__/` are present. Its
+  second request is therefore satisfied.
+- `git status` shows the worktree copy deleted as an **unstaged** deletion
+  (` D`), so the blob is still in the committed tree and will survive unless the
+  deletion is included in a commit.
+
+**The generalisable point:** `.gitignore` prevents *new* untracked files from
+being added; it never untracks a path already in the index. Adding the rule is
+necessary but not sufficient — the removal must be committed.
+
+**Proposed change:** include `scripts/perf/libmalloc_count.dylib`'s deletion in
+the next commit (`git rm --cached` if the worktree deletion is not picked up).
+The `.c` source and the documented build command stay, which is right: the helper
+is reproducible, so the binary need not be. Risk: Low. Owner: whoever makes the
+next commit — I must not commit.
+
+**Lead decision, recorded:** `git rm --cached scripts/perf/libmalloc_count.dylib`
+goes into the next commit. The Lead also supplied the mechanism for how the blob
+survived the ignore rule — the deletion was left *staged-but-lost* when the tree
+was reset to unstage the red work. That is precisely the failure mode this finding
+describes: a staged deletion is not a deletion until it is committed.
 
 ---
 
@@ -694,14 +904,79 @@ ignored** with `--features desktop`. Both documented numbers are wrong by ~30 %.
 count entirely and cite the command — a count in prose rots, a command does not.
 Risk: Low. Owner: `docs-english` (task-7). I will not edit it.
 
-### Q-31 — Regression watch: `src/atelier/settings.rs` is unwired. Observed
+### Q-31 — Regression watch: `src/atelier/settings.rs` wiring. Observed — **RESOLVED**
 
-348 lines with 7 unit tests; no `mod settings;` exists anywhere in the tree, so
-it is not compiled and its tests cannot run. This is task-2 work in flight, not
-a defect. **Standing duty:** when it lands, verify (a) `mod settings;` appears in
-`src/atelier.rs`, (b) `cargo clippy --features desktop --all-targets -D warnings`
-stays clean, and (c) its 7 tests actually execute under
-`cargo test --features desktop` — which is only guaranteed if Q-16 is adopted.
+At `16f6fc4`: 348 lines with 7 unit tests, and no `mod settings;` existed anywhere
+in the tree, so it was not compiled and its tests could not run. That was task-2
+work in flight, not a defect.
+
+**Standing-duty re-check at `db46440`, all three steps RESOLVED.**
+
+**(a) Wiring.** `src/atelier.rs:32-33` now declares
+`#[path = "atelier/settings.rs"] mod settings;` unconditionally,
+`src/atelier/settings.rs` is tracked, and it contains `#[cfg(test)] mod tests` at
+`:233` with exactly 7 `#[test]` functions. Because `src/atelier.rs` is included by
+the `cloth-fit` binary (`src/bin/cloth-fit.rs:9-11`) under `feature = "desktop"`,
+those 7 tests are part of that bin's test target by construction.
+
+**(b) Lint and compile.** The Lead's pre-commit gate on the exact tree that became
+`db46440` reports `desktop_errors=0` and `cpu_failures=0`, with
+`desktop_warnings=28`. So the tree compiles; it is not warning-clean, which is why
+the advisory clippy step (`-D warnings`) cannot be made gating until those 28 are
+cleared. See Q-16.
+
+**(c) The tests execute.** `bin_tests=13 passed  bin_failures=0` from the same
+gate, and 6 (`src/atelier/icons.rs`) + 7
+(`src/atelier/settings.rs`) = 13. That is direct evidence the 7 tests run under
+`--features desktop` — answering the question with a number rather than an
+inference.
+
+**My own attempt, kept because it produced a finding.** Before the Lead's gate
+reached me I tried the check from the live tree in a genuine quiet window
+(swap 9.75 GB, load 6.3, no cargo running) and it **failed to compile**:
+
+```
+$ cargo test --locked --features desktop -j 2 --bin cloth-fit -- --test-threads=2
+error[E0599]: no method named `snap_geometry_for` found for struct `board::Board`
+    --> src/bin/../atelier/board.rs:1365:26
+error[E0599]: no associated function or constant named `default` found for struct
+              `PolygonPattern`          --> src/bin/../atelier/board.rs:2676:63
+error: could not compile `marvelous-cloth` (bin "cloth-fit" test) due to 2 previous errors
+```
+
+**Both error sites are uncommitted work, and this is provable rather than
+assumed:** `HEAD:src/atelier/board.rs` is **1 130 lines**, so lines 1365 and 2676
+cannot exist in it; the working tree's `board.rs` was **2 680 lines** (+1 606) when
+the compiler ran, and `PolygonPattern` has no `Default` impl at HEAD *or* in the
+tree yet. This is `src/atelier/board.rs` mid-refactor by a feature teammate —
+Q-34's prediction, observed once more, now with a precise error to cite.
+
+The Lead confirmed the attribution: `board.rs` is being edited **right now by
+`ui-editor` for the drafting rework**, which is why the line count moved
+2 680 → 2 668 while this was being written up. So `snap_geometry_for` and
+`PolygonPattern::default()` are **transient mid-edit symbols, not a defect in
+`db46440`** — the same class of event as the earlier `board.rs` parse error, and
+further evidence for Q-34 rather than against the commit.
+
+*Caveat on those line numbers:* they are a snapshot. `board.rs` had already shrunk
+from 2 680 to **2 668 lines** by the time this paragraph was written, so a reader
+re-checking line 2676 today will not find it. That is the point rather than a
+defect — resolve these by symbol (`snap_geometry_for`, `PolygonPattern::default`)
+and not by line, exactly as the revision-pin section says.
+
+**Consequence that is bigger than the 7 tests:** `db46440` added or rewrote seven
+desktop-only files — `board.rs` +338, `icons.rs` +848, `settings.rs` +357,
+`view_controls.rs` +201, `render.rs` +673, `workspace.rs` +84, `atelier.rs` +7 —
+roughly **2 500 lines of code that no enforced job compiles**. The Lead's manual
+pre-commit gate did verify that tree once (`desktop_errors=0`,
+`bin_tests=13 passed`), so it is **not** unverified — but there is **no continuous
+signal**, and the only candidate is the `continue-on-error` job that cannot fail.
+That is Q-16's argument stated as an incident rather than a percentage.
+
+**Round-2 action:** the Lead's gate has now answered (b) and (c) above; only the
+`desktop_warnings=28` cleanup and the CI change remain. If a future round needs to
+re-check from the live tree, do it from a `git archive HEAD` snapshot (the pattern
+`register` uses) rather than while four writers are mid-refactor.
 
 ### Q-32 — Regression watch: the smoke-target keys must not be translated. Observed
 
@@ -716,7 +991,41 @@ warning exists at `src/atelier/authoring_ui.rs:169`.
 
 **Proposed change:** the Lead should state this to both translators explicitly.
 Optionally pin the key set with an assertion so a rename cannot land silently.
-Risk: Medium if ignored (`AGENTS.md:38` requires the harness to stay real).
+
+**Standing-duty re-check at `db46440`: the protocol is INTACT.** `const ACTIONS`
+still declares 41 entries and still contains 41; the accented protocol keys
+(including `"Déplacer 3D"`, twice) survive; and `smoke_target` call sites still
+exist across six files (`authoring_smoke.rs`, `authoring_ui.rs`, `board.rs` 11×,
+`fabrics_ui.rs`, `gizmo.rs`, `seams_ui.rs`). The translations did **not** rename
+a key. Risk at `db46440`: Low. It stays a watch item because the risk is silent —
+a future rename breaks the harness with no compile error.
+
+### Q-34 — HEAD is green; the working tree is intermittently red. Observed, operational. Risk: Medium
+
+`register` reported a failing
+`cargo test --features desktop --bin cloth-fit --no-run` in a ~45 s retry loop
+during round 1. I could not reproduce it, and we resolved the disagreement:
+**there is no failure at HEAD.** The cause was that `src/atelier/board.rs` did not
+parse while it was mid-edit (the Lead confirmed this), and `register`'s loop was
+building the dirty tree.
+
+Both observations are correct and compatible:
+
+- **HEAD `16f6fc4` is green** on every command in the table above — verified
+  independently by both forces.
+- **The working tree is intermittently red** while up to five teammates rewrite
+  `src/render.rs`, `src/atelier/board.rs`, `src/atelier/workspace.rs`,
+  `src/atelier.rs` and `src/gpu_bench.rs` and add `icons.rs`, `settings.rs` and
+  `view_controls.rs`. A non-parsing intermediate state is expected, not a
+  regression.
+
+**Proposed change (needs the Lead):** state this explicitly so a future round
+does not re-litigate the same false alarm, and prefer a `git archive HEAD`
+snapshot for any measurement or verification that must be reproducible (`git
+stash` is discouraged here: it is disruptive with four concurrent writers). The
+counter-risk is a real failure being dismissed as "just the dirty tree"; the
+mitigation is that every claim in this document is pinned to a revision and HEAD
+stays green. Risk: Medium.
 
 ---
 
@@ -728,7 +1037,7 @@ an owner; "Round 1" means it was safe to apply immediately.
 | # | Finding | Action | Risk | Needs |
 |---|---|---|---|---|
 | 1 | Q-16, Q-15 | Make the `desktop` CI job gating; add `cargo test --features desktop`; update the three stale caveats | Low | Lead decision (CI file) |
-| 2 | Q-31 | Verify `settings.rs` gets wired and its tests run | Low | task-2 to land |
+| 2 | Q-31 | `settings.rs` is now wired (`src/atelier.rs:32`); still verify its 7 tests execute under `--features desktop` | Low | quiet window (deferred: host swap-thrashing) |
 | 3 | Q-32 | Tell both translators the smoke keys are frozen | Low | Lead |
 | 4 | Q-28 | ~~Fix 3 broken doc links~~ **DONE in round 1**; 1 wrong file name still to route | Low | `docs-english` for `docs/first-fit.md:57` |
 | 5 | Q-30, Q-25, Q-27 | Doc-drift fixes | Low | `docs-english` (task-7) |
@@ -742,68 +1051,114 @@ an owner; "Round 1" means it was safe to apply immediately.
 | 13 | Q-10 | One shared check script used by CI and by contributors | Low | refactor window |
 | 14 | Q-33 | Point the recorded CPU baseline at the engine the product ships, or label which engine each number came from | Medium | `register` (measurement) + window |
 | 15 | Q-26, Q-11, Q-29 | Document the `#[path]` includes, the error convention, and keep comments honest | Low | `docs-english` coordination |
+| 16 | Q-34 | Tell the team HEAD is green and the dirty tree is intermittently red; pin measurements to a revision | Medium | Lead |
+| 17 | env | Re-measure every timing in this file once the host stops swap-thrashing | Low | `register` + quiet window |
+| 18 | Q-31 (b)(c) | ~~Verify the desktop lint + the 7 `settings.rs` tests~~ **DONE** — the Lead's pre-commit gate gives `desktop_errors=0` and `bin_tests=13 passed` (6 `icons.rs` + 7 `settings.rs`) | Low | closed |
+| 19 | Q-35 | Include the `libmalloc_count.dylib` deletion in the next commit (`.gitignore` is already correct) | Low | next committer (Lead accepted) |
+| 20 | Q-16 | **Clear the 28 desktop warnings**, then flip the `desktop` job to gating — the warnings are why the gate cannot be tightened yet | Medium | Lead (in flight) |
+| 21 | Q-17 | Any perf guard **written as a paired comparison, not a threshold** (Lead policy): same-run both sides, or an absolute number carrying `register`'s measured floor (~11 % CPU, ~20 % P50) and margin in the comment | Medium | optimisation window, with `register` |
 
 ---
 
 ## Quality + efficiency agenda (co-owned with `register`, task-12)
 
-> **Status: PROVISIONAL — my half only.** Bullets 1–5 below are `tf-cleanup`'s
-> half. `register` replied during round 1 with **adjudications but not yet its
-> bullets or its build table** (it is measuring from a pinned `git archive HEAD`
-> snapshot, because the working tree's desktop build is broken mid-flight). The
-> adjudications are folded in above: Q-09, Q-13 (colour bound + GPU tolerance
-> names) and Q-05.
->
-> **Merge contract for round 2:** `register` sends its 3–6 bullets; they are
-> inserted here *verbatim*, this block is replaced by `Status: FINAL`, and the
-> identical text is copied into `docs/PERFORMANCE.md`. Until then, do not quote
-> the numbers in this section from another document, and do not treat the
-> absence of a measurement bullet as a finding against `register` — its cold-build
-> table is the dependency for bullet 2. One provisional number is already known
-> and is *contended*, not clean: cold `--features desktop` at HEAD measured
-> **216 s wall** (load average 2.6 before → 10.9 after), producing
-> `cloth-fit` 20 223 728 B and `motion_probe` 7 413 200 B.
+Status: **FINAL.** Everything below this line is identical in
+`docs/CODE-QUALITY.md` and `docs/PERFORMANCE.md`; only the heading differs,
+because `docs/PERFORMANCE.md` numbers its sections. Do not edit one copy without
+re-syncing the other. `tf-cleanup` owns the structure and buildability half;
+`tf-performance` (`register`) owns the measured half and every number in it.
+
+**Quality — `tf-cleanup` / task-11**
 
 1. **Make the desktop job gating, and add `cargo test --features desktop`.**
-   Proven at HEAD: the advisory job's commands exit 0, and
-   `cargo test --features desktop` runs 106 tests, ignores the 3 GPU tests and
-   finishes in 41.6 s with no GPU. Today 6 232 of 14 539 `src/` lines (42.9 %)
-   are compiled only under `desktop` and CI executes **zero** tests in them. It
-   is the largest coverage gain per second of CI time, and it is the prerequisite
-   for any performance guard (Q-17).
+   The advisory job's exact commands exit 0, and
+   `cargo test --features desktop` runs 106 tests and ignores the 3 GPU tests with
+   no GPU attached — pass/ignore/fail is load-independent, which is what carries
+   this recommendation; the 41.6 s it took is an **upper bound** on a
+   swap-thrashing host, not a baseline. At the measurement pin `16f6fc4`,
+   **6 232 of 14 539 `src/` lines (42.9 %)** were compiled only under `desktop`
+   with **zero** tests executed in them; `db46440` has since grown `src/` to
+   58 files / 16 756 lines and shipped ~2 500 desktop-only lines. Those were
+   verified once by a **manual gate** (`desktop_errors=0`,
+   `bin_tests=13 passed`) — but a manual check leaves **no continuous signal**,
+   and the only job that could supply one is the `continue-on-error` job that
+   cannot fail. This is the largest coverage gain per unit of CI cost, and the
+   prerequisite for any performance guard.
 2. **Retire or justify `tracing` + `tracing-subscriber`.** 15 of the 83 CPU
-   packages (18 %) exist for one `tracing::debug!`
-   (`src/solver.rs:718-724`), and the subscriber is installed only in
-   `src/main.rs:47-51` — so the log is dead in `cloth-fit`, the documented
-   primary entry point. `register` owns the cold-build and binary-size delta.
+   packages (18 %) exist for one `tracing::debug!` (`src/solver.rs:718-724`), and
+   the subscriber is installed only in `src/main.rs:47-51` — so the log is dead in
+   `cloth-fit`, the documented primary entry point. `register`'s build matrix
+   below sizes the prize.
 3. **Perf-regression coverage is structurally impossible today.**
-   `--no-default-features` = 106 tests; `--features desktop` = the same 106 plus
-   3 ignored. There is no timing, allocation or transfer-budget assertion in the
-   suite, and item 1 is the prerequisite for adding one.
+   `--no-default-features` = 106 tests; `--features desktop` = those 106 plus the
+   7 `src/atelier/settings.rs` unit tests that `db46440` wired in, with the 3
+   hardware tests still ignored. There is no timing, allocation or
+   transfer-budget assertion anywhere in the suite, and item 1 is the prerequisite
+   for adding one.
 4. **Shared construction of a protected invariant.** The
    `Triangle { rest, inv_dm, area }` derivation is written twice
    (`src/model.rs:176-189`, `src/garment/polygon.rs:180-187`) although
    `docs/architecture.md:60` makes it a contract.
 5. **[perf-sensitive] coordination rule both forces accept:** any change whose
    cost is not provably zero on a measured hot path waits for `register`'s
-   before/after on the same scene. **Round-1 outcome of that rule — all four
-   candidates adjudicated, none touched by me:**
+   before/after on the same scene. All four round-1 candidates were adjudicated
+   and **none was touched**:
    - `src/vbd.rs:210-226` — hot path, but **check-only is free**; approved on the
      strict condition that the *colouring itself* is not modified (any reorder
      changes trajectories bitwise). See Q-13.
    - `src/gpu_vbd.rs:362,370` — opt-in diagnostic, **free, approved**. See Q-13.
    - `src/blocksolve/sym_mat3.rs:67` — dead code is link-eliminated, no runtime
-     cost; **approved on performance grounds**, removal is an API-surface call.
+     cost; **approved on performance grounds**; removal is an API-surface call.
      See Q-05.
    - `src/solver.rs:346-367` vs `640-661` — **not on the default hot path**
-     (reference solver only), so a quality win, not a performance win — and
+     (reference solver only), so a quality win rather than a performance win, and
      **medium** correctness risk because that energy is the finite-difference
      oracle. See Q-09.
-6. **The recorded CPU baseline measures the wrong engine.** `scripts/bench-cpu.ps1:19`
-   drives `marvelous-cloth --headless` (legacy Newton), while the shipped CLI
-   default is VBD+OGC and the atelier's default is the hybrid GPU backend. Both
-   forces agree this is a measurement/coverage gap; neither has changed it. See
-   Q-33.
+6. **The recorded CPU baseline measures the wrong engine.**
+   `scripts/bench-cpu.ps1:19` drives `marvelous-cloth --headless` (legacy
+   Newton), while the shipped CLI default is CPU VBD+OGC and the atelier's default
+   is the hybrid GPU backend. Both forces agree this is a measurement gap; neither
+   has changed it. See Q-33.
+
+**Efficiency — `tf-performance` / task-12 (verbatim, `register`'s own text)**
+
+1. **The shipped default is dominated by the VBD solve, not detection.** CPU
+   VBD + OGC is 228.4 ms/step P50 at 1,744 vertices, of which detection is
+   14.5 ms (6%). Any efficiency work aimed at real-time behaviour on low-end
+   hardware has to move the solve, or move the solve off the CPU — BVH tuning
+   alone cannot get there.
+2. **CPU time per step is the only defensible metric on a swapping host.**
+   Wall clock here measures the machine: the same scene ran 31 s and then
+   112 s for 90–120 steps at different swap states. Publish `(user+sys)/step`
+   with the load and swap state beside it.
+3. **Per-step allocation is ~20,400 calls (~70% `realloc`, ~27 MB requested),
+   and it is concentrated in `colors()`, `detect()` and the per-iteration
+   `updates` collect.** This is hygiene and a low-risk first change, not the
+   bottleneck; do not let an allocation-count improvement be reported as a
+   speed-up without a wall/CPU before-after.
+4. **The hybrid GPU path is faster but not GPU-bound**: GPU compute is 54% of
+   the step, CPU detection 36%, and the host blocks on a readback every step.
+   It also converges more slowly per step than the CPU oracle at equal settings
+   (84 mm vs 1.6 mm seam gap at 2 s; 1.8 mm by 6 s) — a parity question to
+   settle before trusting it on weak hardware.
+5. **Every published performance figure in this repository is RTX 3090 +
+   hybrid GPU and none was reproduced on this M1.** A number that cannot be
+   reproduced on the machine the user owns is not a baseline; the tables in
+   `docs/PERFORMANCE.md` are.
+6. **Do not size CI budgets from any timing in this round.** The host was
+   swapping for the entire session; the build numbers are upper bounds.
+
+**Where the measured numbers live.** `register`'s build matrix is
+`docs/PERFORMANCE.md` §5 and is deliberately **not** duplicated here; the same
+file carries per-step CPU cost (§1), allocations (§2), memory (§3), the hybrid
+GPU path (§4), the low-end proxy (§6) and what it could not measure (§7). Every
+wall-clock figure in this repository is an upper bound: the host held 11.3 GB of
+12.3 GB swap for the whole session with load 44–130 and no cargo running. Its
+contention-corrected cold desktop figure is **238.1 s** (load 55 decaying to 17),
+slightly worse than the earlier 216 s, and it asks that neither be presented as
+clean. The useful, load-robust comparison is the ratio: **`--no-default-features`
+builds cold in 53.5 s vs 238.1 s for `--features desktop` — 4.4× — and the
+desktop CLI binary is 8.2× larger** (20 219 984 B vs 2 465 552 B).
 
 ---
 
@@ -818,6 +1173,48 @@ an owner; "Round 1" means it was safe to apply immediately.
   confirmed the file is not its scope. Post-fix: 0 broken relative links in real
   prose across the whole repository. Diff: 3 insertions, 3 deletions, no prose
   changed.
+
+**Applied in round 1, continuation (after `register`'s measurements landed):**
+
+- The **shared quality + efficiency agenda is now FINAL** and contains both
+  halves: my 6 bullets and `register`'s 6 bullets verbatim, plus a pointer to
+  where the measured numbers live. No longer provisional.
+- `register`'s **measured build matrix** is recorded in Q-22 with load/swap
+  annotations, and the load-robust ratios (4.4× cold-build, 8.2× binary size)
+  are cited in the agenda.
+- **Q-09, Q-13, Q-05** carry `register`'s adjudications.
+- **Q-16** gained the incident that makes its argument concrete: `db46440`
+  shipped ~2 500 desktop-only lines that a **manual gate** verified once, with
+  **no continuous signal** — because the only job that would report a regression
+  is the one that cannot fail.
+- **Q-31** re-checked: **fully resolved.** Wiring confirmed, and the Lead's
+  pre-commit gate supplies the empirical answer I could not get —
+  `desktop_errors=0` and `bin_tests=13 passed` (6 in `icons.rs` + the 7 in
+  `settings.rs`), so those tests really do execute under `--features desktop`. My
+  own attempt from the live tree is kept in the finding, with its exact compiler
+  errors, because it produced the Q-34 evidence.
+- **Q-32** re-checked and **passing**: the smoke protocol survived the
+  translations intact.
+- **Q-33, Q-34, Q-35** added: the wrong baseline engine, the HEAD-green /
+  tree-red distinction, and the committed build artifact.
+- **Q-17 extended** with `register`'s measured **noise floor** (mean 4.6 % /
+  max 10.8 % on CPU ms/step; 6.7 % / 20.3 % on a single-run P50), which is the
+  constraint any future budget assertion must clear. The shared agenda block is
+  **unchanged** by this addition — hash still `5585bcf7…dfb3` — so no re-sync was
+  needed.
+
+**Self-corrections made in this continuation, recorded rather than quietly fixed:**
+
+1. **I claimed nothing had verified `db46440`'s desktop build.** Wrong — the Lead
+   gated it locally with `desktop_errors=0`, `bin_tests=13 passed`. Corrected to
+   **no continuous signal** in Q-16, Q-31 and the shared agenda. The distinction
+   *is* the argument for CI, so the correction strengthens the finding.
+2. **I implied `register`'s failing retry loop was spurious.** It was real: it
+   reported a genuine dirty-tree error I never saw because I never built the dirty
+   tree. Corrected in Q-34 and acknowledged directly to `register`.
+3. **My line-number citations from that failed build went stale while I wrote
+   them up** — the file is under active edit. Flagged in place, with an
+   instruction to resolve by symbol instead.
 
 **Deliberately not applied, and why:**
 
@@ -836,15 +1233,18 @@ an owner; "Round 1" means it was safe to apply immediately.
 - No `cargo fmt`, no commit, no push, per the charter.
 
 **Commands run in round 1** (all from a clean tree at HEAD `16f6fc4`; the tree
-became dirty afterwards, which is recorded above):
+became dirty afterwards, which is recorded above). Every exit code and count
+below is deterministic. **Every wall-clock figure is an upper bound** taken while
+the host was swap-thrashing — see the measurement-environment warning:
 
 ```
-cargo check  --locked --no-default-features --all-targets -j 2   # exit 0, 3.3 s
+cargo check  --locked --no-default-features --all-targets -j 2   # exit 0, 3.3 s*
 cargo test   --locked --no-default-features -j 2 -- --test-threads=2   # 106 passed
 cargo clippy --locked --no-default-features --all-targets -j 2 -- -D warnings   # exit 0
 cargo clippy --locked --features desktop   --all-targets -j 2 -- -D warnings   # exit 0
 cargo test   --locked --features desktop   -j 2 -- --test-threads=2   # 106 passed, 3 ignored
 cargo tree / cargo metadata                                      # package counts
+# * contended timing; do not use as a baseline
 ```
 
 `RAYON_NUM_THREADS=2` and `-j 2` throughout, per `AGENTS.md:13`.

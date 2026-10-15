@@ -93,6 +93,7 @@ pub fn basic(kind: GarmentKind, subdivisions: u32) -> GarmentTemplate {
     };
     let polygon = PolygonPattern {
         curves: Default::default(),
+        target_lengths: Default::default(),
         points: points.into_iter().map(DVec2::from_array).collect(),
         edges: edges.iter().map(|s| s.to_string()).collect(),
         subdivisions,

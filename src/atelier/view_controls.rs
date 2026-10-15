@@ -39,10 +39,14 @@ fn center_radius(bounds: Option<(Vec3, Vec3)>) -> Option<(Vec3, f32)> {
     bounds.map(|(lo, hi)| ((lo + hi) * 0.5, ((hi - lo) * 0.5).length().max(1e-3)))
 }
 
-/// On-screen binding hint for the 3D viewport, matching the active tool.
+/// On-screen binding hint for the 3D viewport, matching the active tool. Every
+/// arm ends with the same navigation bindings, because the 3D camera responds to
+/// them in every tool.
 pub(super) fn hint_3d(tool: Tool) -> &'static str {
     match tool {
-        Tool::Place => "G: move · R: rotate · X/Y/Z rings · Shift: 15° · Esc: cancel",
+        Tool::Place => {
+            "G: move · R: rotate · X/Y/Z rings · Shift: 15° · Esc: cancel · right drag: orbit · middle drag: pan · wheel: zoom toward the cursor"
+        }
         Tool::Sew => {
             "Click boundaries to sew · right drag: orbit · middle drag: pan · wheel: zoom toward the cursor"
         }

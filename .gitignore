@@ -7,3 +7,7 @@
 /prototype/
 # Scratch copy of a thinned CLO binary in /clo3d_target/ — never commit fourth-party binaries.
 /clo3d_target/
+# Compiled helpers built on demand by the performance scripts; rebuild, never commit.
+scripts/perf/*.dylib
+scripts/perf/*.so
+__pycache__/

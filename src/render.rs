@@ -238,14 +238,16 @@ impl Camera {
     }
     /// Multiply the camera distance, clamped to the working range.
     pub fn zoom(&mut self, factor: f32) {
-        if !(factor > 0.) {
+        // `!(factor > 0.)` rejected NaN as well as non-positive factors; spell
+        // that out rather than negating a partial-order comparison.
+        if factor <= 0. || factor.is_nan() {
             return;
         }
         self.distance = (self.distance * factor).clamp(MIN_DISTANCE, MAX_DISTANCE);
     }
     /// Zoom while keeping the world point under the cursor exactly in place.
     pub fn zoom_at(&mut self, cursor: egui::Pos2, rect: egui::Rect, factor: f32) {
-        if !(factor > 0.) {
+        if factor <= 0. || factor.is_nan() {
             return;
         }
         let anchor = self.focal_point(cursor, rect);
@@ -1031,8 +1033,10 @@ mod tests {
     fn screen_and_world_round_trip_in_both_projections() {
         let rect = viewport(1280., 720.);
         for orthographic in [false, true] {
-            let mut camera = Camera::default();
-            camera.orthographic = orthographic;
+            let camera = Camera {
+                orthographic,
+                ..Default::default()
+            };
             let focal = camera.target;
             for world in [
                 focal,
@@ -1053,8 +1057,10 @@ mod tests {
     fn zoom_keeps_the_world_point_under_the_cursor() {
         let rect = viewport(1200., 700.);
         for orthographic in [false, true] {
-            let mut camera = Camera::default();
-            camera.orthographic = orthographic;
+            let mut camera = Camera {
+                orthographic,
+                ..Default::default()
+            };
             let cursor = egui::pos2(
                 rect.left() + 0.18 * rect.width(),
                 rect.top() + 0.72 * rect.height(),
@@ -1178,8 +1184,10 @@ mod tests {
     #[test]
     fn orthographic_projects_parallel_lines_onto_the_same_screen_point() {
         let rect = viewport(900., 700.);
-        let mut camera = Camera::default();
-        camera.orthographic = true;
+        let mut camera = Camera {
+            orthographic: true,
+            ..Default::default()
+        };
         let lateral = camera.right() * 0.2;
         let near = camera.target + lateral - camera.forward() * 0.4;
         let far = camera.target + lateral + camera.forward() * 0.4;
@@ -1202,8 +1210,10 @@ mod tests {
         let center = Vec3::new(0.1, 0.9, -0.2);
         let radius = 0.6;
         for orthographic in [false, true] {
-            let mut camera = Camera::default();
-            camera.orthographic = orthographic;
+            let mut camera = Camera {
+                orthographic,
+                ..Default::default()
+            };
             camera.frame_in(center, radius, rect);
             assert!((camera.target - center).length() < 1e-6);
             for axis in [Vec3::X, Vec3::Y, Vec3::Z] {

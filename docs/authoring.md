@@ -60,6 +60,8 @@ Reopen with `scripts/start-atelier.ps1 -ProjectPath output/atelier/fitting-proje
 
 Optional `curves`, `layout_2d` and `layout_rotation_degrees` fields extend existing templates; old v1/v2 files still load. Both layout fields are excluded from physical cache signatures and physical-change comparisons. The angle defaults to zero and zero is omitted when serialized, preserving historical cache signatures. JSON uses exact floating-point round trips so near-degenerate Delaunay decisions do not change on reload. Curve intersection validation applies to the sampled contour, not an exact algebraic intersection proof.
 
+A v2 polygon may also carry `target_lengths`: a map from each stable boundary identifier to its required length in metres, empty and omitted when no target is set. A target is a 2D specification. It is shown as a measured-versus-target deviation and is applied to the rest contour only by an explicit **Target length** action in the inspector; opening or reloading a document never resizes a piece. Values that are missing, non-finite or non-positive are reported and treated as no target. Setting a boundary's target refuses a later split or point deletion on that boundary until the target is cleared, so a specification can never be silently re-pointed at a shorter edge. Stored targets are excluded from the physical-change comparison (`same_physics`), so setting or clearing one cannot disturb the drape; only applying a different required length moves the rest contour and resets the caches.
+
 The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 
 ```powershell

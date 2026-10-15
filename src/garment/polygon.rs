@@ -18,6 +18,48 @@ pub struct PolygonPattern {
     /// Two cubic control points per named edge; absent entries are straight.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub curves: BTreeMap<String, [DVec2; 2]>,
+    /// Required length of each named boundary, keyed by the stable boundary
+    /// identifier, in metres. A target is a 2D specification to compare against;
+    /// it is never enforced while loading a document and never touches the 3D
+    /// side. Empty maps serialise to nothing, so historical files are unchanged.
+    #[serde(
+        default,
+        deserialize_with = "deserialize_target_lengths",
+        skip_serializing_if = "BTreeMap::is_empty"
+    )]
+    pub target_lengths: BTreeMap<String, f64>,
+}
+/// Tolerant reader for stored targets. A hand-edited file can hold `null` (what a
+/// non-finite float serialises to) or another unusable value. Those become `NaN`
+/// so `target_length` ignores them and `target_diagnostics` reports them, instead
+/// of failing the whole document load.
+fn deserialize_target_lengths<'de, D>(deserializer: D) -> Result<BTreeMap<String, f64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    #[allow(dead_code)]
+    enum Raw {
+        Number(f64),
+        Text(String),
+        Bool(bool),
+        List(Vec<Raw>),
+        Map(BTreeMap<String, Raw>),
+        Null,
+    }
+    Ok(BTreeMap::<String, Raw>::deserialize(deserializer)?
+        .into_iter()
+        .map(|(edge, raw)| {
+            (
+                edge,
+                match raw {
+                    Raw::Number(value) => value,
+                    _ => f64::NAN,
+                },
+            )
+        })
+        .collect())
 }
 pub struct MeshedPolygon {
     pub mesh: Mesh,
@@ -52,6 +94,31 @@ impl PolygonPattern {
             target_edge_m: 0.1 / 2.0_f64.powi(self.subdivisions as i32),
             ..Default::default()
         })
+    }
+    /// Stored target for a named boundary, when it is a usable specification.
+    /// Unknown boundaries, non-finite values and non-positive values are treated
+    /// as "no target", so a hand-edited file cannot leak a bad number into a
+    /// readout or into geometry.
+    pub fn target_length(&self, edge: &str) -> Option<f64> {
+        if !self.edges.iter().any(|name| name == edge) {
+            return None;
+        }
+        self.target_lengths
+            .get(edge)
+            .copied()
+            .filter(|value| value.is_finite() && *value > 0.)
+    }
+    /// Reports every stored target that is not a usable specification: an
+    /// unknown boundary, a non-finite value or a non-positive value. Readouts
+    /// treat those entries as absent instead of trusting them.
+    pub fn target_diagnostics(&self) -> Vec<String> {
+        self.target_lengths
+            .iter()
+            .filter(|(edge, value)| {
+                !self.edges.iter().any(|name| name == *edge) || !value.is_finite() || **value <= 0.
+            })
+            .map(|(edge, value)| format!("Ignored target length for boundary {edge}: {value}"))
+            .collect()
     }
     pub fn build(&self, m: &Material) -> Result<MeshedPolygon, String> {
         m.validate()?;

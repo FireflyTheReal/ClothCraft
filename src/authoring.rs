@@ -2,7 +2,7 @@
 //! Compile before accepting an edit. Reset physical state only when Edit requests it.
 use crate::{
     garment::{
-        CompiledGarment, GarmentTemplate,
+        CompiledGarment, GarmentTemplate, curves,
         meshing::MeshingSettings,
         polygon::PolygonPattern,
         seam::{BoundaryRef, SeamSpec},
@@ -39,6 +39,44 @@ pub enum Command {
         panel: String,
         anchor: usize,
         position: DVec2,
+    },
+    /// Translate a selection of contour points by a material delta, in metres.
+    MovePoints {
+        panel: String,
+        points: Vec<usize>,
+        delta: DVec2,
+    },
+    /// Move contour points by an exact metric step given in millimetres.
+    Nudge {
+        panel: String,
+        points: Vec<usize>,
+        delta_mm: DVec2,
+    },
+    /// Insert one contour point on a named boundary at a material arclength in
+    /// metres from its first endpoint. The first half keeps the boundary name;
+    /// the second half receives a deterministic derived name.
+    SplitBoundary {
+        panel: String,
+        edge: String,
+        at_m: f64,
+    },
+    /// Remove one contour point and rejoin its two neighbouring boundaries.
+    RemovePoint {
+        panel: String,
+        point: usize,
+    },
+    /// Curve (true) or straighten (false) both boundaries incident to a point.
+    CurvePoint {
+        panel: String,
+        anchor: usize,
+        curved: bool,
+    },
+    /// Required length of a named boundary, in metres. `0.0` clears the stored
+    /// target without moving geometry; a positive value stores and enforces it.
+    TargetLength {
+        panel: String,
+        edge: String,
+        target_m: f64,
     },
     Layout {
         panel: String,
@@ -77,6 +115,8 @@ pub struct Edit {
     pub garment: CompiledGarment,
     pub selected: Option<String>,
     pub reset_simulation: bool,
+    /// Contour point index created by this edit, when the command inserted one.
+    pub new_point: Option<usize>,
 }
 
 impl Edit {
@@ -132,6 +172,11 @@ pub fn same_physics(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
         for p in &mut t.panels {
             p.layout_2d = None;
             p.layout_rotation_degrees = 0.;
+            // A required boundary length is a 2D specification, not rest
+            // geometry: storing or clearing it must not invalidate the drape.
+            if let Some(polygon) = p.polygon.as_mut() {
+                polygon.target_lengths.clear();
+            }
         }
         serde_json::to_vec(&t).unwrap()
     };
@@ -230,10 +275,147 @@ fn unused_id(prefix: &str, ids: impl Iterator<Item = String>) -> String {
         .unwrap()
 }
 
+/// Millimetres to metres. Division by 1000 is correctly rounded, so 400 mm is
+/// the exact f64 0.4; `mm * 0.001` is not.
+pub fn mm_to_m(mm: f64) -> f64 {
+    mm / 1000.0
+}
+/// Metres to millimetres. For readouts only; never feed this back into the model.
+pub fn m_to_mm(metres: f64) -> f64 {
+    metres * 1000.0
+}
+/// Sampled rest arclength of one named boundary in metres, using the same
+/// sampling as the mesher and the seam compiler.
+pub fn edge_length(polygon: &PolygonPattern, edge: &str) -> Result<f64, String> {
+    let index = polygon
+        .edges
+        .iter()
+        .position(|name| name == edge)
+        .ok_or("Boundary not found")?;
+    Ok(polygon
+        .edge_points(index)?
+        .windows(2)
+        .map(|pair| pair[0].distance(pair[1]))
+        .sum())
+}
+/// Signed deviation of a measured length from a target, in millimetres.
+pub fn deviation_mm(measured_m: f64, target_m: f64) -> f64 {
+    m_to_mm(measured_m - target_m)
+}
+
+/// Keep material pin points attached to the contour anchors they coincide with.
+fn follow_pins(panel: &mut Panel, moved: &[(usize, DVec2)]) {
+    let Some(polygon) = panel.polygon.as_ref() else {
+        return;
+    };
+    let deltas: Vec<(DVec2, DVec2)> = moved
+        .iter()
+        .map(|(index, before)| (*before, polygon.points[*index] - *before))
+        .collect();
+    for pin in &mut panel.pin_points {
+        for (before, delta) in &deltas {
+            if pin.distance(*before) < 1e-9 {
+                *pin += *delta;
+                break;
+            }
+        }
+    }
+}
+
+/// Assign new local coordinates to contour anchors. The selection is deduplicated
+/// and validated; absolute coordinates are assigned directly, so no rounding is
+/// introduced for a typed position.
+fn remap_anchors(
+    panel: &mut Panel,
+    indices: &[usize],
+    map: impl Fn(DVec2) -> DVec2,
+) -> Result<(), String> {
+    let count = panel
+        .polygon
+        .as_ref()
+        .ok_or("This panel has no editable contour")?
+        .points
+        .len();
+    let mut unique = indices.to_vec();
+    unique.sort_unstable();
+    unique.dedup();
+    if unique.is_empty() {
+        return Err("Select at least one point".into());
+    }
+    if unique.iter().any(|index| *index >= count) {
+        return Err("Point index out of range".into());
+    }
+    let before: Vec<DVec2> = {
+        let polygon = panel.polygon.as_ref().unwrap();
+        unique.iter().map(|index| polygon.points[*index]).collect()
+    };
+    let after: Vec<DVec2> = before.iter().map(|point| map(*point)).collect();
+    {
+        let polygon = panel.polygon.as_mut().unwrap();
+        for (index, position) in unique.iter().zip(&after) {
+            polygon.points[*index] = *position;
+        }
+    }
+    let moved: Vec<(usize, DVec2)> = unique.into_iter().zip(before).collect();
+    follow_pins(panel, &moved);
+    Ok(())
+}
+
+/// Deterministic successor name for the second half of a split boundary. The
+/// first half keeps the existing name, so no unrelated identifier changes.
+fn split_edge_name(edges: &[String], base: &str) -> String {
+    let prefix: String = base.chars().take(60).collect();
+    (2..)
+        .map(|suffix| format!("{prefix}_{suffix}"))
+        .find(|candidate| !edges.iter().any(|name| name == candidate))
+        .expect("a free split name exists")
+}
+
+/// de Casteljau split: the two cubics that together reproduce the input exactly.
+fn split_cubic(cubic: [DVec2; 4], t: f64) -> ([DVec2; 4], [DVec2; 4]) {
+    let p01 = cubic[0].lerp(cubic[1], t);
+    let p12 = cubic[1].lerp(cubic[2], t);
+    let p23 = cubic[2].lerp(cubic[3], t);
+    let p012 = p01.lerp(p12, t);
+    let p123 = p12.lerp(p23, t);
+    let middle = p012.lerp(p123, t);
+    ([cubic[0], p01, p012, middle], [middle, p123, p23, cubic[3]])
+}
+
+/// Cubic parameter whose sampled arclength from the curve start is `at_m`. Any
+/// parameter splits a cubic exactly; bisection only chooses where the point lands.
+fn parameter_at_arclength(cubic: [DVec2; 4], at_m: f64) -> Result<f64, String> {
+    let mut low = 0.0;
+    let mut high = 1.0;
+    for _ in 0..48 {
+        let middle = (low + high) * 0.5;
+        let (left, _) = split_cubic(cubic, middle);
+        let length: f64 = curves::flatten(left, curves::FLATNESS_M)?
+            .windows(2)
+            .map(|pair| pair[0].distance(pair[1]))
+            .sum();
+        if length < at_m {
+            low = middle;
+        } else {
+            high = middle;
+        }
+    }
+    Ok((low + high) * 0.5)
+}
+
+/// Whether a seam references one named boundary of a panel.
+fn seam_uses(template: &GarmentTemplate, panel: &str, edge: &str) -> bool {
+    template.seams.iter().any(|seam| {
+        (seam.a.panel == panel && seam.a.edge.as_deref() == Some(edge))
+            || (seam.b.panel == panel && seam.b.edge.as_deref() == Some(edge))
+    })
+}
+
 /// An error leaves the input byte-for-byte unchanged; no partial edit is visible.
 pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String> {
     let mut template = source.clone();
     let mut selected = None;
+    let mut new_point = None;
     match command {
         Command::Fabric {
             panel,
@@ -352,6 +534,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                     subdivisions: 0,
                     meshing: Some(meshing),
                     curves,
+                    target_lengths: Default::default(),
                 }),
                 fabric,
                 grain_degrees: 90.,
@@ -438,20 +621,279 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .iter_mut()
                 .find(|p| p.id == panel)
                 .ok_or("Panel not found")?;
-            {
-                let polygon = p
-                    .polygon
-                    .as_mut()
-                    .ok_or("This panel has no editable points")?;
-                if anchor >= polygon.points.len() {
-                    return Err("Point index out of range".into());
-                }
-                polygon.points[anchor] = position;
-            }
+            // Absolute coordinates are assigned directly, never reconstructed
+            // from a delta, so the typed value is stored bit-for-bit.
+            remap_anchors(p, &[anchor], |_| position)?;
             // Re-basing the local origin keeps every untouched point at the same
             // board and world position, exactly like a dragged contour edit.
             normalize(p);
             selected = Some(panel);
+        }
+        Command::MovePoints {
+            panel,
+            points,
+            delta,
+        } => {
+            if !delta.is_finite() {
+                return Err("Move delta must be finite".into());
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            remap_anchors(p, &points, |point| point + delta)?;
+            normalize(p);
+            selected = Some(panel);
+        }
+        Command::Nudge {
+            panel,
+            points,
+            delta_mm,
+        } => {
+            if !delta_mm.is_finite() {
+                return Err("Nudge step must be finite".into());
+            }
+            // Metric steps convert once, by division, so 1 mm and 10 mm are the
+            // exact f64 0.001 and 0.01.
+            let delta = delta_mm / 1000.0;
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            remap_anchors(p, &points, |point| point + delta)?;
+            normalize(p);
+            selected = Some(panel);
+        }
+        Command::SplitBoundary { panel, edge, at_m } => {
+            if !at_m.is_finite() || at_m <= 0. {
+                return Err("Insert position must be a positive finite length".into());
+            }
+            if seam_uses(&template, &panel, &edge) {
+                return Err(
+                    "This boundary belongs to a seam; delete the seam before splitting it".into(),
+                );
+            }
+            if template
+                .panels
+                .iter()
+                .find(|p| p.id == panel)
+                .and_then(|p| p.polygon.as_ref())
+                .is_some_and(|polygon| polygon.target_lengths.contains_key(&edge))
+            {
+                return Err(
+                    "This boundary has a target length; clear the target before splitting it"
+                        .into(),
+                );
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            let index = {
+                let polygon = p
+                    .polygon
+                    .as_mut()
+                    .ok_or("This panel has no editable contour")?;
+                let index = polygon
+                    .edges
+                    .iter()
+                    .position(|name| name == &edge)
+                    .ok_or("Boundary not found")?;
+                let current = edge_length(polygon, &edge)?;
+                if at_m >= current {
+                    return Err("Insert position is beyond the boundary".into());
+                }
+                let count = polygon.points.len();
+                let a = polygon.points[index];
+                let b = polygon.points[(index + 1) % count];
+                let controls = polygon.curves.get(&edge).copied();
+                let (point, first, second) = match controls {
+                    // Any cubic parameter splits the outline exactly; the point
+                    // is placed at the requested material arclength.
+                    Some([c1, c2]) => {
+                        let cubic = [a, c1, c2, b];
+                        let parameter = parameter_at_arclength(cubic, at_m)?;
+                        let (left, right) = split_cubic(cubic, parameter);
+                        (left[3], [left[1], left[2]], [right[1], right[2]])
+                    }
+                    None => {
+                        let t = at_m / current;
+                        (a.lerp(b, t), [DVec2::ZERO; 2], [DVec2::ZERO; 2])
+                    }
+                };
+                polygon.points.insert(index + 1, point);
+                let name = split_edge_name(&polygon.edges, &edge);
+                polygon.edges.insert(index + 1, name.clone());
+                if controls.is_some() {
+                    polygon.curves.insert(edge, first);
+                    polygon.curves.insert(name, second);
+                }
+                index + 1
+            };
+            normalize(p);
+            selected = Some(panel);
+            new_point = Some(index);
+        }
+        Command::RemovePoint { panel, point } => {
+            let (removed, incoming, outgoing) = {
+                let p = template
+                    .panels
+                    .iter()
+                    .find(|p| p.id == panel)
+                    .ok_or("Panel not found")?;
+                let polygon = p
+                    .polygon
+                    .as_ref()
+                    .ok_or("This panel has no editable contour")?;
+                let count = polygon.points.len();
+                if count <= 3 {
+                    return Err("A contour needs at least three points".into());
+                }
+                if point >= count {
+                    return Err("Point index out of range".into());
+                }
+                let previous = (point + count - 1) % count;
+                (
+                    polygon.points[point],
+                    polygon.edges[previous].clone(),
+                    polygon.edges[point].clone(),
+                )
+            };
+            for name in [&incoming, &outgoing] {
+                if seam_uses(&template, &panel, name) {
+                    return Err("A seam uses this point's boundaries; delete the seam first".into());
+                }
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            if p.polygon.as_ref().is_some_and(|polygon| {
+                polygon.target_lengths.contains_key(&incoming)
+                    || polygon.target_lengths.contains_key(&outgoing)
+            }) {
+                return Err(
+                    "A target length uses this point's boundaries; clear the target first".into(),
+                );
+            }
+            {
+                let polygon = p.polygon.as_mut().unwrap();
+                if polygon.curves.contains_key(&incoming) || polygon.curves.contains_key(&outgoing)
+                {
+                    return Err("Remove the Bézier handles before deleting this point".into());
+                }
+                polygon.points.remove(point);
+                // The outgoing name disappears with its point; the incoming name
+                // becomes the rejoined boundary.
+                polygon.edges.remove(point);
+            }
+            // A pin on the removed vertex cannot survive that vertex.
+            p.pin_points.retain(|pin| pin.distance(removed) >= 1e-9);
+            normalize(p);
+            selected = Some(panel);
+        }
+        Command::CurvePoint {
+            panel,
+            anchor,
+            curved,
+        } => {
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            let polygon = p
+                .polygon
+                .as_mut()
+                .ok_or("This panel has no editable contour")?;
+            let count = polygon.points.len();
+            if anchor >= count {
+                return Err("Point index out of range".into());
+            }
+            let previous = (anchor + count - 1) % count;
+            let outgoing = polygon.edges[anchor].clone();
+            let incoming = polygon.edges[previous].clone();
+            for (name, start) in [(&outgoing, anchor), (&incoming, previous)] {
+                if curved {
+                    if !polygon.curves.contains_key(name) {
+                        let a = polygon.points[start];
+                        let b = polygon.points[(start + 1) % count];
+                        // Collinear controls at 1/3 and 2/3 trace the straight
+                        // segment exactly, so becoming a curve changes nothing.
+                        polygon
+                            .curves
+                            .insert(name.clone(), [a.lerp(b, 1. / 3.), a.lerp(b, 2. / 3.)]);
+                    }
+                } else {
+                    polygon.curves.remove(name);
+                }
+            }
+            normalize(p);
+            selected = Some(panel);
+        }
+        Command::TargetLength {
+            panel,
+            edge,
+            target_m,
+        } => {
+            if !target_m.is_finite() || target_m < 0. {
+                return Err("Target length must be a positive finite value".into());
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            let index = p
+                .polygon
+                .as_ref()
+                .ok_or("This panel has no editable contour")?
+                .edges
+                .iter()
+                .position(|name| name == &edge)
+                .ok_or("Boundary not found")?;
+            if target_m == 0. {
+                // Clearing a specification never moves geometry.
+                p.polygon.as_mut().unwrap().target_lengths.remove(&edge);
+                selected = Some(panel);
+            } else {
+                let count = p.polygon.as_ref().unwrap().points.len();
+                let end = (index + 1) % count;
+                let fixed = p.polygon.as_ref().unwrap().points[index];
+                let before_end = p.polygon.as_ref().unwrap().points[end];
+                for _ in 0..4 {
+                    let current = edge_length(p.polygon.as_ref().unwrap(), &edge)?;
+                    if current <= 0. {
+                        return Err("Boundary has zero length".into());
+                    }
+                    if (current - target_m).abs() <= target_m * 1e-12 {
+                        break;
+                    }
+                    // The first anchor stays put; the rest of the boundary scales
+                    // about it, so the direction is preserved.
+                    let factor = target_m / current;
+                    let polygon = p.polygon.as_mut().unwrap();
+                    let scale = |point: DVec2| fixed + (point - fixed) * factor;
+                    polygon.points[end] = scale(polygon.points[end]);
+                    if let Some([first, second]) = polygon.curves.get(&edge).copied() {
+                        polygon
+                            .curves
+                            .insert(edge.clone(), [scale(first), scale(second)]);
+                    }
+                }
+                follow_pins(p, &[(end, before_end)]);
+                normalize(p);
+                p.polygon
+                    .as_mut()
+                    .unwrap()
+                    .target_lengths
+                    .insert(edge, target_m);
+                selected = Some(panel);
+            }
         }
         Command::Layout { panel, origin } => {
             template
@@ -561,6 +1003,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
         template,
         garment,
         selected,
+        new_point,
     })
 }
 
@@ -611,6 +1054,7 @@ impl History {
             template,
             garment,
             selected: None,
+            new_point: None,
         })
     }
 }

@@ -45,11 +45,27 @@ pub(super) struct AuthoringUi {
     pub numeric_anchor: Option<usize>,
     pub anchor_x_mm: f64,
     pub anchor_y_mm: f64,
+    /// Boundary the target-length draft belongs to: (panel id, boundary name).
+    pub target_edge: Option<(String, String)>,
+    /// Target length draft, in millimetres. The document stores metres.
+    pub target_mm: f64,
 }
 
 pub(super) fn segment_distance(p: egui::Pos2, a: egui::Pos2, b: egui::Pos2) -> f32 {
     let d = b - a;
     p.distance(a + d * ((p - a).dot(d) / d.length_sq().max(1e-12)).clamp(0., 1.))
+}
+
+/// Shared millimetre entry: 0.1 mm steps and a ` mm` suffix. The document stores
+/// metres; convert edits with `authoring::mm_to_m` (division by 1000).
+pub(super) fn millimetre_field(ui: &mut egui::Ui, value_mm: &mut f64) -> bool {
+    ui.add(
+        egui::DragValue::new(value_mm)
+            .speed(0.1)
+            .max_decimals(1)
+            .suffix(" mm"),
+    )
+    .changed()
 }
 
 impl Atelier {
@@ -80,7 +96,9 @@ impl Atelier {
         // Force the numeric fields to re-read the edited geometry next frame.
         self.authoring.numeric_panel = None;
         self.authoring.numeric_anchor = None;
+        self.authoring.target_edge = None;
         self.authoring.ends.clear();
+        let inserted = edit.new_point.zip(edit.selected.clone());
         if let Some(id) = edit.selected {
             self.authoring.selected = Some(id);
         }
@@ -92,6 +110,10 @@ impl Atelier {
             .any(|p| Some(&p.id) == self.authoring.selected.as_ref())
         {
             self.authoring.selected = self.project.template.panels.first().map(|p| p.id.clone());
+        }
+        // A split selects its new point, so the user keeps editing where they are.
+        if let Some((index, id)) = inserted {
+            self.authoring.anchor = Some((id, index));
         }
         self.status = if edit.reset_simulation {
             "Edit applied · unchanged panels retained · ready to simulate"
@@ -293,6 +315,75 @@ impl Atelier {
             }
         }
     }
+    /// Target length of the selected boundary. The value is a specification in
+    /// metres; the field edits millimetres and the readout shows the deviation
+    /// from the measured material length. It is stored by `TargetLength` and is
+    /// never enforced while loading a document.
+    fn target_length_properties(
+        &mut self,
+        ui: &mut egui::Ui,
+        panel: &marvelous_cloth::garment::template::Panel,
+        polygon: &marvelous_cloth::garment::polygon::PolygonPattern,
+    ) {
+        let Some(name) = self
+            .authoring
+            .edge
+            .as_ref()
+            .filter(|edge| edge.panel == panel.id)
+            .and_then(|edge| edge.edge.clone())
+        else {
+            return;
+        };
+        let Ok(measured) = authoring::edge_length(polygon, &name) else {
+            return;
+        };
+        if self.authoring.target_edge.as_ref() != Some(&(panel.id.clone(), name.clone())) {
+            self.authoring.target_edge = Some((panel.id.clone(), name.clone()));
+            // A stored specification reloads as typed; without one the field
+            // starts from the measured length.
+            self.authoring.target_mm = polygon
+                .target_length(&name)
+                .map(authoring::m_to_mm)
+                .unwrap_or_else(|| authoring::m_to_mm(measured));
+        }
+        ui.separator();
+        ui.strong(format!("Boundary {name}"));
+        ui.horizontal(|ui| {
+            ui.label("Target");
+            millimetre_field(ui, &mut self.authoring.target_mm);
+        });
+        let target_m = authoring::mm_to_m(self.authoring.target_mm);
+        let deviation = authoring::deviation_mm(measured, target_m);
+        ui.small(format!(
+            "Measured {:.1} mm · deviation from target {:+.2} mm",
+            authoring::m_to_mm(measured),
+            deviation
+        ));
+        ui.horizontal(|ui| {
+            if ui
+                .button("Apply target")
+                .on_hover_text("Store this required length and set the boundary to it")
+                .clicked()
+            {
+                self.edit(Command::TargetLength {
+                    panel: panel.id.clone(),
+                    edge: name.clone(),
+                    target_m,
+                });
+            }
+            let stored = polygon.target_lengths.contains_key(&name);
+            if ui
+                .add_enabled(stored, egui::Button::new("Clear target"))
+                .clicked()
+            {
+                self.edit(Command::TargetLength {
+                    panel: panel.id.clone(),
+                    edge: name.clone(),
+                    target_m: 0.,
+                });
+            }
+        });
+    }
     pub(super) fn authoring_properties(&mut self, ui: &mut egui::Ui) {
         self.existing_seams(ui);
         if self.authoring.tool == Tool::Sew || !self.authoring.ends.is_empty() {
@@ -332,32 +423,28 @@ impl Atelier {
         ui.strong("Dimensions (mm)");
         ui.horizontal(|ui| {
             ui.label("Width");
-            ui.add(
-                egui::DragValue::new(&mut self.authoring.width_mm)
-                    .speed(1.)
-                    .suffix(" mm"),
-            );
+            millimetre_field(ui, &mut self.authoring.width_mm);
             ui.label("Height");
-            ui.add(
-                egui::DragValue::new(&mut self.authoring.height_mm)
-                    .speed(1.)
-                    .suffix(" mm"),
-            );
+            millimetre_field(ui, &mut self.authoring.height_mm);
         });
         if ui
             .button("Apply dimensions")
             .on_hover_text("Exact millimetre size; invalid values leave the document unchanged")
             .clicked()
         {
-            let width = self.authoring.width_mm / 1000.;
-            let height = self.authoring.height_mm / 1000.;
             self.edit(Command::Dimensions {
                 panel: panel.id.clone(),
-                width,
-                height,
+                width: authoring::mm_to_m(self.authoring.width_mm),
+                height: authoring::mm_to_m(self.authoring.height_mm),
             });
         }
         if let Some(polygon) = panel.polygon.as_ref() {
+            if !polygon.target_diagnostics().is_empty() {
+                ui.colored_label(
+                    Color32::GOLD,
+                    "A stored target length is invalid and is ignored.",
+                );
+            }
             if let Some(k) = self
                 .authoring
                 .anchor
@@ -367,35 +454,63 @@ impl Atelier {
             {
                 if self.authoring.numeric_anchor != Some(k) {
                     self.authoring.numeric_anchor = Some(k);
-                    self.authoring.anchor_x_mm = polygon.points[k].x * 1000.;
-                    self.authoring.anchor_y_mm = polygon.points[k].y * 1000.;
+                    self.authoring.anchor_x_mm = authoring::m_to_mm(polygon.points[k].x);
+                    self.authoring.anchor_y_mm = authoring::m_to_mm(polygon.points[k].y);
                 }
                 ui.strong(format!("Point {} (mm)", k + 1));
                 ui.horizontal(|ui| {
                     ui.label("X");
-                    ui.add(
-                        egui::DragValue::new(&mut self.authoring.anchor_x_mm)
-                            .speed(1.)
-                            .suffix(" mm"),
-                    );
+                    millimetre_field(ui, &mut self.authoring.anchor_x_mm);
                     ui.label("Y");
-                    ui.add(
-                        egui::DragValue::new(&mut self.authoring.anchor_y_mm)
-                            .speed(1.)
-                            .suffix(" mm"),
-                    );
+                    millimetre_field(ui, &mut self.authoring.anchor_y_mm);
                 });
+                // Visible nudge buttons for discoverability. They dispatch the
+                // same `Command::Nudge` as the board's arrow keys, so the two
+                // paths cannot drift apart in behaviour.
+                for (label, steps) in [
+                    (
+                        "Nudge X",
+                        [
+                            ("-1", DVec2::new(-1., 0.)),
+                            ("+1", DVec2::new(1., 0.)),
+                            ("-10", DVec2::new(-10., 0.)),
+                            ("+10", DVec2::new(10., 0.)),
+                        ],
+                    ),
+                    (
+                        "Nudge Y",
+                        [
+                            ("-1", DVec2::new(0., -1.)),
+                            ("+1", DVec2::new(0., 1.)),
+                            ("-10", DVec2::new(0., -10.)),
+                            ("+10", DVec2::new(0., 10.)),
+                        ],
+                    ),
+                ] {
+                    ui.horizontal(|ui| {
+                        ui.label(label);
+                        for (step_label, step) in steps {
+                            if ui.small_button(step_label).clicked() {
+                                self.edit(Command::Nudge {
+                                    panel: panel.id.clone(),
+                                    points: vec![k],
+                                    delta_mm: step,
+                                });
+                            }
+                        }
+                    });
+                }
                 if ui
                     .button("Apply point")
                     .on_hover_text(
-                        "Material coordinates; the rest origin is re-based without moving \
-                         the other points",
+                        "Material coordinates in millimetres; the rest origin is re-based \
+                         without moving the other points",
                     )
                     .clicked()
                 {
                     let position = DVec2::new(
-                        self.authoring.anchor_x_mm / 1000.,
-                        self.authoring.anchor_y_mm / 1000.,
+                        authoring::mm_to_m(self.authoring.anchor_x_mm),
+                        authoring::mm_to_m(self.authoring.anchor_y_mm),
                     );
                     self.edit(Command::Anchor {
                         panel: panel.id.clone(),
@@ -406,6 +521,7 @@ impl Atelier {
             } else {
                 ui.small("Click a point on the 2D board to edit its exact position.");
             }
+            self.target_length_properties(ui, &panel, polygon);
         }
         self.fabric_properties(ui, &panel);
         ui.horizontal(|ui| {
