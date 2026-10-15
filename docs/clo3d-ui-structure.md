@@ -29,6 +29,177 @@ Evidence ID. Where a claim has no ID it is because there is no REA record, not
 because a record was lost. The method used instead, and the test that validates
 it, are in §3.
 
+### 0.1 Tool boundaries — read this before the recovered material
+
+The runtime accessibility route was used in this pass and it produced real
+structure (§0.2). It also has **hard boundaries, and they are tool boundaries
+rather than CLO facts.** They are placed here, before any recovered material, so
+that a reader does not reach the end of a recovered toolbar list and assume the
+menu tree is merely pending. It is not pending; these tools cannot answer it.
+
+**Only the visible, layer-0 main window is observable.** REA's helper requires
+the selected window to satisfy `kCGWindowLayer == 0`
+(`bridge/native/ReaNativeUI.swift`), and it obtains the window through
+`CGWindowListCopyWindowInfo([.optionIncludingWindow], id)`. Observed outcomes for
+CLO's windows:
+
+| window | layer | state | result |
+|---|---|---|---|
+| 26121 (workspace) | 0 | on-screen | **captured** |
+| 26107 (580×568) | 0 | off-screen | `window-mismatch` |
+| 26114 (394×357) | 0 | off-screen | `window-mismatch` |
+| 26110 (menu-bar surface) | 1000 | off-screen | `window-mismatch` |
+| 26139 (`Dialog`) | 8 | off-screen | not addressable |
+| 26138 (`Library`) | 3 | off-screen | not addressable |
+
+**Derived — the rule, with its confound named:** addressability requires the
+window to be **both** currently enumerable by CoreGraphics **and** layer 0. The
+failure mode is observed directly (three `window-mismatch` refusals). **Unknown:**
+whether those refusals are caused by off-screen state or by something else — every
+non-workspace CLO window is *also* off-screen, so the two conditions could not be
+separated with the samples available, and this document does not assert which one
+does the rejecting.
+
+**The menu bar is the native macOS menu bar, and it is out of reach.** Every
+application on this machine owns an `828×30 @ (0,0)` **layer-1000** window —
+CLO's is 26110, alongside the harness, ClothCraft, Safari, Finder, Terminal,
+Preview and others. That is the native menu-bar surface, so CLO's menu items
+live in the **application-scope `AXMenuBar`**, not in the window subtree REA
+reads. Three independent observations:
+
+1. the complete capture of the workspace (`truncated: false`, 121 nodes) contains
+   **no `AXMenuBar`** and no top-level menu titles;
+2. pressing the only menu-bearing element inside the window (an `AXMenuButton`
+   titled `" SIMULATION"`) changed nothing — `children_count` was 121 before and
+   after both steps, and a CoreGraphics re-list immediately afterwards showed
+   **no new CLO window**;
+3. selecting menu-bar window 26110 directly returns `window-mismatch` because of
+   the layer gate above.
+
+**Consequence: action→menu membership is not obtainable from these tools.** It
+needs application-scope AX (not offered by the tool surface used here) or the
+Ghidra route. This is recorded so the effort is not spent twice.
+
+**Keyboard shortcuts are unavailable too.** `capture_native_ui_scenario`'s
+`key-entry` **sets the selected element's `AXValue`**; it does not inject global
+keystrokes. There is also **no hover action** — the available steps are click,
+scroll, key-entry and wait — so any experiment that presupposes hovering cannot
+be executed as written and must fall back to a click.
+
+**Dialog content is effectively unreachable.** CLO's dialog-class windows here
+sit at layer 8 (`Dialog`) and layer 3 (`Library`), below the layer-0 gate, and
+off-screen windows are refused. A dialog would become observable only if it
+presented as an on-screen layer-0 window. **Unknown:** whether any specific CLO
+dialog does — `Dialog` is a 300×24 strip, not a dialog frame, so it is suggestive
+rather than conclusive about, for example, `DialogPreference`.
+
+**One operational hazard.** REA compiles a fresh Swift helper per call into a
+temporary root. Under load (observed at **load average 9.53**, 4,076,060
+pageouts) that compile exceeded its 60-second budget once and the call failed
+with `execution_failure` / `Command timed out after 60000 ms: /usr/bin/xcrun`. A
+timed-out helper is **not** a finding about CLO.
+
+### 0.2 Runtime-recovered workspace structure (accessibility capture)
+
+This is the one layer the static pass could not reach, and it is the strongest
+single artifact in this document. **Observed**, all with `truncated: false`:
+
+| item | evidence |
+|---|---|
+| workspace window at rest, 121 nodes | `ev_9499ebcf86e3e6851eb026d7578bbb73bd9b785d5fc9e254870f9f029b9a0bcf` |
+| press of the in-window `AXMenuButton` (no effect) | `ev_a1b1c6a631e577734dc3a4ea2372cc684b0f09e47ae8cdabc254b8b2ea128b9c` |
+| tab selection in group [86] | `ev_4f36acd2a8896a538304ddba1173b2cef2abf80626798bd85cce361566c6d052` |
+| post-selection re-capture, 121 nodes | `ev_a8b82e36e43bffcb6be68121e87cc8d99f4e7f75d0812f3cc3ba90221f12bb37` |
+
+**Identity, confirmed from the tree rather than from geometry:** pid 67966,
+window 26121, executable digest `9ee952f4…`, and the status bar carries
+`Version: 2026.1.310 (r58944)` — the build **revision `r58944`**, which no static
+pass had. The loaded document is **`Untitled.zprj`**.
+
+**Reproducibility — what makes the control list citable.** The first capture
+(`ev_9499ebcf…`) and the later re-capture (`ev_a8b82e36…`) are **two independent
+calls with a full Swift helper recompile between them**, taken ~15 minutes apart.
+Nodes `[0]`–`[41]` reproduced **label-for-label and in the same order**, and the
+panel, tab and status-bar structure is identical. The inventory below is
+therefore a stable property of the window, not a one-off read.
+
+**Toolbar composition — the recovered control inventory.** The window exposes
+roughly **80 titled controls**. AX role distinguishes how each behaves, which is
+what makes the list actionable rather than a word cloud:
+
+* **`AXCheckBox`** — a toggle. `Select/Move`, `Fold Arrangement`,
+  `Fold 3D Garment`, `Edit Sewing`, `Edit Tack`, `Play Motion`,
+  `Edit Line (3D Pattern)`, `Line (3D Pattern)`, `3D Base Pen`,
+  `Edit 3D Pen (Avatar)`, `Edit Texture (3D)`, `Transform Graphic`,
+  `Select/Move Button`, `Fasten Button`, `Zipper` (twice), `Edit Piping`,
+  `Piping`, `Select Binding`, `Binding`, `Press`, `Edit Rip`,
+  `Transform Pattern`, `Seamless Blocking`, `Trace`, `Seam Allowance`,
+  `Walk Pattern`, `Edit Point of Measure`, `Point of Measure`,
+  `Edit Annotation`, `Check Sewing Length`, `Edit Texture (2D)`, `Steam`,
+  `Seam Taping`, `Edit Topstitch`, `Edit Puckering`, `Set Sublayer`, `Fill`,
+  `Edit Lacing`, `Lacing`, `Edit Gluing`, plus three untitled toggles.
+* **`AXPopUpButton`** — a dropdown/segmented chooser exposing `AXShowMenu`.
+  `Simulate`, `Select Mesh (Brush)`, `Edit Styleline`, `Segment Sewing`,
+  `Free Sewing`, `Tack`, `Hi-Res Garment`, `Edit Measure (Avatar)`,
+  `Basic Circumference Measure (Avatar)`, `Edit Measure (Garment)`,
+  `3D Pen (Avatar)`, `Button`, `Edit Pattern`, `Fullness (Point)`, `Polygon`,
+  `Internal Polygon/Line`, `Base Polygon`, `Notch`, `Pattern Annotation`,
+  `Pleats`, `Edit Grading`, `Segment Topstitch`, `Segment Puckering`,
+  `Glue Fill`.
+* **`AXButton`** — a one-shot command. `Reset 2D Arrangement (All)`,
+  `Reset 3D Arrangement (All)`, `Auto 3D Arrangement`,
+  `Re-drape 3D Arrangement`, `Auto Sewing`, `Graphic (3D Pattern)`,
+  `Auto Fitting`, `Graphic (2D Pattern)`, plus thirteen untitled buttons.
+
+**Two independent methods converge on the same list — and this is the point.**
+The drafting design document ranked what is missing from the interface as
+**seam allowance, then notches, then points of measure, then symmetry, then
+grading, then seam-ease** — a judgement reasoned from patternmaking practice. The
+shipped binary independently exposes `Seam Allowance`, `Notch`, `Walk Pattern`,
+`Edit Point of Measure`, `Point of Measure`, `Pleats`, `Edit Grading`,
+`Check Sewing Length`, `Seam Taping`, `Topstitch`, `Puckering`, `Lacing` and
+`Gluing`. The first is practice; the second is an artifact reading. **That they
+agree is much stronger evidence than either alone**, and it is the clearest
+justification available for the drafting roadmap's ordering.
+
+**Panel structure.** `Object Browser` and `Property Editor` each appear as a
+labelled panel header with two adjacent untitled buttons; document tabs
+`Untitled.zprj` and `2D Pattern Window` are `AXTabGroup`s with a single radio
+child each; `CLOFAB` appears as a button.
+
+**A tab strip drives a neighbouring panel's content — real structure, not a
+label.** Selecting tab 0 of the 13-child `AXTabGroup` at path [86] replaced the
+content of the sibling group [85]:
+
+* **before:** two untitled buttons, a **`CLOFAB`** button, an **`AXOutline` with
+  3 rows**;
+* **after:** an untitled button, then **`Add`**, **`Copy`**, **`Assign`**, and an
+  **`AXList` with 2 rows**.
+
+So `[86]` is a tab strip that selects what the adjacent panel shows: an
+outline/tree view beside a `CLOFAB` button, or a list view with
+`Add`/`Copy`/`Assign`. **No document was written** — this is a view switch, and
+no further clicks were made after it.
+
+**Eleven unnamed tabs stay Unknown.** The path-[86] `AXTabGroup` has **13
+children: 11 `AXRadioButton`s whose titles are empty strings and whose `value`
+is null**, plus `Scroll Left` and `Scroll Right`. **Selecting one did not
+populate any title**, before or after. Because the radios expose neither a title
+nor a value, **which tab is selected is not readable either** — a switch
+definitely occurred (the sibling-group effect above), but it cannot be named.
+These eleven tabs are recorded as Unknown and are **not** named from their
+position, from the `menu_*` literals, or from their neighbours.
+
+**One in-window menu affordance exists:** an `AXMenuButton` titled
+`" SIMULATION"` (with `AXShowMenu`). Pressing it produced no observable change
+(§0.1), so its menu content is Unknown.
+
+### 0.3 Privacy
+
+The status bar displays a signed-in account label. It is **not** reproduced in
+this document. The same rule applies to any other personal value that appears in
+a capture.
+
 ## 1. Targets and the hard analysis limit
 
 ### 1.1 Targets (**Observed**)
@@ -547,10 +718,10 @@ This is the list the standing question is really asking for.
 | # | Not recovered | Why | What would recover it |
 |---|---|---|---|
 | 1 | **Action → menu membership** (which item sits in `menu_File` vs `menu_Edit`) | Determined by `QMenu::addAction` call order in generated `setupUi` and in `MainWindowController` / `CloUICommon::MenuList` call sites — instruction-level | Decompile `MainWindowController::createMainWindow` / `CreateWidgetActionsForSubTitleOnMenu` / `OnUpdateMenu` and the main-window `setupUi`. Requires a Ghidra session that completes analysis (raised deadline, more RAM, or a pre-analysed saved project) |
-| 2 | **Toolbar composition** (which actions sit in which toolbar) | Same: `MainWindowController::CreateToolBarForViewWidgets`, `CreateActionsFor3DSimulationToolbar`, `CloUICommon::ToolBar::AddAction`, `ActionHelper::AddAction` call sites | Same as #1 |
-| 3 | **Preference option tree grouping** (which branch each of the 113 options is under) | `QTreeWidget` rows are built in `setupUi` | Same as #1 |
-| 4 | **Tab display order and per-tab heading text** for most dialogs | The label literals sit in a separate region from the object names, so offsets do not pair them | Runtime accessibility capture, or `retranslateUi` decompilation |
-| 5 | **Menu bar top-level titles and order** | No contiguous title cluster exists in the string table; titles may be built at runtime | Runtime accessibility capture, or decompilation |
+| 2 | **Toolbar composition** (which actions sit in which toolbar) | Same: `MainWindowController::CreateToolBarForViewWidgets`, `CreateActionsFor3DSimulationToolbar`, `CloUICommon::ToolBar::AddAction`, `ActionHelper::AddAction` call sites | **Partly answered at runtime** (§0.2) — the visible control set, in order and with roles. Which *named toolbar* each belongs to still needs #1's route |
+| 3 | **Preference option tree grouping** (which branch each of the 113 options is under) | `QTreeWidget` rows are built in `setupUi` | Same as #1. Runtime capture helps **only if** the dialog presents as an on-screen layer-0 window (§0.1) |
+| 4 | **Tab display order and per-tab heading text** for most dialogs | The label literals sit in a separate region from the object names, so offsets do not pair them | `retranslateUi` decompilation. Runtime capture did **not** work here: the workspace's eleven tabs expose no title and no value even after selection (§0.2) |
+| 5 | **Menu bar top-level titles and order** | No contiguous title cluster exists in the string table; titles may be built at runtime | **Decompilation only.** Runtime capture is closed for this — the menu bar is the native macOS menu bar in a layer-1000 window and REA's gate requires layer 0 (§0.1) |
 | 6 | **Dock placement, defaults and the complete dock set** | Only display names and persistence suffixes are literals; placement is code | Same as #1, plus `DockWidgetController` bodies |
 | 7 | **`.rcc` directory/tree grouping** | Child-offset base in rcc v3 unresolved (§9) | A correct v3 tree decoder, validated against the 1,393-name count |
 | 8 | **Screens with no literal block** (e.g. `CLOFabDockWidget`, whose block is 7 lines of C++ mangled names and no object names) | Hand-coded UI, no Designer form | Decompilation |
@@ -570,13 +741,24 @@ grant. **Items 1–6 are therefore blocked on a permission rather than on
 analysis** — but they remain **Unknown**, and nothing here may be upgraded on the
 strength of the toolchain findings alone.
 
-### 12.1 The runtime observation route — attempted, and where it stopped
+### 12.1 The runtime observation route — attempted, and what it settled
 
-An earlier revision of this document said this route had not been attempted.
-It now has been: the state below was reached under explicit owner authorisation,
-on an instance the **owner** launched. All of §12 items 1–6 remain **Unknown** —
-this subsection records how far the route got, not any recovered structure, and
-the run produced **no** menu bar, **no** preference tree and **no** tab list.
+An earlier revision of this document said this route had not been attempted. It
+now has been, under explicit owner authorisation, on an instance the **owner**
+launched. It **succeeded in part** and **failed in part**, and the split is the
+point: **the workspace window's structure was recovered — §0.1 gives the tool
+boundaries and §0.2 the recovered material** — while the menu bar was not, for
+reasons that are tool boundaries rather than CLO facts.
+
+§12 items 1 and 5 (action→menu membership; menu-bar titles and order) are now
+**closed as unreachable by this route**, not merely un-attempted: the menu bar is
+the native macOS menu bar in a layer-1000 window, and REA's window gate requires
+layer 0. Items 3 and 4 (preference tree grouping; tab order and heading text)
+remain **Unknown**, but the reason has narrowed: the eleven tabs in the
+workspace's tab strip expose **no titles and no values** even after selection
+(§0.2), so a dialog's tabs would have to expose theirs, which cannot be assumed
+from this sample. Item 6 (docks) is **partially** answered by the recovered panel
+structure in §0.2.
 
 **Process (Observed).** `CLO` PID 67966,
 `/Applications/CLO.app/Contents/MacOS/CLO_Standalone_OnlineAuth`,
