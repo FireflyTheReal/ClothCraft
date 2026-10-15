@@ -3,3 +3,5 @@
 *.tmp
 # Local cargo registry cache used when $CARGO_HOME is redirected into the tree.
 /.cargo-home/
+# Generated macOS prototype bundle (rebuild with scripts/make-macos-prototype.sh).
+/prototype/

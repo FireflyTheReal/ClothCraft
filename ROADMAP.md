@@ -13,6 +13,8 @@ Each row is a contribution-sized track, not a promised release date. Finish one 
 | P0.1 | Reliable save/open and portable projects | `fitting.rs`, `atelier.rs` | File picker, explicit save vs export, relative/relinked avatar paths, autosave recovery; reopen the same document/state after a forced shutdown |
 | P0.2 | Understandable drawing and sewing | `atelier/board.rs`, `authoring.rs`, `garment/seam.rs` | Numeric dimensions, add/remove contour points, clear orientation and preflight intersections; a new user completes a top without editing JSON |
 | P0.3 | Stable cloth at a measured realtime budget | `ogc/`, `vbd.rs`, `gpu_vbd.rs` | Shirt/apron/dress, supported and free cloth, multiple mesh densities; report step P50/P95, delivered physical time, seam gaps, stretch and intersections. Preserve accuracy checks |
+| P0.4 | A workspace shell you can actually open | `editor.rs`, `render.rs`, `scripts/make-macos-prototype.sh` | `cargo build --features desktop` yields a double-clickable macOS bundle; menu bar, tool strip, left palette, 3D/2D window pair, tabbed inspector and status bar all respond; no fake tool buttons |
+| P0.5 | The desktop feature is compiled on every push | `.github/workflows/cpu.yml` | A `cargo check --features desktop` job exists; a green CI run means the window builds, not just the CPU core |
 | P1.1 | Practical static asset interchange | `avatar.rs`, `garment/export.rs`, future adapters | OBJ+MTL round trip, then static GLB; explicit units/axes, groups, normals and UVs; Blender and a second independent viewer agree |
 | P1.2 | Industrial pattern exchange | canonical pattern model + new format adapters | DXF-AAMA and DXF-ASTM separately; import/export contours, grain and notches with independent fixtures; cutting vs sewing lines are explicit |
 | P1.3 | Usable pattern printing | `garment/export.rs` | Physical SVG/PDF page dimensions, 100 mm ruler, tiling, labels and allowances; printed measurements agree within documented tolerance |
@@ -31,6 +33,7 @@ The format priorities below remain product priorities: a **critical** animation 
 - [x] Direct 3D move/rotate tools (G/R), edge-on rotation rings, 15° snapping and 2D board rotation independent of physical rest/grain.
 - [x] Save editable templates/projects and reopen through the CLI; preserve v1/v2 data compatibility.
 - [x] Edit existing anchors and Bézier handles; pan/zoom, snapping and saved 2D layouts.
+- [x] Garment-CAD workspace shell: menu bar, tool strip, left display palette, 3D + 2D window pair with docked title bars, tabbed right inspector, status bar.
 - [ ] Exact dimension entry, holes, internal lines, multi-selection and symmetry.
 - [ ] Partial/free sewing, notch editing, 1:N / M:N relationships and clearer 3D direction preview.
 - [ ] Arrangement points, body-aware placement and useful preflight intersection feedback.
@@ -43,6 +46,7 @@ Acceptance: an unfamiliar user can draft a simple top, join its intended boundar
 
 - [x] Authoring and material-space model independent of egui/wgpu; CPU-only build.
 - [x] CPU Newton reference; CPU VBD; hybrid GPU VBD/OGC; real window timing and force checks.
+- [x] Assembled nodal mixed block-CSR operator with a 3×3 block-Jacobi preconditioner, recovered from CLO 2026.1.310 evidence and guarded against the matrix-free path.
 - [ ] Common backend lifecycle/capability contract, exercised by two real adapters before exposing a new selector.
 - [ ] Standard scene suite and machine-readable quality/cost comparisons for alternative solvers.
 - [ ] Resident GPU contact, fewer transfers, dense scenes and animated avatars.
@@ -99,3 +103,24 @@ Recommended first contribution: **SAVE-01**, then **DRAW-01**. Keep DRAW-02 and 
 ## 4. Public-manual study queue
 
 Next reading: darts/pleats, seam allowance, topstitch vs structural sewing, zippers/buttons, fabric testing/calibration, measurement, animation, retopology and UV/export details. Read each family before writing its implementation specification. Automatic sewing is later work, after explicit sewing and arrangement are reliable; generic AI automation is not a substitute for a correct garment model. Track observations, independent specifications, implementation status and acceptance cases in [manual-study.md](docs/manual-study.md). The full manual has not been exhaustively reviewed.
+
+## 5. Desktop shell and the macOS prototype
+
+The workspace shell lives in [src/editor.rs](src/editor.rs) and is **presentation only**: it reuses the same solver worker, camera interaction and file I/O as before, and adds no control that does not do something. The 3D garment window and the white 2D pattern window are docked side by side, with a tabbed property inspector on the right, a display palette on the left, a menu bar and tool strip on top, and a status bar below. The light chrome, the accent colour, the pattern-window grid, the cotation marks and the docked title bars are original to this project; no CLO3D icon, screenshot, font or artwork is used, and no CLO3D control is imitated at the pixel level.
+
+Stated plainly, as limits rather than claims:
+
+- **The `desktop` feature is not covered by CI.** `.github/workflows/cpu.yml` builds `--no-default-features`, so `editor.rs`, `render.rs` and `atelier.rs` are never compiled on a push. **A green CI run does not mean the window builds.** That gap is milestone **P0.5**.
+- The macOS bundle is a **hand-built prototype**, not packaging: no notarization, no installer, no update path, no signing identity. Only the dev profile is built, and no performance claim is attached to it.
+- Docking is **fixed**. Panels resize but cannot be rearranged, torn off or saved as layouts, and there is still no multi-document or multi-view workspace.
+- The displayed physical quantities come from the existing CPU reference and the assembled nodal block-Jacobi solver. Nothing in the shell implies a capability the solvers do not have.
+- **Window appearance was not verified visually by the agent that wrote it.** The GUI process registers as a foreground application, but screen capture is blocked by macOS Screen Recording permission. Layout correctness is therefore reported by the person testing it, not asserted here.
+
+Reproduce:
+
+```sh
+scripts/make-macos-prototype.sh          # -> prototype/mac/ClothCraft.app
+cargo run --features desktop             # or run the binary in place
+```
+
+The generated `prototype/` directory is not committed; rebuild it from the script.
