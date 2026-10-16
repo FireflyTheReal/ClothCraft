@@ -30,6 +30,7 @@ Le chemin courant de `cloth-fit` passe par `VbdSolver` + `OgcWorld`, ou `GpuVbd:
 | Module | Rôle | Entrées / sorties |
 |---|---|---|
 | `authoring.rs` | Commandes transactionnelles, historique et placements rigides | template + commande → template validé + modèle compilé |
+| `authoring/clipboard.rs`, `atelier/selection.rs`, `atelier/radial.rs` | Presse-papiers sémantique, sélection transitoire et menu d'outils | panneaux/bords stables → commandes ; aucun indice de maillage persistant |
 | `fabrics.rs`, `atelier/fabrics_ui.rs` | Presets documentés, conversion stretch sous charge et contrôles | propriétés SI → compilation par `Command::Fabric`, sans modifier le repos |
 | `atelier/authoring_ui.rs`, `atelier/gizmo.rs` | Dessin, choix des coutures, sélection et gizmos | interactions → commandes ; aperçu sans remeshing par frame |
 | `model.rs` | Géométrie de repos rectangulaire et maillage FEM | `Pattern` → `Mesh`, masse, charnières |
@@ -49,6 +50,7 @@ Le chemin courant de `cloth-fit` passe par `VbdSolver` + `OgcWorld`, ou `GpuVbd:
 | `ogc/` | Régions admissibles, VF/EE, barrières et bornes | topologie + positions → contacts + rayons conservatifs |
 | `vbd.rs` | Euler implicite par blocs de sommets, coloration avec contacts | mêmes énergies FEM/coutures, référence f64 |
 | `vbd/prediction.rs` | Initialisation adaptative CPU/GPU, historique de pas acceptés | vitesses/accélération précédente → estimation initiale, cible inertielle inchangée |
+| `vbd/coloring.rs` | Coloration gloutonne déterministe depuis les incidences existantes | graphe matériel + contacts, même ordre de couleurs/sommets, pas de second graphe dynamique |
 | `garment/diagnostics.rs` | Mesure d'allongement indépendante du rendu | repos matériel + état → percentile par aire et maximum |
 | `gpu_vbd.rs`, `vbd.wgsl` | Solve local f32, gradients exacts, Hessiennes positives approchées | candidats/bornes CPU → compute GPU → état validé |
 | `picking.rs` | Rayons et attachement barycentrique | souris → force de saisie, sans téléportation |
@@ -101,3 +103,7 @@ The 2D board uses indexed vertices instead of duplicating every triangle corner.
 See [integration provenance and fixes](firefly-integration.md). Polygon `target_lengths` is optional nonphysical metadata, omitted when empty and excluded from fitting cache signatures as well as `same_physics`. An explicit target command may change rest geometry; loading never enforces a stored target. Contour splits preserve cubics by de Casteljau subdivision and reject referenced seams/targets rather than migrating them implicitly. Existing holes and internal lines continue through the same domain mesher.
 
 Board view rotation is radians; panel layout rotation remains degrees. Pointer and nudge adapters convert explicitly. Multi-point movement translates attached controls and invalidates transient selections when contour identity/order changes. Camera presets and orthographic projection share the same matrix with picking. Preferences separate immediately applied theme/snap from next-launch simulation/overlay defaults. The worker and physical solver paths are unchanged.
+
+## Document and sewing extensions (16 October 2026)
+
+`document.rs` owns portable avatar assets and atomic document replacement. `atelier/documents_ui.rs` handles dialogs, dirty state and recovery. `SeamSpec` keeps legacy A/B first segments plus optional ordered tails; `BoundaryRef.reversed` controls each trimmed segment. Cumulative arclength paths compile into the same quadrature/energy API, including both sides of discontinuous joints. Authoring, clipboard, mirrors, ownership checks and export traverse all references. See [contracts and limits](documents-and-sewing.md).

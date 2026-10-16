@@ -6,13 +6,13 @@ Reviewed 2026-10-14. This is a requirements document, not a list of implemented 
 
 | Format | Input | Output | Contract / loss |
 |---|---|---|---|
-| ClothCraft fitting-project JSON v1 | CLI `cloth-fit --project` | Workspace/CLI saved state | Editable template plus optional state cache; avatar path is not yet portable |
+| ClothCraft fitting-project JSON v1 | Workspace File → Open and CLI `cloth-fit --project` | Workspace Save / Save As and CLI | Editable template, optional state and interactive settings; adjacent portable OBJ assets |
 | ClothCraft template JSON v1/v2 | `cloth-template` CLI | `template.json` | Named panels/boundaries, local metre coordinates, shared fabrics, grain, sewing and board metadata |
 | OBJ | Avatar surface geometry through CLI | Static garment and grain guides | Geometry only; no MTL, skinning, animation, normals/material round trip or reconstruction of sewing patterns. Export UVs are local metres, not a packed texture atlas. Triangulate complex avatar polygons before import |
 | SVG | None | Pattern preview | Not print-to-scale; ignores board arrangement; no allowances, nesting, grading or print tiling |
 | Diagnostic JSON | No general interchange reader | Metrics/fiber frames | Research outputs; fibers are surface directions, not simulated yarns |
 
-The workspace's **Exporter** action writes these supported outputs together to its launch directory. It replaces fixed filenames. A dedicated save/export dialog, portable bundle and autosave are P0 work.
+The workspace's **Export** action writes these supported outputs together to its launch directory. It replaces fixed filenames. Native project Save/Open dialogs, portable OBJ assets and local recovery are available; export still uses the session folder. See [document contracts](documents-and-sewing.md).
 
 ## Required inputs and outputs
 

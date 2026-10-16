@@ -12,9 +12,10 @@ use glam::{DMat3, DVec3};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, sync::Arc, time::Instant};
+mod coloring;
 mod prediction;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VbdSettings {
     pub dt: f64,
     pub iterations: usize,
@@ -94,7 +95,7 @@ pub struct VbdSolver {
     hinges: Vec<Vec<usize>>,
     stitches: Vec<Stitch>,
     vertex_stitches: Vec<Vec<usize>>,
-    graph: Vec<BTreeSet<usize>>,
+    graph: Vec<Vec<usize>>,
 }
 impl VbdSolver {
     pub fn new(
@@ -183,48 +184,14 @@ impl VbdSolver {
             hinges,
             stitches,
             vertex_stitches,
-            graph,
+            graph: graph
+                .into_iter()
+                .map(|neighbors| neighbors.into_iter().collect())
+                .collect(),
         })
     }
     pub(crate) fn colors(&self, contact: &ContactSet, grab: Option<&Grab>) -> Vec<Vec<usize>> {
-        let n = self.graph.len();
-        let mut extra = vec![Vec::new(); n];
-        for c in &contact.contacts {
-            for a in &c.vertices[..c.count] {
-                for b in &c.vertices[..c.count] {
-                    if a != b && *a < n && *b < n {
-                        extra[*a].push(*b);
-                    }
-                }
-            }
-        }
-        if let Some(g) = grab {
-            for a in g.vertices {
-                for b in g.vertices {
-                    if a != b {
-                        extra[a].push(b);
-                    }
-                }
-            }
-        }
-        let mut assigned = vec![usize::MAX; n];
-        let mut colors: Vec<Vec<usize>> = Vec::new();
-        let mut seen = vec![usize::MAX; n];
-        for v in 0..n {
-            for i in self.graph[v].iter().chain(&extra[v]) {
-                let color = assigned[*i];
-                if color != usize::MAX {
-                    seen[color] = v;
-                }
-            }
-            let c = (0..).find(|c| seen[*c] != v).unwrap();
-            if c == colors.len() {
-                colors.push(Vec::new());
-            }
-            colors[c].push(v);
-            assigned[v] = c;
-        }
-        colors
+        coloring::colors(&self.graph, contact, grab)
     }
     pub(crate) fn local<S: Scalar>(
         &self,

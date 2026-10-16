@@ -58,6 +58,11 @@ pub struct Bvh {
     dynamic_nodes: usize,
 }
 impl Bvh {
+    /// Current primitive box, updated by each refit (including cache reuse).
+    pub(super) fn primitive_bounds(&self, id: usize) -> Bounds {
+        self.primitive_bounds[id]
+    }
+
     pub fn new(bounds: &[Bounds], dynamic: &[bool]) -> Self {
         let mut b = Self {
             nodes: Vec::new(),

@@ -116,7 +116,7 @@ impl Atelier {
         if let Some(id) = select {
             self.set_authoring_tool(Tool::Edit, false);
             self.cancel_preview();
-            self.authoring.selected = Some(id);
+            self.select_panel(id, ui.input(|i| i.modifiers.shift));
             self.authoring.edge = None;
         }
         ui.separator();

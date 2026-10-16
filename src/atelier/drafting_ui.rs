@@ -219,6 +219,7 @@ impl Atelier {
                 .clone();
             self.set_authoring_tool(Tool::Edit, false);
             self.authoring.edge = Some(marvelous_cloth::garment::seam::BoundaryRef {
+                reversed: false,
                 panel,
                 edge: Some(line),
                 side: marvelous_cloth::garment::seam::Side::Top,

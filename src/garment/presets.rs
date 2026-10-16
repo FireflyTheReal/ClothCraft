@@ -131,14 +131,18 @@ pub fn basic(kind: GarmentKind, subdivisions: u32) -> GarmentTemplate {
     let seams = sewn
         .into_iter()
         .map(|i| SeamSpec {
+            a_tail: vec![],
+            b_tail: vec![],
             id: edges[i].into(),
             a: BoundaryRef {
+                reversed: false,
                 panel: "front".into(),
                 side: Side::Top,
                 edge: Some(edges[i].into()),
                 range: [0.0, 1.0],
             },
             b: BoundaryRef {
+                reversed: false,
                 panel: "back".into(),
                 side: Side::Top,
                 edge: Some(edges[i].into()),

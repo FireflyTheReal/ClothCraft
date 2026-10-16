@@ -163,6 +163,7 @@ fn two_rectangles() -> GarmentTemplate {
 
 fn edge(panel: &str, name: &str) -> BoundaryRef {
     BoundaryRef {
+        reversed: false,
         panel: panel.into(),
         side: Side::Top,
         edge: Some(name.into()),

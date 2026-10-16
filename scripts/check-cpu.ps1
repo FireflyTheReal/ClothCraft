@@ -11,7 +11,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'CPU tests failed' }
     cargo clippy --locked --no-default-features --all-targets -j $Jobs -- -D warnings
     if ($LASTEXITCODE -ne 0) { throw 'CPU clippy failed' }
-    foreach ($name in @('two-panel', 'local-ease', 'tshirt', 'dress', 'curved-panels')) {
+    foreach ($name in @('two-panel', 'local-ease', 'tshirt', 'dress', 'curved-panels', 'partial-chain')) {
         cargo run --locked --no-default-features -j $Jobs --bin cloth-template -- validate "examples/templates/$name.json"
         if ($LASTEXITCODE -ne 0) { throw "Template validation failed: $name" }
     }

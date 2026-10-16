@@ -1,16 +1,20 @@
 # Unified pattern workspace
 
+**16 October:** [Document lifecycle and partial/multi-edge sewing](documents-and-sewing.md) now extend the workflow below. Native Save/Open is separate from Export. Use Sew → Multiple edges per side for ordered chains.
+
+**Workspace update (15 October):** tools are on the left rail and in the radial menu. Drag dividers to resize 3D / 2D / Properties; use Expand / Split to focus a canvas. Display controls are in each viewport’s gear menu, and Properties has Piece, Fabric and Simulation tabs. [Layout, display options and limits](workspace-ui.md).
+
 Launch `scripts/start-atelier.ps1`. All pieces share **one metric 2D board**, beside the 3D garment view. A panel or named boundary selected in either view identifies the same model object in the other view.
 
 ## Draft cloth
 
 For numeric primitives, mirrors, booleans/holes and internal sewing curves with ruffles, see [drafting tools](drafting-tools.md). All use the same board, selections and undo history.
 
-- **New** starts a blank drawing; the existing garment is replaced only after a valid contour is completed. Cancel the trace to keep it.
+- **New sheet** starts a blank drawing; the existing garment is replaced only after a valid contour is completed. Cancel the trace to keep it.
 - **Pen**: click for a corner; click and drag to set a Bézier tangent. Continue around the piece, then click its first anchor or **Close the contour** / Enter. Backspace removes the last anchor; Escape cancels the trace. The magnet defaults to 10 mm and can be changed in Settings.
 - **Rectangle**: drag between opposite corners. Release creates a meshed panel in 2D and 3D.
 - **Edit**: select a panel, then drag an anchor to change its outline. Select a boundary and use **Add Bézier handles**; drag either blue handle independently. **Convert to straight segment** removes the handles. Self-intersecting or otherwise invalid edits are rejected without changing the document.
-- Drag the interior of a piece to rearrange it on the board. This changes only its 2D layout, never its physical rest shape or 3D placement. Middle/right drag pans the board; the wheel zooms around the pointer; **Frame all** frames all pieces.
+- Drag the interior of a piece to rearrange it on the board. This changes only its 2D layout, never its physical rest shape or 3D placement. Middle/right drag pans the board; the wheel zooms around the pointer; the **Frame all** icon frames all pieces.
 - In **Edit**, drag the selected piece's gold circular handle to rotate it on the board. **Shift** snaps to 15° increments; Escape cancels the preview and Ctrl+Z undoes the edit. Rotation keeps the piece's center fixed and preserves material coordinates, grain, seams and the complete simulated state. Anchors and Bézier handles remain editable after rotation.
 
 Curves are cubic Béziers with two controls per named edge. They are stored as curves, then subdivided to a 0.25 mm chord-error bound for the constrained Delaunay mesher. Sewing uses that sampled boundary's rest arclength, not the straight chord between its anchors. Boolean cutouts create holes, and internal sewing lines retain material on both sides. Internal cuts and automatic smooth-handle coupling for outer contours remain planned. Legacy v1 rectangular templates remain readable/simulatable; contour editing targets v2 polygons, including newly drawn rectangles.
@@ -19,13 +23,13 @@ Curves are cubic Béziers with two controls per named edge. They are stored as c
 
 Choose **Sew** and click boundary A in 2D or 3D, then boundary B in either view. Edges highlight together across views; endpoint labels (`A0 ↔ B0`, `A1 ↔ B1`) and 3D connection lines preview correspondence. Check the length difference and **Reverse B's direction**, then **Commit the seam**. Different lengths require **Allow easing (different lengths)**. The highlighted pair is explicitly labelled as a preview until committed. **Sew and simulate / Space** commits the pending pair before starting; invalid sewing leaves simulation paused and displays the reason in the inspector.
 
-Committed seams have a stable color in both views and the seam list. Sparse dashed links and small endpoint ticks connect corresponding positions. Selecting or hovering either edge emphasizes its pair; pending links are pink and labelled **Preview A ↔ B**. **View → 2D + 3D seam links** hides the background links while retaining the active pair. The display follows the compiler's trimmed, reversed, notch-aware rest-arclength map; no vertex indices are persisted. Lines are visual overlays, not threads or additional constraints, and may be visible through geometry.
+Committed seams have a stable color in both views and the seam list. Sparse dashed links and small endpoint ticks connect corresponding positions. Selecting or hovering either edge emphasizes its pair; pending links are pink and labelled **Preview A ↔ B**. **3D gear → Overlays → Seam links** hides the background links while retaining the active pair. The display follows the compiler's trimmed, reversed, notch-aware rest-arclength map; no vertex indices are persisted. Lines are visual overlays, not threads or additional constraints, and may be visible through geometry.
 
 For an apron added to an existing shirt: draw the rectangle, place it outside the body, select its upper edge and the shirt's free hem, check correspondence, then **Sew and simulate**. For example, a 660 mm edge joined to a 560 mm hem needs explicit easing or a pattern adjustment. A newly drawn piece participates in physics even before it is sewn; without an attachment it falls.
 
 3D picking follows compiled boundary chains, including curves and the current drape. It rejects hits hidden by the avatar or other cloth: orbit to reach the back. Highlight lines are overlays and may remain visible through geometry. A whole panel can be selected by clicking its visible surface in **Edit**, **Move 3D** or **Rotate 3D**.
 
-**Existing seams (N)** is always available at the top of the inspector: select a named seam or press its **Delete** button. In **Edit** or **Sew**, click a sewn boundary in either view: both sides highlight and **Delete the seam** appears. **Del** removes the seam if exactly one is associated with the selected edge and no text field owns keyboard input. **Ctrl+Z** restores it. Removal preserves the cloth and drape. This editor handles whole named edges; partial/free sewing, interactive notches and M:N relationships remain planned. Editing one member of an equal-length seam can be rejected if it changes that length: remove/recreate the relation with explicit easing when appropriate.
+**Existing seams (N)** is available in the Piece tab of the inspector: select a named seam or press its **Delete** button. In **Edit** or **Sew**, click a sewn boundary in either view: both sides highlight and **Delete the seam** appears. **Del** removes the seam if exactly one is associated with the selected edge and no text field owns keyboard input. **Ctrl+Z** restores it. Removal preserves the cloth and drape. This editor handles whole named edges; partial/free sewing, interactive notches and M:N relationships remain planned. Editing one member of an equal-length seam can be rejected if it changes that length: remove/recreate the relation with explicit easing when appropriate.
 
 ## Place and simulate
 
@@ -37,11 +41,11 @@ These tools edit the selected piece's **flat arrangement** and preserve the othe
 
 ## Choose a fabric
 
-Open **Fabric · weight and stretch** in the selected panel's inspector. Nine indicative presets cover cotton, jersey, wool, denim, leather, silk, linen, nylon and stretch knit. Adjust g/m², thickness, extension at the displayed reference load, shear and bending, then **Apply fabric**. Use the checkbox to affect all panels. The inspector shows actual panel and garment masses in grams. [Fabric guide and sources](fabrics.md) distinguish measured mass/thickness from estimated mechanics. These controls change physical properties, not visual textures.
+Open the **Fabric** tab in the selected panel's inspector; **Fabric · weight and stretch** is expanded by default. Nine indicative presets cover cotton, jersey, wool, denim, leather, silk, linen, nylon and stretch knit. Adjust g/m², thickness, extension at the displayed reference load, shear and bending, then **Apply fabric**. Use the checkbox to affect all panels. The inspector shows actual panel and garment masses in grams. [Fabric guide and sources](fabrics.md) distinguish measured mass/thickness from estimated mechanics. These controls change physical properties, not visual textures.
 
-**Undo / Redo**, or Ctrl+Z / Ctrl+Shift+Z, retain up to 32 document edits. While drafting, Ctrl+Z removes an anchor. The inspector shows relevant tools; mesh density and simulation diagnostics are under **Fabric resolution** / **Advanced settings**. **Examples** loads the T-shirt or dress; **View** contains mesh, strain and seam overlays.
+**Undo / Redo**, or Ctrl+Z / Ctrl+Shift+Z, retain up to 32 document edits. While drafting, Ctrl+Z removes an anchor. The inspector shows relevant tools; mesh density, solver settings and diagnostics are in the **Simulation** inspector tab. **Examples** loads the T-shirt or dress; the **3D gear** menu contains wireframe, strain and seam overlays.
 
-The **Pieces** browser also selects a panel in both views. **Simulation** contains single-step and full-arrangement reset; **Overview** reframes the avatar. **Files & formats** lists only actual interchange capabilities and the export directory. Tooltips explain gestures; drawing, sewing, placement and grabbing are grouped in the toolbar. See [workspace validation](workspace-polish.md).
+The **Pieces** browser also selects a panel in both views. **Simulation** contains single-step and full-arrangement reset; the **Frame all** icon above 3D reframes the garment and avatar. **File → Files & formats** lists actual interchange capabilities and the export directory. Tooltips explain gestures; drawing, sewing, placement and grabbing are grouped in the toolbar. See [workspace validation](workspace-polish.md).
 
 ## Save and reproduce
 
@@ -70,19 +74,33 @@ The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --ui-authoring-smoke --output output/board-smoke
 ```
 
-It uses 41 real egui pointer actions and writes `authoring.json` plus `ui.png`, including 2D rotation preserving physics, all three 3D rotation rings, pending-seam commitment on Play, seam deletion/restoration preserving the drape, a denim material assignment, export and actual new-panel motion. The fixture separates pieces before turning them: arrangement tools do not repair or prevent initial intersections. CPU coverage is in `tests/authoring.rs`, `tests/pattern_board.rs`, `tests/editing_state.rs` and `tests/fabrics.rs`. GPU free-fall and supported-cloth regressions are explicitly ignored by default; see [adaptive initialization](adaptive-initialization.md).
+It uses 55 real egui pointer actions and writes `authoring.json` plus `ui.png`, including partial/M:N seam editing, 2D rotation preserving physics, all three 3D rotation rings, pending-seam commitment on Play, seam deletion/restoration preserving the drape, a denim material assignment, export and actual new-panel motion. The fixture separates pieces before turning them: arrangement tools do not repair or prevent initial intersections. CPU coverage is in `tests/authoring.rs`, `tests/pattern_board.rs`, `tests/editing_state.rs` and `tests/fabrics.rs`. GPU free-fall and supported-cloth regressions are explicitly ignored by default; see [adaptive initialization](adaptive-initialization.md).
 
 Rotation validation, 14 October 2026: all 78 CPU tests and the 41-action native scenario pass ([captured report](rotation-validation.json)). The existing three-panel saved fitting project also reloads with its state and historical signature. The first XYZ fixture intersected its neighbour and was rejected by OGC; the final fixture adds an explicit translation before rotation. This is an interaction/state-preservation check, not a convergence or performance benchmark.
 
-During simulation the status bar displays maximum seam gap and positive axial extension (95% of rest area and maximum). Large gap means assembly is incomplete; persistent excessive extension may indicate incompatible sewing, material choice or insufficient convergence. Advanced settings allow up to 128 iterations. The default is now 16; adaptive initialization and the larger solve budget address artificial gravity stretch without changing mass or gravity.
+During simulation, **Properties → Simulation → Diagnostics** displays maximum seam gap and positive axial extension (95% of rest area and maximum). Large gap means assembly is incomplete; persistent excessive extension may indicate incompatible sewing, material choice or insufficient convergence. The Simulation tab allows up to 128 iterations. The default is now 16; adaptive initialization and the larger solve budget address artificial gravity stretch without changing mass or gravity.
 
 Measured outcomes and example captures: [board validation](board-validation.md). The reusable [curved-panels fixture](../examples/templates/curved-panels.json) is a saved result from the native drawing workflow.
 
 ## Numeric editing and view controls
+
+### Fast tool switching, box selection and clipboard
+
+Right-click either canvas without dragging to open the radial tool menu (or use **Tools · RMB**). Click a sector or press **1–8**; **Esc**, the center or a click outside cancels. Right-drag still pans/orbits. The menu consumes its closing click so it cannot start a drawing or select an edge underneath. It is clamped inside the window and follows the light/dark preference.
+
+In **Edit**, choose **Box select → Panels**, then drag empty board space. The rectangle selects pieces whose actual cloth triangles intersect it; empty cutout space alone does not count. Shift adds to the selection; Shift-click toggles a piece. Drag a selected panel body to move the whole selected group on the 2D board in one undoable edit. This leaves all rest geometry and 3D state unchanged. **Points** mode box-selects outer anchors on the active polygon, ready for existing point dragging/nudging. Group rotation, group 3D placement and 3D marquee selection remain unsupported; the gizmos act on the active panel.
+
+**Ctrl+C / Ctrl+V** (Command on macOS) use the system clipboard. Copy/Paste buttons provide a local fallback. Text fields retain their normal clipboard behavior. Copies include editable geometry, grain, materials, holes, internal paths and target lengths. Seams are copied only when both endpoints belong to the copied group. Paste allocates new panel/seam IDs, reuses equal materials and preserves conflicting destination materials. One paste is one undo entry. Existing compatible pieces retain their simulated positions and velocities.
+
+The copied group appears at the board pointer (or view center); repeated pastes are offset. In 3D it is placed beside the existing flat arrangements. **Inspect and arrange copies before simulating:** this placement is not an intersection check against the avatar or the current drape. Internal seam relationships remain together; external seams are intentionally omitted. The clipboard carries versioned editable JSON (`clothcraft-pattern-clipboard` v1), never draped mesh indices. Limit: 64 panels / 2 MiB.
+
+Implementation: `authoring/clipboard.rs` and `Command::{Paste,LayoutGroup}` own CPU transactions; `atelier/selection.rs` and `radial.rs` adapt input. CPU tests cover remapping, materials, state preservation, undo/redo, invalid payloads, geometry selection and real headless egui pointer events. Native window/OS clipboard acceptance was not run during the owner's Unreal rendering session.
+
+### Existing numeric tools
 
 Adapted from FireflyTheReal / julienfoss; see [provenance and integration fixes](firefly-integration.md).
 In Edit, Shift-click contour points to select several. Drag a selected point or use arrow keys (1 mm; Shift: 10 mm). Numeric coordinates and rectangle dimensions are in the inspector. The nearby + badge splits an unsewn boundary at sampled material arclength; Delete removes a straight, unsewn, untargeted point. Clear an affected seam or target before changing its boundary identity. Internal sewing paths remain separate from outer-contour point selection.
 
 The inspector and board share the selected boundary's target length. Applying it changes rest geometry; clearing it removes only metadata. Dimensions scale the rectangle's holes and internal paths as well. All commands remain transactional and undoable.
 
-The 3D view bar provides presets, frame all/selection and perspective/orthographic projection. Alt-left drag rotates the 2D view; [ / ] rotate it 15 degrees and Home resets it. These are camera changes, distinct from the panel arrangement gizmos. Settings applies theme and snap immediately; its simulation/overlay defaults are for the next launch. Autosave remains planned.
+The camera dropdown above 3D provides presets, frame all/selection and perspective/orthographic projection. Alt-left drag rotates the 2D view; [ / ] rotate it 15 degrees and Home resets it. These are camera changes, distinct from the panel arrangement gizmos. Workspace → Preferences applies theme and snap immediately; its simulation/overlay defaults are for the next launch. Local recovery snapshots now exist; see the document guide.

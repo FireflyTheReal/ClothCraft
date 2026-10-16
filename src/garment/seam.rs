@@ -17,6 +17,9 @@ pub enum Side {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct BoundaryRef {
+    /// Direction of this segment within a sewing chain, after trimming.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub reversed: bool,
     pub panel: String,
     pub side: Side,
     /// v2 polygon edge name; takes precedence over the legacy rectangle side.
@@ -32,6 +35,11 @@ pub struct SeamSpec {
     pub id: String,
     pub a: BoundaryRef,
     pub b: BoundaryRef,
+    /// Ordered continuations of A/B. Empty preserves legacy single-edge semantics.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub a_tail: Vec<BoundaryRef>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub b_tail: Vec<BoundaryRef>,
     pub reverse_b: bool,
     /// Monotone interior (a,b) correspondences after trimming and reversing b.
     /// Endpoints (0,0) and (1,1) are implicit; these are not mesh vertex IDs.
@@ -44,8 +52,29 @@ pub struct SeamSpec {
     pub allow_ease: bool,
 }
 
+impl SeamSpec {
+    pub fn side(&self, b: bool) -> impl Iterator<Item = &BoundaryRef> {
+        let (first, tail) = if b {
+            (&self.b, &self.b_tail)
+        } else {
+            (&self.a, &self.a_tail)
+        };
+        std::iter::once(first).chain(tail)
+    }
+    pub fn references(&self) -> impl Iterator<Item = &BoundaryRef> {
+        self.side(false).chain(self.side(true))
+    }
+    pub fn references_mut(&mut self) -> impl Iterator<Item = &mut BoundaryRef> {
+        std::iter::once(&mut self.a)
+            .chain(&mut self.a_tail)
+            .chain(std::iter::once(&mut self.b))
+            .chain(&mut self.b_tail)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct BoundaryCurve {
+    chain: Vec<BoundaryCurve>,
     vertices: Vec<usize>,
     knots: Vec<f64>,
     range: [f64; 2],
@@ -81,6 +110,7 @@ impl BoundaryCurve {
             *k /= total;
         }
         Ok(Self {
+            chain: vec![],
             vertices,
             knots,
             range,
@@ -89,6 +119,21 @@ impl BoundaryCurve {
         })
     }
     pub fn breakpoints(&self) -> Vec<f64> {
+        if !self.chain.is_empty() {
+            let mut offset = 0.;
+            let mut out = Vec::new();
+            for c in &self.chain {
+                out.extend(
+                    c.breakpoints()
+                        .into_iter()
+                        .map(|t| (offset + t * c.length) / self.length),
+                );
+                offset += c.length;
+            }
+            out.sort_by(f64::total_cmp);
+            out.dedup_by(|a, b| (*a - *b).abs() < 1e-12);
+            return out;
+        }
         let mut out = vec![0.0, 1.0];
         for k in &self.knots {
             if *k > self.range[0] && *k < self.range[1] {
@@ -100,6 +145,23 @@ impl BoundaryCurve {
         out
     }
     pub fn point(&self, t: f64) -> [(usize, f64); 2] {
+        self.point_limit(t, false)
+    }
+    fn point_limit(&self, t: f64, left: bool) -> [(usize, f64); 2] {
+        if !self.chain.is_empty() {
+            let distance = t.clamp(0., 1.) * self.length;
+            let mut offset = 0.;
+            for (i, c) in self.chain.iter().enumerate() {
+                let end = offset + c.length;
+                if distance < end - 1e-12
+                    || (left && distance <= end + 1e-12)
+                    || i + 1 == self.chain.len()
+                {
+                    return c.point_limit((distance - offset) / c.length, left);
+                }
+                offset = end;
+            }
+        }
         let t = if self.reverse { 1.0 - t } else { t };
         let s = self.range[0] + t.clamp(0.0, 1.0) * (self.range[1] - self.range[0]);
         let i = self
@@ -110,6 +172,44 @@ impl BoundaryCurve {
         let w = (s - self.knots[i]) / (self.knots[i + 1] - self.knots[i]);
         [(self.vertices[i], 1.0 - w), (self.vertices[i + 1], w)]
     }
+    pub fn concatenate(mut chain: Vec<Self>, reverse: bool) -> Result<Self, String> {
+        chain = chain
+            .into_iter()
+            .flat_map(|c| if c.chain.is_empty() { vec![c] } else { c.chain })
+            .collect();
+        if chain.is_empty() || chain.len() > 128 {
+            return Err("Sewing side needs 1..128 segments".into());
+        }
+        if reverse {
+            chain.reverse();
+            for c in &mut chain {
+                c.reverse = !c.reverse;
+            }
+        }
+        if chain.len() == 1 {
+            return Ok(chain.remove(0));
+        }
+        let length = chain.iter().map(|c| c.length).sum();
+        Ok(Self {
+            chain,
+            vertices: vec![],
+            knots: vec![],
+            range: [0., 1.],
+            reverse: false,
+            length,
+        })
+    }
+    fn joints(&self) -> Vec<f64> {
+        let mut sum = 0.;
+        self.chain
+            .iter()
+            .take(self.chain.len().saturating_sub(1))
+            .map(|c| {
+                sum += c.length;
+                sum / self.length
+            })
+            .collect()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -119,11 +219,14 @@ pub struct StitchPoint {
 }
 impl StitchPoint {
     fn new(a: &BoundaryCurve, b: &BoundaryCurve, s: f64, t: f64) -> Self {
+        Self::limit(a, b, s, t, false)
+    }
+    fn limit(a: &BoundaryCurve, b: &BoundaryCurve, s: f64, t: f64, left: bool) -> Self {
         let mut terms = BTreeMap::<usize, f64>::new();
-        for (v, w) in a.point(s) {
+        for (v, w) in a.point_limit(s, left) {
             *terms.entry(v).or_default() += w;
         }
-        for (v, w) in b.point(t) {
+        for (v, w) in b.point_limit(t, left) {
             *terms.entry(v).or_default() -= w;
         }
         Self {
@@ -274,10 +377,18 @@ impl CompiledSeam {
                 });
             }
         }
-        let probes = partition
+        // A chain can cross panel boundaries: measure both one-sided limits at
+        // every joint, without inventing a physical bridge across the gap.
+        let mut probes: Vec<_> = partition
             .iter()
             .map(|s| StitchPoint::new(&a, &b, *s, interpolate(&knots, *s, 0)))
             .collect();
+        let joints = a
+            .joints()
+            .into_iter()
+            .chain(b.joints().into_iter().map(|t| interpolate(&knots, t, 1)));
+        probes
+            .extend(joints.map(|s| StitchPoint::limit(&a, &b, s, interpolate(&knots, s, 0), true)));
         let guides = (0..=8)
             .map(|i| {
                 let t = i as f64 / 8.;

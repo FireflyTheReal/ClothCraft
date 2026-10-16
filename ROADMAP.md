@@ -4,7 +4,11 @@ Build a useful garment authoring tool whose physics can evolve independently. Pu
 
 Status: research prototype, October 2026. **Most of the product is still missing. A roadmap item is not a supported feature.** Read the [source/behavior ledger](docs/manual-study.md), [current authoring guide](docs/authoring.md) and [input/output capability matrix](docs/interoperability.md).
 
+The [15 October essential-tool review](docs/essential-authoring-tools.md) compares the current code with official CLO/Marvelous workflows. It proposes user-visible slices and acceptance examples: reliable documents, partial and multi-edge sewing, pins/freeze, arrangement, measurements and visibility, offsets/cuts, linked symmetry and grain. Manufacturing-specific release gates are separate. This is research and planning, not an implementation update.
+
 ## Next milestones, in order
+
+16 October update: Open/Save/Save As, portable avatar assets and local recovery are implemented, followed by partial ranges and ordered 1:N/M:N sewing. See [document and sewing contracts](docs/documents-and-sewing.md). Multi-document tabs, asset cleanup, dedicated notch editing and manufacturing sewing semantics remain open. The rows below retain the broader acceptance goals.
 
 Each row is a contribution-sized track, not a promised release date. Finish one verifiable slice before adding another format or toolbar.
 
@@ -35,11 +39,14 @@ The format priorities below remain product priorities: a **critical** animation 
 - [x] Union/intersection/subtraction with holes and islands; internal Bézier sewing paths and eased ruffle strips (CPU validation; native/GPU acceptance still pending).
 - [x] Numeric point movement, rectangle resizing, multi-point selection, unsewn contour splits and target lengths (CPU validation; native interaction pending).
 - [x] Camera presets/orthographic views, board view rotation, English UI and light/dark preferences, adapted from FireflyTheReal; see [integration notes](docs/firefly-integration.md).
-- [ ] Linked symmetry, multi-panel selection, line offsets and dedicated hole point editing.
+- [x] Radial tools, 2D panel/point marquee, group board movement and Ctrl+C/V with internal seams (CPU/headless checks; native acceptance pending).
+- [ ] Linked symmetry, group rotation/3D transforms, 3D marquee, line offsets and dedicated hole point editing.
 - [ ] Import verified reusable patterns: FreeSewing Teagan/Titan/Jett are linked from the Web menu; SVG geometry and semantic sewing adapters remain planned ([investigation](docs/drafting-tools.md#web-pattern-library-investigation)).
-- [ ] Partial/free sewing, notch editing, 1:N / M:N relationships and clearer 3D direction preview.
+- [x] Partial ranges in both views, numeric range editing, direction handles, ordered 1:N / M:N sewing and seam editing/deletion.
+- [ ] Dedicated notch editing, automatic correspondence and manufacturing sewing semantics.
 - [ ] Arrangement points, body-aware placement and useful preflight intersection feedback.
-- [ ] File picker, multi-document projects, portable asset bundles and recovery/autosave.
+- [x] Native project picker, Open/Save/Save As, dirty state, portable OBJ assets and local recovery.
+- [ ] Multi-document tabs, portable texture/material dependencies and managed recovery history.
 - [ ] Seam allowance, grain annotations, graded sizes and print layouts.
 
 Acceptance: an unfamiliar user can draft a simple top, join its intended boundaries, place it outside the avatar, simulate, save and reproduce the same editable garment. New formats must not store transient mesh indices as sewing references.
@@ -52,6 +59,8 @@ Acceptance: an unfamiliar user can draft a simple top, join its intended boundar
 - [ ] Standard scene suite and machine-readable quality/cost comparisons for alternative solvers.
 - [ ] Resident GPU contact, fewer transfers, dense scenes and animated avatars.
 - [ ] Friction, layered garments, better seam closure and calibrated material response.
+
+The [15 October research pass](docs/research-2026-10-15.md) reviews ten primary sources and separates current VBD/OGC optimizations from proposed AVBD, IPC/PPF and B-spline work. Next convergence experiment: a CPU seam-only augmented prototype with analytic fixtures, explicit finite/hard semantics and reset rules. AVBD is not an available backend. The custom-scene jitter report still needs its scene and equal-time trajectory measurements.
 
 The challenge is **more accurate AND faster**, with disclosed tradeoffs. Keep authoring, import/export and benchmarks useful even if a future solver replaces today's engine. See [solver challenge](docs/solver-challenge.md).
 
@@ -92,7 +101,7 @@ The nine articles reviewed in the [dated manual ledger](docs/manual-study.md#aut
 | SEW-02 / P1 authoring | 1:N, then M:N ordered sewing chains and editable notch correspondences | SEW-01; DRAW-04 for internal-line sewing; MD-05 | Sew two short edges to one long edge with visible ordering and explicit ease; cancel partial input; preserve totals, orientation and notches after remeshing |
 | ARR-02 / P1 authoring | Fold placement preview about an internal line | DRAW-04 + ARR-01; MD-08 | Fold a cuff/hem and undo it without changing material rest; preflight initial intersections; distinguish placement from a physical crease constraint |
 
-Recommended first contribution: **SAVE-01**, then **SEW-01**. DRAW-01 has numeric dimensions and point editing; DRAW-02 has unsewn boundary splits. Keep DRAW-02 and SEW-01 in separate reviewable changes. ARR-01 and physical performance work can proceed independently once they share the same document transactions. Do not block a usable save/draw/sew loop on automatic sewing, animation or visual trim tools.
+Recommended follow-up: finish the remaining **SAVE-01** / **SEW-01** acceptance work and add dedicated notch editing. DRAW-01 has numeric dimensions and point editing; DRAW-02 has unsewn boundary splits. Keep DRAW-02 and SEW-01 in separate reviewable changes. ARR-01 and physical performance work can proceed independently once they share the same document transactions. Do not block a usable save/draw/sew loop on automatic sewing, animation or visual trim tools.
 
 ### Release evidence, not feature counts
 

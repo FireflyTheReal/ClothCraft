@@ -64,6 +64,7 @@ impl Atelier {
                 continue;
             }
             let edge = BoundaryRef {
+                reversed: false,
                 panel,
                 side: Side::Top,
                 edge: Some(name),
@@ -71,7 +72,8 @@ impl Atelier {
             };
             self.authoring.hover_edge = Some(edge.clone());
             if response.clicked() {
-                self.select_boundary(edge);
+                let t = self.boundary_parameter(&edge, rect, pointer, true);
+                self.pick_sewing_boundary(edge, t);
             }
             return;
         }
@@ -94,7 +96,9 @@ impl Atelier {
             }
             if selected.is_some() && !self.scene.collider.occludes_ray(origin, dir, best - 0.0001) {
                 self.cancel_preview();
-                self.authoring.selected = selected;
+                if let Some(id) = selected {
+                    self.select_panel(id, response.ctx.input(|i| i.modifiers.shift));
+                }
                 self.authoring.edge = None;
             }
         }
@@ -107,6 +111,7 @@ impl Atelier {
         for panel in &self.scene.garment.panels {
             for (name, ids) in &panel.boundaries {
                 let edge = BoundaryRef {
+                    reversed: false,
                     panel: panel.id.clone(),
                     side: Side::Top,
                     edge: Some(name.clone()),
@@ -119,8 +124,7 @@ impl Atelier {
                     .as_ref()
                     .is_some_and(|e| same_edge(e, &edge));
                 let endpoint = self.authoring.ends.iter().position(|e| same_edge(e, &edge));
-                let selected = self.authoring.selected.as_ref() == Some(&panel.id)
-                    && self.authoring.tool == Tool::Place;
+                let selected = self.panel_selected(&panel.id);
                 if !show && !active && !selected {
                     continue;
                 }
@@ -133,7 +137,7 @@ impl Atelier {
                     .template
                     .seams
                     .iter()
-                    .find(|s| same_edge(&edge, &s.a) || same_edge(&edge, &s.b))
+                    .find(|s| s.references().any(|r| same_edge(&edge, r)))
                 {
                     super::seam_links::seam_color(&s.id)
                 } else {
@@ -148,32 +152,13 @@ impl Atelier {
                             [a, b],
                             Stroke::new(
                                 if active || hover || endpoint.is_some() {
-                                    3.
+                                    1.5
                                 } else {
                                     1.3
                                 },
                                 color,
                             ),
                         );
-                    }
-                }
-                if let Some(n) = endpoint {
-                    for (id, k) in [(ids[0], 0), (ids[ids.len() - 1], 1)] {
-                        if let Some(p) = project(self.scene.state.x[id]) {
-                            let k = if n == 1 && self.authoring.reverse {
-                                1 - k
-                            } else {
-                                k
-                            };
-                            painter.circle_filled(p, 4., color);
-                            painter.text(
-                                p + Vec2::new(7., -7.),
-                                egui::Align2::LEFT_BOTTOM,
-                                format!("{}{k}", if n == 0 { "A" } else { "B" }),
-                                egui::FontId::proportional(14.),
-                                color,
-                            );
-                        }
                     }
                 }
                 if name == "edge_1"

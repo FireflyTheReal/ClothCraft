@@ -21,7 +21,11 @@ pub(super) fn seam_color(id: &str) -> Color32 {
 }
 
 impl Atelier {
-    fn display_boundary(&self, edge: &BoundaryRef, reverse: bool) -> Option<BoundaryCurve> {
+    pub(super) fn display_boundary(
+        &self,
+        edge: &BoundaryRef,
+        reverse: bool,
+    ) -> Option<BoundaryCurve> {
         let i = self
             .project
             .template
@@ -34,7 +38,13 @@ impl Atelier {
         } else {
             self.project.template.panels[i].boundary_vertices(edge.side, panel.vertices.start)
         };
-        BoundaryCurve::new(&self.scene.garment.mesh, ids, edge.range, reverse).ok()
+        BoundaryCurve::new(
+            &self.scene.garment.mesh,
+            ids,
+            edge.range,
+            reverse ^ edge.reversed,
+        )
+        .ok()
     }
     pub(super) fn paint_seam_links(&self, painter: &egui::Painter, rect: egui::Rect, in_3d: bool) {
         if !in_3d && self.authoring.replace {
@@ -115,12 +125,12 @@ impl Atelier {
                 .authoring
                 .edge
                 .as_ref()
-                .is_some_and(|e| same_edge(e, &spec.a) || same_edge(e, &spec.b));
+                .is_some_and(|e| spec.references().any(|r| same_edge(e, r)));
             let hover = self
                 .authoring
                 .hover_edge
                 .as_ref()
-                .is_some_and(|e| same_edge(e, &spec.a) || same_edge(e, &spec.b));
+                .is_some_and(|e| spec.references().any(|r| same_edge(e, r)));
             if self.seam_links || selected || hover {
                 draw(
                     &seam.guides,
@@ -130,15 +140,30 @@ impl Atelier {
                 );
             }
         }
-        if self.authoring.ends.len() == 2
-            && let (Some(a), Some(b)) = (
-                self.display_boundary(&self.authoring.ends[0], false),
-                self.display_boundary(&self.authoring.ends[1], self.authoring.reverse),
-            )
-        {
-            let guides: Vec<_> = (0..=8)
-                .map(|i| [a.point(i as f64 / 8.), b.point(i as f64 / 8.)])
-                .collect();
+        let sides = self.sewing_sides();
+        if let (Some(a), Some(b)) = (
+            self.sewing_curve(&sides[0], false),
+            self.sewing_curve(&sides[1], self.authoring.reverse),
+        ) {
+            let spec = marvelous_cloth::garment::seam::SeamSpec {
+                id: "preview".into(),
+                a: sides[0][0].clone(),
+                b: sides[1][0].clone(),
+                a_tail: vec![],
+                b_tail: vec![],
+                reverse_b: false,
+                stiffness: 1.,
+                allow_ease: true,
+                notches: self
+                    .authoring
+                    .sewing
+                    .editing
+                    .as_ref()
+                    .and_then(|id| self.project.template.seams.iter().find(|s| &s.id == id))
+                    .map_or_else(Vec::new, |s| s.notches.clone()),
+            };
+            let guides = marvelous_cloth::garment::seam::CompiledSeam::compile(&spec, a, b)
+                .map_or_else(|_| Vec::new(), |s| s.guides);
             draw(
                 &guides,
                 Color32::from_rgb(248, 117, 188),

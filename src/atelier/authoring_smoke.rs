@@ -6,7 +6,7 @@ use std::{collections::BTreeMap, time::Instant};
 // the authoring widgets (`smoke_target`). These keys are part of the test harness
 // contract and are deliberately left unchanged even where a key still spells a
 // former French button label; only the visible labels themselves were translated.
-const ACTIONS: [(&str, Vec2); 41] = [
+const ACTIONS: [(&str, Vec2); 55] = [
     ("Plume", Vec2::ZERO),
     ("replace", Vec2::ZERO),
     ("Rectangle", Vec2::ZERO),
@@ -43,11 +43,25 @@ const ACTIONS: [(&str, Vec2); 41] = [
     ("ring_x", Vec2::new(0., 25.)),
     ("ring_y", Vec2::new(25., 0.)),
     ("ring_z", Vec2::new(25., 20.)),
-    ("fabric_panel", Vec2::ZERO),
+    ("fabric_tab", Vec2::ZERO),
     ("fabric_presets", Vec2::ZERO),
     ("fabric_preset_denim", Vec2::ZERO),
     ("fabric_apply", Vec2::ZERO),
     ("export", Vec2::ZERO),
+    ("Coudre", Vec2::ZERO),
+    ("edit_seam", Vec2::ZERO),
+    ("sew_to_0_0", Vec2::new(-40., 0.)),
+    ("sew_to_1_0", Vec2::new(-40., 0.)),
+    ("sew_easing", Vec2::ZERO),
+    ("sew", Vec2::ZERO),
+    ("edit_seam", Vec2::ZERO),
+    ("sew_chain", Vec2::ZERO),
+    ("next_edge_panel_1", Vec2::ZERO),
+    ("sew_side_b", Vec2::ZERO),
+    ("next_edge_panel_2", Vec2::ZERO),
+    ("sew", Vec2::ZERO),
+    ("export", Vec2::ZERO),
+    ("focus", Vec2::ZERO),
     ("simulate", Vec2::ZERO),
 ];
 pub(super) struct Smoke {
@@ -80,6 +94,9 @@ pub(super) struct Smoke {
     seam_removed: bool,
 }
 impl Smoke {
+    pub(super) fn wants(&self, key: &str) -> bool {
+        ACTIONS.get(self.action).is_some_and(|a| a.0 == key)
+    }
     pub fn new() -> Self {
         Self {
             targets: BTreeMap::new(),
@@ -149,6 +166,22 @@ impl Smoke {
     }
 }
 impl Atelier {
+    pub(super) fn smoke_target_ui(&mut self, ui: &egui::Ui, name: &str, rect: egui::Rect) {
+        if ui.clip_rect().contains(rect.center()) {
+            self.smoke_target(name, rect.center());
+        } else if let Some(smoke) = &mut self.authoring_smoke {
+            smoke.targets.remove(name);
+        }
+        if self.authoring_smoke.as_ref().is_some_and(|s| s.wants(name))
+            && !ui.clip_rect().contains(rect.center())
+        {
+            ui.scroll_to_rect_animation(
+                rect,
+                Some(egui::Align::Center),
+                egui::style::ScrollAnimation::none(),
+            );
+        }
+    }
     pub(super) fn smoke_target(&mut self, name: &str, p: egui::Pos2) {
         if let Some(smoke) = &mut self.authoring_smoke {
             smoke.targets.insert(name.into(), p);
@@ -192,6 +225,15 @@ impl Atelier {
         let panel = &self.project.template.panels[0];
         let poly = panel.polygon.as_ref();
         if smoke.action == 4 {
+            if smoke.tick == 1 {
+                eprintln!(
+                    "Rectangle check: panels={}, points={:?}, status={}, error={:?}",
+                    self.project.template.panels.len(),
+                    poly.map(|p| p.points.len()),
+                    self.status,
+                    self.authoring.error
+                );
+            }
             smoke.rectangle_drawn |= self.project.template.panels.len() == 1
                 && poly.is_some_and(|p| p.points.len() == 4 && p.curves.is_empty());
         }
@@ -272,12 +314,19 @@ impl Atelier {
         }
         if smoke.finished
             || ((!simulated || smoke.action < ACTIONS.len())
-                && smoke.start.elapsed().as_secs() < 25)
+                && smoke.start.elapsed().as_secs() < 40)
         {
             return;
         }
         smoke.finished = true;
+        let partial_chain = self.project.template.seams.first().is_some_and(|s| {
+            s.a.range[1] < 0.999
+                && s.b.range[1] < 0.999
+                && s.a_tail.len() == 1
+                && s.b_tail.len() == 1
+        });
         let complete = smoke.action == ACTIONS.len()
+            && partial_chain
             && smoke.fabric_applied
             && smoke.seam_removed
             && smoke.rotation_2d_preserved_physics
@@ -301,7 +350,7 @@ impl Atelier {
             .and_then(|p| p.compile().map(|_| p))
             .is_ok_and(|p| p.template.panels.len() == 2 && p.template.seams.len() == 1);
         let report = serde_json::json!({"passed":complete&&simulated&&moved&&curved&&smoke.rectangle_drawn&&smoke.handle_edited&&smoke.anchor_edited&&smoke.layout_preserved_physics&&smoke.mixed_sewing&&rotated&&exported&&smoke.undo_observed&&smoke.redo_observed&&self.project.template.seams.len()==1,
-            "seam_removed_preserving_drape":smoke.seam_removed,"fabric_applied_preserving_drape":smoke.fabric_applied,"new_panel_simulated":simulated,"pending_seam_committed_on_play":smoke.mixed_sewing&&smoke.undo_observed,"completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
+            "partial_and_multi_edge_sewing":partial_chain,"seam_removed_preserving_drape":smoke.seam_removed,"fabric_applied_preserving_drape":smoke.fabric_applied,"new_panel_simulated":simulated,"pending_seam_committed_on_play":smoke.mixed_sewing&&smoke.undo_observed,"completed_pointer_actions":smoke.action,"expected_actions":ACTIONS.len(),"translated_with_gizmo":moved,"bezier_drawn":curved,"rectangle_drawn":smoke.rectangle_drawn,"handle_edited":smoke.handle_edited,"anchor_edited":smoke.anchor_edited,"layout_preserved_physics":smoke.layout_preserved_physics,"sewing_selected_in_2d_and_3d":smoke.mixed_sewing,"rotated_with_gizmo":rotated,
             "rotation_axes_xyz":smoke.rotation_axes,"rotation_2d_preserved_physics":smoke.rotation_2d_preserved_physics,"export_reload_compiles":exported,"undo_observed":smoke.undo_observed,"redo_observed":smoke.redo_observed,"panels":self.project.template.panels.len(),"seams":self.project.template.seams.len(),"status":self.status});
         if let Err(e) = std::fs::write(
             self.output.join("authoring.json"),

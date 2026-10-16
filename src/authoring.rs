@@ -11,10 +11,19 @@ use crate::{
     model::{Pattern, State},
 };
 use glam::{DQuat, DVec2, DVec3, EulerRot};
+pub mod clipboard;
 mod geometry;
 use crate::garment::shapes::{BooleanOp, MirrorAxis, Primitive};
 
 pub enum Command {
+    Paste {
+        clipboard: clipboard::PatternClipboard,
+        center: DVec2,
+    },
+    LayoutGroup {
+        panels: Vec<String>,
+        delta: DVec2,
+    },
     Primitive {
         kind: Primitive,
         size: DVec2,
@@ -133,6 +142,14 @@ pub enum Command {
     Sew {
         a: BoundaryRef,
         b: BoundaryRef,
+        reverse: bool,
+        ease: bool,
+    },
+    /// Replace an existing seam or create one ordered M:N rest-arclength relation.
+    SewChain {
+        seam: Option<String>,
+        a: Vec<BoundaryRef>,
+        b: Vec<BoundaryRef>,
         reverse: bool,
         ease: bool,
     },
@@ -461,8 +478,8 @@ fn parameter_at_arclength(cubic: [DVec2; 4], at_m: f64) -> Result<f64, String> {
 /// Whether a seam references one named boundary of a panel.
 fn seam_uses(template: &GarmentTemplate, panel: &str, edge: &str) -> bool {
     template.seams.iter().any(|seam| {
-        (seam.a.panel == panel && seam.a.edge.as_deref() == Some(edge))
-            || (seam.b.panel == panel && seam.b.edge.as_deref() == Some(edge))
+        seam.references()
+            .any(|r| r.panel == panel && r.edge.as_deref() == Some(edge))
     })
 }
 
@@ -472,6 +489,30 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
     let mut selected = None;
     let mut new_point = None;
     match command {
+        Command::Paste { clipboard, center } => {
+            selected = clipboard.paste(&mut template, center)?.first().cloned();
+        }
+        Command::LayoutGroup { panels, delta } => {
+            if !delta.is_finite() || panels.is_empty() {
+                return Err("Select panels and a finite layout offset".into());
+            }
+            let ids: std::collections::BTreeSet<_> = panels.iter().collect();
+            if ids
+                .iter()
+                .any(|id| !template.panels.iter().any(|p| &p.id == *id))
+            {
+                return Err("Panel not found".into());
+            }
+            // Resolve implicit layouts before mutating any panel.
+            let origins: Vec<_> = (0..template.panels.len())
+                .map(|i| layout(&template, i))
+                .collect();
+            for (p, origin) in template.panels.iter_mut().zip(origins) {
+                if ids.contains(&p.id) {
+                    p.layout_2d = Some(origin + delta);
+                }
+            }
+        }
         Command::Primitive {
             kind,
             size,
@@ -525,8 +566,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
         }
         Command::RemoveLine { panel, line } => {
             if template.seams.iter().any(|s| {
-                [&s.a, &s.b]
-                    .iter()
+                s.references()
                     .any(|r| r.panel == panel && r.edge.as_ref() == Some(&line))
             }) {
                 return Err("Supprimer la couture avant de supprimer sa ligne intérieure".into());
@@ -1093,7 +1133,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             template.panels.retain(|p| p.id != panel);
             template
                 .seams
-                .retain(|s| s.a.panel != panel && s.b.panel != panel);
+                .retain(|s| s.references().all(|r| r.panel != panel));
         }
         Command::Sew {
             a,
@@ -1101,33 +1141,10 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             reverse,
             ease,
         } => {
-            let same_edge = |x: &BoundaryRef, y: &BoundaryRef| {
-                x.panel == y.panel
-                    && if x.edge.is_some() || y.edge.is_some() {
-                        x.edge == y.edge
-                    } else {
-                        x.side == y.side
-                    }
-            };
-            if same_edge(&a, &b) {
-                return Err("Choose two distinct boundaries".into());
-            }
-            // This first editor supports full boundary segments only. Imported
-            // partial seams stay intact; overlapping edits require free sewing.
-            for end in [&a, &b] {
-                if end.range != [0., 1.] {
-                    return Err("The editor expects a whole boundary".into());
-                }
-                if template
-                    .seams
-                    .iter()
-                    .any(|s| same_edge(end, &s.a) || same_edge(end, &s.b))
-                {
-                    return Err("Boundary already sewn: delete its seam before reusing it".into());
-                }
-            }
             let id = unused_id("seam", template.seams.iter().map(|s| s.id.clone()));
             template.seams.push(SeamSpec {
+                a_tail: vec![],
+                b_tail: vec![],
                 id,
                 a,
                 b,
@@ -1135,6 +1152,43 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 allow_ease: ease,
                 notches: vec![],
                 stiffness: 50_000.,
+            });
+        }
+        Command::SewChain {
+            seam,
+            mut a,
+            mut b,
+            reverse,
+            ease,
+        } => {
+            if a.is_empty() || b.is_empty() || a.len() > 128 || b.len() > 128 {
+                return Err("Choose 1..128 segments on each sewing side".into());
+            }
+            let old = if let Some(id) = &seam {
+                Some(
+                    template
+                        .seams
+                        .iter()
+                        .find(|s| &s.id == id)
+                        .ok_or("Seam not found")?
+                        .clone(),
+                )
+            } else {
+                None
+            };
+            let id = seam
+                .unwrap_or_else(|| unused_id("seam", template.seams.iter().map(|s| s.id.clone())));
+            template.seams.retain(|s| s.id != id);
+            template.seams.push(SeamSpec {
+                id,
+                a: a.remove(0),
+                b: b.remove(0),
+                a_tail: a,
+                b_tail: b,
+                reverse_b: reverse,
+                allow_ease: ease,
+                stiffness: old.as_ref().map_or(50_000., |s| s.stiffness),
+                notches: old.map_or_else(Vec::new, |s| s.notches),
             });
         }
         Command::RemoveSeam { seam } => {

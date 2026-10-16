@@ -19,6 +19,9 @@ pub(super) enum Tool {
 }
 #[derive(Default)]
 pub(super) struct AuthoringUi {
+    pub sewing: super::sewing_ui::SewingDraft,
+    pub radial: super::radial::Radial,
+    pub selection: super::selection::Selection,
     pub tool: Tool,
     pub selected: Option<String>,
     pub history: History,
@@ -72,6 +75,8 @@ pub(super) fn millimetre_field(ui: &mut egui::Ui, value_mm: &mut f64) -> bool {
 
 impl Atelier {
     pub(super) fn install_edit(&mut self, edit: Edit) {
+        self.document.dirty = true;
+        self.authoring.sewing = Default::default();
         if edit.reset_simulation {
             self.scene.state = edit.state_after(&self.scene.garment, &self.scene.state);
         }
@@ -107,6 +112,10 @@ impl Atelier {
             self.authoring.anchor = None;
         }
         self.project.template = edit.template;
+        self.authoring
+            .selection
+            .panels
+            .retain(|id| self.project.template.panels.iter().any(|p| &p.id == id));
         self.project.state = None;
         self.project.mesh_signature = None;
         self.project.prearrange = false;
@@ -234,7 +243,19 @@ impl Atelier {
     }
     pub(super) fn authoring_toolbar(&mut self, ui: &mut egui::Ui) {
         self.history_shortcuts(ui.ctx());
-        ui.horizontal_wrapped(|ui| {
+        ui.vertical_centered(|ui| {
+            if ui
+                .button("···")
+                .on_hover_text("Right-click either canvas to choose a tool")
+                .clicked()
+            {
+                self.authoring.radial.open(
+                    ui.ctx(),
+                    ui.ctx()
+                        .pointer_hover_pos()
+                        .unwrap_or(ui.max_rect().center()),
+                );
+            }
             // `key` is the smoke-target protocol name and must not change; `label`
             // is the translated text shown on the button.
             for (tool, key, label, rotate, help) in [
@@ -301,7 +322,7 @@ impl Atelier {
                 let active = self.authoring.tool == tool
                     && (tool != Tool::Place || self.authoring.rotate == rotate);
                 let icon = match tool {
-                    Tool::Edit => super::icons::Icon::Edit,
+                    Tool::Edit => super::icons::Icon::Select,
                     Tool::Draw | Tool::InternalLine => super::icons::Icon::Pen,
                     Tool::Rectangle => super::icons::Icon::Rectangle,
                     Tool::Sew => super::icons::Icon::Sew,
@@ -309,21 +330,40 @@ impl Atelier {
                     Tool::Place => super::icons::Icon::Move3d,
                     Tool::Grab => super::icons::Icon::Grab,
                 };
-                let button = super::icons::tool_button(ui, icon, label, active, help);
+                let button =
+                    super::icons::icon_only(ui, icon, 36., active, &format!("{label}\n{help}"));
                 self.smoke_target(key, button.rect.center());
                 if button.clicked() {
                     self.set_authoring_tool(tool, rotate);
                 }
             }
             ui.separator();
-            self.primitive_menu(ui);
-            ui.separator();
-            let undo = ui.add_enabled(self.authoring.history.can_undo(), egui::Button::new("Undo"));
+            let undo = ui
+                .add_enabled_ui(self.authoring.history.can_undo(), |ui| {
+                    super::icons::icon_only(
+                        ui,
+                        super::icons::Icon::Undo,
+                        32.,
+                        false,
+                        "Undo · Ctrl+Z",
+                    )
+                })
+                .inner;
             self.smoke_target("undo", undo.rect.center());
             if undo.clicked() {
                 self.undo_edit(false);
             }
-            let redo = ui.add_enabled(self.authoring.history.can_redo(), egui::Button::new("Redo"));
+            let redo = ui
+                .add_enabled_ui(self.authoring.history.can_redo(), |ui| {
+                    super::icons::icon_only(
+                        ui,
+                        super::icons::Icon::Redo,
+                        32.,
+                        false,
+                        "Redo · Ctrl+Shift+Z",
+                    )
+                })
+                .inner;
             self.smoke_target("redo", redo.rect.center());
             if redo.clicked() {
                 self.undo_edit(true);
@@ -335,16 +375,20 @@ impl Atelier {
             return;
         }
         self.cancel_preview();
+        let replacing = self.authoring.replace
+            && matches!(self.authoring.tool, Tool::Draw | Tool::Rectangle)
+            && matches!(tool, Tool::Draw | Tool::Rectangle);
         self.authoring.board.clear_preview();
         self.authoring.draft.clear();
         self.authoring.tangents.clear();
-        self.authoring.replace = false;
+        self.authoring.replace = replacing;
         self.authoring.drafting.line_panel = if tool == Tool::InternalLine {
             self.authoring.selected.clone()
         } else {
             None
         };
         self.authoring.tool = tool;
+        self.inspector_tab = super::chrome::InspectorTab::Piece;
         self.authoring.rotate = rotate;
         self.grab = None;
         self.drag_plane = None;
@@ -362,8 +406,19 @@ impl Atelier {
         }
     }
     fn history_shortcuts(&mut self, ctx: &egui::Context) {
-        if ctx.egui_wants_keyboard_input() {
+        if ctx.egui_wants_keyboard_input() || self.authoring.radial.blocked {
             return;
+        }
+        if self.authoring.tool == Tool::Sew {
+            if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+                self.authoring.ends.clear();
+                self.authoring.sewing = Default::default();
+            }
+            if self.authoring.sewing.chain_mode
+                && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Enter))
+            {
+                self.authoring.sewing.active = 1 - self.authoring.sewing.active;
+            }
         }
         if ctx.input(|i| !i.modifiers.command && !i.modifiers.alt && i.key_pressed(egui::Key::R)) {
             self.set_authoring_tool(Tool::Place, true);
@@ -496,110 +551,111 @@ impl Atelier {
             self.authoring.height_mm = panel.pattern.height * 1000.;
             self.authoring.numeric_anchor = None;
         }
-        ui.strong("Dimensions (mm)");
-        ui.horizontal(|ui| {
-            ui.label("Width");
-            millimetre_field(ui, &mut self.authoring.width_mm);
-            ui.label("Height");
-            millimetre_field(ui, &mut self.authoring.height_mm);
-        });
-        if ui
-            .button("Apply dimensions")
-            .on_hover_text("Exact millimetre size; invalid values leave the document unchanged")
-            .clicked()
-        {
-            self.edit(Command::Dimensions {
-                panel: panel.id.clone(),
-                width: authoring::mm_to_m(self.authoring.width_mm),
-                height: authoring::mm_to_m(self.authoring.height_mm),
+        ui.collapsing("Dimensions and points", |ui| {
+            ui.strong("Dimensions (mm)");
+            ui.horizontal_wrapped(|ui| {
+                ui.label("Width");
+                millimetre_field(ui, &mut self.authoring.width_mm);
+                ui.label("Height");
+                millimetre_field(ui, &mut self.authoring.height_mm);
             });
-        }
-        if let Some(polygon) = panel.polygon.as_ref() {
-            if !polygon.target_diagnostics().is_empty() {
-                ui.colored_label(
-                    Color32::GOLD,
-                    "A stored target length is invalid and is ignored.",
-                );
-            }
-            if let Some(k) = self
-                .authoring
-                .anchor
-                .as_ref()
-                .filter(|(id, k)| id == &panel.id && *k < polygon.points.len())
-                .map(|(_, k)| *k)
+            if ui
+                .button("Apply dimensions")
+                .on_hover_text("Exact millimetre size; invalid values leave the document unchanged")
+                .clicked()
             {
-                if self.authoring.numeric_anchor != Some(k) {
-                    self.authoring.numeric_anchor = Some(k);
-                    self.authoring.anchor_x_mm = authoring::m_to_mm(polygon.points[k].x);
-                    self.authoring.anchor_y_mm = authoring::m_to_mm(polygon.points[k].y);
-                }
-                ui.strong(format!("Point {} (mm)", k + 1));
-                ui.horizontal(|ui| {
-                    ui.label("X");
-                    millimetre_field(ui, &mut self.authoring.anchor_x_mm);
-                    ui.label("Y");
-                    millimetre_field(ui, &mut self.authoring.anchor_y_mm);
+                self.edit(Command::Dimensions {
+                    panel: panel.id.clone(),
+                    width: authoring::mm_to_m(self.authoring.width_mm),
+                    height: authoring::mm_to_m(self.authoring.height_mm),
                 });
-                // Visible nudge buttons for discoverability. They dispatch the
-                // same `Command::Nudge` as the board's arrow keys, so the two
-                // paths cannot drift apart in behaviour.
-                for (label, steps) in [
-                    (
-                        "Nudge X",
-                        [
-                            ("-1", DVec2::new(-1., 0.)),
-                            ("+1", DVec2::new(1., 0.)),
-                            ("-10", DVec2::new(-10., 0.)),
-                            ("+10", DVec2::new(10., 0.)),
-                        ],
-                    ),
-                    (
-                        "Nudge Y",
-                        [
-                            ("-1", DVec2::new(0., -1.)),
-                            ("+1", DVec2::new(0., 1.)),
-                            ("-10", DVec2::new(0., -10.)),
-                            ("+10", DVec2::new(0., 10.)),
-                        ],
-                    ),
-                ] {
-                    ui.horizontal(|ui| {
-                        ui.label(label);
-                        for (step_label, step) in steps {
-                            if ui.small_button(step_label).clicked() {
-                                self.edit(Command::Nudge {
-                                    panel: panel.id.clone(),
-                                    points: vec![k],
-                                    delta_mm: step,
-                                });
-                            }
-                        }
-                    });
-                }
-                if ui
-                    .button("Apply point")
-                    .on_hover_text(
-                        "Material coordinates in millimetres; the rest origin is re-based \
-                         without moving the other points",
-                    )
-                    .clicked()
-                {
-                    let position = DVec2::new(
-                        authoring::mm_to_m(self.authoring.anchor_x_mm),
-                        authoring::mm_to_m(self.authoring.anchor_y_mm),
-                    );
-                    self.edit(Command::Anchor {
-                        panel: panel.id.clone(),
-                        anchor: k,
-                        position,
-                    });
-                }
-            } else {
-                ui.small("Click a point on the 2D board to edit its exact position.");
             }
-            self.target_length_properties(ui, &panel, polygon);
-        }
-        self.fabric_properties(ui, &panel);
+            if let Some(polygon) = panel.polygon.as_ref() {
+                if !polygon.target_diagnostics().is_empty() {
+                    ui.colored_label(
+                        Color32::GOLD,
+                        "A stored target length is invalid and is ignored.",
+                    );
+                }
+                if let Some(k) = self
+                    .authoring
+                    .anchor
+                    .as_ref()
+                    .filter(|(id, k)| id == &panel.id && *k < polygon.points.len())
+                    .map(|(_, k)| *k)
+                {
+                    if self.authoring.numeric_anchor != Some(k) {
+                        self.authoring.numeric_anchor = Some(k);
+                        self.authoring.anchor_x_mm = authoring::m_to_mm(polygon.points[k].x);
+                        self.authoring.anchor_y_mm = authoring::m_to_mm(polygon.points[k].y);
+                    }
+                    ui.strong(format!("Point {} (mm)", k + 1));
+                    ui.horizontal_wrapped(|ui| {
+                        ui.label("X");
+                        millimetre_field(ui, &mut self.authoring.anchor_x_mm);
+                        ui.label("Y");
+                        millimetre_field(ui, &mut self.authoring.anchor_y_mm);
+                    });
+                    // Visible nudge buttons for discoverability. They dispatch the
+                    // same `Command::Nudge` as the board's arrow keys, so the two
+                    // paths cannot drift apart in behaviour.
+                    for (label, steps) in [
+                        (
+                            "Nudge X",
+                            [
+                                ("-1", DVec2::new(-1., 0.)),
+                                ("+1", DVec2::new(1., 0.)),
+                                ("-10", DVec2::new(-10., 0.)),
+                                ("+10", DVec2::new(10., 0.)),
+                            ],
+                        ),
+                        (
+                            "Nudge Y",
+                            [
+                                ("-1", DVec2::new(0., -1.)),
+                                ("+1", DVec2::new(0., 1.)),
+                                ("-10", DVec2::new(0., -10.)),
+                                ("+10", DVec2::new(0., 10.)),
+                            ],
+                        ),
+                    ] {
+                        ui.horizontal_wrapped(|ui| {
+                            ui.label(label);
+                            for (step_label, step) in steps {
+                                if ui.small_button(step_label).clicked() {
+                                    self.edit(Command::Nudge {
+                                        panel: panel.id.clone(),
+                                        points: vec![k],
+                                        delta_mm: step,
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    if ui
+                        .button("Apply point")
+                        .on_hover_text(
+                            "Material coordinates in millimetres; the rest origin is re-based \
+                         without moving the other points",
+                        )
+                        .clicked()
+                    {
+                        let position = DVec2::new(
+                            authoring::mm_to_m(self.authoring.anchor_x_mm),
+                            authoring::mm_to_m(self.authoring.anchor_y_mm),
+                        );
+                        self.edit(Command::Anchor {
+                            panel: panel.id.clone(),
+                            anchor: k,
+                            position,
+                        });
+                    }
+                } else {
+                    ui.small("Click a point on the 2D board to edit its exact position.");
+                }
+                self.target_length_properties(ui, &panel, polygon);
+            }
+        });
         self.drafting_properties(ui, &panel);
         ui.horizontal(|ui| {
             let duplicate = ui.button("Duplicate");
@@ -708,81 +764,13 @@ impl Atelier {
             self.authoring.tool = Tool::Place;
         }
     }
-    pub(super) fn sewing_controls(&mut self, ui: &mut egui::Ui) {
-        if self.authoring.ends.len() == 2 {
-            ui.colored_label(Color32::GOLD, "Preview only — seam not committed");
-        }
-        ui.small("Choose two boundaries in 2D or 3D; 0 ↔ 0, 1 ↔ 1.");
-        let mut lengths = vec![];
-        for (i, e) in self.authoring.ends.iter().enumerate() {
-            ui.label(format!(
-                "{} : {} / {}",
-                if i == 0 { "A" } else { "B" },
-                e.panel,
-                e.edge.as_deref().unwrap_or("?")
-            ));
-            if let Some(range) = self.scene.garment.panels.iter().find(|p| p.id == e.panel)
-                && let Some(ids) = e.edge.as_ref().and_then(|name| range.boundaries.get(name))
-            {
-                lengths.push(
-                    ids.windows(2)
-                        .map(|p| {
-                            self.scene.garment.mesh.uv[p[0]]
-                                .distance(self.scene.garment.mesh.uv[p[1]])
-                        })
-                        .sum::<f64>(),
-                );
-            }
-        }
-        if lengths.len() == 2 {
-            ui.label(format!(
-                "{:.1} / {:.1} mm · gap {:.1} mm",
-                lengths[0] * 1000.,
-                lengths[1] * 1000.,
-                (lengths[0] - lengths[1]).abs() * 1000.
-            ));
-            if (lengths[0] - lengths[1]).abs() > 1e-5 && !self.authoring.ease {
-                ui.colored_label(
-                    Color32::GOLD,
-                    "Different lengths: adjust the pattern or allow easing below.",
-                );
-            }
-        }
-        ui.checkbox(&mut self.authoring.reverse, "Reverse B's direction");
-        ui.checkbox(&mut self.authoring.ease, "Allow easing (different lengths)");
-        ui.horizontal(|ui| {
-            let sew = ui.add_enabled(
-                self.authoring.ends.len() == 2,
-                egui::Button::new("Commit the seam"),
-            );
-            self.smoke_target("sew", sew.rect.center());
-            if sew.clicked() {
-                self.commit_seam();
-            }
-            if ui.button("Clear selection").clicked() {
-                self.authoring.ends.clear();
-            }
-        });
-        ui.separator();
-    }
-    pub(super) fn commit_seam(&mut self) -> bool {
-        if self.authoring.ends.len() != 2 {
+    pub(super) fn prepare_simulation(&mut self) -> bool {
+        if self.authoring.sewing.chain_mode
+            && self.authoring.sewing.sides.iter().any(|s| !s.is_empty())
+        {
+            self.status = "Commit or cancel the multi-edge seam before simulating".into();
             return false;
         }
-        if self.edit(Command::Sew {
-            a: self.authoring.ends[0].clone(),
-            b: self.authoring.ends[1].clone(),
-            reverse: self.authoring.reverse,
-            ease: self.authoring.ease,
-        }) {
-            self.status = "Seam created · Simulate to assemble the pieces".into();
-            true
-        } else {
-            self.authoring.tool = Tool::Sew;
-            false
-        }
-    }
-    pub(super) fn prepare_simulation(&mut self) -> bool {
         if self.authoring.ends.len() == 2 && !self.commit_seam() {
             return false;
         }

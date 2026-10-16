@@ -34,6 +34,7 @@ fn fixture() -> GarmentTemplate {
 }
 fn edge(panel: &str, edge: &str) -> BoundaryRef {
     BoundaryRef {
+        reversed: false,
         panel: panel.into(),
         side: Side::Top,
         edge: Some(edge.into()),

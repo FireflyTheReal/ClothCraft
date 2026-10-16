@@ -553,7 +553,7 @@ fn button_fill(visuals: &egui::Visuals, active: bool, hovered: bool) -> Color32 
 
 fn button_ink(visuals: &egui::Visuals, active: bool) -> Color32 {
     if active {
-        visuals.selection.stroke.color
+        Color32::WHITE
     } else {
         visuals.text_color()
     }
@@ -600,6 +600,34 @@ pub(super) fn tool_button(
             galley,
             ink,
         );
+    }
+    with_tip(response, tip)
+}
+
+/// Icon and a vector chevron: no dependence on font coverage for the menu arrow.
+pub(super) fn dropdown_button(ui: &mut egui::Ui, icon: Icon, tip: &str) -> Response {
+    let (rect, response) = ui.allocate_exact_size(Vec2::new(42., 28.), egui::Sense::click());
+    if ui.is_rect_visible(rect) {
+        let ink = ui.visuals().text_color();
+        let fill = button_fill(ui.visuals(), false, response.hovered());
+        ui.painter().rect_filled(rect, 4., fill);
+        glyph(
+            ui.painter(),
+            Rect::from_center_size(rect.center() - Vec2::new(6., 0.), Vec2::splat(18.)),
+            icon,
+            ink,
+            1.6,
+        );
+        let center = rect.center() + Vec2::new(12., 0.);
+        ui.painter().add(Shape::convex_polygon(
+            vec![
+                center + Vec2::new(-3., -1.5),
+                center + Vec2::new(3., -1.5),
+                center + Vec2::new(0., 2.),
+            ],
+            ink,
+            Stroke::NONE,
+        ));
     }
     with_tip(response, tip)
 }

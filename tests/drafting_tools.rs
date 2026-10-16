@@ -58,6 +58,7 @@ fn area(t: &GarmentTemplate) -> f64 {
 }
 fn edge(panel: &str, name: &str) -> BoundaryRef {
     BoundaryRef {
+        reversed: false,
         panel: panel.into(),
         edge: Some(name.into()),
         side: Side::Top,

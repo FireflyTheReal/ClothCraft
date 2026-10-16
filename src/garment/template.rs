@@ -223,7 +223,7 @@ impl GarmentTemplate {
                 || self
                     .seams
                     .iter()
-                    .any(|s| s.a.edge.is_some() || s.b.edge.is_some()))
+                    .any(|s| s.references().any(|r| r.edge.is_some())))
         {
             return Err("Polygon geometry and material pins require template version 2".into());
         }
@@ -386,12 +386,23 @@ impl GarmentTemplate {
                 }
                 self.panels[i].boundary_vertices(reference.side, out.panels[i].vertices.start)
             };
-            BoundaryCurve::new(&out.mesh, vertices, reference.range, reverse)
+            BoundaryCurve::new(
+                &out.mesh,
+                vertices,
+                reference.range,
+                reverse ^ reference.reversed,
+            )
         };
         for (i, spec) in self.seams.iter().enumerate() {
+            if spec.a_tail.len() >= 128 || spec.b_tail.len() >= 128 {
+                return Err("Sewing side needs 1..128 segments".into());
+            }
             // Reject overlapping seam ownership, including sewing an interval to itself.
-            let refs = [&spec.a, &spec.b];
-            let previous: Vec<_> = self.seams[..i].iter().flat_map(|s| [&s.a, &s.b]).collect();
+            let refs: Vec<_> = spec.references().collect();
+            let previous: Vec<_> = self.seams[..i]
+                .iter()
+                .flat_map(|s| s.references())
+                .collect();
             for (j, r) in refs.iter().enumerate() {
                 for other in previous.iter().copied().chain(refs[..j].iter().copied()) {
                     if r.panel == other.panel
@@ -411,8 +422,18 @@ impl GarmentTemplate {
             }
             let seam = CompiledSeam::compile(
                 spec,
-                curve(&spec.a, false)?,
-                curve(&spec.b, spec.reverse_b)?,
+                BoundaryCurve::concatenate(
+                    spec.side(false)
+                        .map(|r| curve(r, false))
+                        .collect::<Result<_, _>>()?,
+                    false,
+                )?,
+                BoundaryCurve::concatenate(
+                    spec.side(true)
+                        .map(|r| curve(r, false))
+                        .collect::<Result<_, _>>()?,
+                    spec.reverse_b,
+                )?,
             )?;
             if (seam.lengths[0] - seam.lengths[1]).abs()
                 > 1e-8 * seam.lengths[0].max(seam.lengths[1])
@@ -485,14 +506,18 @@ impl GarmentTemplate {
                 },
             ],
             seams: vec![SeamSpec {
+                a_tail: vec![],
+                b_tail: vec![],
                 id: "centre-seam".into(),
                 a: BoundaryRef {
+                    reversed: false,
                     edge: None,
                     panel: "left".into(),
                     side: Side::Right,
                     range: [0.0, 1.0],
                 },
                 b: BoundaryRef {
+                    reversed: false,
                     edge: None,
                     panel: "right".into(),
                     side: Side::Left,

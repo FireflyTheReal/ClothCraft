@@ -14,6 +14,10 @@ mod authoring_smoke;
 mod authoring_ui;
 #[path = "atelier/board.rs"]
 mod board;
+#[path = "atelier/chrome.rs"]
+mod chrome;
+#[path = "atelier/documents_ui.rs"]
+mod documents_ui;
 #[path = "atelier/drafting_ui.rs"]
 mod drafting_ui;
 #[path = "atelier/edges_3d.rs"]
@@ -24,14 +28,25 @@ mod fabrics_ui;
 mod gizmo;
 #[path = "atelier/icons.rs"]
 mod icons;
+#[path = "atelier/layout.rs"]
+mod layout;
 #[path = "atelier/perf.rs"]
 mod perf;
+#[path = "atelier/radial.rs"]
+mod radial;
 #[path = "atelier/seam_links.rs"]
 mod seam_links;
 #[path = "atelier/seams_ui.rs"]
 mod seams_ui;
+#[path = "atelier/selection.rs"]
+mod selection;
 #[path = "atelier/settings.rs"]
 mod settings;
+#[path = "atelier/sewing_ui.rs"]
+mod sewing_ui;
+#[cfg(test)]
+#[path = "atelier/ui_preview.rs"]
+mod ui_preview;
 #[path = "atelier/view_controls.rs"]
 mod view_controls;
 #[path = "atelier/worker.rs"]
@@ -49,15 +64,21 @@ fn camera() -> Camera {
         ..Default::default()
     }
 }
+pub struct DocumentFiles {
+    pub output: PathBuf,
+    pub source: Option<PathBuf>,
+    pub modified: bool,
+}
 pub fn run(
     project: FittingProject,
     scene: FittingScene,
-    output: PathBuf,
+    files: DocumentFiles,
     smoke: bool,
     drag_test: bool,
     perf_test: bool,
     authoring_test: bool,
 ) -> Result<(), String> {
+    let output = files.output;
     let smoke_report = output.join("interaction.json");
     let authoring_report = output.join("authoring.json");
     let perf_report = output.join("ui-perf.json");
@@ -94,6 +115,11 @@ pub fn run(
             // Copy the startup values out before `prefs` moves into the struct.
             let (wire, seam_links) = (prefs.wireframe, prefs.seam_links);
             let (dt, iterations) = (prefs.dt, prefs.iterations);
+            let simulation = project.simulation.clone().unwrap_or(VbdSettings {
+                dt,
+                iterations,
+                ..Default::default()
+            });
             let mut authoring = AuthoringUi {
                 tool: if drag_test || perf_test {
                     Tool::Grab
@@ -112,9 +138,12 @@ pub fn run(
                 .map(|p| p.meshing_settings())
                 .unwrap_or_default();
             Ok(Box::new(Atelier {
+                document: documents_ui::DocumentUi::new(&output, files.source, files.modified),
                 authoring,
                 prefs,
                 settings_open: false,
+                prefs_dirty: false,
+                inspector_tab: chrome::InspectorTab::Piece,
                 authoring_smoke: authoring_test.then(authoring_smoke::Smoke::new),
                 mesh_mm: m.target_edge_m * 1000.,
                 anisotropy: m.anisotropy,
@@ -139,11 +168,7 @@ pub fn run(
                 seams: false,
                 seam_links,
                 gpu: true,
-                settings: VbdSettings {
-                    dt,
-                    iterations,
-                    ..Default::default()
-                },
+                settings: simulation,
                 metrics: None,
                 status: "Ready · Space to start the simulation".into(),
                 grab: None,
@@ -190,12 +215,15 @@ pub fn run(
     Ok(())
 }
 struct Atelier {
+    document: documents_ui::DocumentUi,
     authoring: AuthoringUi,
     /// Loaded from `output/preferences.json` before the first frame and saved
-    /// whenever the preferences window reports a change.
+    /// after a preference edit or workspace drag is complete.
     prefs: settings::Preferences,
     /// Whether the preferences window is currently open.
     settings_open: bool,
+    prefs_dirty: bool,
+    inspector_tab: chrome::InspectorTab,
     authoring_smoke: Option<authoring_smoke::Smoke>,
     perf: Option<perf::PerfRun>,
     mesh_mm: f64,
@@ -258,9 +286,11 @@ impl Atelier {
             .is_ok()
             && (self.playing || once);
     }
-    fn load(&mut self, p: FittingProject) {
+    fn load(&mut self, p: FittingProject) -> bool {
         match p.compile() {
             Ok(scene) => {
+                self.document.dirty = true;
+                self.authoring.sewing = Default::default();
                 if let Some(poly) = p.template.panels.iter().find_map(|p| p.polygon.as_ref()) {
                     let m = poly.meshing_settings();
                     self.mesh_mm = m.target_edge_m * 1000.;
@@ -295,8 +325,12 @@ impl Atelier {
                 self.grab = None;
                 self.drag_plane = None;
                 self.status = "New arrangement · run to assemble the seams".into();
+                true
             }
-            Err(e) => self.status = e,
+            Err(e) => {
+                self.status = e;
+                false
+            }
         }
     }
     fn preset(&mut self, kind: GarmentKind) {
@@ -330,7 +364,9 @@ impl Atelier {
         self.load(p);
     }
     fn export(&mut self) {
-        self.commit_placement();
+        if !self.commit_placement() {
+            return;
+        }
         let result = (|| -> Result<(), Box<dyn std::error::Error>> {
             std::fs::create_dir_all(&self.output)?;
             export::write_artifacts(
@@ -341,6 +377,7 @@ impl Atelier {
             )?;
             let mut p = self.project.clone();
             p.state = Some(self.scene.state.clone());
+            p.simulation = Some(self.settings.clone());
             p.save(&self.output.join("fitting-project.json"))?;
             Ok(())
         })();
@@ -429,6 +466,17 @@ impl eframe::App for Atelier {
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
+        let previous_preferences = self.prefs.clone();
+        let previous_simulation = self.settings.clone();
+        if let Some((tool, rotate)) = self.authoring.radial.show(
+            &ctx,
+            self.authoring.tool,
+            self.authoring.rotate,
+            self.authoring.selected.is_some(),
+        ) {
+            self.set_authoring_tool(tool, rotate);
+        }
+        self.clipboard_shortcuts(&ctx);
         self.frames += 1;
         self.authoring.hover_edge = None;
         let done = self.receive.lock().unwrap().take();
@@ -436,6 +484,7 @@ impl eframe::App for Atelier {
             self.pending = false;
             match done.result {
                 Ok((state, m)) => {
+                    self.document.dirty = true;
                     self.smoke_applied |= done.had_grab;
                     self.scene.state = state;
                     self.status = "Dynamic simulation · OGC contacts".into();
@@ -447,7 +496,10 @@ impl eframe::App for Atelier {
                 }
             }
         }
-        if ctx.input(|i| i.key_pressed(egui::Key::Space)) && !ctx.egui_wants_keyboard_input() {
+        if !self.authoring.radial.blocked
+            && ctx.input(|i| i.key_pressed(egui::Key::Space))
+            && !ctx.egui_wants_keyboard_input()
+        {
             if self.playing {
                 self.playing = false;
             } else if self.prepare_simulation() {
@@ -455,17 +507,17 @@ impl eframe::App for Atelier {
             }
         }
         egui::Panel::top("toolbar").show(ui, |ui| {
-            ui.horizontal_wrapped(|ui| {
+            ui.horizontal(|ui| {
                 ui.colored_label(
                     workspace::ACCENT,
-                    egui::RichText::new("CLOTHCRAFT").strong().size(18.),
+                    egui::RichText::new("CLOTHCRAFT").strong().size(15.),
                 );
                 ui.label(egui::RichText::new("ALPHA").small().color(Color32::GRAY))
                     .on_hover_text("Research prototype · most production features remain to be built");
                 ui.separator();
                 let play = ui.button(if self.playing {
                     "⏸ Pause"
-                } else if self.authoring.ends.len() == 2 {
+                } else if self.authoring.ends.len() == 2 && !self.authoring.sewing.chain_mode {
                     "▶ Sew and simulate"
                 } else {
                     "▶ Simulate"
@@ -485,17 +537,21 @@ impl eframe::App for Atelier {
                         self.reset(); ui.close();
                     }
                 });
+                ui.menu_button("File",|ui| self.document_menu(ui));
                 let export_button = ui.button("Export").on_hover_text("Saves the JSON project, the patterns, the OBJ garment and the previews into the session folder.");
                 self.smoke_target("export", export_button.rect.center());
                 if export_button.clicked() {
                     self.export();
                 }
                 ui.separator();
-                ui.menu_button("View", |ui| {
-                    ui.checkbox(&mut self.wire, "Wireframe");
-                    ui.checkbox(&mut self.heat, "Tension");
-                    ui.checkbox(&mut self.seam_links, "2D + 3D seam links");
-                    ui.checkbox(&mut self.seams, "All seam samples (diagnostic)");
+                ui.menu_button("Workspace", |ui| {
+                    ui.checkbox(&mut self.prefs.workspace.inspector_open,"Properties inspector");
+                    for (mode,label) in [(layout::ViewMode::Split,"Split view"),(layout::ViewMode::Garment,"3D only"),(layout::ViewMode::Patterns,"2D only")] {
+                        ui.selectable_value(&mut self.prefs.workspace.mode,mode,label);
+                    }
+                    ui.separator();
+                    if ui.button("Reset layout").clicked() { self.prefs.workspace=Default::default(); ui.close(); }
+                    if ui.button("Preferences…").clicked() { self.settings_open=true; ui.close(); }
                 });
                 ui.menu_button("Examples", |ui| {
                     if ui.button("T-shirt").clicked() {
@@ -508,17 +564,6 @@ impl eframe::App for Atelier {
                     }
                 });
                 self.online_patterns(ui);
-                ui.separator();
-                if ui
-                    .button("Settings")
-                    .on_hover_text("Preferences: theme, display and solver defaults")
-                    .clicked()
-                {
-                    self.settings_open = true;
-                }
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    ui.small(format!("{} panels · {} seams", self.project.template.panels.len(), self.project.template.seams.len()));
-                });
             });
         });
         let mut changed = false;
@@ -532,179 +577,63 @@ impl eframe::App for Atelier {
             // through here too; otherwise the control would persist without
             // taking effect, which is a stored value pretending to be live.
             self.authoring.board.snap_mm = self.prefs.snap_mm;
-            // A failed write must not interrupt the session: the status line
-            // reports it so the user knows the preference did not stick.
+        }
+        egui::Panel::bottom("status").show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.colored_label(
+                    if self.playing {
+                        workspace::ACCENT
+                    } else {
+                        Color32::GRAY
+                    },
+                    if self.playing { "Simulation" } else { "Pause" },
+                );
+                ui.separator();
+                ui.add(egui::Label::new(&self.status).truncate())
+                    .on_hover_text(&self.status);
+            });
+        });
+        egui::Panel::left("authoring-tools")
+            .exact_size(52.)
+            .resizable(false)
+            .show(ui, |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| self.authoring_toolbar(ui));
+            });
+        egui::CentralPanel::default()
+            .frame(egui::Frame::NONE.fill(ui.visuals().panel_fill))
+            .show(ui, |ui| {
+                let area = ui.available_rect_before_wrap();
+                let panes = layout::arrange(ui, area, &mut self.prefs.workspace);
+                self.authoring.selection.board_rect = None;
+                for (id, rect) in [
+                    ("garment", panes.garment),
+                    ("patterns", panes.patterns),
+                    ("inspector", panes.inspector),
+                ] {
+                    let Some(rect) = rect else { continue };
+                    ui.painter().rect_filled(rect, 0., ui.visuals().panel_fill);
+                    let mut pane = ui.new_child(
+                        egui::UiBuilder::new()
+                            .id_salt(id)
+                            .max_rect(rect.shrink(7.))
+                            .layout(egui::Layout::top_down(egui::Align::Min)),
+                    );
+                    pane.set_clip_rect(rect);
+                    match id {
+                        "garment" => self.garment_view(&mut pane),
+                        "patterns" => self.patterns(&mut pane),
+                        _ => self.inspector(&mut pane),
+                    }
+                }
+            });
+        self.prefs_dirty |= self.prefs != previous_preferences;
+        if self.prefs_dirty && !ctx.input(|i| i.pointer.any_down()) {
             if let Err(error) = settings::save(&self.output.join(settings::FILE_NAME), &self.prefs)
             {
                 self.status = format!("Preferences could not be saved: {error}");
             }
+            self.prefs_dirty = false;
         }
-        egui::Panel::top("authoring-tools").show(ui, |ui| self.authoring_toolbar(ui));
-        egui::Panel::bottom("status").show(ui, |ui| {
-            ui.horizontal(|ui| {
-                ui.colored_label(if self.playing { workspace::ACCENT } else { Color32::GRAY },
-                    if self.playing { "Simulation" } else { "Pause" });
-                ui.separator();
-                ui.add(egui::Label::new(&self.status).truncate()).on_hover_text(&self.status);
-            });
-            if let Some(m) = &self.metrics {
-                ui.small(format!(
-                    "Seams: max gap {:.1} mm · Stretch: 95% of the surface ≤ {:.1}% (max {:.1}%) · Step {:.1} ms",
-                    1000. * m.max_seam_gap_m, m.extension_p95_percent, m.extension_max_percent, m.step_ms
-                ));
-            }
-        });
-        egui::Panel::right("properties")
-            .default_size(290.)
-            .size_range(250.0..=420.0)
-            .resizable(true)
-            .show(ui, |ui| {
-                egui::ScrollArea::vertical().show(ui, |ui| {
-                    ui.strong("OBJECTS & PROPERTIES");
-                    ui.separator();
-                    self.panel_browser(ui);
-                    self.authoring_properties(ui);
-                    ui.collapsing("Fabric resolution", |ui| {
-                        ui.add(egui::Slider::new(&mut self.mesh_mm, 8.0..=60.0).text("mm"));
-                        if ui.button("Remesh").clicked() {
-                            self.remesh();
-                        }
-                        ui.small(format!(
-                            "{} vertices · {} triangles",
-                            self.scene.state.x.len(),
-                            self.scene.garment.mesh.triangles.len()
-                        ));
-                    });
-                    ui.collapsing("Advanced settings", |ui| {
-                        ui.checkbox(&mut self.gpu, "GPU compute");
-                        ui.add(
-                            egui::Slider::new(&mut self.settings.iterations, 2..=128)
-                                .text("iterations"),
-                        );
-                        ui.add(
-                            egui::Slider::new(&mut self.settings.damping, 0.0..=10.0)
-                                .text("damping"),
-                        );
-                        ui.add(
-                            egui::Slider::new(&mut self.anisotropy, 1.0..=4.0).text("anisotropy"),
-                        );
-                        ui.add(
-                            egui::Slider::new(&mut self.mesh_axis, 0.0..=180.0).text("mesh axis"),
-                        );
-                        ui.small("Hybrid OGC · frictionless · uncalibrated material");
-                        if let Some(m) = &self.metrics {
-                            ui.small(format!(
-                                "Step {:.2} ms · detection {:.2} ms · seams {:.2} mm",
-                                m.step_ms,
-                                m.detection_ms,
-                                m.max_seam_gap_m * 1000.
-                            ));
-                        }
-                    });
-                    self.export_information(ui);
-                });
-            });
-        egui::Panel::right("patterns")
-            .default_size((ui.available_width() * 0.45).max(280.))
-            .size_range(260.0..=900.0)
-            .resizable(true)
-            .show(ui, |ui| {
-                self.patterns(ui);
-            });
-        egui::CentralPanel::default().show(ui, |ui| {
-            ui.horizontal(|ui| {
-                ui.strong("3D GARMENT");
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui
-                        .small_button("Overview")
-                        .on_hover_text("Reframe the mannequin")
-                        .clicked()
-                    {
-                        self.camera = camera();
-                    }
-                });
-            });
-            self.show_view_bar(ui);
-            ui.small(view_controls::hint_3d(self.authoring.tool));
-            let (rect, response) = ui.allocate_exact_size(
-                ui.available_size().max(Vec2::splat(1.)),
-                egui::Sense::click_and_drag(),
-            );
-            if self.authoring.tool == Tool::Grab {
-                self.pick_and_drag(&response, rect);
-            }
-            self.place_interaction(&response, rect);
-            self.edge_interaction(&response, rect);
-            self.smoke_grabbed |= self.grab.is_some();
-            if self.drag_test && self.smoke_point.is_none() {
-                let aim = glam::DVec3::new(0., 1.12, 0.30);
-                let front = &self.scene.garment.panels[0];
-                let point = self.scene.garment.mesh.triangles[front.triangles.clone()]
-                    .iter()
-                    .map(|t| {
-                        t.vertices
-                            .iter()
-                            .map(|i| self.scene.state.x[*i] / 3.)
-                            .sum::<glam::DVec3>()
-                    })
-                    .min_by(|a, b| a.distance_squared(aim).total_cmp(&b.distance_squared(aim)))
-                    .unwrap();
-                let clip =
-                    self.camera.matrix(rect.width() / rect.height()) * point.as_vec3().extend(1.);
-                let ndc = clip.truncate() / clip.w;
-                self.smoke_point = Some(egui::pos2(
-                    rect.center().x + ndc.x * rect.width() * 0.5,
-                    rect.center().y - ndc.y * rect.height() * 0.5,
-                ));
-            }
-            self.camera.garment_interact(&response);
-            let size = rect.size() * ctx.pixels_per_point();
-            let texture = self.viewport.draw_scene(
-                [size.x as u32, size.y as u32],
-                &self.camera,
-                DrawModel {
-                    mesh: &self.scene.garment.mesh,
-                    state: &self.scene.state,
-                    materials: &self.scene.garment.materials,
-                    sphere: None,
-                    avatar: Some(&self.scene.collider.surface),
-                    collider: None,
-                    seams: if self.seams {
-                        &self.scene.garment.seams
-                    } else {
-                        &[]
-                    },
-                },
-                self.wire,
-                self.heat,
-                false,
-            );
-            ui.painter().image(
-                texture,
-                rect,
-                egui::Rect::from_min_max(egui::Pos2::ZERO, egui::pos2(1., 1.)),
-                Color32::WHITE,
-            );
-            self.paint_edges_3d(ui, rect);
-            self.paint_seam_links(&ui.painter().with_clip_rect(rect), rect, true);
-            self.paint_gizmo(ui, rect);
-            if let Some(g) = &self.grab {
-                let clip = self.camera.matrix(rect.width() / rect.height())
-                    * g.target.as_vec3().extend(1.);
-                if clip.w > 0. {
-                    let ndc = clip.truncate() / clip.w;
-                    let p = egui::pos2(
-                        rect.center().x + ndc.x * rect.width() * 0.5,
-                        rect.center().y - ndc.y * rect.height() * 0.5,
-                    );
-                    ui.painter().circle_stroke(
-                        p,
-                        8.,
-                        Stroke::new(2., Color32::from_rgb(255, 194, 64)),
-                    );
-                }
-            }
-        });
         if let Some(perf) = &mut self.perf
             && let Some(report) = perf.tick(
                 self.scene.state.time,
@@ -721,6 +650,8 @@ impl eframe::App for Atelier {
                 eprintln!("UI performance report: {e}");
             }
         }
+        self.document.dirty |= self.settings != previous_simulation;
+        self.document_tick(&ctx);
         self.submit(&ctx, false);
         if self.playing {
             ctx.request_repaint_after(Duration::from_millis(16));

@@ -1,0 +1,98 @@
+{
+  "date": "2026-10-15",
+  "kind": "CPU contact query replay, NOT simulation FPS",
+  "threads": 2,
+  "repeats_per_run": 40,
+  "discard_first_per_run": 5,
+  "sequence": [
+    "baseline",
+    "optimized",
+    "optimized",
+    "baseline"
+  ],
+  "concurrent_workload": "Unreal rendering; local wall times are indicative",
+  "baseline_commit": "20b4db9064e5195f1843a9d75708fb77b6989eba",
+  "scenes": {
+    "shirt": {
+      "vertices": 2454,
+      "equal_fingerprints_all_queries": true,
+      "runs": {
+        "baseline": {
+          "queries": 70,
+          "median_ms": 4.68045,
+          "narrow_median_ms": 4.3955,
+          "candidate_pairs": 137277.0,
+          "aabb_rejections": 0.0,
+          "contacts": 6566.0,
+          "active": 247.0,
+          "rebuilds": 0,
+          "per_run_median_ms": [
+            4.6418,
+            4.6852
+          ]
+        },
+        "optimized": {
+          "queries": 70,
+          "median_ms": 4.3219,
+          "narrow_median_ms": 3.96905,
+          "candidate_pairs": 137277.0,
+          "aabb_rejections": 83623.0,
+          "contacts": 6566.0,
+          "active": 247.0,
+          "rebuilds": 0,
+          "per_run_median_ms": [
+            4.3199,
+            4.3518
+          ]
+        }
+      },
+      "detection_reduction_percent": 7.6605881913063945,
+      "exact_queries_avoided_percent": 60.915521172519796,
+      "input_path": "output/workspace-polish/compare-baseline/fitting-project.json",
+      "input_sha256": "93329f179f8f8001455b0a7760520eafe687b4bddd7bc3254fad03e2afa10b5a"
+    },
+    "apron": {
+      "vertices": 3139,
+      "equal_fingerprints_all_queries": true,
+      "runs": {
+        "baseline": {
+          "queries": 70,
+          "median_ms": 4.8945,
+          "narrow_median_ms": 4.50015,
+          "candidate_pairs": 142184.0,
+          "aabb_rejections": 0.0,
+          "contacts": 6208.0,
+          "active": 289.0,
+          "rebuilds": 0,
+          "per_run_median_ms": [
+            4.9738,
+            4.7128
+          ]
+        },
+        "optimized": {
+          "queries": 70,
+          "median_ms": 3.86735,
+          "narrow_median_ms": 3.5461,
+          "candidate_pairs": 142184.0,
+          "aabb_rejections": 88332.0,
+          "contacts": 6208.0,
+          "active": 289.0,
+          "rebuilds": 0,
+          "per_run_median_ms": [
+            4.0438,
+            3.8241
+          ]
+        }
+      },
+      "detection_reduction_percent": 20.985800388190825,
+      "exact_queries_avoided_percent": 62.12513362966297,
+      "input_path": "output/apron-ready/fitting-project.json",
+      "input_sha256": "45b62fa5056a5bb9d555ed7331b54e3b2e1af8059cc091514bc095062fff1906"
+    }
+  },
+  "cpu": "AMD Ryzen 7 2700X Eight-Core Processor",
+  "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+  "contact_radius_m": 0.003,
+  "query_radius_m": 0.006,
+  "perturbation_amplitude_m": 0.0002
+}

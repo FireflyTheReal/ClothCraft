@@ -2,6 +2,7 @@
 pub mod authoring;
 pub mod avatar;
 pub mod contact;
+pub mod document;
 pub mod energy;
 pub mod fabrics;
 pub mod fitting;

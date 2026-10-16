@@ -56,11 +56,11 @@ struct Args {
     #[arg(long)]
     reference: bool,
     /// VBD local iterations per physical time step.
-    #[arg(long, default_value_t = 16)]
-    iterations: usize,
+    #[arg(long)]
+    iterations: Option<usize>,
     /// Physical time step in seconds; independent of rendering rate.
-    #[arg(long, default_value_t = 1.0 / 60.0)]
-    dt: f64,
+    #[arg(long)]
+    dt: Option<f64>,
     /// Explicit hardware compute opt-in (OGC detection remains on CPU).
     #[arg(long, conflicts_with = "reference")]
     gpu_sim: bool,
@@ -79,12 +79,18 @@ fn run_ogc(
         Some(&scene.collider.surface),
         &scene.state,
     )?;
-    let settings = VbdSettings {
-        iterations: args.iterations,
-        dt: args.dt,
+    let mut settings = project.simulation.clone().unwrap_or(VbdSettings {
+        dt: 1. / 60.,
         ..Default::default()
-    };
+    });
+    if let Some(iterations) = args.iterations {
+        settings.iterations = iterations;
+    }
+    if let Some(dt) = args.dt {
+        settings.dt = dt;
+    }
     settings.validate()?;
+    project.simulation = Some(settings.clone());
     #[cfg(feature = "desktop")]
     let gpu = if args.gpu_sim {
         use eframe::wgpu;
@@ -180,7 +186,11 @@ fn run_ogc(
         fitting_editor::run(
             project,
             scene,
-            args.output.clone(),
+            fitting_editor::DocumentFiles {
+                output: args.output.clone(),
+                source: args.project.clone(),
+                modified: args.steps > 0 || args.mesh_mm.is_some(),
+            },
             args.ui_smoke,
             args.ui_interaction_smoke,
             args.ui_perf_smoke,
@@ -327,7 +337,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         fitting_editor::run(
             project,
             scene,
-            args.output,
+            fitting_editor::DocumentFiles {
+                output: args.output,
+                source: args.project,
+                modified: args.steps > 0 || args.mesh_mm.is_some(),
+            },
             args.ui_smoke,
             args.ui_interaction_smoke,
             args.ui_perf_smoke,

@@ -24,6 +24,8 @@ Le CPU et le GPU commencent le pas par une **initialisation adaptative VBD (§3.
 
 La construction des candidats utilise une borne inférieure de distance entre AABB ; le calcul exact VF/EE reste dans la détection à chaque pas, y compris le premier. Cela peut retenir des faux positifs mais ne doit retirer aucune paire proche. `tests/ogc_bvh.rs` compare cette borne aux distances géométriques et `tests/ogc_cache.rs` compare les résultats mis en cache à une reconstruction fraîche.
 
+Depuis la passe CPU du 15 octobre, les paires du cache passent aussi un filtre AABB **courant** avant la géométrie exacte. Seules les boîtes à distance supérieure au rayon de requête, avec marge d'arrondi vers l'extérieur, sont éliminées. Les distances potentiellement inférieures au rayon sont toujours évaluées, y compris pour les termes dormants et les régions inadmissibles qui bornent le mouvement. `aabb_rejections` mesure les évaluations exactes évitées. La coloration réutilise les incidences, avec les mêmes groupes et ordre de sommets. Voir [preuve locale, tests et limites](research-2026-10-15.md#implemented-safe-cost-reductions).
+
 ## Coefficient du raccord logarithmique
 
 Le PDF affiche à l'équation 19 `k' = tau * k * (tau-r)^2`. Ce coefficient ne satisfait pas la continuité de la dérivée annoncée : `g'_quadratique(tau) = k*(tau-r)`, `g'_log(tau) = -k'/tau`. Le code utilise donc le coefficient **dérivé des conditions de raccord** `k' = k*tau*(r-tau)`. Avec `tau=r/2`, les deux dérivées secondes valent `k`. Le logarithme porte sur le rapport sans dimension `d/tau`. Des tests de différences finies et des deux côtés du raccord vérifient ce choix. À `d=r`, la loi est C1, pas C2 ; ne pas annoncer C2 partout.

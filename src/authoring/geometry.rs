@@ -106,19 +106,11 @@ pub(super) fn mirror(
         Ok(id)
     } else {
         for s in &mut t.seams {
-            let mut flip_a = false;
-            for (i, r) in [&mut s.a, &mut s.b].into_iter().enumerate() {
+            for r in s.references_mut() {
                 if r.panel == id && r.edge.as_ref().is_some_and(|n| reversed.contains(n)) {
                     r.range = [1. - r.range[1], 1. - r.range[0]];
-                    s.reverse_b = !s.reverse_b;
-                    flip_a |= i == 0;
+                    r.reversed = !r.reversed;
                 }
-            }
-            if flip_a {
-                for n in &mut s.notches {
-                    *n = [1. - n[0], 1. - n[1]];
-                }
-                s.notches.reverse();
             }
         }
         t.panels[index] = p;
@@ -148,7 +140,9 @@ pub(super) fn boolean(
         .ok_or("Panneau B absent")?;
     for id in [a, b] {
         let p = t.panels.iter().find(|p| p.id == id).unwrap();
-        if t.seams.iter().any(|s| s.a.panel == id || s.b.panel == id)
+        if t.seams
+            .iter()
+            .any(|s| s.references().any(|r| r.panel == id))
             || !p.pins.is_empty()
             || !p.pin_points.is_empty()
             || p.polygon
@@ -227,8 +221,7 @@ pub(super) fn ruffle(
         .find(|l| l.id == line)
         .ok_or("Sélectionner une ligne intérieure")?;
     if t.seams.iter().any(|s| {
-        [&s.a, &s.b]
-            .iter()
+        s.references()
             .any(|r| r.panel == panel && r.edge.as_deref() == Some(line))
     }) {
         return Err("Ligne déjà cousue".into());
@@ -255,14 +248,18 @@ pub(super) fn ruffle(
             .placement
             .transform(DVec3::new(points[0].x, -points[0].y, 0.05));
     t.seams.push(SeamSpec {
+        a_tail: vec![],
+        b_tail: vec![],
         id: unused_id("seam", t.seams.iter().map(|s| s.id.clone())),
         a: BoundaryRef {
+            reversed: false,
             panel: panel.into(),
             side: Side::Top,
             edge: Some(line.into()),
             range: [0., 1.],
         },
         b: BoundaryRef {
+            reversed: false,
             panel: id.clone(),
             side: Side::Top,
             edge: Some("edge_1".into()),

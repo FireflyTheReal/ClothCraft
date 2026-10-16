@@ -1,5 +1,7 @@
 # Performance research and selected implementation — 2026-10-14
 
+**Update, 15 October:** [ten-source review and convergence design](research-2026-10-15.md), including the AVBD PDF successfully read this time. Current-AABB rejection and incidence-based coloring are implemented; [CPU validation](cpu-research-validation.md) separates saved contact work from full-step/FPS claims. The measurements below are historical. No GPU access or custom jitter fixture in the new pass.
+
 The current bottleneck is CPU candidate construction, not the local compute shader. Instrumentation now separates BVH refit, candidate construction and exact narrow phase in `VbdMetrics.contact_profile`. These CPU wall times exclude graph coloring; the hybrid GPU backend's `detection_ms` includes it (the CPU backend times coloring separately from detection). GPU hardware timestamps remain separate.
 
 Retained implementation, paired measurements and failures: [validation report](perf-fabrics-validation.md). The local apron comparison observes a 26.68% full-step cost reduction with equal final states; only the tested T-shirt window meets the realtime threshold.

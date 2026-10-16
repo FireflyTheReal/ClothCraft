@@ -71,7 +71,7 @@ impl Atelier {
         let mut discard = false;
         let mut targets = vec![];
         let header = egui::CollapsingHeader::new("Fabric · weight and stretch")
-            .id_salt("fabric_controls").show(ui, |ui| {
+            .id_salt("fabric_controls").default_open(true).show(ui, |ui| {
                 let d = self.authoring.fabric_draft.as_mut().unwrap();
                 let old = d.preset;
                 let combo = egui::ComboBox::from_id_salt("fabric_preset")

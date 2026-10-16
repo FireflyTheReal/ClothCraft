@@ -31,6 +31,9 @@ pub struct FittingProject {
     #[serde(default)]
     pub quasistatic: bool,
     pub solver: SolverSettings,
+    /// Interactive backend settings. Absent in historical v1 documents.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub simulation: Option<crate::vbd::VbdSettings>,
     pub state: Option<State>,
     /// Detect stale vertex caches after remeshing or editing the template.
     #[serde(default)]
@@ -106,6 +109,7 @@ impl FittingProject {
                 pcg_iterations: 500,
                 ..Default::default()
             },
+            simulation: None,
             state: None,
             mesh_signature: None,
         }
@@ -127,6 +131,9 @@ impl FittingProject {
             return Err("Unsupported fitting project version".into());
         }
         self.solver.validate()?;
+        if let Some(settings) = &self.simulation {
+            settings.validate()?;
+        }
         let garment = Arc::new(self.template.compile()?);
         if self.state.is_some()
             && self.mesh_signature.as_ref() != Some(&mesh_signature(&self.template, &garment)?)
@@ -152,7 +159,7 @@ impl FittingProject {
                     .template
                     .seams
                     .iter()
-                    .flat_map(|s| [&s.a, &s.b])
+                    .flat_map(|s| s.references())
                     .filter(|r| r.panel == panel.id)
                     .filter_map(|r| r.edge.as_ref())
                     .collect();
@@ -204,18 +211,34 @@ impl FittingProject {
         })
     }
     pub fn save(&self, path: &Path) -> Result<(), String> {
+        if self.version != 1 {
+            return Err("Unsupported fitting project version".into());
+        }
+        self.solver.validate()?;
+        if let Some(settings) = &self.simulation {
+            settings.validate()?;
+        }
         let mut copy = self.clone();
+        let garment = copy.template.compile()?;
         copy.mesh_signature = if copy.state.is_some() {
-            Some(mesh_signature(&copy.template, &copy.template.compile()?)?)
+            Some(mesh_signature(&copy.template, &garment)?)
         } else {
             None
         };
-        copy.avatar_path = fs::canonicalize(&self.avatar_path).map_err(|e| e.to_string())?;
-        fs::write(
-            path,
-            serde_json::to_string_pretty(&copy).map_err(|e| e.to_string())?,
-        )
-        .map_err(|e| e.to_string())
+        // Validate cached data before replacing a previously valid document.
+        if let Some(state) = &copy.state {
+            let n = garment.mesh.uv.len();
+            if state.x.len() != n
+                || state.v.len() != n
+                || !state.time.is_finite()
+                || state.x.iter().chain(&state.v).any(|p| !p.is_finite())
+            {
+                return Err("Invalid fitting state; existing document was preserved".into());
+            }
+        }
+        copy.avatar_path = crate::document::portable_avatar(&self.avatar_path, path)?;
+        let bytes = serde_json::to_vec_pretty(&copy).map_err(|e| e.to_string())?;
+        crate::document::atomic_write(path, &bytes)
     }
 }
 

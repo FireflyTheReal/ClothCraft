@@ -20,6 +20,26 @@ fn edge_point(width: f64, height: f64, side: Side, t: f64) -> DVec2 {
         Side::Left => DVec2::new(0.0, (1.0 - t) * height),
     }
 }
+fn reference_length(template: &GarmentTemplate, r: &super::seam::BoundaryRef) -> f64 {
+    let Some(p) = template.panels.iter().find(|p| p.id == r.panel) else {
+        return 0.;
+    };
+    let total = if let Some(name) = &r.edge {
+        p.polygon
+            .as_ref()
+            .and_then(|p| p.paths().ok())
+            .and_then(|paths| paths.into_iter().find(|(n, _)| n == name))
+            .map_or(0., |(_, ps)| {
+                ps.windows(2).map(|p| p[0].distance(p[1])).sum()
+            })
+    } else {
+        match r.side {
+            Side::Top | Side::Bottom => p.pattern.width,
+            _ => p.pattern.height,
+        }
+    };
+    total * (r.range[1] - r.range[0])
+}
 pub fn pattern_svg(template: &GarmentTemplate) -> String {
     let columns = template.panels.len().min(3);
     let rows = template.panels.len().div_ceil(columns.max(1));
@@ -75,11 +95,25 @@ pub fn pattern_svg(template: &GarmentTemplate) -> String {
         write!(out,"<path d=\"M {} {} L {} {} M {} {} L {} {} L {} {}\" fill=\"none\" stroke=\"#ffd166\" stroke-width=\"2\"/>",start.x,start.y,end.x,end.y,a.x,a.y,end.x,end.y,b.x,b.y).unwrap();
         for (j, seam) in template.seams.iter().enumerate() {
             let color = ["#f4a261", "#a5d6a7", "#ce93d8", "#90caf9"][j % 4];
-            for (side, reference, reverse) in [(0, &seam.a, false), (1, &seam.b, seam.reverse_b)] {
+            let mut references = Vec::new();
+            for side in 0..2 {
+                let total: f64 = seam
+                    .side(side == 1)
+                    .map(|r| reference_length(template, r))
+                    .sum();
+                let mut offset = 0.;
+                for r in seam.side(side == 1) {
+                    let length = reference_length(template, r);
+                    references.push((side, r, offset, length, total));
+                    offset += length;
+                }
+            }
+            for (side, reference, offset, length, total) in references {
                 if reference.panel != panel.id {
                     continue;
                 }
                 let edge = |t: f64| {
+                    let t = if reference.reversed { 1. - t } else { t };
                     let s = reference.range[0] + t * (reference.range[1] - reference.range[0]);
                     if let Some(name) = &reference.edge
                         && let Some((_, points)) = paths.iter().find(|(n, _)| n == name)
@@ -93,13 +127,17 @@ pub fn pattern_svg(template: &GarmentTemplate) -> String {
                     let p = edge(k as f64 / 32.);
                     write!(out, "{},{} ", p.x, p.y).unwrap();
                 }
-                write!(out,"\" fill=\"none\" stroke=\"{color}\" stroke-width=\"4\"><title>{}: {} / reverse {reverse}</title></polyline>",xml(&seam.id),if side==0 {"A"} else {"B"}).unwrap();
+                write!(out,"\" fill=\"none\" stroke=\"{color}\" stroke-width=\"4\"><title>{}: {}</title></polyline>",xml(&seam.id),if side==0 {"A"} else {"B"}).unwrap();
                 for notch in &seam.notches {
-                    let t = if reverse {
+                    let t = if side == 1 && seam.reverse_b {
                         1.0 - notch[side]
                     } else {
                         notch[side]
                     };
+                    let t = (t * total - offset) / length;
+                    if !(0. ..=1.).contains(&t) {
+                        continue;
+                    }
                     let p = edge(t);
                     write!(
                         out,

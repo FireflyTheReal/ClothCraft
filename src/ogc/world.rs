@@ -17,6 +17,8 @@ pub struct DetectionProfile {
     pub candidates_ms: f64,
     pub narrow_ms: f64,
     pub candidate_pairs: usize,
+    /// Cached pairs rejected by current AABB distance before exact geometry.
+    pub aabb_rejections: usize,
 }
 impl std::ops::AddAssign for DetectionProfile {
     fn add_assign(&mut self, rhs: Self) {
@@ -24,10 +26,11 @@ impl std::ops::AddAssign for DetectionProfile {
         self.candidates_ms += rhs.candidates_ms;
         self.narrow_ms += rhs.narrow_ms;
         self.candidate_pairs += rhs.candidate_pairs;
+        self.aabb_rejections += rhs.aabb_rejections;
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct OgcSettings {
     /// Offset radius in metres. This is a contact shell, not material thickness.
@@ -308,6 +311,14 @@ impl OgcWorld {
         query_radius: f64,
         settings: &OgcSettings,
     ) -> Result<ContactSet, String> {
+        self.detect_impl::<true>(x, query_radius, settings)
+    }
+    fn detect_impl<const PRUNE: bool>(
+        &mut self,
+        x: &[DVec3],
+        query_radius: f64,
+        settings: &OgcSettings,
+    ) -> Result<ContactSet, String> {
         settings.validate()?;
         if !query_radius.is_finite() || query_radius < settings.radius {
             return Err("OGC query radius must cover the contact radius".into());
@@ -338,21 +349,30 @@ impl OgcWorld {
         }
         let candidates_ms = broad_start.elapsed().as_secs_f64() * 1000.;
         let narrow_start = Instant::now();
+        // Keep a roundoff band at the threshold, including translated scenes.
+        // This only admits extra exact queries; it never shrinks the search.
+        let scale = x
+            .iter()
+            .map(|p| p.abs().max_element())
+            .fold(query_radius, f64::max);
+        let padded_radius2 = (query_radius + 64. * f64::EPSILON * scale).powi(2);
         let batches: Vec<_> = (0..lanes)
             .into_par_iter()
-            .map(|lane| self.scan(x, query_radius, lane, lanes))
+            .map(|lane| self.scan::<PRUNE>(x, query_radius, padded_radius2, lane, lanes))
             .collect();
         let mut distance = vec![query_radius; x.len()];
         let mut found = Vec::new();
         let mut vf_count = 0;
         let mut ee_count = 0;
-        for (distances, contacts, vf, ee) in batches {
+        let mut aabb_rejections = 0;
+        for (distances, contacts, vf, ee, rejected) in batches {
             for (d, v) in distance.iter_mut().zip(distances) {
                 *d = d.min(v);
             }
             found.extend(contacts);
             vf_count += vf;
             ee_count += ee;
+            aabb_rejections += rejected;
         }
         // Sort/merge once instead of allocating a tree node for every retained
         // nearby term. Canonical order remains the same for colors/reductions.
@@ -382,6 +402,7 @@ impl OgcWorld {
                 narrow_ms: narrow_start.elapsed().as_secs_f64() * 1000.,
                 candidate_pairs: self.candidates.as_ref().unwrap().vf.len()
                     + self.candidates.as_ref().unwrap().ee.len(),
+                aabb_rejections,
             },
             contacts,
             active_contacts,
@@ -397,12 +418,20 @@ impl OgcWorld {
             broad_phase_rebuilt,
         })
     }
-    fn scan(&self, x: &[DVec3], query_radius: f64, lane: usize, lanes: usize) -> DetectionBatch {
+    fn scan<const PRUNE: bool>(
+        &self,
+        x: &[DVec3],
+        query_radius: f64,
+        padded_radius2: f64,
+        lane: usize,
+        lanes: usize,
+    ) -> DetectionBatch {
         let top = &self.topology;
         let mut distance = vec![query_radius; x.len()];
         let mut found = Vec::new();
         let mut vf_count = 0;
         let mut ee_count = 0;
+        let mut rejected = 0;
         let mut add = |kind: Kind, mut ids: [usize; 4], count: usize, epsilon: f64| {
             if kind == Kind::PointPoint && ids[0] > ids[1] {
                 ids.swap(0, 1);
@@ -431,6 +460,16 @@ impl OgcWorld {
         let candidates = self.candidates.as_ref().unwrap();
         for pair in candidates.vf.iter().skip(lane).step_by(lanes) {
             let [v, t] = *pair;
+            if PRUNE
+                && self
+                    .points
+                    .primitive_bounds(v)
+                    .distance_squared(self.triangles.primitive_bounds(t))
+                    > padded_radius2
+            {
+                rejected += 1;
+                continue;
+            }
             let ids = top.triangles[t];
             let (p, f) = geometry::closest_triangle(x[v], t, x, top);
             let d = x[v].distance(p);
@@ -458,6 +497,16 @@ impl OgcWorld {
         }
         for pair in candidates.ee.iter().skip(lane).step_by(lanes) {
             let [e, f] = *pair;
+            if PRUNE
+                && self
+                    .edges
+                    .primitive_bounds(e)
+                    .distance_squared(self.edges.primitive_bounds(f))
+                    > padded_radius2
+            {
+                rejected += 1;
+                continue;
+            }
             let ids = &top.edges[e];
             let js = top.edges[f];
             let [a, b] = ids.map(|v| x[v]);
@@ -504,8 +553,82 @@ impl OgcWorld {
                 ),
             }
         }
-        (distance, found, vf_count, ee_count)
+        (distance, found, vf_count, ee_count, rejected)
     }
 }
 
-type DetectionBatch = (Vec<f64>, Vec<Contact>, usize, usize);
+type DetectionBatch = (Vec<f64>, Vec<Contact>, usize, usize, usize);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn current_boxes_preserve_exact_contacts_and_balls_during_cache_reuse() {
+        for offset in [DVec3::ZERO, DVec3::new(1e6, -2e6, 3e6)] {
+            let mut rest = Vec::new();
+            let mut triangles = Vec::new();
+            for layer in 0..3 {
+                for y in 0..5 {
+                    for x in 0..5 {
+                        rest.push(
+                            offset
+                                + DVec3::new(
+                                    x as f64 * 0.008,
+                                    y as f64 * 0.008,
+                                    layer as f64 * 0.003,
+                                ),
+                        );
+                    }
+                }
+                for y in 0..4 {
+                    for x in 0..4 {
+                        let a = layer * 25 + y * 5 + x;
+                        triangles.extend([[a, a + 1, a + 5], [a + 1, a + 6, a + 5]]);
+                    }
+                }
+            }
+            let mut pruned = OgcWorld::new(&rest, triangles, 50, [[0, 25], [1, 26]]).unwrap();
+            let mut reference = pruned.clone();
+            let settings = OgcSettings::default();
+            let mut rejections = 0;
+            let mut reuse = 0;
+            let mut rebuilds = 0;
+            for frame in 0..24 {
+                let mut x = rest.clone();
+                for (i, p) in x[..50].iter_mut().enumerate() {
+                    let a = frame as f64 * 0.15 + i as f64 * 0.31;
+                    *p += DVec3::new(a.sin() * 0.0004, a.cos() * 0.0003, a.sin() * 0.0002);
+                    if frame >= 18 {
+                        p.x += 0.004;
+                    }
+                }
+                let rq = match frame {
+                    0..=11 => 0.006,
+                    12..=15 => 0.009,
+                    _ => 0.004,
+                };
+                let a = pruned.detect(&x, rq, &settings).unwrap();
+                let b = reference.detect_impl::<false>(&x, rq, &settings).unwrap();
+                assert_eq!(a.radii, b.radii);
+                assert_eq!(a.minimum_distance, b.minimum_distance);
+                assert_eq!(a.active_contacts, b.active_contacts);
+                assert_eq!(a.vertex_face_candidates, b.vertex_face_candidates);
+                assert_eq!(a.edge_edge_candidates, b.edge_edge_candidates);
+                assert_eq!(a.incident, b.incident);
+                assert_eq!(a.broad_phase_rebuilt, b.broad_phase_rebuilt);
+                let keys = |c: &ContactSet| {
+                    c.contacts
+                        .iter()
+                        .map(|c| (c.kind, c.vertices, c.count, c.mollifier_epsilon.to_bits()))
+                        .collect::<Vec<_>>()
+                };
+                assert_eq!(keys(&a), keys(&b));
+                rejections += a.profile.aabb_rejections;
+                rebuilds += usize::from(a.broad_phase_rebuilt);
+                reuse += usize::from(!a.broad_phase_rebuilt);
+            }
+            assert!(rejections > 0 && reuse > 0 && rebuilds > 1);
+        }
+    }
+}

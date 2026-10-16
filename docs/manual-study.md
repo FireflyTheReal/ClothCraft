@@ -1,5 +1,9 @@
 # Public-manual behavior ledger
 
+## Essential-tool review (2026-10-15)
+
+The [essential-authoring-tool report](essential-authoring-tools.md) records the newly consulted official CLO/Marvelous sources, a current code audit, a prioritized minimum toolkit and acceptance cases. This extends the older backlog with organization/visibility, explicit simulation states, measurement/grain editing and Cut / Cut & Sew; it distinguishes 3D authoring from manufacturing requirements. No implementation or GPU validation was performed during this research pass. Tool priorities are our recommendation, not a ranking supplied by the manuals.
+
 Read on 2026-10-14. Entry point: [Marvelous Designer manuals](https://www.marvelousdesigner.com/manuals). The current site exposes section shells; the linked official support articles provide the actual text. No proprietary code, tutorial assets, screenshots or interface artwork were imported into ClothCraft.
 
 | Official article actually read | Behavior identified (paraphrase) | Independent ClothCraft scope | Remaining work |
@@ -56,3 +60,8 @@ Revisited the [official manual index](https://www.marvelousdesigner.com/manuals)
 | MD-08 · [Fold Arrangement](https://support.marvelousdesigner.com/hc/en-us/articles/47358260153881-Fold-Arrangement) | Arrange a fold about an internal line before simulation, with a rotation control | Whole-panel rotation exists; local fold arrangement does not | ARR-02: piecewise placement with preview/undo, independent from rest geometry or a constitutive crease; reject invalid initial contact |
 
 The [concrete backlog](../ROADMAP.md#3-concrete-authoring-backlog-from-the-manual-study) maps these sources to priorities, prerequisites and observable completion criteria. Save/recovery and realtime quality gates are ClothCraft project needs, not behaviors inferred from an unread page. No article establishes the proprietary solver's internal algorithm. Darts, trims, complete manufacturing workflows and the rest of the manual remain a future reading queue.
+
+
+## Viewport controls follow-up (2026-10-15)
+
+Read the official [3D Window](https://support.marvelousdesigner.com/hc/en-us/articles/47358233197593-3D-Window) and [3D Window Display Icons](https://support.marvelousdesigner.com/hc/en-us/articles/47358200025497-3D-Window-Display-Icons) articles. They describe a dedicated 3D work area with local display controls, including grid/shadow and surface visibility. Visually inspected the screenshot supplied by the user; an official linked online image was found but not successfully displayed. Our independent implementation groups display controls behind a gear dropdown, prioritizes two resizable canvases, and uses our own vector icons. [Implemented features and render limits](workspace-ui.md); no product parity or GPU acceptance is claimed.

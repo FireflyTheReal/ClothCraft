@@ -1,106 +1,76 @@
 # ClothCraft
 
-<img src="assets/branding/clothcraft-icon.png" width="128" height="128" alt="ClothCraft ram icon">
+ClothCraft is an open-source garment editor written in Rust. It connects editable 2D patterns, sewing relationships and 3D placement to a cloth simulation.
 
-**Draw patterns. Sew pieces. Build better cloth physics.**
+**Early alpha.** Basic drafting and fitting work, but most of the work needed for a production garment tool remains ahead. Expect incomplete tools, uncalibrated materials and simulation failures on difficult arrangements.
 
-ClothCraft is an early native Rust experiment in garment authoring and cloth simulation. It is intended to become an editing foundation on which humans and AI contributors can develop, compare and replace physics solvers.
+![ClothCraft workspace](docs/screenshots/workspace.png)
 
-> **Very early alpha. Almost everything needed for a production garment tool is still to be built.** The drawing, sewing and simulation loop is a working prototype, not a CLO or Marvelous Designer replacement. Expect missing tools, rough edges and cases that do not simulate well.
+## Run
 
-[Contributor entry point](AI_START_HERE.md) · [Roadmap](ROADMAP.md) · [Editing guide](docs/authoring.md) · [Import/export plan](docs/interoperability.md) · [Solver challenge](docs/solver-challenge.md)
-
-![ClothCraft workspace: 3D garment, shared 2D pattern board and properties](docs/images/atelier.png)
-
-## Behavioral target
-
-ClothCraft independently targets the core pattern-based garment workflow of [Marvelous Designer](https://www.marvelousdesigner.com/): draw material-space 2D pieces, connect their boundaries with seams, arrange them around a 3D avatar, and simulate the assembled cloth. The [public-manual study](docs/manual-study.md) records the behaviors studied, what is implemented, and the next acceptance cases in the [roadmap](ROADMAP.md).
-
-Compatibility is currently **targeting**, not verified parity. Native Marvelous Designer / CLO project and garment files are unsupported; matching their simulation results, full toolset or proprietary implementation is not claimed. ClothCraft uses its own document formats and physics implementation. The interface is English, and Windows is the only locally exercised desktop platform.
-
-## What works today
-
-- Numeric point editing, multi-point selection, exact boundary splits and target lengths; camera presets, orthographic view and light/dark themes. [Integration notes and contributor credit](docs/firefly-integration.md).
-- One metric 2D board: rectangles, polygon/Bézier drafting, anchor/handle editing, translation and rotation.
-- Linked panel/boundary selection in 2D and 3D; whole-edge sewing, reversal, explicit easing, seam deletion and undo/redo.
-- Colored seam correspondences in both views, including previews before committing a seam.
-- Numeric rectangles, circles/ellipses and arc sectors; independent X/Y mirror copies; union, intersection and subtraction with holes.
-- Editable internal Bézier sewing lines and gathered strips attached with the existing seam model. See [drafting tools and limits](docs/drafting-tools.md).
-- 3D arrangement gizmos and numeric transforms; mouse grabbing during simulation.
-- Constrained Delaunay meshing, material-space rest geometry and per-panel grain direction.
-- Nine indicative fabric presets with mass, thickness, stretch, shear and bending controls. Mechanical values are **estimates**, not calibrated measurements; see [fabric sources](docs/fabrics.md).
-- CPU Newton reference, CPU VBD and hybrid GPU VBD with Offset Geometric Contact. Contact detection remains CPU. There is **no solver plugin API** yet.
-- Editable JSON projects/templates, static garment OBJ export, avatar OBJ import and preview SVG export.
-
-The T-shirt, dress and bundled CC0 MakeHuman avatar are engineering fixtures, not production patterns.
-
-## Run the workspace
-
-Install a stable Rust toolchain and a platform C/C++ linker. The desktop build needs a GPU/driver supported by wgpu. Windows + RTX 3090/Vulkan is the locally exercised configuration; other desktop platforms are not release-qualified.
-
-```powershell
-git clone https://github.com/erythrofr/ClothCraft.git
-cd ClothCraft
-.\scripts\start-atelier.ps1
-```
-
-Equivalent command:
+Install Rust stable, then run from the repository root:
 
 ```sh
-cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view --output output/my-session
+cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view
 ```
 
-The window starts paused. The current UI labels are English:
+The editor starts with a T-shirt and the bundled MakeHuman mannequin. A graphics adapter supported by wgpu is required for the desktop workspace. Command-line tools and numerical tests also build without graphics dependencies.
 
-| Action | Control |
-|---|---|
-| Draw | **Pen**: click corners, drag for Bézier handles; **Rectangle**: drag opposite corners |
-| Add a primitive | **Shapes**: dimensions in mm, circle/ellipse or closed arc sector |
-| Mirror / boolean | Select a piece → **Mirrors and booleans**; overlap A/B on the 2D board |
-| Add a ruffle | **Ligne intérieure** → click/drag inside the selected piece → Enter → **Create and sew a ruffle** |
-| Edit / rotate in 2D | **Edit**: select a piece, edit points or drag its round rotation handle |
-| Sew | **Sew**: choose edge A and B in either view, inspect direction, then validate |
-| Move / rotate in 3D | **Move 3D (G)** / **Rotate 3D (R)**; Shift snaps to 15° |
-| Simulate / pause | **Simulate** or Space; **Grab** lets you drag the simulated cloth |
-| Remove a seam | Select its edge, **Delete seam** or Delete; Ctrl+Z restores it |
-| Navigate | Right-drag orbits 3D, middle-drag pans, wheel zooms; **Overview** / **Frame all** frame the views |
-| Save / export | **Export** writes the project and supported artifacts to the session directory |
+```sh
+# Reopen an editable garment
+cargo run --release --locked -j 2 --bin cloth-fit -- --project path/to/garment.json --steps 0 --view
 
-**3D arrangement returns the selected piece to its flat pattern shape.** Other pieces retain their drape. A 2D layout edit preserves the entire physical state. Neither operation repairs intersections; place pieces outside the avatar before simulating.
-
-Export replaces fixed filenames in the chosen output directory. Use a separate directory per session. There is no autosave, recovery system or file picker yet.
-
-```powershell
-.\scripts\start-atelier.ps1 -ProjectPath output/my-session/fitting-project.json
+# Validate a template on CPU
+cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/tshirt.json
 ```
 
-Projects contain an avatar path that may need relinking on another computer. See the [complete workflow](docs/authoring.md).
+Windows is the primary development platform. Equivalent macOS and Linux acceptance testing is still needed.
 
-## Files you can actually exchange
+## Working with garments
 
-| Data | Input now | Output now |
+- **Draw:** rectangles, ellipses, arc sectors and Bézier contours on a shared 2D board. Edit points and dimensions; mirror, duplicate, combine or subtract pieces; add holes and internal sewing paths.
+- **Sew:** select boundaries in either view. Sew full edges or partial ranges, edit their lengths, reverse their direction and assemble ordered chains on both sides. Unequal lengths require explicit easing. Existing seams can be edited or deleted.
+- **Arrange:** move and rotate pieces in 3D. Board layout is separate from material rest geometry.
+- **Simulate:** start or pause with Space; use Grab to pull the cloth. Inspect seam gaps, stretch and full-step timings in Properties → Simulation.
+- **Save:** File → Save / Save As stores the editable garment and current simulation state. Keep the JSON and its adjacent `.assets` directory together when moving a project. File → Open can relink a missing OBJ avatar. Recovery snapshots are separate from saved documents.
+
+Right-click either canvas for the radial tool menu. Ctrl+C/V copies selected pieces and their internal seam relationships; Ctrl+Z undoes an edit. Drag the dividers to resize the views. Viewport gear menus contain display and navigation options.
+
+[Document and sewing guide](docs/documents-and-sewing.md) · [Authoring reference](docs/authoring.md) · [Workspace controls](docs/workspace-ui.md)
+
+## Supported files
+
+| Data | Input | Output |
 |---|---|---|
-| Editable garment and saved state | ClothCraft fitting-project JSON via CLI | `fitting-project.json` |
-| Editable patterns | ClothCraft template JSON via CLI | `template.json` |
-| Static 3D geometry | Avatar OBJ, geometry only | `cloth.obj`, grouped by piece, local metric UVs |
-| Pattern preview | — | `patterns.svg`, **not a print-to-scale sewing pattern** |
-| Research diagnostics | — | Fiber-frame JSON and grain-guide OBJ; no explicit yarn mechanics |
+| Editable garment | ClothCraft project / template JSON | Project / template JSON |
+| Static avatar | OBJ | — |
+| Simulated surface | — | OBJ geometry and material-space UVs |
+| Pattern preview | — | SVG; not a print-to-scale production pattern |
+| Research data | — | Metrics, fiber frames and geometric grain guides |
 
-**DXF-AAMA/ASTM, MTL, glTF/GLB, Alembic, USD, FBX, PDF printing, grading rules and other industry adapters are not implemented.** A mesh does not recover editable sewing patterns. See [direction-specific priorities and acceptance criteria](docs/interoperability.md).
+Export writes interchange artifacts to the session output folder, separately from Save. DXF-AAMA/ASTM, MTL, GLB, Alembic, USD, FBX, PDF printing and grading-rule adapters are **not implemented**. CLO and Marvelous Designer project files are not supported.
 
-## Help build it
+See the [format plan](docs/interoperability.md) for units, supported entities and acceptance criteria.
 
-Start with [AI_START_HERE.md](AI_START_HERE.md), [AGENTS.md](AGENTS.md), [the handoff](docs/handoff.md) and [CONTRIBUTING.md](CONTRIBUTING.md). Pick a small, verifiable milestone from the [roadmap](ROADMAP.md). Leave reproducible fixtures, tests and an honest account of what remains unsupported.
+## Physics
 
-If you want to experiment with a faster or more accurate solver: please do. Keep the same scenes, materials, mesh resolution and physical time step, and report both quality and full-step cost. Frame rate alone is not evidence of correct cloth motion. The [solver challenge](docs/solver-challenge.md) defines the comparison contract.
+The interactive engine uses VBD with OGC contact. GPU execution is hybrid: contact detection and parts of the step remain on the CPU. A double-precision Newton reference is available for numerical comparisons.
 
-The authoring model is independent of egui/wgpu. Replacing physics should not require replacing garment documents, sewing identities or import/export tools. A common backend lifecycle and capability interface still needs to be designed and exercised by real adapters.
+The authoring model is independent of the renderer and solver. The aim is to compare and replace physics backends without replacing garment documents or editing tools. A general solver plugin interface does not exist yet.
 
-## Validate without a GPU
+Current limits include finite iteration budgets, penalty sewing, local collision exclusions at seams, no Coulomb friction and no animated avatars. Contact requires an initially separated arrangement. Material presets are estimates, not measured calibration. Remeshing resets affected simulation geometry. The displayed floor is visual only.
+
+[Contact contract](docs/ogc.md) · [Material evidence](docs/fabrics.md) · [Solver comparison protocol](docs/solver-challenge.md)
+
+## Development
+
+Start with [CONTRIBUTING.md](CONTRIBUTING.md), [AI_START_HERE.md](AI_START_HERE.md) and [the handoff](docs/handoff.md). The [roadmap](ROADMAP.md) separates implemented features from planned work. Human and AI-assisted contributions follow the same review and validation requirements.
 
 ```powershell
 .\scripts\check-cpu.ps1
 ```
+
+Or run the core checks directly:
 
 ```sh
 cargo test --locked --no-default-features -j 2 -- --test-threads=2
@@ -108,28 +78,21 @@ cargo clippy --locked --no-default-features --all-targets -j 2 -- -D warnings
 cargo build --locked -j 2
 ```
 
-The last command only compiles. GPU tests and native window checks are opt-in; coordinate GPU use with the machine's owner. CPU tests cover energy derivatives, rest/mass invariants, seams, meshing, contact bounds and editing state. See [workspace checks](docs/workspace-polish.md) for this UI/performance pass.
+These commands do not run GPU workloads. Native window and GPU tests are opt-in. Performance contributions should report the same scenes, resolution, material parameters and simulated duration, including quality metrics and full-step cost.
 
-## Physics and performance limits
-
-VBD/OGC is hybrid, with finite iteration budgets, penalty seams and local collision exclusions at sewn correspondences. It requires an initially separated state. Friction, animated avatars, robust multilayer workflows, measured fabric calibration and production seam closure are still missing. The 3D grid is not a physical floor. Remeshing resets affected geometry instead of transferring a drape.
-
-Previous local measurements reached about 60 UI frames/s and 60 physical steps/s on a T-shirt, while the apron scene remained around 50 physical steps/s. These are **scene-specific historical results**, not a universal realtime guarantee. This pass optimizes editor interaction and board rendering; it does not claim a faster physical solver. Read [jitter measurements](docs/jitter.md), [adaptive initialization](docs/adaptive-initialization.md), [OGC contracts](docs/ogc.md) and [performance evidence](docs/workspace-polish.md).
-
-## Code map
-
-| Area | Start here |
+| Area | Entry point |
 |---|---|
-| Editing transactions / state preservation | `src/authoring.rs`, `tests/editing_state.rs` |
-| Pattern board / sewing / workspace | `src/atelier/board.rs`, `edges_3d.rs`, `seam_links.rs`, `workspace.rs` |
-| Pattern model / meshing / interchange | `src/garment/`, `docs/architecture.md` |
-| FEM / reference physics | `src/model.rs`, `src/energy.rs`, `src/solver.rs` |
-| VBD / contact / GPU compute | `src/vbd.rs`, `src/ogc/`, `src/gpu_vbd.rs`, `src/vbd.wgsl` |
-| Avatar queries / picking | `src/avatar.rs`, `src/picking.rs` |
-| Worker cadence / window measurements | `src/atelier/worker.rs`, `src/atelier/perf.rs` |
+| Document I/O | `src/document.rs`, `src/fitting.rs` |
+| Editing transactions and undo | `src/authoring.rs` |
+| Pattern geometry, meshing and seams | `src/garment/` |
+| Desktop workspace | `src/atelier/` |
+| Material energy and reference solver | `src/energy.rs`, `src/solver.rs` |
+| Interactive physics and contact | `src/vbd.rs`, `src/ogc/`, `src/gpu_vbd.rs` |
 
-## Provenance and licensing
+## License and credits
 
-ClothCraft is independent of CLO, Marvelous Designer and ArtCraft. Public manuals and screenshots are workflow references, recorded in the [behavior ledger](docs/manual-study.md); their code, icons, artwork and example garments are not bundled. The original ram icon was generated for this project, inspired by the engraved-animal presentation of ArtCraft's apps; see [artwork provenance and prompts](assets/branding/README.md). This implementation does not claim feature parity or formal clean-room certification.
+Original source and documentation are [MIT-licensed](LICENSE). The MakeHuman assets retain their [CC0 notice and provenance](assets/makehuman/LICENSE.ASSETS.md); dependencies retain their own licenses. See the [artwork record](assets/branding/README.md) for the generated project icon.
 
-ClothCraft's original source and documentation are available under the [MIT License](LICENSE). The project artwork is distributed under the same license where applicable; its generation record remains in [artwork provenance](assets/branding/README.md). The bundled MakeHuman assets retain their separate [CC0 notice and provenance](assets/makehuman/LICENSE.ASSETS.md). Third-party dependencies retain their respective licenses.
+Some authoring and camera tools were adapted from FireflyTheReal / julienfoss's fork; [integration notes](docs/firefly-integration.md) record their provenance and subsequent changes.
+
+ClothCraft is independent of CLO, Marvelous Designer and ArtCraft. Public manuals inform workflow research; proprietary code, icons and garment examples are not included. The [manual study](docs/manual-study.md) records the references consulted.

@@ -38,6 +38,8 @@ const DEFAULT_ITERATIONS: usize = 16;
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub(super) struct Preferences {
+    pub(super) workspace: super::layout::WorkspaceLayout,
+    pub(super) viewport: crate::render::appearance::Appearance,
     /// Workspace theme installed at startup and whenever the switch changes.
     pub(super) theme: ThemeChoice,
     /// Board magnet step in millimetres; the 2D board snaps to this grid.
@@ -55,6 +57,8 @@ pub(super) struct Preferences {
 impl Default for Preferences {
     fn default() -> Self {
         Self {
+            workspace: Default::default(),
+            viewport: Default::default(),
             theme: ThemeChoice::Light,
             snap_mm: DEFAULT_SNAP_MM,
             seam_links: true,
@@ -69,6 +73,8 @@ impl Preferences {
     /// Clamp values that a hand-edited or corrupt file could otherwise push
     /// outside the ranges the board and `VbdSettings::validate` accept.
     fn sanitize(&mut self) {
+        self.workspace.sanitize();
+        self.viewport.sanitize();
         self.snap_mm = finite_or(self.snap_mm, DEFAULT_SNAP_MM).clamp(SNAP_MM_MIN, SNAP_MM_MAX);
         self.dt = finite_or(self.dt, DEFAULT_DT).clamp(DT_MIN, DT_MAX);
         self.iterations = self.iterations.clamp(ITERATIONS_MIN, ITERATIONS_MAX);
@@ -132,6 +138,7 @@ pub(super) fn window(
                     .selectable_value(&mut prefs.theme, ThemeChoice::Dark, "Dark")
                     .changed();
             });
+            ui.small("Viewport appearance: use the gear above the 3D view. Pane sizes: drag a divider; double-click to reset.");
 
             ui.separator();
             ui.heading("Board");
@@ -214,6 +221,7 @@ mod tests {
             wireframe: true,
             dt: 1.0 / 120.0,
             iterations: 24,
+            ..Default::default()
         }
     }
 

@@ -1,0 +1,260 @@
+{
+  "format": "marvelous-cloth-template",
+  "version": 2,
+  "name": "Partial M:N sewing / native editor fixture",
+  "fabrics": [
+    {
+      "id": "woven-reference",
+      "name": "Uncalibrated woven reference",
+      "properties": {
+        "warp": 350.0,
+        "weft": 180.0,
+        "shear": 45.0,
+        "compression_ratio": 0.15,
+        "compression_transition": 0.005,
+        "bend_warp": 0.00008,
+        "bend_weft": 0.00004,
+        "density": 0.2,
+        "thickness": 0.001
+      }
+    },
+    {
+      "id": "fabric_1",
+      "name": "Denim (approx.)",
+      "properties": {
+        "warp": 7549.625789983276,
+        "weft": 3425.784831977357,
+        "shear": 300.0,
+        "compression_ratio": 0.15,
+        "compression_transition": 0.005,
+        "bend_warp": 0.0004,
+        "bend_weft": 0.00025,
+        "density": 0.296675,
+        "thickness": 0.0006096000000000001
+      }
+    }
+  ],
+  "panels": [
+    {
+      "id": "panel_1",
+      "name": "panel_1",
+      "pattern": {
+        "width": 0.41000000000000003,
+        "height": 0.49000000000000005,
+        "nx": 1,
+        "ny": 1
+      },
+      "polygon": {
+        "points": [
+          [
+            0.039999999999999994,
+            0.09
+          ],
+          [
+            0.34,
+            0.09
+          ],
+          [
+            0.34,
+            0.49000000000000005
+          ],
+          [
+            0.0,
+            0.49000000000000005
+          ]
+        ],
+        "edges": [
+          "edge_1",
+          "edge_2",
+          "edge_3",
+          "edge_4"
+        ],
+        "subdivisions": 0,
+        "meshing": {
+          "target_edge_m": 0.025,
+          "anisotropy": 1.0,
+          "axis_degrees": 0.0,
+          "min_angle_degrees": 25.0,
+          "max_vertices": 20000
+        },
+        "curves": {
+          "edge_1": [
+            [
+              0.039999999999999994,
+              0.09
+            ],
+            [
+              0.24,
+              0.0
+            ]
+          ],
+          "edge_2": [
+            [
+              0.41000000000000003,
+              0.14
+            ],
+            [
+              0.34,
+              0.49000000000000005
+            ]
+          ]
+        }
+      },
+      "fabric": "woven-reference",
+      "grain_degrees": 90.0,
+      "placement": {
+        "translation": [
+          -0.11256988599896431,
+          1.59,
+          0.45
+        ],
+        "rotation_degrees": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "layout_2d": [
+        0.3150958191581059,
+        0.048459238816192574
+      ],
+      "layout_rotation_degrees": 23.57470620191262,
+      "pins": []
+    },
+    {
+      "id": "panel_2",
+      "name": "panel_1 copy",
+      "pattern": {
+        "width": 0.41000000000000003,
+        "height": 0.49000000000000005,
+        "nx": 1,
+        "ny": 1
+      },
+      "polygon": {
+        "points": [
+          [
+            0.039999999999999994,
+            0.09
+          ],
+          [
+            0.34,
+            0.09
+          ],
+          [
+            0.34,
+            0.49000000000000005
+          ],
+          [
+            0.0,
+            0.49000000000000005
+          ]
+        ],
+        "edges": [
+          "edge_1",
+          "edge_2",
+          "edge_3",
+          "edge_4"
+        ],
+        "subdivisions": 0,
+        "meshing": {
+          "target_edge_m": 0.025,
+          "anisotropy": 1.0,
+          "axis_degrees": 0.0,
+          "min_angle_degrees": 25.0,
+          "max_vertices": 20000
+        },
+        "curves": {
+          "edge_1": [
+            [
+              0.039999999999999994,
+              0.09
+            ],
+            [
+              0.24,
+              0.0
+            ]
+          ],
+          "edge_2": [
+            [
+              0.41000000000000003,
+              0.14
+            ],
+            [
+              0.34,
+              0.49000000000000005
+            ]
+          ]
+        }
+      },
+      "fabric": "fabric_1",
+      "grain_degrees": 90.0,
+      "placement": {
+        "translation": [
+          0.6428245889496798,
+          1.6078108839885084,
+          0.6300619088853587
+        ],
+        "rotation_degrees": [
+          33.78623881508954,
+          8.437871643883092,
+          -35.63270632517398
+        ]
+      },
+      "layout_2d": [
+        0.875095819158106,
+        0.048459238816192574
+      ],
+      "layout_rotation_degrees": 23.57470620191262,
+      "pins": []
+    }
+  ],
+  "seams": [
+    {
+      "id": "seam_1",
+      "a": {
+        "panel": "panel_1",
+        "side": "top",
+        "edge": "edge_1",
+        "range": [
+          0.0,
+          0.9367994850516643
+        ]
+      },
+      "b": {
+        "panel": "panel_2",
+        "side": "top",
+        "edge": "edge_1",
+        "range": [
+          0.0,
+          0.9367994850516643
+        ]
+      },
+      "a_tail": [
+        {
+          "panel": "panel_1",
+          "side": "top",
+          "edge": "edge_2",
+          "range": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "b_tail": [
+        {
+          "panel": "panel_2",
+          "side": "top",
+          "edge": "edge_2",
+          "range": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "reverse_b": false,
+      "notches": [],
+      "stiffness": 50000.0,
+      "allow_ease": true
+    }
+  ]
+}

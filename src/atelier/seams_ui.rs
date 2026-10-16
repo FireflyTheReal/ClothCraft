@@ -12,7 +12,7 @@ impl Atelier {
                 self.authoring
                     .edge
                     .as_ref()
-                    .is_some_and(|e| same_edge(e, &s.a) || same_edge(e, &s.b))
+                    .is_some_and(|e| s.references().any(|r| same_edge(e, r)))
             })
             .map(|s| s.id.clone())
             .collect()
@@ -21,8 +21,8 @@ impl Atelier {
         self.authoring.edge.as_ref().is_some_and(|selected| {
             same_edge(selected, edge)
                 || self.project.template.seams.iter().any(|s| {
-                    (same_edge(selected, &s.a) && same_edge(edge, &s.b))
-                        || (same_edge(selected, &s.b) && same_edge(edge, &s.a))
+                    s.references().any(|r| same_edge(selected, r))
+                        && s.references().any(|r| same_edge(edge, r))
                 })
         })
     }
@@ -34,8 +34,14 @@ impl Atelier {
     pub(super) fn existing_seams(&mut self, ui: &mut egui::Ui) {
         let selected = self.edge_seams();
         let mut remove = None;
+        let mut edit = None;
         for id in &selected {
             ui.colored_label(super::seam_links::seam_color(id), format!("Seam: {id}"));
+            let button = ui.button("Edit ranges / chain…");
+            self.smoke_target_ui(ui, "edit_seam", button.rect);
+            if button.clicked() {
+                edit = Some(id.clone());
+            }
             let button = ui.button("Delete the seam").on_hover_text(
                 "Free both boundaries without deleting the fabric. Shortcut: Del. Undo: Ctrl+Z.",
             );
@@ -64,6 +70,9 @@ impl Atelier {
                         3.5,
                         super::seam_links::seam_color(&seam.id),
                     );
+                    if ui.small_button("Edit").clicked() {
+                        edit = Some(seam.id.clone());
+                    }
                     if ui
                         .selectable_label(selected.contains(&seam.id), &seam.id)
                         .clicked()
@@ -79,11 +88,13 @@ impl Atelier {
                     }
                 });
                 ui.small(format!(
-                    "{} / {} ↔ {} / {}",
+                    "{} / {} ↔ {} / {} · {}:{} edges",
                     seam.a.panel,
                     seam.a.edge.as_deref().unwrap_or("boundary"),
                     seam.b.panel,
-                    seam.b.edge.as_deref().unwrap_or("boundary")
+                    seam.b.edge.as_deref().unwrap_or("boundary"),
+                    1 + seam.a_tail.len(),
+                    1 + seam.b_tail.len()
                 ));
             }
         });
@@ -95,6 +106,9 @@ impl Atelier {
         }
         if let Some(seam) = remove {
             self.remove_seam(seam);
+        }
+        if let Some(id) = edit {
+            self.begin_seam_edit(&id);
         }
         ui.separator();
     }

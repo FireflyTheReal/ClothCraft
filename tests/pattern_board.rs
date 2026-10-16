@@ -137,6 +137,7 @@ fn curve_sewing_and_rest_edits_are_transactional() {
         .unwrap()
         .template;
     let edge = |panel: String| BoundaryRef {
+        reversed: false,
         panel,
         side: Side::Top,
         edge: Some("edge_1".into()),

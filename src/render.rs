@@ -10,6 +10,9 @@ use crate::{
 use eframe::{egui, egui_wgpu::RenderState, wgpu};
 use glam::{Mat4, Vec3};
 
+pub mod appearance;
+mod environment;
+
 pub struct DrawModel<'a> {
     pub mesh: &'a Mesh,
     pub state: &'a State,
@@ -390,6 +393,11 @@ impl Camera {
 }
 
 pub struct Viewport {
+    pub appearance: appearance::Appearance,
+    supports_msaa4: bool,
+    samples: u32,
+    msaa_color: Option<wgpu::TextureView>,
+    environment: environment::Environment,
     render_state: RenderState,
     pipeline: wgpu::RenderPipeline,
     color: wgpu::TextureView,
@@ -407,7 +415,7 @@ pub struct Viewport {
     avatar_count: u32,
 }
 impl Viewport {
-    fn target(device: &wgpu::Device, size: [u32; 2], depth: bool) -> wgpu::Texture {
+    fn target(device: &wgpu::Device, size: [u32; 2], depth: bool, samples: u32) -> wgpu::Texture {
         device.create_texture(&wgpu::TextureDescriptor {
             label: Some(if depth { "cloth-depth" } else { "cloth-color" }),
             size: wgpu::Extent3d {
@@ -416,27 +424,30 @@ impl Viewport {
                 depth_or_array_layers: 1,
             },
             mip_level_count: 1,
-            sample_count: 1,
+            sample_count: samples,
             dimension: wgpu::TextureDimension::D2,
             format: if depth {
                 wgpu::TextureFormat::Depth32Float
             } else {
                 wgpu::TextureFormat::Rgba8Unorm
             },
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT
-                | wgpu::TextureUsages::TEXTURE_BINDING
-                | wgpu::TextureUsages::COPY_SRC,
+            usage: if depth || samples > 1 {
+                wgpu::TextureUsages::RENDER_ATTACHMENT
+            } else {
+                wgpu::TextureUsages::RENDER_ATTACHMENT
+                    | wgpu::TextureUsages::TEXTURE_BINDING
+                    | wgpu::TextureUsages::COPY_SRC
+            },
             view_formats: &[],
         })
     }
-    pub fn new(render_state: RenderState) -> Self {
-        let device = &render_state.device;
+    fn mesh_pipeline(device: &wgpu::Device, samples: u32) -> wgpu::RenderPipeline {
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("cloth-lit-wireframe"),
             source: wgpu::ShaderSource::Wgsl(include_str!("cloth.wgsl").into()),
         });
         let attrs = wgpu::vertex_attr_array![0=>Float32x4,1=>Float32x3,2=>Float32x4,3=>Float32x3];
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("cloth-viewport"),
             layout: None,
             vertex: wgpu::VertexState {
@@ -470,11 +481,38 @@ impl Viewport {
                 stencil: Default::default(),
                 bias: Default::default(),
             }),
-            multisample: Default::default(),
+            multisample: wgpu::MultisampleState {
+                count: samples,
+                ..Default::default()
+            },
             multiview_mask: None,
             cache: None,
+        })
+    }
+    pub fn supports_msaa4(&self) -> bool {
+        self.supports_msaa4
+    }
+    pub fn new(render_state: RenderState) -> Self {
+        let device = &render_state.device;
+        let supports_msaa4 = [
+            wgpu::TextureFormat::Rgba8Unorm,
+            wgpu::TextureFormat::Depth32Float,
+        ]
+        .into_iter()
+        .all(|format| {
+            render_state
+                .adapter
+                .get_texture_format_features(format)
+                .flags
+                .sample_count_supported(4)
         });
-        let color_texture = Self::target(device, [1, 1], false);
+        let appearance = appearance::Appearance::default();
+        let samples = appearance.samples(supports_msaa4);
+        let pipeline = Self::mesh_pipeline(device, samples);
+        let environment = environment::Environment::new(device, samples);
+        let msaa_color = (samples > 1)
+            .then(|| Self::target(device, [1, 1], false, samples).create_view(&Default::default()));
+        let color_texture = Self::target(device, [1, 1], false, 1);
         let view_uniform = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("camera matrix"),
             size: 64,
@@ -490,7 +528,7 @@ impl Viewport {
             }],
         });
         let color = color_texture.create_view(&Default::default());
-        let depth = Self::target(device, [1, 1], true).create_view(&Default::default());
+        let depth = Self::target(device, [1, 1], true, samples).create_view(&Default::default());
         let texture_id = render_state.renderer.write().register_native_texture(
             device,
             &color,
@@ -504,6 +542,11 @@ impl Viewport {
             mapped_at_creation: false,
         });
         Self {
+            appearance,
+            supports_msaa4,
+            samples,
+            msaa_color,
+            environment,
             render_state,
             pipeline,
             color,
@@ -571,11 +614,29 @@ impl Viewport {
         let device = &self.render_state.device;
         let max = device.limits().max_texture_dimension_2d.min(4096);
         let size = size.map(|s| s.clamp(1, max));
-        if size != self.size {
-            self.color_texture = Self::target(device, size, false);
+        let samples = self.appearance.samples(self.supports_msaa4);
+        if samples != self.samples {
+            self.pipeline = Self::mesh_pipeline(device, samples);
+            // Auto pipeline layouts are exclusive: rebuild the matching bind group.
+            self.view_bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
+                label: Some("camera"),
+                layout: &self.pipeline.get_bind_group_layout(0),
+                entries: &[wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: self.view_uniform.as_entire_binding(),
+                }],
+            });
+            self.environment = environment::Environment::new(device, samples);
+        }
+        if size != self.size || samples != self.samples {
+            self.color_texture = Self::target(device, size, false, 1);
             self.color = self.color_texture.create_view(&Default::default());
-            self.depth = Self::target(device, size, true).create_view(&Default::default());
+            self.depth = Self::target(device, size, true, samples).create_view(&Default::default());
+            self.msaa_color = (samples > 1).then(|| {
+                Self::target(device, size, false, samples).create_view(&Default::default())
+            });
             self.size = size;
+            self.samples = samples;
             self.render_state
                 .renderer
                 .write()
@@ -591,6 +652,13 @@ impl Viewport {
             &self.view_uniform,
             0,
             bytemuck::cast_slice(&matrix.to_cols_array()),
+        );
+        self.environment.update(
+            &self.render_state.queue,
+            matrix,
+            &self.appearance,
+            avatar,
+            state,
         );
         let mut data = Vec::<f32>::new();
         let mut smooth = vec![Vec3::ZERO; state.x.len()];
@@ -626,10 +694,14 @@ impl Viewport {
             };
         for t in &mesh.triangles {
             let material = &materials[t.material];
-            let strain = energy::stretches(&state.x, t, material)
-                .into_iter()
-                .map(|s| (s - 1.0).abs())
-                .fold(0.0, f64::max);
+            let strain = if heat {
+                energy::stretches(&state.x, t, material)
+                    .into_iter()
+                    .map(|s| (s - 1.0).abs())
+                    .fold(0.0, f64::max)
+            } else {
+                0.
+            };
             let v = (strain / 0.1).clamp(0.0, 1.0) as f32;
             let contact = contacts
                 && collider.is_some_and(|s| {
@@ -692,36 +764,6 @@ impl Viewport {
                     triangle([a, c, b], [0.38, 0.4, 0.46], false, None);
                     triangle([b, c, d], [0.38, 0.4, 0.46], false, None);
                 }
-            }
-        }
-        // Visual ground grid, deliberately not represented as a physical collider.
-        let y = if avatar.is_some() { -0.005 } else { -0.4 };
-        for i in -10..=10 {
-            let k = i as f32 * 0.2;
-            let d = 0.001;
-            for points in [
-                [
-                    Vec3::new(k - d, y, -2.0),
-                    Vec3::new(k + d, y, -2.0),
-                    Vec3::new(k + d, y, 2.0),
-                ],
-                [
-                    Vec3::new(k - d, y, -2.0),
-                    Vec3::new(k + d, y, 2.0),
-                    Vec3::new(k - d, y, 2.0),
-                ],
-                [
-                    Vec3::new(-2.0, y, k - d),
-                    Vec3::new(2.0, y, k - d),
-                    Vec3::new(2.0, y, k + d),
-                ],
-                [
-                    Vec3::new(-2.0, y, k - d),
-                    Vec3::new(2.0, y, k + d),
-                    Vec3::new(-2.0, y, k + d),
-                ],
-            ] {
-                triangle(points, [0.18, 0.21, 0.27], false, None);
             }
         }
         // Static avatar stays resident; camera transforms now happen in WGSL.
@@ -787,19 +829,11 @@ impl Viewport {
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("cloth-viewport"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &self.color,
+                    view: self.msaa_color.as_ref().unwrap_or(&self.color),
                     depth_slice: None,
-                    resolve_target: None,
+                    resolve_target: self.msaa_color.as_ref().map(|_| &self.color),
                     ops: wgpu::Operations {
-                        // Studio backdrop for the workspace viewport: a light
-                        // neutral grey that still separates the near-white cloth
-                        // and the grey mannequin.
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.70,
-                            g: 0.73,
-                            b: 0.77,
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
                         store: wgpu::StoreOp::Store,
                     },
                 })],
@@ -821,6 +855,9 @@ impl Viewport {
                     }),
                 ..Default::default()
             });
+            pass.set_pipeline(&self.environment.pipeline);
+            pass.set_bind_group(0, &self.environment.bind, &[]);
+            pass.draw(0..3, 0..1);
             pass.set_pipeline(&self.pipeline);
             pass.set_bind_group(0, &self.view_bind, &[]);
             pass.set_vertex_buffer(0, self.vertices.slice(..));
