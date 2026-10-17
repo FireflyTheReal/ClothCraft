@@ -85,6 +85,12 @@ The authoring commands are `Command::Notch`, `Command::RemoveNotch` and `Command
 
 Limits to keep in mind: the overlay adapter quantizes coordinates, so a cutting contour is approximate at roughly the panel scale; a stored width is bounded to 0.1 m and an outline that fails to enclose the sewing contour is rejected rather than returned; and the square join is not a manufacturing-certified cutting line. `tests/pattern_allowance.rs` covers a single marked edge, all-marked rectangles with exact areas, a reflex L-shape, a curved ellipse, a holed panel and an invalid stored width.
 
+### Editing markings and reading them on the board
+
+Select a boundary in either view and the inspector's **Boundary** section gains a **Draft markings** block: a seam-allowance width in millimetres with **Apply allowance** / **Clear allowance**, the stored notches as `notch at <fraction> · <depth> mm deep` rows with a **Remove** button each, and a **New notch at** percentage plus **deep** depth with **Add notch**. Every control dispatches the same transaction as the API (`Command::SeamAllowance`, `Command::Notch`, `Command::RemoveNotch`), so the panel and the keyboard/CLI paths cannot drift apart, each click is exactly one undoable edit, and a value the command would reject is disabled in the panel instead of offered. Because markings are excluded from the physical-change comparison, storing or clearing one leaves the drape and every cache alone; only the boundary's own draft data changes.
+
+On the 2D board the same data is drawn as guides, never as geometry. The joined cutting contour is a **magenta dashed** closed line (see the offset section above), and each notch is a **blue tick** from its material position on the boundary out to its depth, drawn in the panel's placement transform so it follows layout and rotation. The ticks come from `PolygonPattern::notch_segments`, the same material-space lookup the print export uses, so the board and the printed sheet cannot disagree. If a stored allowance is invalid the inspector reports **Cutting guide unavailable** rather than drawing a wrong line. Nothing here writes a material coordinate, so the drawing is presentation only and the physics-neutral guarantee of the data model still holds.
+
 The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 
 ```powershell

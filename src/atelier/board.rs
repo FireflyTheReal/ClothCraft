@@ -36,6 +36,10 @@ pub(super) const NUDGE_COARSE_MM: f64 = 10.;
 pub(super) const ANGLE_STEP_DEGREES: f64 = 15.;
 /// Above this difference the true sampled length and the chord are both shown.
 const CHORD_DISPLAY_MM: f64 = 0.2;
+/// Draft-marking guide colours on the white sheet: a magenta dashed cutting
+/// guide and a blue notch tick. Chosen for contrast against the pale panels.
+const CUTTING_GUIDE: Color32 = Color32::from_rgb(0xB0, 0x2A, 0x6B);
+const SEAM_NOTCH: Color32 = Color32::from_rgb(0x0B, 0x63, 0xB0);
 
 /// What the pointer captured, named on canvas before the click.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -2170,6 +2174,31 @@ impl Atelier {
                             painter.circle_filled(point(control), 5., Color32::LIGHT_BLUE);
                             smoke_targets.push((format!("handle_{j}"), point(control)));
                         }
+                    }
+                }
+                // Draft markings are guides, never geometry: a dashed cutting
+                // outline and short notch ticks, read straight from the stored
+                // material model. Presentation only.
+                if let Ok(Some(rings)) = poly.cutting_outline() {
+                    for ring in rings {
+                        let mut path: Vec<egui::Pos2> = ring.iter().map(|p| point(*p)).collect();
+                        if path.len() < 3 {
+                            continue;
+                        }
+                        path.push(path[0]);
+                        painter.extend(egui::Shape::dashed_line(
+                            &path,
+                            Stroke::new(1.2, CUTTING_GUIDE),
+                            6.,
+                            4.,
+                        ));
+                    }
+                }
+                for name in poly.notches.keys() {
+                    for [base, tip] in poly.notch_segments(name).unwrap_or_default() {
+                        painter
+                            .line_segment([point(base), point(tip)], Stroke::new(2., SEAM_NOTCH));
+                        painter.circle_filled(point(tip), 2.5, SEAM_NOTCH);
                     }
                 }
                 if selected && self.authoring.tool == Tool::Edit {

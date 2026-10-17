@@ -54,6 +54,14 @@ pub(super) struct AuthoringUi {
     pub target_edge: Option<(String, String)>,
     /// Target length draft, in millimetres. The document stores metres.
     pub target_mm: f64,
+    /// Boundary the draft-markings editor belongs to: (panel id, boundary name).
+    pub markings_edge: Option<(String, String)>,
+    /// Seam-allowance draft, in millimetres. The document stores metres.
+    pub allowance_mm: f64,
+    /// New-notch position draft, as a percentage of the boundary arclength.
+    pub notch_percent: f64,
+    /// New-notch depth draft, in millimetres. The document stores metres.
+    pub notch_depth_mm: f64,
 }
 
 pub(super) fn segment_distance(p: egui::Pos2, a: egui::Pos2, b: egui::Pos2) -> f32 {
@@ -143,6 +151,8 @@ impl Atelier {
         self.authoring.numeric_panel = None;
         self.authoring.numeric_anchor = None;
         self.authoring.target_edge = None;
+        // The markings editor reloads its drafts from the edited boundary.
+        self.authoring.markings_edge = None;
         self.authoring.ends.clear();
         self.authoring.edge = self.authoring.edge.take().filter(|edge| {
             self.scene.garment.panels.iter().any(|p| {
@@ -514,6 +524,131 @@ impl Atelier {
             }
         });
     }
+    /// Draft pattern markings on the selected boundary: a seam-allowance width
+    /// and a list of notches. They are cutting specifications only — committing
+    /// one never resets the drape, and the sewing contour is unchanged.
+    fn markings_properties(
+        &mut self,
+        ui: &mut egui::Ui,
+        panel: &marvelous_cloth::garment::template::Panel,
+        polygon: &marvelous_cloth::garment::polygon::PolygonPattern,
+    ) {
+        use marvelous_cloth::garment::polygon::{MAX_NOTCH_DEPTH_M, MAX_SEAM_ALLOWANCE_M};
+        let Some(name) = self
+            .authoring
+            .edge
+            .as_ref()
+            .filter(|edge| edge.panel == panel.id)
+            .and_then(|edge| edge.edge.clone())
+        else {
+            return;
+        };
+        if polygon.edges.iter().all(|edge| edge != &name) {
+            return;
+        }
+        if self.authoring.markings_edge.as_ref() != Some(&(panel.id.clone(), name.clone())) {
+            self.authoring.markings_edge = Some((panel.id.clone(), name.clone()));
+            // A stored allowance reloads as typed; without one the field starts
+            // clear, and a notch defaults to the middle of the boundary.
+            self.authoring.allowance_mm = polygon
+                .seam_allowances
+                .get(&name)
+                .copied()
+                .map(authoring::m_to_mm)
+                .unwrap_or(0.);
+            self.authoring.notch_percent = 50.;
+            self.authoring.notch_depth_mm = 5.;
+        }
+        ui.separator();
+        ui.strong("Draft markings");
+        ui.small(
+            "Cutting guides only: the sewing contour, the rest shape and the simulated drape stay unchanged.",
+        );
+        ui.horizontal(|ui| {
+            ui.label("Seam allowance");
+            millimetre_field(ui, &mut self.authoring.allowance_mm);
+        });
+        let allowance_m = authoring::mm_to_m(self.authoring.allowance_mm);
+        let allowance_ok = self.authoring.allowance_mm.is_finite()
+            && self.authoring.allowance_mm >= 0.
+            && self.authoring.allowance_mm <= authoring::m_to_mm(MAX_SEAM_ALLOWANCE_M);
+        if ui
+            .add_enabled(allowance_ok, egui::Button::new("Apply allowance"))
+            .on_hover_text("Store this cutting-guide width on the selected boundary")
+            .on_disabled_hover_text("A width must be between 0 and 100 mm")
+            .clicked()
+        {
+            self.edit(Command::SeamAllowance {
+                panel: panel.id.clone(),
+                edge: name.clone(),
+                width_m: allowance_m,
+            });
+        }
+        let stored = polygon.seam_allowances.contains_key(&name);
+        if ui
+            .add_enabled(stored, egui::Button::new("Clear allowance"))
+            .clicked()
+        {
+            self.edit(Command::SeamAllowance {
+                panel: panel.id.clone(),
+                edge: name.clone(),
+                width_m: 0.,
+            });
+        }
+        // The stored notches, so the list is the document, not a draft.
+        let notches = polygon.notches.get(&name).cloned().unwrap_or_default();
+        if notches.is_empty() {
+            ui.small("No notches on this boundary yet.");
+        }
+        for notch in &notches {
+            ui.horizontal(|ui| {
+                ui.small(format!(
+                    "notch at {:.1} % · {:.1} mm deep",
+                    notch.t * 100.,
+                    authoring::m_to_mm(notch.depth_m)
+                ));
+                if ui.small_button("Remove").clicked() {
+                    self.edit(Command::RemoveNotch {
+                        panel: panel.id.clone(),
+                        edge: name.clone(),
+                        t: notch.t,
+                    });
+                }
+            });
+        }
+        ui.horizontal(|ui| {
+            ui.label("New notch at");
+            ui.add(
+                egui::DragValue::new(&mut self.authoring.notch_percent)
+                    .speed(0.5)
+                    .max_decimals(1)
+                    .range(0.1..=99.9)
+                    .suffix(" %"),
+            );
+            ui.label("deep");
+            millimetre_field(ui, &mut self.authoring.notch_depth_mm);
+        });
+        let depth_ok = self.authoring.notch_depth_mm.is_finite()
+            && self.authoring.notch_depth_mm > 0.
+            && self.authoring.notch_depth_mm <= authoring::m_to_mm(MAX_NOTCH_DEPTH_M);
+        if ui
+            .add_enabled(depth_ok, egui::Button::new("Add notch"))
+            .on_hover_text("A physical cut mark at this fraction of the boundary arclength")
+            .on_disabled_hover_text("Depth must be between 0 and 200 mm")
+            .clicked()
+        {
+            self.edit(Command::Notch {
+                panel: panel.id.clone(),
+                edge: name.clone(),
+                t: self.authoring.notch_percent / 100.,
+                depth_m: authoring::mm_to_m(self.authoring.notch_depth_mm),
+            });
+        }
+        // An invalid stored allowance is surfaced rather than silently trusted.
+        if let Err(error) = polygon.cutting_outline() {
+            ui.colored_label(Color32::GOLD, format!("Cutting guide unavailable: {error}"));
+        }
+    }
     pub(super) fn authoring_properties(&mut self, ui: &mut egui::Ui) {
         self.existing_seams(ui);
         if self.authoring.tool == Tool::Sew || !self.authoring.ends.is_empty() {
@@ -654,6 +789,7 @@ impl Atelier {
                     ui.small("Click a point on the 2D board to edit its exact position.");
                 }
                 self.target_length_properties(ui, &panel, polygon);
+                self.markings_properties(ui, &panel, polygon);
             }
         });
         self.drafting_properties(ui, &panel);
