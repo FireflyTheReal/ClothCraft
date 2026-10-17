@@ -59,12 +59,14 @@ Reopen with `scripts/start-atelier.ps1 -ProjectPath output/atelier/fitting-proje
 |---|---|
 | `src/authoring.rs` | Atomic commands, physical-vs-layout change classification, history, local-coordinate normalization |
 | `src/garment/curves.rs` | Cubic evaluation, bounded recursive subdivision, sampled arclength |
-| `src/garment/polygon.rs` | Contour validation, triangulation, reassembly of named curved boundary chains |
+| `src/garment/polygon.rs` | Contour validation, triangulation, reassembly of named curved boundary chains, marking bounds |
+| `src/garment/shapes.rs` | Primitives, mirroring, booleans, joined cutting contour |
+| `src/garment/print.rs` | Millimetre-accurate tiled SVG pattern sheets |
 | `src/atelier/board.rs` | Unified pan/zoom canvas, drafting, anchor/handle/layout previews, shared selection |
 | `src/atelier/edges_3d.rs` | Screen-space edge picking with visibility checks and correspondence overlays |
 | `src/atelier/authoring_ui.rs`, `gizmo.rs` | Inspector, history, mode controls, rigid placement |
 
-Optional `curves`, `holes`, `lines`, `layout_2d` and `layout_rotation_degrees` fields extend existing templates; old v1/v2 files still load. Empty geometry extensions are omitted when serialized. Both layout fields are excluded from physical cache signatures and physical-change comparisons. The angle defaults to zero and zero is omitted when serialized, preserving historical cache signatures. JSON uses exact floating-point round trips so near-degenerate Delaunay decisions do not change on reload. Curve intersection validation applies to the sampled contour, not an exact algebraic intersection proof.
+Optional `curves`, `holes`, `lines`, `notches`, `seam_allowances`, `layout_2d` and `layout_rotation_degrees` fields extend existing templates; old v1/v2 files still load. Empty geometry extensions are omitted when serialized. Both layout fields are excluded from physical cache signatures and physical-change comparisons. The angle defaults to zero and zero is omitted when serialized, preserving historical cache signatures. JSON uses exact floating-point round trips so near-degenerate Delaunay decisions do not change on reload. Curve intersection validation applies to the sampled contour, not an exact algebraic intersection proof.
 
 A v2 polygon may also carry `target_lengths`: a map from each stable boundary identifier to its required length in metres, empty and omitted when no target is set. A target is a 2D specification. It is shown as a measured-versus-target deviation and is applied to the rest contour only by an explicit **Target length** action in the inspector; opening or reloading a document never resizes a piece. Values that are missing, non-finite or non-positive are reported and treated as no target. Setting a boundary's target refuses a later split or point deletion on that boundary until the target is cleared, so a specification can never be silently re-pointed at a shorter edge. Stored targets are excluded from the physical-change comparison (`same_physics`), so setting or clearing one cannot disturb the drape; only applying a different required length moves the rest contour and resets the caches.
 

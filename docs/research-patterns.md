@@ -29,7 +29,7 @@ Les modules ajoutés couvrent le niveau 1 pour des rectangles, les raccords méc
 ## Expériences suivantes sans GPU
 
 - Contours polygonaux orientés, triangulation contrainte, IDs de bords stables et tests de transfert de couture au raffinement.
-- Séparer ligne de coupe, ligne de couture et marge, avec tests d'offsets et d'intersections sur petits contours.
+- Séparer ligne de coupe, ligne de couture et marge, avec tests d'offsets et d'intersections sur petits contours. *Fait le 18 octobre pour le premier incrément :* marge et encoches par bord nommé, contour de coupe joint obtenu par union (`i_overlay`) et feuilles SVG à l'échelle physique. Les contrats de stockage, le choix d'union positive, les bornes et les fixtures de test sont des décisions propres au dépôt ; aucune implémentation ni aucun fichier d'un outil tiers n'a été importé, et aucun binaire propriétaire n'a été inspecté. Restent ouverts : marge sur arête de trou, coin à onglet exact, correspondance d'encoche entre deux bords cousus, PDF et mesure d'impression réelle. Voir [authoring.md](authoring.md#printing-at-physical-scale).
 - Référence de loi constitutive mesurée : données explicites, unités et protocole, validation gradients/Hessiennes et objectivité avant intégration.
 - Comparer différentes résolutions et pénalités de couture sur des scènes avec contacts fiables avant de conclure à une fidélité de fronces ou de surépaisseurs.
 - Arrangement initial et contacts CPU VF/EE avant d'étendre les exemples à une manche ou à des couches fermées.

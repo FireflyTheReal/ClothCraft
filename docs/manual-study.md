@@ -61,6 +61,15 @@ Revisited the [official manual index](https://www.marvelousdesigner.com/manuals)
 
 The [concrete backlog](../ROADMAP.md#3-concrete-authoring-backlog-from-the-manual-study) maps these sources to priorities, prerequisites and observable completion criteria. Save/recovery and realtime quality gates are ClothCraft project needs, not behaviors inferred from an unread page. No article establishes the proprietary solver's internal algorithm. Darts, trims, complete manufacturing workflows and the rest of the manual remain a future reading queue.
 
+## Draft-marking implementation note (2026-10-18)
+
+No new manual page was read for this pass. The seam-allowance, notch, cutting-versus-sewing and physical-print slice (`MARK-01`) implements the acceptance criteria the 15 October audit already recorded from the linked CLO [seam-allowance properties][allowance] and [notch][notch] pages: distinct cutting and sewing contours, notches with stable material positions, and a scale-checkable print. The storage model, the positive-fill overlay union, the marking-bounds constants, the tiling/overlap rule and every test fixture are ClothCraft's own engineering decisions, and none of the linked pages was presented here as a specification of field names, file formats or algorithms.
+
+No proprietary implementation was inspected or imported for this work: the CLO 3D binary and its formats were not opened, and no third-party code, asset or format was copied. The mark-direction convention comes from the repository's own contour winding (counter-clockwise outers, clockwise holes), not from an external tool.
+
+[allowance]: https://support.clo3d.com/hc/en-us/articles/115013370408-Edit-Seam-Allowance-Properties
+[notch]: https://support.clo3d.com/hc/en-us/articles/115015735467-Notch
+
 
 ## Viewport controls follow-up (2026-10-15)
 

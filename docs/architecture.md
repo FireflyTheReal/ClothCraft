@@ -39,6 +39,7 @@ Le chemin courant de `cloth-fit` passe par `VbdSolver` + `OgcWorld`, ou `GpuVbd:
 | `garment/seam.rs` | Correspondance de bords et énergie de raccord | longueurs au repos → quadrature, éléments |
 | `garment/embedding.rs` | Attachements géométriques en coordonnées du patron | `MaterialPath` → barycentriques temporaires |
 | `garment/export.rs` | Artefacts CPU sans état d'interface | OBJ par panneau, SVG, directions de fibres |
+| `garment/print.rs` | Feuilles SVG à l'échelle physique, découpées en pages | panneaux → 1 fichier par page (mm, repères, marge/encoches) ; jamais utilisé par la physique |
 | `math.rs`, `energy.rs` | AD d'ordre 2, membrane et flexion | géométrie actuelle + repos → énergie/dérivées |
 | `contact.rs` | Pénalité sommets/sphère | contact discret, épaisseur par sommet |
 | `avatar.rs` | OBJ, BVH statique et distance locale signée | mannequin → implémentation du trait Collider |

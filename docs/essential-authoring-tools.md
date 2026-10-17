@@ -2,6 +2,8 @@
 
 Research and source-code audit: **15 October 2026**. Scope: the everyday authoring workflow of Marvelous Designer / CLO, compared with ClothCraft's current working tree. This is a product recommendation, not a claim of feature parity, native UI acceptance or newly implemented tools. No GPU work was performed.
 
+> **18 October update — first manufacturing-marking slice.** The gap rows below are the 15 October audit and are kept as written. Since then the release gate has a first CPU-validated slice: per-boundary seam allowances and notches as stable, undoable draft data (`Command::Notch`/`RemoveNotch`/`SeamAllowance`), a joined cutting contour distinct from the sewing contour, an inspector editor plus 2D board guides, and millimetre-accurate tiled SVG print sheets with a 100 mm check ruler. Read [draft markings](authoring.md#draft-pattern-markings-data-model), [cutting outline](authoring.md#cutting-outline-joined-seam-allowance) and [printing](authoring.md#printing-at-physical-scale). Still open from the gate: notch *correspondence* across a seam, hole-edge allowances, exact mitre corners, PDF output, grading, DXF, and printed-tolerance validation on real hardware.
+
 ## What “usable” should mean
 
 For the first release, a new user should be able to make a T-shirt, add a pocket/apron, and make a simple dress entirely in the UI; correct mistakes; save; reopen; and export a predictable static mesh. This is our proposed acceptance target, not a completion claim. Reliable simulation and actionable failure reporting remain gates even when all editor tools exist.
@@ -47,6 +49,7 @@ Keep existing roadmap IDs. The additional IDs below are proposed work, not compl
 | 7 | `DRAW-04a/b`: measured offsets, then internal Cut / Cut & Sew | Generate a 10 mm inset on a curved panel with explicit corner/self-intersection handling; split along an internal path and optionally create its new seam, preserving area and references |
 | 8 | `DRAW-03`: linked symmetry and unlink | Change one sleeve curve and update the other once; retain correct seam direction and grain; unlink and edit independently; undo the whole operation |
 | 9 | `GRAIN-01`, `BLOCK-01` and static interchange | Rotate grain without rotating the board; load documented shirt/skirt/trouser blocks; import an avatar with explicit units and round-trip the static garment through the chosen interchange subset |
+| 10 | `MARK-01`: seam allowance, notches and physical-scale print sheets — **first slice landed 18 October** | Store a 10 mm allowance and two notches on a curved panel, print the sheets, tape them, and check the ruler and the allowance offset. Confirmed for the data, cutting contour, board, editor and sheet geometry; still to confirm on paper, and to extend to notch correspondence, hole edges, exact mitres, PDF and grading |
 
 This order groups user-visible deliveries; it is not a dependency graph or calendar. Pin target semantics must be designed before using pins as the implementation of Freeze. Block/import work can be developed on CPU independently of GPU solver validation. Existing numeric editing should be polished, not reimplemented under new button names.
 
@@ -60,6 +63,8 @@ This order groups user-visible deliveries; it is not a dependency graph or calen
 - **Appearance and DCC finishing:** basic fabric color/texture, UV inspection, thickness as an explicit export option, and material assignment. Retopology, detailed topstitching, zippers/buttons, cinematic rendering and animation are later specializations for this first milestone.
 
 For actual sewing/manufacturing, promote **seam allowance, notches, grain/labels, physical-scale PDF/SVG and DXF** to release gates. Cutting and sewing contours must remain distinct; notch markers must have stable material positions. Test a printed 100 mm ruler and a curved piece with an allowance before claiming usable print output. Grading and size tables follow once single-size geometry and exchange are reliable. [CLO allowance properties][allowance], [CLO notches][notch], [existing interchange contracts](interoperability.md)
+
+*Progress (18 October):* the allowance, notch, cutting-versus-sewing and physical-scale SVG parts of that gate now have a first CPU-validated slice — see the update note at the top and [printing](authoring.md#printing-at-physical-scale). The suite already prints a 100 mm ruler and a curved piece with an allowance (`tests/print_sheets.rs`); what remains unproven is printing on real hardware and measuring the paper, plus PDF, DXF, grading and notch correspondence.
 
 ## UI organization without another wall of buttons
 

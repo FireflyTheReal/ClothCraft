@@ -46,9 +46,10 @@ Right-click either canvas for the radial tool menu. Ctrl+C/V copies selected pie
 | Static avatar | OBJ | — |
 | Simulated surface | — | OBJ geometry and material-space UVs |
 | Pattern preview | — | SVG; not a print-to-scale production pattern |
+| Printed pattern sheets | — | Millimetre-accurate tiled SVG, one file per page, with a 100 mm ruler, cutting/sewing lines, notches and grain |
 | Research data | — | Metrics, fiber frames and geometric grain guides |
 
-Export writes interchange artifacts to the session output folder, separately from Save. DXF-AAMA/ASTM, MTL, GLB, Alembic, USD, FBX, PDF printing and grading-rule adapters are **not implemented**. CLO and Marvelous Designer project files are not supported.
+Export writes interchange artifacts to the session output folder, separately from Save; the toolbar **Print** menu (or `cloth-template print`) writes the physical-scale sheets. DXF-AAMA/ASTM, MTL, GLB, Alembic, USD, FBX, PDF printing, nesting and grading-rule adapters are **not implemented**. CLO and Marvelous Designer project files are not supported.
 
 See the [format plan](docs/interoperability.md) for units, supported entities and acceptance criteria.
 

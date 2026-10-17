@@ -8,7 +8,9 @@ The [15 October essential-tool review](docs/essential-authoring-tools.md) compar
 
 ## Next milestones, in order
 
-16 October update: Open/Save/Save As, portable avatar assets and local recovery are implemented, followed by partial ranges and ordered 1:N/M:N sewing. See [document and sewing contracts](docs/documents-and-sewing.md). Multi-document tabs, asset cleanup, dedicated notch editing and manufacturing sewing semantics remain open. The rows below retain the broader acceptance goals.
+16 October update: Open/Save/Save As, portable avatar assets and local recovery are implemented, followed by partial ranges and ordered 1:N/M:N sewing. See [document and sewing contracts](docs/documents-and-sewing.md). Multi-document tabs, asset cleanup and manufacturing sewing semantics (automatic correspondence, notch *correspondences* between sewn edges, M:N) remain open. The rows below retain the broader acceptance goals.
+
+18 October update: the first manufacturing-marking slice landed — per-boundary seam allowances and physical notches as stable, editable draft data, a joined cutting contour distinct from the sewing contour, a 2D board display and inspector editor, and physically scaled tiled SVG print sheets. See [draft markings](docs/authoring.md#draft-pattern-markings-data-model), [cutting outline](docs/authoring.md#cutting-outline-joined-seam-allowance) and [printing](docs/authoring.md#printing-at-physical-scale). Grading, DXF, PDF output and the sewing-side *notch correspondence* model are still open; a notch here is a cutting mark on one boundary, not yet a matched pair across a seam.
 
 Each row is a contribution-sized track, not a promised release date. Finish one verifiable slice before adding another format or toolbar.
 
@@ -19,7 +21,7 @@ Each row is a contribution-sized track, not a promised release date. Finish one 
 | P0.3 | Stable cloth at a measured realtime budget | `ogc/`, `vbd.rs`, `gpu_vbd.rs` | Shirt/apron/dress, supported and free cloth, multiple mesh densities; report step P50/P95, delivered physical time, seam gaps, stretch and intersections. Preserve accuracy checks |
 | P1.1 | Practical static asset interchange | `avatar.rs`, `garment/export.rs`, future adapters | OBJ+MTL round trip, then static GLB; explicit units/axes, groups, normals and UVs; Blender and a second independent viewer agree |
 | P1.2 | Industrial pattern exchange | canonical pattern model + new format adapters | DXF-AAMA and DXF-ASTM separately; import/export contours, grain and notches with independent fixtures; cutting vs sewing lines are explicit |
-| P1.3 | Usable pattern printing | `garment/export.rs` | Physical SVG/PDF page dimensions, 100 mm ruler, tiling, labels and allowances; printed measurements agree within documented tolerance |
+| P1.3 | Usable pattern printing | `garment/export.rs`, `garment/print.rs` | **Partial:** physical-scale SVG only, one file per page, with a 100 mm ruler, tiling and overlap marks, labels, and allowance/notch lines. PDF output, print-tolerance validation and a nested sheet layout are still open |
 | P2.1 | Production animation exchange | future adapters + animation model | Fixed-topology Alembic cache; USD mesh/material/time samples; FBX avatar skinning/animation import; playback and unit/time tests in external DCCs |
 | P2.2 | Truly replaceable solvers | `fitting.rs`, `solver.rs`, `vbd.rs` | One lifecycle/capability contract, two real adapters, shared scene suite; no fake backend selector |
 | P3 | Manufacturing and richer appearance | pattern/gradation and material adapters | Named grading dialect, size rules and reversible grades; USDZ packaging; optional legacy caches and SBSAR baking |
@@ -42,12 +44,13 @@ The format priorities below remain product priorities: a **critical** animation 
 - [x] Radial tools, 2D panel/point marquee, group board movement and Ctrl+C/V with internal seams (CPU/headless checks; native acceptance pending).
 - [ ] Linked symmetry, group rotation/3D transforms, 3D marquee, line offsets and dedicated hole point editing.
 - [ ] Import verified reusable patterns: FreeSewing Teagan/Titan/Jett are linked from the Web menu; SVG geometry and semantic sewing adapters remain planned ([investigation](docs/drafting-tools.md#web-pattern-library-investigation)).
+- [x] Per-boundary seam allowances and physical notches as stable draft data, a joined cutting contour, a 2D board display plus inspector editor, and physically scaled tiled SVG print sheets (CPU validation; printed-tolerance check and native acceptance pending).
 - [x] Partial ranges in both views, numeric range editing, direction handles, ordered 1:N / M:N sewing and seam editing/deletion.
-- [ ] Dedicated notch editing, automatic correspondence and manufacturing sewing semantics.
+- [ ] Automatic notch correspondence across a seam, and the remaining manufacturing sewing semantics.
 - [ ] Arrangement points, body-aware placement and useful preflight intersection feedback.
 - [x] Native project picker, Open/Save/Save As, dirty state, portable OBJ assets and local recovery.
 - [ ] Multi-document tabs, portable texture/material dependencies and managed recovery history.
-- [ ] Seam allowance, grain annotations, graded sizes and print layouts.
+- [ ] Notch/grain annotations as text on the sheet, graded sizes and PDF print output.
 
 Acceptance: an unfamiliar user can draft a simple top, join its intended boundaries, place it outside the avatar, simulate, save and reproduce the same editable garment. New formats must not store transient mesh indices as sewing references.
 
@@ -76,7 +79,7 @@ The priorities below are the product requirements. Within the critical group, im
 | Alembic `.abc` | Animated simulation caches for VFX/cinematics | **Critical** | Planned. Fixed-topology position/normal cache, timestamps, units and DCC playback fixture |
 | OpenUSD `.usd/.usda/.usdc` | Production pipelines and Chaos Cloth workflows | **Critical** | Planned. Mesh/material/time-sample interchange; validate any Chaos-specific schema separately |
 | FBX `.fbx` | Rigged characters, animation, Unreal, Unity, DCC | **High** | Planned. Avatar hierarchy, skinning, bind transforms and sampled animation; select dependency/distribution strategy before integrating |
-| PDF / SVG | Print and share 2D patterns | **High** | **Partial:** preview SVG export only. No scale-accurate print/PDF yet; add physical page size, scale marks, tiling and seam allowances |
+| PDF / SVG | Print and share 2D patterns | **High** | **Partial:** preview SVG export plus physical-scale, tiled SVG print sheets with a 100 mm ruler, labels, allowance/notch lines and distinct cutting/sewing contours. No PDF yet, no nesting, and printed-tolerance is not yet externally validated |
 | Grading rule files | S/M/L/XL size ranges, industrial manufacturing | **High** | Planned. Identify concrete dialects; explicit units, size tables, stable point identities and reversible grade application |
 | USDZ `.usdz` | AR and product presentation | **Medium** | Planned after USD: packaging, material/texture validation and viewer fixture |
 | MDD / PC2 | Legacy deformation-cache pipelines | **Secondary** | Planned. Fixed vertex order, frame/time conversion and topology mismatch rejection |
@@ -86,7 +89,7 @@ Every adapter must declare supported entities, units, axes/handedness, topology 
 
 ## 3. Concrete authoring backlog from the manual study
 
-The nine articles reviewed in the [dated manual ledger](docs/manual-study.md#authoring-backlog-review-2026-10-14) inform the tasks below. These are target acceptance criteria, not completed milestones. DRAW-01 has numeric primitive dimensions; DRAW-03 has independent mirrors; DRAW-04 has holes and internal sewing paths. Their remaining scopes still need work. These are independent behavior specifications, not a plan to copy proprietary code or file formats.
+The nine articles reviewed in the [dated manual ledger](docs/manual-study.md#authoring-backlog-review-2026-10-14) inform the tasks below. These are target acceptance criteria, not completed milestones. DRAW-01 has numeric primitive dimensions; DRAW-03 has independent mirrors; DRAW-04 has holes and internal sewing paths. MARK-01 (below) covers the first seam-allowance/notch/print slice. Their remaining scopes still need work. These are independent behavior specifications, not a plan to copy proprietary code or file formats.
 
 | ID / milestone | Small deliverable | Dependencies / starting point | Done when |
 |---|---|---|---|
@@ -98,6 +101,7 @@ The nine articles reviewed in the [dated manual ledger](docs/manual-study.md#aut
 | SIM-01 / P0.3 | Edit persistent pins from 2D/3D and distinguish them from temporary mouse grabbing | Material-coordinate attachment model + solver capabilities; MD-07 | Pin/unpin a patch and resume; report what survives remeshing; no persisted triangle indices, hidden forces or silent conversion between hard and soft constraints |
 | DRAW-03 / P1 authoring | Mirror copies with optional linked outline/sewing edits, plus unlink | DRAW-02; explicit relation model; MD-03 | Edit one sleeve and update its counterpart exactly once; mirrored winding, grain and seam orientation remain valid; unlink and undo are deterministic |
 | DRAW-04 / P1 authoring | Internal lines, offsets and holes as distinct semantic objects | DRAW-02; topology/model migration and constrained mesher; MD-04 | A 10 mm internal offset remains attached to its piece; reject self-crossing offsets; a hole removes area/mass while a guide line does not |
+| MARK-01 / P1 authoring | Per-boundary seam allowance and notches, a joined cutting contour and physical-scale print sheets | DRAW-02; `polygon.rs`, `shapes.rs`, `print.rs`; the linked CLO allowance/notch behaviour pages | **Partial and landed:** a notch keeps its material position through split/remove/mirror; the cutting contour is separate from the sewing contour and self-intersection-free; a stored allowance never resets the drape; the printed 100 mm ruler is exactly 100 mm. Still open: hole-edge allowances, exact mitre corners, notch *correspondence* across a seam, PDF output and printed-tolerance validation |
 | SEW-02 / P1 authoring | 1:N, then M:N ordered sewing chains and editable notch correspondences | SEW-01; DRAW-04 for internal-line sewing; MD-05 | Sew two short edges to one long edge with visible ordering and explicit ease; cancel partial input; preserve totals, orientation and notches after remeshing |
 | ARR-02 / P1 authoring | Fold placement preview about an internal line | DRAW-04 + ARR-01; MD-08 | Fold a cuff/hem and undo it without changing material rest; preflight initial intersections; distinguish placement from a physical crease constraint |
 

@@ -60,7 +60,7 @@ Le maximum d'ouverture est évalué à toutes les extrémités de la partition :
 
 ## Artefacts et limites
 
-- `patterns.svg` : vue du repos, grain, bords colorés et crans ; pas un patron imprimable à l'échelle, aucune marge de couture.
+- `patterns.svg` : vue du repos, grain, bords colorés et crans ; pas un patron imprimable à l'échelle, aucune marge de couture. Les feuilles imprimables à l'échelle sont un artefact séparé (dossier `print/`, un SVG par page) produit par le menu **Print** ou `cloth-template print`.
 - `cloth.obj` : positions simulées et groupes par panneau ; `vt` contient les coordonnées locales en mètres.
 - `fibers.json` : une entrée par triangle, directions monde chaîne/trame, stretches, cosinus du cisaillement et validité. L'ordre correspond aux faces OBJ.
 - `grain-guides.obj` : deux lignes centrales par panneau, interpolées sur les triangles de la surface déformée ; aucune mécanique de fil supplémentaire.
@@ -70,6 +70,19 @@ Panneaux rectangulaires uniquement. Pas de courbes, pinces géométriques, marge
 
 ## Optional curve and board fields
 
-A polygon may now include `"curves": {"edge_name": [[c1_u, c1_v], [c2_u, c2_v]]}`. Coordinates are local material meters; the edge's existing consecutive anchors remain its endpoints. Missing entries are straight. Unknown edge names and non-finite controls are rejected. Curves are flattened to 0.25 mm tolerance before meshing, then sampled segment chains are rejoined under the original edge ID. No holes or topology-changing anchor insert/delete editor yet.
+A polygon may include `"curves": {"edge_name": [[c1_u, c1_v], [c2_u, c2_v]]}`. Coordinates are local material meters; the edge's existing consecutive anchors remain its endpoints. Missing entries are straight. Unknown edge names and non-finite controls are rejected. Curves are flattened to 0.25 mm tolerance before meshing, then sampled segment chains are rejoined under the original edge ID. No holes or topology-changing anchor insert/delete editor yet.
+
+### Draft markings
+
+A polygon may include two optional maps, both omitted when empty so legacy and marking-free files keep their exact bytes:
+
+```json
+{
+  "notches": { "edge_name": [{ "t": 0.5, "depth_m": 0.006 }] },
+  "seam_allowances": { "edge_name": 0.01 }
+}
+```
+
+`t` is the fraction of the named boundary's **material** arclength and `depth_m` its outward cut depth in meters; `seam_allowances` is a width in meters. Both keys must name an outer-contour boundary. Bounds are validated on load, inside `build()`, not only when a command creates the value: depth ≤ 0.2 m, width ≤ 0.1 m, ≤ 64 notches per boundary and ≤ 256 per polygon, and every value finite. A violating document is rejected rather than meshed. These are cutting specifications: they never move rest coordinates, never reach the solver, and are cleared before the physical-change comparison, so adding or clearing one does not reset the drape. Markings survive layout, rotation, rectangle resize, boundary split and point removal, and their fraction inverts under mirroring; a boolean operation rejects operands that carry markings instead of dropping them silently. The cutting contour itself is derived on demand (`cutting_outline`) and is never stored. Markings are not yet accepted on hole-rim edges.
 
 A panel may include `"layout_2d": [x, y]`, the board location of its local material origin in meters, and `"layout_rotation_degrees": 30.0`, the board rotation (clockwise in its downward-positive screen coordinates). Display uses `origin + rotation(local_uv)`. Both fields are presentation metadata, excluded from physical signatures; neither changes material rest geometry or grain. Omitted layout is arranged deterministically beside preceding pieces. The angle defaults to zero, must be finite, and is omitted at zero to preserve historical state-cache signatures. Old files omit these fields and remain valid. New files with these extensions require this editor version; older strict readers may reject unknown fields.
