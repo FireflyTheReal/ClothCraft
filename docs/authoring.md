@@ -79,6 +79,12 @@ Both are **draft specifications only**: they never move material rest positions,
 
 The authoring commands are `Command::Notch`, `Command::RemoveNotch` and `Command::SeamAllowance` (width 0 clears). They are transactional and undoable, and each validates the boundary, the fraction, the depth and the width before committing. Nothing invalid is stored: `PolygonPattern::build` re-checks the same bounds, so a hand-edited document with an unknown boundary or an out-of-range value is rejected instead of meshed. Markings currently apply to the outer contour only; hole-edge markings are unsupported. The interactive controls, the joined cutting outline and the physically scaled print export are described in the following sections.
 
+### Cutting outline (joined seam allowance)
+
+`PolygonPattern::cutting_outline` (the pure geometry lives in `garment/shapes.rs`) turns the stored allowances into one closed **cutting contour**, separate from the sewing contour. Each marked boundary is swept outward by its own width; the overlaps are unioned with the pinned `i_overlay` engine under the positive fill rule, so corners are joined and the result is always a simple region — no separate self-intersection repair and no dependence on the sewing mesh. Rectangle corners come out square, which is exact for a 90° corner; at an acute corner the square join can overshoot the true miter by up to one allowance width, and it always overshoots **outward** from the material. Hole rims are copied unchanged (an allowance cannot yet be stored on a hole edge), and the outline is returned in one convention: counter-clockwise outer rings first, clockwise hole rings after. The sewing contour, its area, the rest mesh and the solver are untouched — the offset is computed on demand and never stored.
+
+Limits to keep in mind: the overlay adapter quantizes coordinates, so a cutting contour is approximate at roughly the panel scale; a stored width is bounded to 0.1 m and an outline that fails to enclose the sewing contour is rejected rather than returned; and the square join is not a manufacturing-certified cutting line. `tests/pattern_allowance.rs` covers a single marked edge, all-marked rectangles with exact areas, a reflex L-shape, a curved ellipse, a holed panel and an invalid stored width.
+
 The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 
 ```powershell

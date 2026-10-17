@@ -183,6 +183,12 @@ impl PolygonPattern {
             None => Ok(vec![]),
         }
     }
+    /// Outward seam-allowance cutting contour with joined corners and
+    /// self-intersection cleanup; `None` when no allowance is stored.
+    /// See [`super::shapes::cutting_outline`] for the ring convention.
+    pub fn cutting_outline(&self) -> Result<Option<Vec<Vec<DVec2>>>, String> {
+        super::shapes::cutting_outline(self)
+    }
     /// Rebase stored markings when the named boundary is split into itself and
     /// `second` at rest-arclength fraction `at_t`. A notch keeps its material
     /// position; a notch exactly on the split is rejected instead of moved.

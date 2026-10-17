@@ -2,7 +2,7 @@
 use super::{
     domain::{Hole, area},
     meshing::MeshingSettings,
-    polygon::PolygonPattern,
+    polygon::{MAX_SEAM_ALLOWANCE_M, PolygonPattern},
 };
 use glam::DVec2;
 use i_overlay::{
@@ -91,6 +91,95 @@ pub fn primitive(
         notches: Default::default(),
         seam_allowances: Default::default(),
     })
+}
+
+/// Per-boundary outward offset of the sewing contour, with joined corners and
+/// self-intersection cleanup. `None` when no seam allowance is stored.
+///
+/// The result follows one convention: outer rings are counter-clockwise
+/// (positive signed area) and hole rings are clockwise. Hole rims are copied
+/// unchanged; only outer boundaries can carry an allowance.
+pub fn cutting_outline(poly: &PolygonPattern) -> Result<Option<Vec<Vec<DVec2>>>, String> {
+    if poly.seam_allowances.is_empty() {
+        return Ok(None);
+    }
+    if poly
+        .seam_allowances
+        .values()
+        .any(|w| !w.is_finite() || *w <= 0. || *w > MAX_SEAM_ALLOWANCE_M)
+    {
+        return Err("Invalid seam allowance width".into());
+    }
+    let outer = poly.outer_points()?;
+    if outer.len() < 3 {
+        return Err("A cutting outline needs a sewing contour of at least 3 points".into());
+    }
+    // Positive material region: the CCW sewing contour, then the CW holes.
+    let mut subject: Vec<Vec<[f64; 2]>> = vec![outer.iter().map(|p| p.to_array()).collect()];
+    for hole in &poly.holes {
+        subject.push(hole.points.iter().map(|p| p.to_array()).collect());
+    }
+    // One outward band per marked boundary. Each band is a CCW quad extended by
+    // its own width along the edge, so adjacent bands overlap into a square
+    // corner join; the positive fill rule unions those overlaps instead of
+    // cancelling them, which needs no separate mitre step. The join is a square
+    // approximation: an acute corner may overshoot the true miter by up to one
+    // allowance width, always outward from the material.
+    for (i, name) in poly.edges.iter().enumerate() {
+        let Some(&width) = poly.seam_allowances.get(name) else {
+            continue;
+        };
+        for pair in poly.edge_points(i)?.windows(2) {
+            let (a, b) = (pair[0], pair[1]);
+            let tangent = b - a;
+            if tangent.length_squared() <= 1e-20 {
+                continue;
+            }
+            let along = tangent.normalize();
+            let offset = DVec2::new(along.y, -along.x) * width;
+            let end = along * width;
+            subject.push(vec![
+                (a - end).to_array(),
+                (a - end + offset).to_array(),
+                (b + end + offset).to_array(),
+                (b + end).to_array(),
+            ]);
+        }
+    }
+    if subject
+        .iter()
+        .flatten()
+        .any(|p| p.iter().any(|v| !v.is_finite() || v.abs() > 1000.))
+    {
+        return Err("Seam allowance produced out-of-range coordinates".into());
+    }
+    // Resolving the subject alone merges the overlapping positive bands and
+    // subtracts the negative holes; no separate self-intersection pass is needed.
+    let shapes = subject.overlay(
+        &Vec::<Vec<[f64; 2]>>::new(),
+        OverlayRule::Subject,
+        FillRule::Positive,
+    );
+    let sewing_area = area(&outer);
+    let mut rings = Vec::new();
+    let mut cutting_area = 0.;
+    for shape in shapes {
+        for contour in shape {
+            let points: Vec<DVec2> = contour.into_iter().map(DVec2::from_array).collect();
+            let signed = area(&points);
+            if signed.abs() < 1e-9 {
+                continue;
+            }
+            if signed > 0. {
+                cutting_area += signed;
+            }
+            rings.push(points);
+        }
+    }
+    if rings.is_empty() || cutting_area + 1e-9 < sewing_area {
+        return Err("Seam allowance did not grow the sewing contour".into());
+    }
+    Ok(Some(rings))
 }
 
 fn reverse_contour(points: &mut [DVec2], edges: &mut Vec<String>) {
