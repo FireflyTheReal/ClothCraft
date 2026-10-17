@@ -5,6 +5,30 @@ use glam::{DMat2, DVec2};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
+/// Upper bound for a stored notch marker depth, in metres. Notches are draft
+/// markings, so this is a sanity bound, not a manufacturing specification.
+pub const MAX_NOTCH_DEPTH_M: f64 = 0.2;
+/// Upper bound for a stored seam-allowance width, in metres. The cutting contour
+/// produced from it must still fit inside the panel; see `export`.
+pub const MAX_SEAM_ALLOWANCE_M: f64 = 0.1;
+/// Draft budget: notches on one named boundary and on one polygon.
+pub const MAX_NOTCHES_PER_BOUNDARY: usize = 64;
+pub const MAX_NOTCHES_PER_POLYGON: usize = 256;
+
+/// One physical notch (cut mark) on a named boundary.
+///
+/// The position is a fraction of the *directed* boundary's sampled rest
+/// arclength, so it is defined by the material contour alone. It is not a
+/// simulation vertex index and never changes rest geometry.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EdgeNotch {
+    /// Fraction of the directed boundary's rest arclength, strictly inside (0,1).
+    pub t: f64,
+    /// Marker depth measured outward from the material, in metres (> 0).
+    pub depth_m: f64,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PolygonPattern {
@@ -32,6 +56,16 @@ pub struct PolygonPattern {
         skip_serializing_if = "BTreeMap::is_empty"
     )]
     pub target_lengths: BTreeMap<String, f64>,
+    /// Physical cut marks keyed by the stable named boundary, ordered by
+    /// arclength fraction. Empty maps serialise to nothing, so historical files
+    /// and physical cache signatures are unchanged when no marking is stored.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub notches: BTreeMap<String, Vec<EdgeNotch>>,
+    /// Seam-allowance (cutting-guide) width in metres per named boundary. A
+    /// missing entry means no allowance. This is a draft specification; it never
+    /// moves the sewing contour or the simulation mesh.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub seam_allowances: BTreeMap<String, f64>,
 }
 /// Tolerant reader for stored targets. A hand-edited file can hold `null` (what a
 /// non-finite float serialises to) or another unusable value. Those become `NaN`
@@ -99,6 +133,140 @@ impl PolygonPattern {
             ..Default::default()
         })
     }
+    /// Sampled path of a named outer boundary and its total rest arclength.
+    /// Markings are restricted to outer boundaries; hole edges are separate.
+    pub fn boundary_path(&self, edge: &str) -> Result<(Vec<DVec2>, f64), String> {
+        let index = self
+            .edges
+            .iter()
+            .position(|name| name == edge)
+            .ok_or("Boundary not found")?;
+        let path = self.edge_points(index)?;
+        let total = path.windows(2).map(|pair| pair[0].distance(pair[1])).sum();
+        Ok((path, total))
+    }
+    /// The stored notch as a material-space segment `[on_boundary, tip]`. The
+    /// marker extends outward from the material, i.e. to the right of the CCW
+    /// outer boundary. Position depends only on the material contour.
+    pub fn notch_segment(&self, edge: &str, notch: &EdgeNotch) -> Result<[DVec2; 2], String> {
+        if !notch.t.is_finite() || notch.t <= 0. || notch.t >= 1. {
+            return Err("Notch fraction must be strictly inside (0,1)".into());
+        }
+        if !notch.depth_m.is_finite() || notch.depth_m <= 0. || notch.depth_m > MAX_NOTCH_DEPTH_M {
+            return Err(format!("Notch depth must be in (0, {MAX_NOTCH_DEPTH_M}] m"));
+        }
+        let (path, total) = self.boundary_path(edge)?;
+        if total <= 1e-9 {
+            return Err("Notch boundary has zero length".into());
+        }
+        let target = total * notch.t;
+        let mut consumed = 0.;
+        for pair in path.windows(2) {
+            let tangent = pair[1] - pair[0];
+            let length = tangent.length();
+            if length <= 1e-12 {
+                continue;
+            }
+            if consumed + length >= target {
+                let base = pair[0] + tangent * ((target - consumed) / length);
+                let normal = DVec2::new(tangent.y, -tangent.x) / length;
+                return Ok([base, base + normal * notch.depth_m]);
+            }
+            consumed += length;
+        }
+        Err("Notch cannot be placed on this boundary".into())
+    }
+    /// Every stored notch marker for one named boundary, in arclength order.
+    pub fn notch_segments(&self, edge: &str) -> Result<Vec<[DVec2; 2]>, String> {
+        match self.notches.get(edge) {
+            Some(list) => list.iter().map(|n| self.notch_segment(edge, n)).collect(),
+            None => Ok(vec![]),
+        }
+    }
+    /// Rebase stored markings when the named boundary is split into itself and
+    /// `second` at rest-arclength fraction `at_t`. A notch keeps its material
+    /// position; a notch exactly on the split is rejected instead of moved.
+    pub fn split_markings(&mut self, edge: &str, second: &str, at_t: f64) -> Result<(), String> {
+        if !at_t.is_finite() || at_t <= 0. || at_t >= 1. {
+            return Err("Split fraction must be strictly inside (0,1)".into());
+        }
+        if let Some(list) = self.notches.remove(edge) {
+            let (mut first, mut rest) = (vec![], vec![]);
+            for mut notch in list {
+                if (notch.t - at_t).abs() < 1e-9 {
+                    return Err("A notch sits exactly on the split point".into());
+                }
+                if notch.t < at_t {
+                    notch.t /= at_t;
+                    first.push(notch);
+                } else {
+                    notch.t = (notch.t - at_t) / (1. - at_t);
+                    rest.push(notch);
+                }
+            }
+            if !first.is_empty() {
+                self.notches.insert(edge.to_string(), first);
+            }
+            if !rest.is_empty() {
+                self.notches.insert(second.to_string(), rest);
+            }
+        }
+        if let Some(width) = self.seam_allowances.get(edge).copied() {
+            self.seam_allowances.insert(second.to_string(), width);
+        }
+        Ok(())
+    }
+    /// Rebase stored markings when the straight boundary `outgoing` disappears
+    /// into `incoming` by removing their shared point. The caller guarantees
+    /// both boundaries are straight.
+    pub fn merge_markings(
+        &mut self,
+        incoming: &str,
+        outgoing: &str,
+        incoming_m: f64,
+        outgoing_m: f64,
+    ) -> Result<(), String> {
+        let total = incoming_m + outgoing_m;
+        if !total.is_finite() || total <= 1e-9 {
+            return Err("Merged boundary has zero length".into());
+        }
+        let mut merged = vec![];
+        if let Some(list) = self.notches.remove(incoming) {
+            for mut notch in list {
+                notch.t *= incoming_m / total;
+                merged.push(notch);
+            }
+        }
+        if let Some(list) = self.notches.remove(outgoing) {
+            for mut notch in list {
+                notch.t = (incoming_m + notch.t * outgoing_m) / total;
+                merged.push(notch);
+            }
+        }
+        merged.sort_by(|a, b| a.t.total_cmp(&b.t));
+        if merged.windows(2).any(|w| w[1].t - w[0].t < 1e-9) {
+            return Err("Notches coincide after removing this point".into());
+        }
+        if !merged.is_empty() {
+            self.notches.insert(incoming.to_string(), merged);
+        }
+        let a = self.seam_allowances.get(incoming).copied();
+        let b = self.seam_allowances.remove(outgoing);
+        match (a, b) {
+            (Some(x), Some(y)) if (x - y).abs() > 1e-12 => {
+                Err("The merged boundaries have different seam allowances; clear one first".into())
+            }
+            (Some(x), _) => {
+                self.seam_allowances.insert(incoming.to_string(), x);
+                Ok(())
+            }
+            (None, Some(y)) => {
+                self.seam_allowances.insert(incoming.to_string(), y);
+                Ok(())
+            }
+            (None, None) => Ok(()),
+        }
+    }
     /// Stored target for a named boundary, when it is a usable specification.
     /// Unknown boundaries, non-finite values and non-positive values are treated
     /// as "no target", so a hand-edited file cannot leak a bad number into a
@@ -155,6 +323,45 @@ impl PolygonPattern {
             .any(|(name, points)| !names.contains(name) || points.iter().any(|p| !p.is_finite()))
         {
             return Err("Invalid Bézier edge name or control point".into());
+        }
+        // Draft markings are defined on stable named outer boundaries only. They
+        // are validated here so a hand-edited document with an unknown boundary,
+        // an out-of-range fraction or an absurd depth is rejected, never meshed.
+        for (edge, list) in &self.notches {
+            if !names.contains(edge) {
+                return Err("Notch references an unknown boundary".into());
+            }
+            if list.len() > MAX_NOTCHES_PER_BOUNDARY {
+                return Err(format!(
+                    "At most {MAX_NOTCHES_PER_BOUNDARY} notches per boundary"
+                ));
+            }
+            let mut previous = f64::NEG_INFINITY;
+            for notch in list {
+                if notch.t <= previous {
+                    return Err(
+                        "Notches on one boundary must have strictly increasing fractions".into(),
+                    );
+                }
+                previous = notch.t;
+                self.notch_segment(edge, notch)?;
+            }
+        }
+        if self.notches.values().map(Vec::len).sum::<usize>() > MAX_NOTCHES_PER_POLYGON {
+            return Err(format!(
+                "At most {MAX_NOTCHES_PER_POLYGON} notches per pattern"
+            ));
+        }
+        for (edge, width) in &self.seam_allowances {
+            if !names.contains(edge)
+                || !width.is_finite()
+                || *width <= 0.
+                || *width > MAX_SEAM_ALLOWANCE_M
+            {
+                return Err(format!(
+                    "Seam allowance needs a known boundary and a width in (0, {MAX_SEAM_ALLOWANCE_M}] m"
+                ));
+            }
         }
         let mut points = vec![];
         let mut segments = vec![];

@@ -4,7 +4,7 @@ use crate::{
     garment::{
         CompiledGarment, GarmentTemplate, curves,
         meshing::MeshingSettings,
-        polygon::PolygonPattern,
+        polygon::{EdgeNotch, MAX_SEAM_ALLOWANCE_M, PolygonPattern},
         seam::{BoundaryRef, SeamSpec},
         template::{Fabric, FabricProperties, Panel, Placement},
     },
@@ -124,6 +124,27 @@ pub enum Command {
         edge: String,
         target_m: f64,
     },
+    /// Add or replace a physical notch at a fraction of the named boundary's
+    /// rest arclength. The depth is the outward marker length in metres.
+    Notch {
+        panel: String,
+        edge: String,
+        t: f64,
+        depth_m: f64,
+    },
+    /// Remove the notch closest to the given boundary fraction, within 1e-9.
+    RemoveNotch {
+        panel: String,
+        edge: String,
+        t: f64,
+    },
+    /// Set a named boundary's seam-allowance (cutting-guide) width in metres;
+    /// zero clears it. This is a draft marking and never moves rest geometry.
+    SeamAllowance {
+        panel: String,
+        edge: String,
+        width_m: f64,
+    },
     Layout {
         panel: String,
         origin: DVec2,
@@ -230,6 +251,10 @@ pub fn same_physics(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
             // geometry: storing or clearing it must not invalidate the drape.
             if let Some(polygon) = p.polygon.as_mut() {
                 polygon.target_lengths.clear();
+                // Draft markings are specifications too. Adding or clearing a
+                // notch or allowance must never reset the simulated drape.
+                polygon.notches.clear();
+                polygon.seam_allowances.clear();
             }
         }
         serde_json::to_vec(&t).unwrap()
@@ -717,6 +742,8 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                     holes: vec![],
                     lines: vec![],
                     target_lengths: Default::default(),
+                    notches: Default::default(),
+                    seam_allowances: Default::default(),
                 }),
                 fabric,
                 grain_degrees: 90.,
@@ -910,9 +937,11 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 let name = split_edge_name(&polygon.edges, &edge);
                 polygon.edges.insert(index + 1, name.clone());
                 if controls.is_some() {
-                    polygon.curves.insert(edge, first);
-                    polygon.curves.insert(name, second);
+                    polygon.curves.insert(edge.clone(), first);
+                    polygon.curves.insert(name.clone(), second);
                 }
+                // Draft markings keep their material position on the split half.
+                polygon.split_markings(&edge, &name, at_m / current)?;
                 index + 1
             };
             normalize(p);
@@ -968,6 +997,11 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 {
                     return Err("Remove the Bézier handles before deleting this point".into());
                 }
+                // Both boundaries are straight here, so marking fractions can be
+                // re-pointed proportionally onto the rejoined straight boundary.
+                let incoming_m = edge_length(polygon, &incoming)?;
+                let outgoing_m = edge_length(polygon, &outgoing)?;
+                polygon.merge_markings(&incoming, &outgoing, incoming_m, outgoing_m)?;
                 polygon.points.remove(point);
                 // The outgoing name disappears with its point; the incoming name
                 // becomes the rejoined boundary.
@@ -1081,6 +1115,91 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                     .insert(edge, target_m);
                 selected = Some(panel);
             }
+        }
+        Command::Notch {
+            panel,
+            edge,
+            t,
+            depth_m,
+        } => {
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            let polygon = p
+                .polygon
+                .as_mut()
+                .ok_or("This panel has no editable contour")?;
+            // Validates the fraction, the depth and that the point actually
+            // lands on the boundary, so nothing invalid is ever stored.
+            let notch = EdgeNotch { t, depth_m };
+            polygon.notch_segment(&edge, &notch)?;
+            let list = polygon.notches.entry(edge.clone()).or_default();
+            if let Some(existing) = list.iter_mut().find(|n| (n.t - t).abs() < 1e-9) {
+                *existing = notch;
+            } else {
+                list.push(notch);
+                list.sort_by(|a, b| a.t.total_cmp(&b.t));
+            }
+            selected = Some(panel);
+        }
+        Command::RemoveNotch { panel, edge, t } => {
+            if !t.is_finite() {
+                return Err("Notch position must be finite".into());
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            let polygon = p
+                .polygon
+                .as_mut()
+                .ok_or("This panel has no editable contour")?;
+            let list = polygon
+                .notches
+                .get_mut(&edge)
+                .ok_or("This boundary has no notches")?;
+            let before = list.len();
+            list.retain(|n| (n.t - t).abs() >= 1e-9);
+            if list.len() == before {
+                return Err("No notch at that position".into());
+            }
+            let empty = list.is_empty();
+            if empty {
+                polygon.notches.remove(&edge);
+            }
+            selected = Some(panel);
+        }
+        Command::SeamAllowance {
+            panel,
+            edge,
+            width_m,
+        } => {
+            if !width_m.is_finite() || width_m < 0. || width_m > MAX_SEAM_ALLOWANCE_M {
+                return Err(format!(
+                    "Seam allowance must be finite and in 0..={MAX_SEAM_ALLOWANCE_M} m"
+                ));
+            }
+            let p = template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?;
+            let polygon = p
+                .polygon
+                .as_mut()
+                .ok_or("This panel has no editable contour")?;
+            if !polygon.edges.iter().any(|name| name == &edge) {
+                return Err("Boundary not found".into());
+            }
+            if width_m == 0. {
+                polygon.seam_allowances.remove(&edge);
+            } else {
+                polygon.seam_allowances.insert(edge, width_m);
+            }
+            selected = Some(panel);
         }
         Command::Layout { panel, origin } => {
             template

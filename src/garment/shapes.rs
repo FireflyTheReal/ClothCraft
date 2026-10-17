@@ -88,6 +88,8 @@ pub fn primitive(
         holes: vec![],
         lines: vec![],
         target_lengths: Default::default(),
+        notches: Default::default(),
+        seam_allowances: Default::default(),
     })
 }
 
@@ -129,6 +131,15 @@ pub fn mirror(poly: &mut PolygonPattern, axis: MirrorAxis, size: DVec2) {
                 MirrorAxis::Y => t.y = -t.y,
             }
         }
+    }
+    // Reversing the contour flips the direction of every named boundary, so a
+    // notch keeps its material position only if its arclength fraction inverts.
+    // Allowance widths stay keyed by the same boundary names.
+    for notches in poly.notches.values_mut() {
+        for notch in notches.iter_mut() {
+            notch.t = 1. - notch.t;
+        }
+        notches.sort_by(|a, b| a.t.total_cmp(&b.t));
     }
     if let Some(settings) = &mut poly.meshing {
         settings.axis_degrees = match axis {
@@ -211,6 +222,8 @@ pub fn boolean(
             holes,
             lines: vec![],
             target_lengths: Default::default(),
+            notches: Default::default(),
+            seam_allowances: Default::default(),
         });
     }
     Ok(out)

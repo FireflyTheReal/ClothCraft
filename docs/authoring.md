@@ -68,6 +68,17 @@ Optional `curves`, `holes`, `lines`, `layout_2d` and `layout_rotation_degrees` f
 
 A v2 polygon may also carry `target_lengths`: a map from each stable boundary identifier to its required length in metres, empty and omitted when no target is set. A target is a 2D specification. It is shown as a measured-versus-target deviation and is applied to the rest contour only by an explicit **Target length** action in the inspector; opening or reloading a document never resizes a piece. Values that are missing, non-finite or non-positive are reported and treated as no target. Setting a boundary's target refuses a later split or point deletion on that boundary until the target is cleared, so a specification can never be silently re-pointed at a shorter edge. Stored targets are excluded from the physical-change comparison (`same_physics`), so setting or clearing one cannot disturb the drape; only applying a different required length moves the rest contour and resets the caches.
 
+### Draft pattern markings (data model)
+
+A v2 polygon can also carry two optional marking maps, both empty and omitted when unused so historical files and physical cache signatures are unchanged:
+
+- `notches`: physical cut marks keyed by the stable named boundary, each stored as `{ t, depth_m }`. `t` is a fraction of the *directed* boundary's sampled rest arclength, strictly between 0 and 1; `depth_m` is the outward marker length in metres. A boundary holds at most 64 strictly increasing notches and a polygon at most 256.
+- `seam_allowances`: a cutting-guide width in metres per named boundary (missing means no allowance), bounded by 0.1 m.
+
+Both are **draft specifications only**: they never move material rest positions, never enter the solver and are excluded from `same_physics`, so adding or clearing a marking never resets the simulated drape. Markings reference stable boundary names, never simulation vertex or triangle indices. A notch keeps its material position through 2D layout, rotation and rectangle resize, because it is stored as a boundary fraction. **Mirroring** reverses each boundary, so a stored fraction inverts (`t → 1 - t`) to keep the physical position. Splitting a marked boundary migrates its notches and inherits the allowance on both halves; a notch exactly on the split point is rejected instead of moved. Removing a point rejoins two straight boundaries and re-points their notches proportionally onto the rejoined edge (their material position follows the straightened edge, not the removed corner). Boolean operations refuse marked operands rather than silently dropping their specifications, and a fresh primitive starts unmarked.
+
+The authoring commands are `Command::Notch`, `Command::RemoveNotch` and `Command::SeamAllowance` (width 0 clears). They are transactional and undoable, and each validates the boundary, the fraction, the depth and the width before committing. Nothing invalid is stored: `PolygonPattern::build` re-checks the same bounds, so a hand-edited document with an unknown boundary or an out-of-range value is rejected instead of meshed. Markings currently apply to the outer contour only; hole-edge markings are unsupported. The interactive controls, the joined cutting outline and the physically scaled print export are described in the following sections.
+
 The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 
 ```powershell
