@@ -405,8 +405,10 @@ fn ruffle_is_longer_material_with_a_real_conservative_seam() {
         }
     }
     let force: DVec3 = gradient
-        .chunks_exact(3)
-        .map(|p| DVec3::new(p[0], p[1], p[2]))
+        .as_chunks::<3>()
+        .0
+        .iter()
+        .map(|p| DVec3::from_array(*p))
         .sum();
     assert!(force.length() < 1e-7);
     for (i, &analytic) in gradient
