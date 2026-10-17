@@ -1,7 +1,7 @@
 //! A CPU-only frontend; never imports eframe/wgpu or opens a window.
 use clap::{Parser, Subcommand};
 use marvelous_cloth::{
-    garment::{GarmentTemplate, export},
+    garment::{GarmentTemplate, export, print},
     solver::{ReferenceSolver, SolverSettings},
 };
 use std::{
@@ -19,6 +19,23 @@ struct Args {
     #[command(subcommand)]
     command: Command,
 }
+/// Paper size of a printed pattern sheet.
+#[derive(Clone, Copy, clap::ValueEnum)]
+enum PaperArg {
+    A4,
+    A3,
+    Letter,
+}
+/// Printed size of one material metre.
+#[derive(Clone, Copy, clap::ValueEnum)]
+enum ScaleArg {
+    #[value(name = "1:1")]
+    Full,
+    #[value(name = "1:2")]
+    Half,
+    #[value(name = "1:4")]
+    Quarter,
+}
 #[derive(Subcommand)]
 enum Command {
     /// Write a small editable example. Refuses to overwrite an existing file.
@@ -33,6 +50,16 @@ enum Command {
         template: PathBuf,
         #[arg(long, default_value = "output/template-bake")]
         output: PathBuf,
+    },
+    /// Write physically scaled SVG pattern sheets, one file per printed page.
+    Print {
+        template: PathBuf,
+        #[arg(long, default_value = "output/print")]
+        output: PathBuf,
+        #[arg(long, value_enum, default_value = "a4")]
+        paper: PaperArg,
+        #[arg(long, value_enum, default_value = "1:1")]
+        scale: ScaleArg,
     },
     Simulate {
         template: PathBuf,
@@ -69,6 +96,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let g = t.compile()?;
             export::write_artifacts(&t, &g, &g.initial_state, &output)?;
             println!("CPU artifacts written to {}", output.display());
+        }
+        Command::Print {
+            template,
+            output,
+            paper,
+            scale,
+        } => {
+            let t = GarmentTemplate::load(&template)?;
+            t.compile()?;
+            let paper = match paper {
+                PaperArg::A4 => print::Paper::A4,
+                PaperArg::A3 => print::Paper::A3,
+                PaperArg::Letter => print::Paper::Letter,
+            };
+            let scale = match scale {
+                ScaleArg::Full => print::PrintScale::Full,
+                ScaleArg::Half => print::PrintScale::Half,
+                ScaleArg::Quarter => print::PrintScale::Quarter,
+            };
+            let paths = print::write_sheets(&t, &output, paper, scale)?;
+            println!(
+                "{:.0}% scale on {} · {} SVG sheet(s) in {}",
+                scale.millimetres_per_metre() / 10.,
+                paper.name(),
+                paths.len(),
+                output.display()
+            );
         }
         Command::Simulate {
             template,

@@ -62,6 +62,9 @@ pub(super) struct AuthoringUi {
     pub notch_percent: f64,
     /// New-notch depth draft, in millimetres. The document stores metres.
     pub notch_depth_mm: f64,
+    /// Paper and scale of the printable pattern sheets.
+    pub print_paper: marvelous_cloth::garment::print::Paper,
+    pub print_scale: marvelous_cloth::garment::print::PrintScale,
 }
 
 pub(super) fn segment_distance(p: egui::Pos2, a: egui::Pos2, b: egui::Pos2) -> f32 {

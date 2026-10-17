@@ -91,6 +91,18 @@ Select a boundary in either view and the inspector's **Boundary** section gains 
 
 On the 2D board the same data is drawn as guides, never as geometry. The joined cutting contour is a **magenta dashed** closed line (see the offset section above), and each notch is a **blue tick** from its material position on the boundary out to its depth, drawn in the panel's placement transform so it follows layout and rotation. The ticks come from `PolygonPattern::notch_segments`, the same material-space lookup the print export uses, so the board and the printed sheet cannot disagree. If a stored allowance is invalid the inspector reports **Cutting guide unavailable** rather than drawing a wrong line. Nothing here writes a material coordinate, so the drawing is presentation only and the physics-neutral guarantee of the data model still holds.
 
+### Printing at physical scale
+
+The toolbar's **Print** menu chooses the paper (A4, A3, Letter — real millimetre sizes) and the scale (1:1, 1:2, 1:4), then writes the sheets. The same output is available without a window:
+
+```powershell
+cargo run --locked -j 2 --bin cloth-template -- print examples/templates/tshirt.json --output output/print --paper a4 --scale 1:1
+```
+
+`garment/print.rs` produces one SVG file per printed page. Each page declares itself in millimetres (`width="210mm" height="297mm"` over a matching `viewBox`), so **one user unit is one millimetre** and a 100 mm boundary measures 100 mm of paper: always print at 100 %, never fit-to-page. Because panels are usually larger than the paper, each panel is tiled on a grid that steps by one page minus a **10 mm overlap**, with corner registration crosses; the repeated strip carries the same geometry so the sheets can be aligned and taped. Every page carries a **100 mm ruler** (10 mm ticks, labelled at 50 and 100 mm) so the print can be verified before anything is cut, and the sheets are capped at 400 pages — a piece that needs more is refused with a prompt to use a smaller scale.
+
+The page draws the **solid cutting line** (allowance or, when none is stored, the sewing contour) and a **dashed, lighter sewing line**, so the two contours stay visually distinct, plus notch ticks, dashed internal lines, and a red grain arrow clipped to the contour. Pages are deterministic: identical input gives identical bytes, which `tests/print_sheets.rs` checks along with real-millimetre page declarations, the exact ruler length, a 100 mm edge printing as 100 units, the distinct cutting/sewing contours with exact offset bounds, notch ticks, a 150 × 200 mm piece fitting one page, a 1 × 1.5 m piece tiling 6 × 6 with the label `page 1/36`, a curved piece with an allowance, the coincident case without an allowance, and the page-count ceiling. The sheets are not a certified manufacturing line and are not written by the plain **Export** action, which stays a fixed JSON + OBJ + preview set.
+
 The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 
 ```powershell

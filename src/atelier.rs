@@ -3,7 +3,11 @@ use crate::render::{Camera, DrawModel, Viewport};
 use eframe::egui::{self, Color32, Stroke, Vec2};
 use marvelous_cloth::{
     fitting::{FittingProject, FittingScene},
-    garment::{export, presets::GarmentKind},
+    garment::{
+        export,
+        presets::GarmentKind,
+        print::{self, Paper, PrintScale},
+    },
     picking,
     vbd::{Grab, VbdMetrics, VbdSettings},
 };
@@ -386,6 +390,29 @@ impl Atelier {
             |_| format!("Export: {}", self.output.display()),
         );
     }
+    /// Write the physically scaled pattern sheets, one SVG per printed page, at
+    /// the paper and scale chosen in the Print menu.
+    fn export_print(&mut self) {
+        if !self.commit_placement() {
+            return;
+        }
+        let directory = self.output.join("print");
+        self.status = match print::write_sheets(
+            &self.project.template,
+            &directory,
+            self.authoring.print_paper,
+            self.authoring.print_scale,
+        ) {
+            Ok(paths) => format!(
+                "Print: {} sheet(s) at {} on {} in {}",
+                paths.len(),
+                self.authoring.print_scale.label(),
+                self.authoring.print_paper.name(),
+                directory.display()
+            ),
+            Err(e) => format!("Print: {e}"),
+        };
+    }
     fn pick_and_drag(&mut self, response: &egui::Response, rect: egui::Rect) {
         if response.drag_started_by(egui::PointerButton::Primary)
             && let Some(pos) = response.interact_pointer_pos()
@@ -543,6 +570,33 @@ impl eframe::App for Atelier {
                 if export_button.clicked() {
                     self.export();
                 }
+                ui.menu_button("Print", |ui| {
+                    ui.set_max_width(260.);
+                    ui.strong("Pattern sheets");
+                    ui.small("One sheet unit is one millimetre: print at 100 %, never fit-to-page.");
+                    for paper in [Paper::A4, Paper::A3, Paper::Letter] {
+                        let (w, h) = paper.millimetres();
+                        ui.selectable_value(
+                            &mut self.authoring.print_paper,
+                            paper,
+                            format!("{} ({} × {} mm)", paper.name(), w, h),
+                        );
+                    }
+                    ui.separator();
+                    for scale in [PrintScale::Full, PrintScale::Half, PrintScale::Quarter] {
+                        ui.selectable_value(
+                            &mut self.authoring.print_scale,
+                            scale,
+                            format!("{} printed size", scale.label()),
+                        );
+                    }
+                    ui.separator();
+                    ui.small("The solid line is the cutting line, the dashed line is the sewing line.");
+                    if ui.button("Export print sheets").clicked() {
+                        self.export_print();
+                        ui.close();
+                    }
+                });
                 ui.separator();
                 ui.menu_button("Workspace", |ui| {
                     ui.checkbox(&mut self.prefs.workspace.inspector_open,"Properties inspector");

@@ -8,6 +8,7 @@ pub mod export;
 pub mod meshing;
 pub mod polygon;
 pub mod presets;
+pub mod print;
 pub mod seam;
 pub mod shapes;
 pub mod template;
