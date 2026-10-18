@@ -18,10 +18,10 @@ If you want to vibe-code a better solver: welcome. A convincing contribution inc
 
 | Want to help with… | Start here | A useful next contribution |
 |---|---|---|
-| Pattern authoring | `src/authoring.rs`, `src/authoring/geometry.rs`, `src/atelier/board.rs` | Primitives, mirrors, booleans/holes and internal sewing exist; numeric point tools and unsewn splits are integrated from Firefly. Next: offsets, linked symmetry and dedicated notch editing. Read `docs/documents-and-sewing.md` for save/open and partial/chain sewing. Read `docs/firefly-integration.md` and `docs/drafting-tools.md` |
-| Feature selection | [feature map](docs/feature-map.md) | Pick the next ordered slice (`MARK-01` seam allowance and notches, `MEASURE-01`, `LAYOUT-01`, …) and record its acceptance case. Statuses are a code audit, not parity claims |
+| Pattern authoring | `src/authoring.rs`, `src/authoring/geometry.rs`, `src/atelier/board.rs` | Primitives, mirrors, booleans/holes and internal sewing exist; numeric point tools, unsewn splits, seam allowance and notches are integrated (see `docs/markings.md`). Next: linked symmetry and a measured internal-line offset. Read `docs/documents-and-sewing.md` for save/open and partial/chain sewing. Read `docs/firefly-integration.md` and `docs/drafting-tools.md` |
+| Feature selection | [feature map](docs/feature-map.md) | `MARK-01` (seam allowance and notches) is implemented; pick the next ordered slice (`MARK-02` notch correspondence, `MEASURE-01`, `LAYOUT-01`, …) and record its acceptance case. Statuses are a code audit, not parity claims |
 | Placement tools | `src/atelier/gizmo.rs` | Arrangement points and collision diagnostics before simulation |
-| Sewing | `src/garment/seam.rs`, `src/atelier/edges_3d.rs` | Extend partial/chain sewing with notch editing and manufacturing semantics |
+| Sewing | `src/garment/seam.rs`, `src/atelier/edges_3d.rs` | Extend partial/chain sewing with notch correspondence (`MARK-02`) and manufacturing semantics |
 | Interoperability | [input/output contracts](docs/interoperability.md), [format roadmap](ROADMAP.md#interoperability) | Small, independently sourced fixtures with units, transforms and round-trip tests |
 | Faster contact | `src/ogc/`, `tests/ogc_cache.rs` | GPU broad phase with conservative coverage and explicit overflow handling |
 | Better physics | `src/energy.rs`, `src/vbd.rs`, `src/solver.rs` | Friction or an alternative backend evaluated on the same physical scenes |

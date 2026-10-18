@@ -45,11 +45,12 @@ The format priorities below remain product priorities: a **critical** animation 
 - [ ] Linked symmetry, group rotation/3D transforms, 3D marquee, line offsets and dedicated hole point editing.
 - [ ] Import verified reusable patterns: FreeSewing Teagan/Titan/Jett are linked from the Web menu; SVG geometry and semantic sewing adapters remain planned ([investigation](docs/drafting-tools.md#web-pattern-library-investigation)).
 - [x] Partial ranges in both views, numeric range editing, direction handles, ordered 1:N / M:N sewing and seam editing/deletion.
-- [ ] Dedicated notch editing, automatic correspondence and manufacturing sewing semantics.
+- [x] Per-boundary 2D seam allowance and notches as stable draft data, with a joined cutting contour and a true-scale mm sheet ([markings guide](docs/markings.md)).
+- [ ] Notch correspondence across a seam and manufacturing sewing semantics.
 - [ ] Arrangement points, body-aware placement and useful preflight intersection feedback.
 - [x] Native project picker, Open/Save/Save As, dirty state, portable OBJ assets and local recovery.
 - [ ] Multi-document tabs, portable texture/material dependencies and managed recovery history.
-- [ ] Seam allowance, grain annotations, graded sizes and print layouts.
+- [ ] Grain annotations, graded sizes and print nesting/tiling/PDF layouts.
 
 Acceptance: an unfamiliar user can draft a simple top, join its intended boundaries, place it outside the avatar, simulate, save and reproduce the same editable garment. New formats must not store transient mesh indices as sewing references.
 
@@ -78,7 +79,7 @@ The priorities below are the product requirements. Within the critical group, im
 | Alembic `.abc` | Animated simulation caches for VFX/cinematics | **Critical** | Planned. Fixed-topology position/normal cache, timestamps, units and DCC playback fixture |
 | OpenUSD `.usd/.usda/.usdc` | Production pipelines and Chaos Cloth workflows | **Critical** | Planned. Mesh/material/time-sample interchange; validate any Chaos-specific schema separately |
 | FBX `.fbx` | Rigged characters, animation, Unreal, Unity, DCC | **High** | Planned. Avatar hierarchy, skinning, bind transforms and sampled animation; select dependency/distribution strategy before integrating |
-| PDF / SVG | Print and share 2D patterns | **High** | **Partial:** preview SVG export only. No scale-accurate print/PDF yet; add physical page size, scale marks, tiling and seam allowances |
+| PDF / SVG | Print and share 2D patterns | **High** | **Partial:** preview SVG plus a true-scale mm `patterns-print.svg` with seam allowance, notches and a 100 mm ruler, one piece per page. No PDF, tiling or nesting yet |
 | Grading rule files | S/M/L/XL size ranges, industrial manufacturing | **High** | Planned. Identify concrete dialects; explicit units, size tables, stable point identities and reversible grade application |
 | USDZ `.usdz` | AR and product presentation | **Medium** | Planned after USD: packaging, material/texture validation and viewer fixture |
 | MDD / PC2 | Legacy deformation-cache pipelines | **Secondary** | Planned. Fixed vertex order, frame/time conversion and topology mismatch rejection |

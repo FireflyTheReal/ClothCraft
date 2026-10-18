@@ -55,10 +55,10 @@ folded in. "CLO functions" are published capabilities, not specifications we hol
 | 2D arrangement | Flip, rotate, match up, align, distribute | Board drag, group drag, board rotation, independent mirrors, numeric 2D layout saved per piece | **partial** — no align/distribute/match-up | `DRAW-06` align and distribute on the board |
 | Dart / pleats / fullness | Dart, base dart, segment darts, add dart with fullness, pleats | Ruffle strips (a related but distinct fullness mechanism); no dart or pleat object | **planned** | `FULL-01` one explicit dart with a physical fold |
 | 2D pattern information | 2D pattern information panel, create notch, pattern annotation | Boundary names/lengths, target lengths | **partial** — no free-position annotations, no printed piece label, no measurable on-board information probe | `ANNO-01` piece annotations, then `MEASURE-01` |
-| Manufacturing marks | 2D seam allowance, create notch, grain line | None; seam links carry a `notches` placeholder that is never populated | **planned** — no seam allowance, no notch authoring, no joined cutting contour | `MARK-01` per-boundary allowance and notches as stable draft data, then `MARK-02` |
+| Manufacturing marks | 2D seam allowance, create notch, grain line | Per-boundary seam allowance and V/slit notches as draft data, a joined cutting contour, a true-scale mm sheet; grain line already exported | **partial** — no notch correspondence across a seam, no cut count | [markings.md](markings.md); then `MARK-02` |
 | POM | Create/edit 2D POM, POM object browser | None | **planned** | `GRADE-01` (POM is a prerequisite) |
 | Grading | Add/apply grading, trim grading, auto fitting | None | **planned** — explicitly a string-free zone until single-size exchange is reliable | `GRADE-01` named dialect + size tables |
-| Print layout mode | Tape measure, nest patterns, edit fabric in layout | `patterns.svg`, an unscaled preview explicitly labelled *not a print-to-scale sewing pattern* | **planned** — no scaled or tiled sheets, no nesting, no tape measure in layout | `LAYOUT-01` deterministic nesting over scaled sheets, then `LAYOUT-02` |
+| Print layout mode | Tape measure, nest patterns, edit fabric in layout | `patterns.svg` (unscaled preview) plus a true-scale millimetre `patterns-print.svg`, one piece per page, no nesting | **partial** — a scaled sheet exists, but no nesting, no tiling and no tape measure in layout | `LAYOUT-01` deterministic nesting over scaled sheets, then `LAYOUT-02` |
 | BOM editor | Bill of material | None | **planned** — no cut count, no cut list | `BOM-01` per-piece cut count and a printed cut list, then `BOM-02` |
 
 ### Sewing and assembly
@@ -101,7 +101,7 @@ folded in. "CLO functions" are published capabilities, not specifications we hol
 |---|---|---|---|---|
 | Pattern import/export | DXF (Standard/AAMA/ASTM), AI/PDF patterns, OBJ pattern import | Template JSON in/out; OBJ geometry out | **partial** — no apparel DXF, no PDF | `DXF-01`, then `DXF-02` (see [interoperability.md](interoperability.md)) |
 | 3D import/export | OBJ/MTL, glTF/GLB, VRM, FBX, Alembic, USD/USDZ, MetaHuman DNA, camera I/O | Static OBJ out; unscaled preview SVG out | **partial** (static geometry only) | P1.1 static OBJ+MTL, then GLB |
-| Print output | PDF/SVG pattern output, nesting, tape measure | Nothing at print scale; the preview SVG states that it is not print-to-scale | **planned** — no PDF, no tiled sheets, no nesting | `PDF-01` after `LAYOUT-01` |
+| Print output | PDF/SVG pattern output, nesting, tape measure | A true-scale millimetre `patterns-print.svg` (seam allowance, notches, 100 mm ruler) exists; the preview SVG remains unscaled | **partial** — no PDF, no tiled sheets, no nesting | `PDF-01` after `LAYOUT-01` |
 | Libraries & blocks | Modular library, register accessories/trims, library preview, block creation | T-shirt and dress example templates; web pattern generators are linked, not imported | **planned** | `BLOCK-01` documented block set |
 | UV editor | UV editor, unified map, UV packing, UV seam improvement, side/back expansion | Export UVs are local metres, not a packed atlas | **planned** | with `FABRIC-01` |
 | Review | Grading review (2D/3D), save 3D state in review mode | Undo/redo history exists | **partial** | with `GRADE-01` |
@@ -166,5 +166,15 @@ in [ROADMAP.md](../ROADMAP.md), the entry in [AI_START_HERE.md](../AI_START_HERE
 source ledger in [manual-study.md](manual-study.md). The rows above are an audit of the tree
 this commit sits on.
 
-The first slice this map proposes is `MARK-01`: a per-boundary 2D seam allowance and physical
-notches as stable draft data. Neither it nor `BOM-01` is implemented in this tree.
+## Follow-up: `MARK-01` implemented
+
+On **18 October 2026** the first slice above was implemented: per-boundary seam allowance and
+V/slit notches as draft data on `PolygonPattern`, a joined cutting contour derived on demand,
+transactional `SeamAllowance` / `SetNotch` / `RemoveNotch` commands with migration and explicit
+refusal, and a true-scale `patterns-print.svg` with a 100 mm ruler. The *Manufacturing marks*,
+*Print layout mode* and *Print output* rows above were updated to **partial** with the missing
+part named. Read [markings.md](markings.md) for the model, the validation and the acceptance
+tests. Nothing else in this map changed status.
+
+The first slice this map proposed was `MARK-01`: a per-boundary 2D seam allowance and physical
+notches as stable draft data. `BOM-01` remains unimplemented in this tree.
