@@ -61,12 +61,12 @@ Reopen with `scripts/start-atelier.ps1 -ProjectPath output/atelier/fitting-proje
 | `src/garment/curves.rs` | Cubic evaluation, bounded recursive subdivision, sampled arclength |
 | `src/garment/polygon.rs` | Contour validation, triangulation, reassembly of named curved boundary chains, marking bounds |
 | `src/garment/shapes.rs` | Primitives, mirroring, booleans, joined cutting contour |
-| `src/garment/print.rs` | Millimetre-accurate tiled SVG pattern sheets |
+| `src/garment/print.rs` | Millimetre-accurate tiled SVG pattern sheets and the cut-list index |
 | `src/atelier/board.rs` | Unified pan/zoom canvas, drafting, anchor/handle/layout previews, shared selection |
 | `src/atelier/edges_3d.rs` | Screen-space edge picking with visibility checks and correspondence overlays |
 | `src/atelier/authoring_ui.rs`, `gizmo.rs` | Inspector, history, mode controls, rigid placement |
 
-Optional `curves`, `holes`, `lines`, `notches`, `seam_allowances`, `layout_2d` and `layout_rotation_degrees` fields extend existing templates; old v1/v2 files still load. Empty geometry extensions are omitted when serialized. Both layout fields are excluded from physical cache signatures and physical-change comparisons. The angle defaults to zero and zero is omitted when serialized, preserving historical cache signatures. JSON uses exact floating-point round trips so near-degenerate Delaunay decisions do not change on reload. Curve intersection validation applies to the sampled contour, not an exact algebraic intersection proof.
+Optional `curves`, `holes`, `lines`, `notches`, `seam_allowances`, `layout_2d`, `layout_rotation_degrees` and `cut_count` fields extend existing templates; old v1/v2 files still load. Empty geometry extensions are omitted when serialized. Layout fields and `cut_count` are excluded from physical cache signatures and physical-change comparisons. The angle defaults to zero and zero is omitted when serialized, preserving historical cache signatures. `cut_count` defaults to one and one is omitted, so a piece cut once serializes exactly as before. JSON uses exact floating-point round trips so near-degenerate Delaunay decisions do not change on reload. Curve intersection validation applies to the sampled contour, not an exact algebraic intersection proof.
 
 A v2 polygon may also carry `target_lengths`: a map from each stable boundary identifier to its required length in metres, empty and omitted when no target is set. A target is a 2D specification. It is shown as a measured-versus-target deviation and is applied to the rest contour only by an explicit **Target length** action in the inspector; opening or reloading a document never resizes a piece. Values that are missing, non-finite or non-positive are reported and treated as no target. Setting a boundary's target refuses a later split or point deletion on that boundary until the target is cleared, so a specification can never be silently re-pointed at a shorter edge. Stored targets are excluded from the physical-change comparison (`same_physics`), so setting or clearing one cannot disturb the drape; only applying a different required length moves the rest contour and resets the caches.
 
@@ -104,6 +104,21 @@ cargo run --locked -j 2 --bin cloth-template -- print examples/templates/tshirt.
 `garment/print.rs` produces one SVG file per printed page. Each page declares itself in millimetres (`width="210mm" height="297mm"` over a matching `viewBox`), so **one user unit is one millimetre** and a 100 mm boundary measures 100 mm of paper: always print at 100 %, never fit-to-page. Because panels are usually larger than the paper, each panel is tiled on a grid that steps by one page minus a **10 mm overlap**, with corner registration crosses; the repeated strip carries the same geometry so the sheets can be aligned and taped. Every page carries a **100 mm ruler** (10 mm ticks, labelled at 50 and 100 mm) so the print can be verified before anything is cut, and the sheets are capped at 400 pages — a piece that needs more is refused with a prompt to use a smaller scale.
 
 The page draws the **solid cutting line** (allowance or, when none is stored, the sewing contour) and a **dashed, lighter sewing line**, so the two contours stay visually distinct, plus notch ticks, dashed internal lines, and a red grain arrow clipped to the contour. Pages are deterministic: identical input gives identical bytes, which `tests/print_sheets.rs` checks along with real-millimetre page declarations, the exact ruler length, a 100 mm edge printing as 100 units, the distinct cutting/sewing contours with exact offset bounds, notch ticks, a 150 × 200 mm piece fitting one page, a 1 × 1.5 m piece tiling 6 × 6 with the label `page 1/36`, a curved piece with an allowance, the coincident case without an allowance, and the page-count ceiling. The sheets are not a certified manufacturing line and are not written by the plain **Export** action, which stays a fixed JSON + OBJ + preview set.
+
+### Cut list and cut counts
+
+Every page label already names the piece (`name · id`), its **cut count**, the fabric and the grain angle. When a template has more than one piece, the print package also gains a leading **cut list** page written by `garment::print::cut_list_sheets` as `00-cut-list-r<page>c1.svg`, so it sorts before the pattern pages:
+
+```text
+Piece                 Cut   Fabric                        Sheets   Size (mm)
+Left panel (left)     ×2    Uncalibrated woven reference  1–9      400×600
+Right panel (right)   ×1    Uncalibrated woven reference  10–18    400×600
+Total 3 pieces · 18 sheets (plus this cut list) · 1 unit = 1 mm at 1:1
+```
+
+The page ranges are computed from the same tiling the pattern sheets use, so the index and the tiles it describes cannot drift apart; a long list continues on further cut-list pages and numbers itself. A single-piece template gets no index page — it would only cost a sheet.
+
+The **cut count** is per piece, 1..99, set in the inspector ("Cut count" plus **Apply count**) or with `Command::CutCount`. It is specification data: it never enters rest geometry, meshing or the solver, `authoring::same_physics` ignores it, and it is omitted from the document at its default of one. Duplicating or mirror-copying a piece sets the copy's count back to one, because a copy is a separate physical piece. `tests/piece_info.rs` covers the default, a document round trip, single-panel targeting, drape invariance, the accepted range and both copy rules; `tests/print_sheets.rs` covers the label, the index, the page ranges and the file order.
 
 The explicit native smoke (GPU window, outside ordinary CPU CI) is:
 

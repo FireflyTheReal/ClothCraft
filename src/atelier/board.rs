@@ -2263,7 +2263,13 @@ impl Atelier {
                 painter.text(
                     point(DVec2::new(panel.pattern.width * 0.5, -0.035)),
                     egui::Align2::CENTER_BOTTOM,
-                    &panel.name,
+                    // A piece cut more than once says so on the board; the count
+                    // is a tech-pack label, never rest geometry.
+                    if panel.cut_count > 1 {
+                        format!("{} · cut ×{}", panel.name, panel.cut_count)
+                    } else {
+                        panel.name.clone()
+                    },
                     egui::FontId::proportional(13.),
                     // Dark labels: the board is a white sheet now, so the old
                     // white-on-dark piece name would disappear.

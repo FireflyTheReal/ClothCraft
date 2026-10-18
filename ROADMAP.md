@@ -6,11 +6,15 @@ Status: research prototype, October 2026. **Most of the product is still missing
 
 The [15 October essential-tool review](docs/essential-authoring-tools.md) compares the current code with official CLO/Marvelous workflows. It proposes user-visible slices and acceptance examples: reliable documents, partial and multi-edge sewing, pins/freeze, arrangement, measurements and visibility, offsets/cuts, linked symmetry and grain. Manufacturing-specific release gates are separate. This is research and planning, not an implementation update.
 
+The [18 October feature map](docs/feature-map.md) is the broader inventory: it maps the published CLO/Marvelous function families (product page, the versioned release-feature list and the public manual index) onto this tree, marks each family *implemented / partial / planned / not planned*, and turns the gaps into ordered slices (`BOM-*`, `MARK-*`, `MEASURE-01`, `LAYOUT-*`, `DXF-*`, …). It is a planning and audit document, not a parity claim.
+
 ## Next milestones, in order
 
 16 October update: Open/Save/Save As, portable avatar assets and local recovery are implemented, followed by partial ranges and ordered 1:N/M:N sewing. See [document and sewing contracts](docs/documents-and-sewing.md). Multi-document tabs, asset cleanup and manufacturing sewing semantics (automatic correspondence, notch *correspondences* between sewn edges, M:N) remain open. The rows below retain the broader acceptance goals.
 
 18 October update: the first manufacturing-marking slice landed — per-boundary seam allowances and physical notches as stable, editable draft data, a joined cutting contour distinct from the sewing contour, a 2D board display and inspector editor, and physically scaled tiled SVG print sheets. See [draft markings](docs/authoring.md#draft-pattern-markings-data-model), [cutting outline](docs/authoring.md#cutting-outline-joined-seam-allowance) and [printing](docs/authoring.md#printing-at-physical-scale). Grading, DXF, PDF output and the sewing-side *notch correspondence* model are still open; a notch here is a cutting mark on one boundary, not yet a matched pair across a seam.
+
+18 October update (cut list): the [feature map](docs/feature-map.md) was added, and its first slice `BOM-01` landed. A piece carries a **cut count** (1..99, inspector "Cut count" / `Command::CutCount`, stored as `cut_count`), printed page labels carry the cut count, fabric and grain, and a multi-piece print package gains a leading **cut list** index page with page ranges and totals. Both are specification data: never rest geometry, never in the solver, ignored by `same_physics`, and omitted from the document at their defaults. The other feature-map rows remain plans, not features.
 
 Each row is a contribution-sized track, not a promised release date. Finish one verifiable slice before adding another format or toolbar.
 
@@ -21,7 +25,7 @@ Each row is a contribution-sized track, not a promised release date. Finish one 
 | P0.3 | Stable cloth at a measured realtime budget | `ogc/`, `vbd.rs`, `gpu_vbd.rs` | Shirt/apron/dress, supported and free cloth, multiple mesh densities; report step P50/P95, delivered physical time, seam gaps, stretch and intersections. Preserve accuracy checks |
 | P1.1 | Practical static asset interchange | `avatar.rs`, `garment/export.rs`, future adapters | OBJ+MTL round trip, then static GLB; explicit units/axes, groups, normals and UVs; Blender and a second independent viewer agree |
 | P1.2 | Industrial pattern exchange | canonical pattern model + new format adapters | DXF-AAMA and DXF-ASTM separately; import/export contours, grain and notches with independent fixtures; cutting vs sewing lines are explicit |
-| P1.3 | Usable pattern printing | `garment/export.rs`, `garment/print.rs` | **Partial:** physical-scale SVG only, one file per page, with a 100 mm ruler, tiling and overlap marks, labels, and allowance/notch lines. PDF output, print-tolerance validation and a nested sheet layout are still open |
+| P1.3 | Usable pattern printing | `garment/export.rs`, `garment/print.rs` | **Partial:** physical-scale SVG only, one file per page, with a 100 mm ruler, tiling and overlap marks, labels (name, id, cut count, fabric, grain), allowance/notch lines and a cut-list index with page ranges. PDF output, print-tolerance validation and a nested sheet layout are still open |
 | P2.1 | Production animation exchange | future adapters + animation model | Fixed-topology Alembic cache; USD mesh/material/time samples; FBX avatar skinning/animation import; playback and unit/time tests in external DCCs |
 | P2.2 | Truly replaceable solvers | `fitting.rs`, `solver.rs`, `vbd.rs` | One lifecycle/capability contract, two real adapters, shared scene suite; no fake backend selector |
 | P3 | Manufacturing and richer appearance | pattern/gradation and material adapters | Named grading dialect, size rules and reversible grades; USDZ packaging; optional legacy caches and SBSAR baking |
@@ -45,6 +49,7 @@ The format priorities below remain product priorities: a **critical** animation 
 - [ ] Linked symmetry, group rotation/3D transforms, 3D marquee, line offsets and dedicated hole point editing.
 - [ ] Import verified reusable patterns: FreeSewing Teagan/Titan/Jett are linked from the Web menu; SVG geometry and semantic sewing adapters remain planned ([investigation](docs/drafting-tools.md#web-pattern-library-investigation)).
 - [x] Per-boundary seam allowances and physical notches as stable draft data, a joined cutting contour, a 2D board display plus inspector editor, and physically scaled tiled SVG print sheets (CPU validation; printed-tolerance check and native acceptance pending).
+- [x] Per-piece cut counts, printed piece labels carrying cut count/fabric/grain, and a leading cut-list index page with page ranges and totals, as specification data outside physics (CPU validation; per-piece structured fields and a machine-readable BOM still open).
 - [x] Partial ranges in both views, numeric range editing, direction handles, ordered 1:N / M:N sewing and seam editing/deletion.
 - [ ] Automatic notch correspondence across a seam, and the remaining manufacturing sewing semantics.
 - [ ] Arrangement points, body-aware placement and useful preflight intersection feedback.

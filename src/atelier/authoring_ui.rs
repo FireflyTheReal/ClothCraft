@@ -62,6 +62,8 @@ pub(super) struct AuthoringUi {
     pub notch_percent: f64,
     /// New-notch depth draft, in millimetres. The document stores metres.
     pub notch_depth_mm: f64,
+    /// Cut-count draft: how many times the selected piece is cut.
+    pub cut_count: u32,
     /// Paper and scale of the printable pattern sheets.
     pub print_paper: marvelous_cloth::garment::print::Paper,
     pub print_scale: marvelous_cloth::garment::print::PrintScale,
@@ -688,6 +690,7 @@ impl Atelier {
             self.authoring.width_mm = panel.pattern.width * 1000.;
             self.authoring.height_mm = panel.pattern.height * 1000.;
             self.authoring.numeric_anchor = None;
+            self.authoring.cut_count = panel.cut_count;
         }
         ui.collapsing("Dimensions and points", |ui| {
             ui.strong("Dimensions (mm)");
@@ -796,6 +799,30 @@ impl Atelier {
             }
         });
         self.drafting_properties(ui, &panel);
+        ui.horizontal(|ui| {
+            ui.label("Cut count");
+            ui.add(
+                egui::DragValue::new(&mut self.authoring.cut_count)
+                    .speed(0.1)
+                    .range(1..=99),
+            )
+            .on_hover_text(
+                "How many times this piece is cut; printed on its sheets and in the cut list",
+            );
+            if ui
+                .add_enabled(
+                    self.authoring.cut_count != panel.cut_count,
+                    egui::Button::new("Apply count"),
+                )
+                .on_hover_text("Store the cut count for this piece")
+                .clicked()
+            {
+                self.edit(Command::CutCount {
+                    panel: panel.id.clone(),
+                    count: self.authoring.cut_count,
+                });
+            }
+        });
         ui.horizontal(|ui| {
             let duplicate = ui.button("Duplicate");
             self.smoke_target("duplicate", duplicate.rect.center());

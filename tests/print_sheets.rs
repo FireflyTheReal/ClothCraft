@@ -251,3 +251,172 @@ fn sheets_are_written_as_one_file_per_page() {
     let svg = std::fs::read_to_string(&paths[0]).unwrap();
     assert!(svg.starts_with("<svg") && svg.ends_with("</svg>"));
 }
+
+/// A second physical piece: two panels, so the print package gains an index.
+fn two_pieces() -> GarmentTemplate {
+    authoring::apply(
+        &small(),
+        Command::Duplicate {
+            panel: "panel_1".into(),
+        },
+    )
+    .unwrap()
+    .template
+}
+
+fn count(t: &GarmentTemplate, panel: &str, n: u32) -> GarmentTemplate {
+    authoring::apply(
+        t,
+        Command::CutCount {
+            panel: panel.into(),
+            count: n,
+        },
+    )
+    .unwrap()
+    .template
+}
+
+#[test]
+fn a_piece_is_printed_with_its_cut_count_fabric_and_grain() {
+    let t = count(&small(), "panel_1", 3);
+    let svg = &print::pattern_sheets(&t, Paper::A4, PrintScale::Full).unwrap()[0].svg;
+    // Everything a cutter needs before the fabric is unrolled.
+    assert!(svg.contains("cut ×3"), "{svg}");
+    assert!(svg.contains("grain 90°"), "{svg}");
+    assert!(
+        svg.contains(&t.fabrics[0].name),
+        "fabric name missing: {svg}"
+    );
+}
+
+#[test]
+fn a_single_piece_has_no_cut_list() {
+    // One panel already says everything on its own page label; an index page
+    // would only cost a sheet.
+    assert!(
+        print::cut_list_sheets(&small(), Paper::A4, PrintScale::Full)
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        print::write_sheets(
+            &small(),
+            tempfile::tempdir().unwrap().path(),
+            Paper::A4,
+            PrintScale::Full
+        )
+        .unwrap()
+        .len(),
+        1
+    );
+}
+
+#[test]
+fn a_multi_piece_template_gets_a_cut_list() {
+    let t = two_pieces();
+    assert_eq!(t.panels.len(), 2);
+    let lists = print::cut_list_sheets(&t, Paper::A4, PrintScale::Full).unwrap();
+    assert_eq!(lists.len(), 1);
+    let svg = &lists[0].svg;
+    assert!(svg.contains("cut list"), "{svg}");
+    for panel in &t.panels {
+        assert!(svg.contains(&panel.name), "{} missing: {svg}", panel.name);
+        assert!(svg.contains(&panel.id), "{} missing: {svg}", panel.id);
+    }
+    assert!(svg.contains("2 pieces to cut"), "{svg}");
+    assert!(svg.contains("×1"), "{svg}");
+}
+
+#[test]
+fn the_cut_list_page_ranges_match_the_pattern_sheets() {
+    let t = presets::basic(GarmentKind::Tshirt, 0);
+    let sheets = print::pattern_sheets(&t, Paper::A4, PrintScale::Full).unwrap();
+    let svg = &print::cut_list_sheets(&t, Paper::A4, PrintScale::Full).unwrap()[0].svg;
+    // The index numbers the pages in the same order the tiles are emitted, so
+    // the ranges it prints are exactly the pages each piece arrives on.
+    let mut next = 1;
+    for panel in &t.panels {
+        let pages = sheets.iter().filter(|s| s.panel == panel.id).count();
+        let range = if pages == 1 {
+            format!("{next}")
+        } else {
+            format!("{next}–{}", next + pages - 1)
+        };
+        assert!(
+            svg.contains(&format!(">{range}</text>")),
+            "{range} missing: {svg}"
+        );
+        next += pages;
+    }
+    assert_eq!(next - 1, sheets.len());
+    assert!(
+        svg.contains(&format!("{} pattern sheets", sheets.len())),
+        "{svg}"
+    );
+}
+
+#[test]
+fn a_cut_count_lands_on_the_page_and_in_the_cut_list() {
+    let t = count(&two_pieces(), "panel_1", 4);
+    let front = t.panels[0].id.clone();
+    let sheets = print::pattern_sheets(&t, Paper::A4, PrintScale::Full).unwrap();
+    let page = sheets.iter().find(|s| s.panel == front).unwrap();
+    assert!(page.svg.contains("cut ×4"), "{}", page.svg);
+    let back = sheets.iter().find(|s| s.panel == t.panels[1].id).unwrap();
+    assert!(back.svg.contains("cut ×1"), "{}", back.svg);
+
+    let list = &print::cut_list_sheets(&t, Paper::A4, PrintScale::Full).unwrap()[0].svg;
+    assert!(list.contains(">×4</text>"), "{list}");
+    assert!(list.contains(">×1</text>"), "{list}");
+    assert!(list.contains("5 pieces to cut"), "{list}");
+}
+
+#[test]
+fn the_cut_list_is_written_before_the_pattern_pages() {
+    let t = two_pieces();
+    let dir = tempfile::tempdir().unwrap();
+    let paths = print::write_sheets(&t, dir.path(), Paper::A4, PrintScale::Full).unwrap();
+    // Two panel pages plus the index, which sorts first so a shop reads it first.
+    assert_eq!(paths.len(), 3);
+    assert_eq!(
+        paths[0].file_name().unwrap(),
+        "00-cut-list-r1c1.svg",
+        "{paths:?}"
+    );
+    for path in &paths {
+        assert!(path.exists());
+    }
+}
+
+#[test]
+fn a_long_cut_list_spans_pages() {
+    // Forty pieces is more rows than one sheet holds at A4, so the index must
+    // continue on the next page and number itself.
+    let mut t = two_pieces();
+    let base = t.panels[0].clone();
+    t.panels.clear();
+    for k in 0..40 {
+        let mut piece = base.clone();
+        piece.id = format!("piece_{k}");
+        piece.name = format!("Piece {k}");
+        t.panels.push(piece);
+    }
+    let lists = print::cut_list_sheets(&t, Paper::A4, PrintScale::Full).unwrap();
+    assert!(lists.len() > 1, "{lists:?}");
+    assert!(lists.iter().all(|s| s.panel == "00-cut-list"));
+    assert!(lists.iter().all(|s| s.rows == lists.len()));
+    for (k, sheet) in lists.iter().enumerate() {
+        assert_eq!(sheet.row, k);
+        assert!(
+            sheet
+                .svg
+                .contains(&format!("page {}/{}", k + 1, lists.len()))
+        );
+    }
+    assert!(lists[0].svg.contains("Piece 0"), "{}", lists[0].svg);
+    assert!(
+        lists.last().unwrap().svg.contains("Piece 39"),
+        "{}",
+        lists.last().unwrap().svg
+    );
+}

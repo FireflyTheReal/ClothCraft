@@ -145,6 +145,12 @@ pub enum Command {
         edge: String,
         width_m: f64,
     },
+    /// How many times the piece is cut, for print labels and the cut list.
+    /// Presentation metadata only: it never changes rest geometry or the drape.
+    CutCount {
+        panel: String,
+        count: u32,
+    },
     Layout {
         panel: String,
         origin: DVec2,
@@ -247,6 +253,9 @@ pub fn same_physics(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
         for p in &mut t.panels {
             p.layout_2d = None;
             p.layout_rotation_degrees = 0.;
+            // How many times a piece is cut is a tech-pack specification, not
+            // rest geometry: changing it must never reset the drape.
+            p.cut_count = 1;
             // A required boundary length is a 2D specification, not rest
             // geometry: storing or clearing it must not invalidate the drape.
             if let Some(polygon) = p.polygon.as_mut() {
@@ -758,6 +767,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 },
                 pins: vec![],
                 pin_points: vec![],
+                cut_count: 1,
                 layout_2d: Some(lo),
                 layout_rotation_degrees: 0.,
             });
@@ -1201,6 +1211,18 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             }
             selected = Some(panel);
         }
+        Command::CutCount { panel, count } => {
+            if !(1..=99).contains(&count) {
+                return Err("A cut count must be between 1 and 99".into());
+            }
+            template
+                .panels
+                .iter_mut()
+                .find(|p| p.id == panel)
+                .ok_or("Panel not found")?
+                .cut_count = count;
+            selected = Some(panel);
+        }
         Command::Layout { panel, origin } => {
             template
                 .panels
@@ -1236,6 +1258,9 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .clone();
             copy.id = unused_id("panel", template.panels.iter().map(|p| p.id.clone()));
             copy.name = format!("{} copy", copy.name);
+            // A duplicate is a new piece: it is cut on its own, so it starts at
+            // one copy instead of inheriting the source quantity.
+            copy.cut_count = 1;
             copy.placement.translation.x += copy.pattern.width + 0.05;
             let i = template.panels.iter().position(|p| p.id == panel).unwrap();
             copy.layout_2d = Some(layout(&template, i) + DVec2::new(copy.pattern.width + 0.15, 0.));

@@ -45,6 +45,7 @@ pub(super) fn add_polygon(
         placement,
         pins: vec![],
         pin_points: vec![],
+        cut_count: 1,
         layout_2d: Some(origin),
         layout_rotation_degrees: 0.,
     };
@@ -95,6 +96,9 @@ pub(super) fn mirror(
     if let Some(side) = copy_side {
         p.id = unused_id("panel", t.panels.iter().map(|p| p.id.clone()));
         p.name = format!("{} miroir", p.name);
+        // The mirrored piece is a separate cut, so the source quantity is not
+        // inherited; the untouched original keeps its own count.
+        p.cut_count = 1;
         let delta = match axis {
             MirrorAxis::X => DVec2::new(p.pattern.width + 0.05, 0.),
             MirrorAxis::Y => DVec2::new(0., p.pattern.height + 0.05),

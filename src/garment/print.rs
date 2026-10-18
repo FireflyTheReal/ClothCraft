@@ -301,6 +301,29 @@ fn polyline(out: &mut String, points: &[DVec2]) {
     }
 }
 
+/// Tiles a panel needs on this paper, and the sheet geometry behind them.
+fn tiling(
+    panel: &Panel,
+    paper: Paper,
+    scale: PrintScale,
+) -> Result<(SheetGeometry, usize, usize), String> {
+    let geometry = sheet_geometry(panel, scale)?;
+    let (page_w, page_h) = paper.millimetres();
+    // Tiles step by a page minus the overlap, so neighbours repeat a strip that
+    // carries the same geometry and can be taped over it.
+    let columns = ((geometry.extent_mm.x / (page_w - OVERLAP_MM)).ceil() as usize).max(1);
+    let rows = ((geometry.extent_mm.y / (page_h - OVERLAP_MM)).ceil() as usize).max(1);
+    if columns * rows > MAX_SHEETS {
+        return Err(format!(
+            "{} needs {} pages at {}; use a smaller print scale",
+            panel.id,
+            columns * rows,
+            scale.label()
+        ));
+    }
+    Ok((geometry, columns, rows))
+}
+
 /// Build every printable sheet of a template: one page per tile of every panel,
 /// in panel order and row-major tile order.
 pub fn pattern_sheets(
@@ -308,27 +331,12 @@ pub fn pattern_sheets(
     paper: Paper,
     scale: PrintScale,
 ) -> Result<Vec<Sheet>, String> {
-    let (page_w, page_h) = paper.millimetres();
     if template.panels.is_empty() {
         return Err("There is nothing to print".into());
     }
     let mut sheets = vec![];
     for panel in &template.panels {
-        let geometry = sheet_geometry(panel, scale)?;
-        // Tiles step by a page minus the overlap, so neighbours repeat a strip
-        // that carries the same geometry and can be taped over it.
-        let step_x = page_w - OVERLAP_MM;
-        let step_y = page_h - OVERLAP_MM;
-        let columns = ((geometry.extent_mm.x / step_x).ceil() as usize).max(1);
-        let rows = ((geometry.extent_mm.y / step_y).ceil() as usize).max(1);
-        if columns * rows > MAX_SHEETS {
-            return Err(format!(
-                "{} needs {} pages at {}; use a smaller print scale",
-                panel.id,
-                columns * rows,
-                scale.label()
-            ));
-        }
+        let (geometry, columns, rows) = tiling(panel, paper, scale)?;
         for row in 0..rows {
             for column in 0..columns {
                 sheets.push(Sheet {
@@ -344,6 +352,166 @@ pub fn pattern_sheets(
                 });
             }
         }
+    }
+    Ok(sheets)
+}
+
+/// One text run on a sheet, in paper millimetres.
+fn text(out: &mut String, x: f64, y: f64, size: f64, color: &str, body: &str) {
+    let _ = write!(
+        out,
+        "<text x=\"{x:.2}\" y=\"{y:.2}\" font-family=\"Arial,sans-serif\" font-size=\"{size}\" fill=\"{color}\">{}</text>",
+        xml_escape(body)
+    );
+}
+
+/// The leading index: every piece, how many times it is cut, its fabric and the
+/// pattern-sheet pages that carry it. Only a multi-piece template gets one — a
+/// single piece already shows everything on its own page label.
+pub fn cut_list_sheets(
+    template: &GarmentTemplate,
+    paper: Paper,
+    scale: PrintScale,
+) -> Result<Vec<Sheet>, String> {
+    if template.panels.len() < 2 {
+        return Ok(vec![]);
+    }
+    let (page_w, page_h) = paper.millimetres();
+    // Page ranges follow the order `pattern_sheets` emits, so the index and the
+    // tiles it describes cannot drift apart.
+    let mut rows = vec![];
+    let mut next_page = 1usize;
+    let mut sheet_total = 0usize;
+    for panel in &template.panels {
+        let (geometry, columns, tile_rows) = tiling(panel, paper, scale)?;
+        let tiles = columns * tile_rows;
+        let fabric = template
+            .fabrics
+            .iter()
+            .find(|f| f.id == panel.fabric)
+            .map(|f| f.name.as_str())
+            .unwrap_or(panel.fabric.as_str());
+        rows.push((
+            panel.name.clone(),
+            panel.id.clone(),
+            panel.cut_count,
+            fabric.to_string(),
+            next_page,
+            next_page + tiles - 1,
+            geometry.extent_mm - DVec2::splat(2. * MARGIN_MM),
+        ));
+        next_page += tiles;
+        sheet_total += tiles;
+    }
+    let pieces: u32 = template.panels.iter().map(|p| p.cut_count).sum();
+    let line = 6.;
+    let body_top = 32.;
+    let per_page = (((page_h - 46. - body_top) / line).floor() as usize).max(1);
+    let pages = rows.len().div_ceil(per_page);
+    let mut sheets = vec![];
+    for page in 0..pages {
+        let start = page * per_page;
+        let chunk = &rows[start..rows.len().min(start + per_page)];
+        let mut svg = format!(
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{page_w}mm\" height=\"{page_h}mm\" viewBox=\"0 0 {page_w} {page_h}\">\
+<rect width=\"100%\" height=\"100%\" fill=\"#ffffff\"/>"
+        );
+        for corner in [
+            DVec2::new(MARGIN_MM * 0.5, MARGIN_MM * 0.5),
+            DVec2::new(page_w - MARGIN_MM * 0.5, MARGIN_MM * 0.5),
+            DVec2::new(MARGIN_MM * 0.5, page_h - MARGIN_MM * 0.5),
+            DVec2::new(page_w - MARGIN_MM * 0.5, page_h - MARGIN_MM * 0.5),
+        ] {
+            registration(&mut svg, corner);
+        }
+        text(
+            &mut svg,
+            MARGIN_MM,
+            13.,
+            6.,
+            "#000",
+            &format!("{} — cut list", template.name),
+        );
+        text(
+            &mut svg,
+            MARGIN_MM,
+            21.,
+            3.4,
+            "#444",
+            &format!(
+                "{pieces} pieces to cut · {} pattern sheets · {} · {} · page {}/{}",
+                sheet_total,
+                paper.name(),
+                scale.label(),
+                page + 1,
+                pages
+            ),
+        );
+        text(&mut svg, MARGIN_MM, body_top - 3., 3.4, "#000", "Piece");
+        text(&mut svg, 100., body_top - 3., 3.4, "#000", "Cut");
+        text(&mut svg, 120., body_top - 3., 3.4, "#000", "Fabric");
+        text(&mut svg, 162., body_top - 3., 3.4, "#000", "Sheets");
+        text(&mut svg, 186., body_top - 3., 3.4, "#000", "Size (mm)");
+        for (index, (name, id, count, fabric, first, last, size)) in chunk.iter().enumerate() {
+            let y = body_top + index as f64 * line;
+            text(
+                &mut svg,
+                MARGIN_MM,
+                y,
+                3.4,
+                "#000",
+                &format!("{name} ({id})"),
+            );
+            text(&mut svg, 100., y, 3.4, "#000", &format!("×{count}"));
+            text(&mut svg, 120., y, 3.4, "#444", fabric);
+            let range = if first == last {
+                format!("{first}")
+            } else {
+                format!("{first}–{last}")
+            };
+            text(&mut svg, 162., y, 3.4, "#444", &range);
+            text(
+                &mut svg,
+                186.,
+                y,
+                3.4,
+                "#444",
+                &format!("{:.0}×{:.0}", size.x, size.y),
+            );
+        }
+        if page + 1 == pages {
+            let y = body_top + chunk.len() as f64 * line + 4.;
+            text(
+                &mut svg,
+                MARGIN_MM,
+                y,
+                3.4,
+                "#000",
+                &format!(
+                    "Total {pieces} pieces · {sheet_total} sheets (plus this cut list) · 1 unit = 1 mm at {}",
+                    scale.label()
+                ),
+            );
+        }
+        ruler(&mut svg, DVec2::new(MARGIN_MM, page_h - 24.));
+        text(
+            &mut svg,
+            MARGIN_MM,
+            page_h - 12.,
+            3.2,
+            "#444",
+            "Cut every piece the marked number of times; the sewing line is on the pattern sheets.",
+        );
+        svg.push_str("</svg>");
+        sheets.push(Sheet {
+            panel: "00-cut-list".into(),
+            column: 0,
+            row: page,
+            columns: 1,
+            rows: pages,
+            name: "Cut list".into(),
+            svg,
+        });
     }
     Ok(sheets)
 }
@@ -459,16 +627,23 @@ fn page_svg(
     } else {
         "no seam allowance: sewing and cutting lines coincide"
     };
+    let fabric = template
+        .fabrics
+        .iter()
+        .find(|f| f.id == panel.fabric)
+        .map(|f| f.name.as_str())
+        .unwrap_or(panel.fabric.as_str());
     let _ = write!(
         out,
-        "<text x=\"{}\" y=\"{}\" font-family=\"Arial,sans-serif\" font-size=\"4\" fill=\"#000\">{} · {}</text>\
+        "<text x=\"{}\" y=\"{}\" font-family=\"Arial,sans-serif\" font-size=\"4\" fill=\"#000\">{} · {} · cut ×{}</text>\
 <text x=\"{}\" y=\"{}\" font-family=\"Arial,sans-serif\" font-size=\"4\" fill=\"#000\">{} · {} · page {}/{} (col {}, row {}) · {}</text>\
-<text x=\"{}\" y=\"{}\" font-family=\"Arial,sans-serif\" font-size=\"3.2\" fill=\"#444\">{}</text>\
+<text x=\"{}\" y=\"{}\" font-family=\"Arial,sans-serif\" font-size=\"3.2\" fill=\"#444\">{} · {} · grain {:.0}°</text>\
 <text x=\"{}\" y=\"{}\" font-family=\"Arial,sans-serif\" font-size=\"3.2\" fill=\"#444\">Cut on the solid line; sew on the dashed line. Overlap the marked strip when taping sheets.</text>",
         MARGIN_MM,
         MARGIN_MM * 0.8,
         xml_escape(&panel.name),
         xml_escape(&panel.id),
+        panel.cut_count,
         MARGIN_MM,
         MARGIN_MM * 0.8 + 5.,
         scale.label(),
@@ -481,6 +656,8 @@ fn page_svg(
         MARGIN_MM,
         page_h - 32.,
         xml_escape(&template.name),
+        xml_escape(fabric),
+        panel.grain_degrees,
         MARGIN_MM,
         page_h - 28.,
     );
@@ -497,14 +674,17 @@ fn xml_escape(s: &str) -> String {
 }
 
 /// Write every sheet as `<directory>/<panel>-r<row>c<column>.svg`, returning the
-/// paths. One file per page; the directory is created when missing.
+/// paths. The cut-list index, when there is one, is written first so its files
+/// sort before the pattern pages. One file per page; the directory is created
+/// when missing.
 pub fn write_sheets(
     template: &GarmentTemplate,
     directory: &FsPath,
     paper: Paper,
     scale: PrintScale,
 ) -> Result<Vec<PathBuf>, String> {
-    let sheets = pattern_sheets(template, paper, scale)?;
+    let mut sheets = cut_list_sheets(template, paper, scale)?;
+    sheets.extend(pattern_sheets(template, paper, scale)?);
     fs::create_dir_all(directory).map_err(|e| e.to_string())?;
     let mut paths = vec![];
     for sheet in &sheets {

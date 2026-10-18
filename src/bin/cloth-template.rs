@@ -52,6 +52,7 @@ enum Command {
         output: PathBuf,
     },
     /// Write physically scaled SVG pattern sheets, one file per printed page.
+    /// A multi-piece template also gets a leading cut-list page.
     Print {
         template: PathBuf,
         #[arg(long, default_value = "output/print")]

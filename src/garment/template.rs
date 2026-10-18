@@ -119,6 +119,10 @@ pub struct Panel {
     /// Board presentation only; material coordinates and grain are unchanged.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub layout_rotation_degrees: f64,
+    /// How many times this piece is cut. A tech-pack and print value only: it
+    /// never changes rest geometry, meshing, grain or the simulated drape.
+    #[serde(default = "one", skip_serializing_if = "is_one")]
+    pub cut_count: u32,
     #[serde(default)]
     pub pins: Vec<Corner>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -126,6 +130,12 @@ pub struct Panel {
 }
 fn is_zero(value: &f64) -> bool {
     *value == 0.
+}
+fn one() -> u32 {
+    1
+}
+fn is_one(value: &u32) -> bool {
+    *value == 1
 }
 impl Panel {
     pub fn boundary_vertices(&self, side: Side, offset: usize) -> Vec<usize> {
@@ -265,6 +275,12 @@ impl GarmentTemplate {
                 || !panel.layout_rotation_degrees.is_finite()
             {
                 return Err("Non-finite 2D layout".into());
+            }
+            if !(1..=99).contains(&panel.cut_count) {
+                return Err(format!(
+                    "Panel {} needs a cut count between 1 and 99",
+                    panel.id
+                ));
             }
             let f = self
                 .fabrics
@@ -467,6 +483,7 @@ impl GarmentTemplate {
                     pin_points: vec![],
                     layout_2d: None,
                     layout_rotation_degrees: 0.,
+                    cut_count: 1,
                     id: "left".into(),
                     name: "Left panel".into(),
                     pattern: Pattern {
@@ -488,6 +505,7 @@ impl GarmentTemplate {
                     pin_points: vec![],
                     layout_2d: None,
                     layout_rotation_degrees: 0.,
+                    cut_count: 1,
                     id: "right".into(),
                     name: "Right panel".into(),
                     pattern: Pattern {
