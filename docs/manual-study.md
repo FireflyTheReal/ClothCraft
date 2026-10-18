@@ -71,6 +71,31 @@ No proprietary implementation was inspected or imported for this work: the CLO 3
 [notch]: https://support.clo3d.com/hc/en-us/articles/115015735467-Notch
 
 
+## Feature-map review and BOM slice (2026-10-18)
+
+Read, for the [feature map](feature-map.md): the CLO product pages
+<https://www.clo3d.com/en/product/clo> and <https://www.clo3d.com/en/product/features>, the
+public release-feature JSON that the features page loads
+(`/api/v1/swrelease/features?version=<version>&lang=en`, versions `2026.1` through `12.0`),
+and the public manual index
+<https://support.clo3d.com/hc/en-us/categories/115000064648>. The features page returned no
+rows without a version context, so the versioned response it fetches was read instead of the
+rendered page. From the index, only category and article titles were used (for example *2D
+Pattern Information*, *Create Notch*, *Pattern Annotation*, *Print Layout Mode*, *BOM
+Editor*). Individual articles were not read for this pass beyond those already recorded
+above.
+
+No CLO asset, icon or code was copied. Feature names are paraphrased from public pages; the
+status column is a code audit of *this* repository, and the roadmap from the map is our own
+prioritisation, not a vendor ranking. Recognising a published function is not a compatibility
+or parity claim.
+
+The slice taken from the map, `BOM-01` (per-piece cut count, richer page labels, and a printed
+cut list with page ranges), uses our own field name, bounds, omission rule, tiling reuse and
+file naming. The cut-list page layout is a ClothCraft document design, not a reproduction of
+any vendor screen, and no manual page defines its columns or order.
+
+
 ## Viewport controls follow-up (2026-10-15)
 
 Read the official [3D Window](https://support.marvelousdesigner.com/hc/en-us/articles/47358233197593-3D-Window) and [3D Window Display Icons](https://support.marvelousdesigner.com/hc/en-us/articles/47358200025497-3D-Window-Display-Icons) articles. They describe a dedicated 3D work area with local display controls, including grid/shadow and surface visibility. Visually inspected the screenshot supplied by the user; an official linked online image was found but not successfully displayed. Our independent implementation groups display controls behind a gear dropdown, prioritizes two resizable canvases, and uses our own vector icons. [Implemented features and render limits](workspace-ui.md); no product parity or GPU acceptance is claimed.
