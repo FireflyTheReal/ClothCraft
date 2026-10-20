@@ -17,7 +17,8 @@ pub enum Primitive {
     Ellipse,
     Sector,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum MirrorAxis {
     X,
     Y,
@@ -36,7 +37,7 @@ pub fn primitive(
     meshing: MeshingSettings,
 ) -> Result<PolygonPattern, String> {
     if !size.is_finite() || size.min_element() < 0.005 || size.max_element() > 10. {
-        return Err("Dimensions : 5 mm à 10 m".into());
+        return Err("Dimensions must be between 5 mm and 10 m".into());
     }
     let mut points = vec![];
     let mut controls = vec![];
@@ -54,7 +55,7 @@ pub fn primitive(
             sweep_degrees
         };
         if !sweep.is_finite() || !(5. ..=355.).contains(&sweep) && kind == Primitive::Sector {
-            return Err("Arc : angle entre 5° et 355°".into());
+            return Err("Arc angle must be between 5° and 355°".into());
         }
         let count = (sweep / 90.).ceil() as usize;
         let step = sweep.to_radians() / count as f64;
@@ -165,7 +166,7 @@ pub fn boolean(
         .flatten()
         .any(|p| p.iter().any(|v| !v.is_finite() || v.abs() > 1000.))
     {
-        return Err("Booléen : coordonnées finies dans ±1000 m requises".into());
+        return Err("Boolean operation requires finite coordinates within ±1000 m".into());
     }
     let rule = match op {
         BooleanOp::Union => OverlayRule::Union,
@@ -174,17 +175,17 @@ pub fn boolean(
     };
     let result = a_paths.overlay(&b_paths, rule, FillRule::EvenOdd);
     if result.is_empty() {
-        return Err("Résultat vide : aucune modification".into());
+        return Err("Empty result: no changes applied".into());
     }
     if result.len() > 32 {
-        return Err("Booléen : maximum 32 pièces résultantes".into());
+        return Err("Boolean operation supports at most 32 resulting pieces".into());
     }
     let mut out = vec![];
     for shape in result {
         let mut contours = shape
             .into_iter()
             .map(|p| p.into_iter().map(DVec2::from_array).collect::<Vec<_>>());
-        let mut points = contours.next().ok_or("Résultat booléen invalide")?;
+        let mut points = contours.next().ok_or("Invalid boolean result")?;
         if area(&points) < 0. {
             points.reverse();
         }

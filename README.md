@@ -1,76 +1,79 @@
 # ClothCraft
 
-ClothCraft is an open-source garment editor written in Rust. It connects editable 2D patterns, sewing relationships and 3D placement to a cloth simulation.
+An open-source garment editor and cloth simulation prototype, written in Rust.
 
-**Early alpha.** Basic drafting and fitting work, but most of the work needed for a production garment tool remains ahead. Expect incomplete tools, uncalibrated materials and simulation failures on difficult arrangements.
+Draw patterns, sew them together, place them around an avatar and simulate the result. Most work so far has gone into building a physics foundation that can handle difficult contact. The editor, interchange formats and material calibration need substantial work.
+
+**This is a research prototype, not a production garment tool.** Expect unfinished interactions, residual oscillation, slow simulation on dense meshes and cases that still fail. Help is welcome with the interface, physics, testing, documentation and file formats. You do not need to be a programmer to contribute a useful reproduction, workflow sketch or testable hypothesis.
 
 ![ClothCraft workspace](docs/screenshots/workspace.png)
 
-## Run
+## Try it
 
-Install Rust stable, then run from the repository root:
+Install Rust stable and run from the repository root:
 
 ```sh
 cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view
 ```
 
-The editor starts with a T-shirt and the bundled MakeHuman mannequin. A graphics adapter supported by wgpu is required for the desktop workspace. Command-line tools and numerical tests also build without graphics dependencies.
+The editor opens a T-shirt and the bundled MakeHuman mannequin. Windows is the main development platform; macOS and Linux need equivalent acceptance testing. The desktop requires a graphics adapter supported by wgpu. CPU command-line tools build without graphics dependencies.
+
+To reopen a saved garment:
 
 ```sh
-# Reopen an editable garment
 cargo run --release --locked -j 2 --bin cloth-fit -- --project path/to/garment.json --steps 0 --view
-
-# Validate a template on CPU
-cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/tshirt.json
 ```
 
-Windows is the primary development platform. Equivalent macOS and Linux acceptance testing is still needed.
+Use **Space** to start or pause, **Grab** to pull the cloth and **Ctrl+S** to save. Grab exposes radius and strength above the 3D view; **3D gear → Clean view** hides editing annotations. Right-click a canvas for the radial tool menu. **Q** opens nearby shape, mirror and boolean actions. The 2D board and 3D viewport share panel and boundary selections.
 
-## Working with garments
+## What works today
 
-- **Draw:** rectangles, ellipses, arc sectors and Bézier contours on a shared 2D board. Edit points and dimensions; mirror, duplicate, combine or subtract pieces; add holes and internal sewing paths.
-- **Sew:** select boundaries in either view. Sew full edges or partial ranges, edit their lengths, reverse their direction and assemble ordered chains on both sides. Unequal lengths require explicit easing. Existing seams can be edited or deleted.
-- **Arrange:** move and rotate pieces in 3D. Board layout is separate from material rest geometry.
-- **Simulate:** start or pause with Space; use Grab to pull the cloth. Inspect seam gaps, stretch and full-step timings in Properties → Simulation.
-- **Save:** File → Save / Save As stores the editable garment and current simulation state. Keep the JSON and its adjacent `.assets` directory together when moving a project. File → Open can relink a missing OBJ avatar. Recovery snapshots are separate from saved documents.
+- **Patterns:** rectangles, ellipses, arc sectors, Bézier contours, point editing, holes and internal sewing paths; independent and paired linked mirrors; two-piece booleans.
+- **Sewing:** whole boundaries, partial ranges and ordered multi-edge chains, with direction, explicit easing and editable relationships.
+- **Arrangement:** translation and rotation in 3D; a separate 2D board layout; undo/redo and semantic copy/paste.
+- **Simulation:** CPU and hybrid GPU VBD with OGC contact, mouse grabbing and passive motion diagnostics. The floor is currently a visual reference, not a physical collider.
+- **Documents:** Open, Save, Save As, portable avatar assets and local recovery. Keep a saved JSON and its adjacent `.assets` folder together.
 
-Right-click either canvas for the radial tool menu. Ctrl+C/V copies selected pieces and their internal seam relationships; Ctrl+Z undoes an edit. Drag the dividers to resize the views. Viewport gear menus contain display and navigation options.
+Select two boundaries in Sew, then confirm the nearby proposal; unequal lengths offer an explicit easing action. In Edit, box/lasso can select contour points across patterns for one group move; Delete removes selected pieces when no point, seam or text field owns the action. See [editing and inspection controls](docs/editor-basics.md).
 
-[Document and sewing guide](docs/documents-and-sewing.md) · [Authoring reference](docs/authoring.md) · [Workspace controls](docs/workspace-ui.md)
+These are implemented foundations, not completed production workflows. See the [workspace guide](docs/workspace-ui.md), [document and sewing guide](docs/documents-and-sewing.md) and [authoring reference](docs/authoring.md) for controls and limitations.
 
-## Supported files
+## Physics: strengths and open problems
+
+The interactive engine uses **Vertex Block Descent (VBD) with Offset Geometric Contact (OGC)**. GPU execution is hybrid: candidate search and local solves run on the GPU, while precise contact geometry and movement bounds remain on the CPU. A double-precision Newton reference is also available.
+
+Contact protections are designed to preserve separation from an initially separated arrangement, within the documented geometric assumptions and local seam exclusions. They do not repair arbitrary initial intersections or guarantee every possible garment. See the [contact contract](docs/ogc.md).
+
+The main open problems are residual motion under tension, convergence, cost at fine mesh resolutions, friction, seam treatment and measured material calibration. Some test scenes run in real time; that does not establish a universal performance guarantee. **Rendering FPS and simulation speed are different:** a smooth viewport can show cloth progressing slower than wall time. Comparisons must report simulated seconds per wall second and full-step timings, alongside collision and deformation checks.
+
+The [headless solver lab](docs/solver-lab.md) contains experimental XPBD/OGC, finite-stiffness AVBD adaptations and a separate native Box3D particle lattice. Their failures are recorded; they are not alternative editor modes. Small contact research kernels are also not garment-ready solvers. No alternative has been selected to replace the current engine.
+
+The long-term goal is interchangeable physics behind a stable document and authoring model. There is no public solver plugin ABI yet. A useful solver contribution must preserve collision coverage and fluid pull/release behavior, not just reduce a jitter number.
+
+## Files
 
 | Data | Input | Output |
 |---|---|---|
 | Editable garment | ClothCraft project / template JSON | Project / template JSON |
 | Static avatar | OBJ | — |
-| Simulated surface | — | OBJ geometry and material-space UVs |
-| Pattern preview | — | SVG; not a print-to-scale production pattern |
+| Simulated garment mesh | — | OBJ geometry and material-space UVs |
+| Pattern preview | — | SVG preview, not production printing |
 | Research data | — | Metrics, fiber frames and geometric grain guides |
 
-Export writes interchange artifacts to the session output folder, separately from Save. DXF-AAMA/ASTM, MTL, GLB, Alembic, USD, FBX, PDF printing and grading-rule adapters are **not implemented**. CLO and Marvelous Designer project files are not supported.
+DXF-AAMA/ASTM, MTL round trips, GLB, Alembic, USD, FBX, PDF printing and grading rules remain planned. CLO and Marvelous Designer project files are not supported. Save preserves the editable document; Export writes separate interchange artifacts. See the [input/output contracts](docs/interoperability.md).
 
-See the [format plan](docs/interoperability.md) for units, supported entities and acceptance criteria.
+## Help build it
 
-## Physics
+Choose a track from the [roadmap](ROADMAP.md):
 
-The interactive engine uses VBD with OGC contact. GPU execution is hybrid: contact detection and parts of the step remain on the CPU. A double-precision Newton reference is available for numerical comparisons.
+- **Make editing understandable:** sewing feedback, selection, arrangement, measurement and accessibility. An unfamiliar person should be able to make a simple garment without reading implementation details.
+- **Improve the solver:** profile full steps, investigate contact continuity and convergence, or build an alternative behind the same benchmark contract. Retain failed experiments and disclose tradeoffs.
+- **Connect other tools:** implement a small, tested import or export slice with explicit units and supported entities.
+- **Test real workflows:** share an original garment you may redistribute, exact steps, settings and expected behavior. A small failing example is valuable.
 
-The authoring model is independent of the renderer and solver. The aim is to compare and replace physics backends without replacing garment documents or editing tools. A general solver plugin interface does not exist yet.
-
-Current limits include finite iteration budgets, penalty sewing, local collision exclusions at seams, no Coulomb friction and no animated avatars. Contact requires an initially separated arrangement. Material presets are estimates, not measured calibration. Remeshing resets affected simulation geometry. The displayed floor is visual only.
-
-[Contact contract](docs/ogc.md) · [Material evidence](docs/fabrics.md) · [Solver comparison protocol](docs/solver-challenge.md)
+Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [contributor kit](docs/contributor-kit.md) includes task briefs, an issue checklist and prompts you can give a coding assistant. Agents should read [AI_START_HERE.md](AI_START_HERE.md) and [AGENTS.md](AGENTS.md) before editing. Contributions need human review and the same evidence whether written by a person, an AI assistant or both.
 
 ## Development
-
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), [AI_START_HERE.md](AI_START_HERE.md) and [the handoff](docs/handoff.md). The [roadmap](ROADMAP.md) separates implemented features from planned work. Human and AI-assisted contributions follow the same review and validation requirements.
-
-```powershell
-.\scripts\check-cpu.ps1
-```
-
-Or run the core checks directly:
 
 ```sh
 cargo test --locked --no-default-features -j 2 -- --test-threads=2
@@ -78,21 +81,23 @@ cargo clippy --locked --no-default-features --all-targets -j 2 -- -D warnings
 cargo build --locked -j 2
 ```
 
-These commands do not run GPU workloads. Native window and GPU tests are opt-in. Performance contributions should report the same scenes, resolution, material parameters and simulated duration, including quality metrics and full-step cost.
+On Windows, `scripts/check-cpu.ps1` runs the CPU checks. GPU tests and native window checks are opt-in; coordinate GPU use with the machine's owner. The [headless physics lab](docs/directional-contact.md#headless-laboratory) and [settling zoo](docs/settling-zoo.md) provide reproducible fixtures without opening the editor.
 
-| Area | Entry point |
+| Area | Start here |
 |---|---|
-| Document I/O | `src/document.rs`, `src/fitting.rs` |
-| Editing transactions and undo | `src/authoring.rs` |
-| Pattern geometry, meshing and seams | `src/garment/` |
+| Documents and editing | `src/document.rs`, `src/fitting.rs`, `src/authoring.rs` |
+| Patterns, meshing and seams | `src/garment/` |
 | Desktop workspace | `src/atelier/` |
 | Material energy and reference solver | `src/energy.rs`, `src/solver.rs` |
 | Interactive physics and contact | `src/vbd.rs`, `src/ogc/`, `src/gpu_vbd.rs` |
+| Research adapters | `src/solver_lab/`, `examples/solver_compare.rs` |
+
+The [architecture](docs/architecture.md), [handoff](docs/handoff.md) and [solver challenge](docs/solver-challenge.md) explain the contracts and evidence.
 
 ## License and credits
 
-Original source and documentation are [MIT-licensed](LICENSE). The MakeHuman assets retain their [CC0 notice and provenance](assets/makehuman/LICENSE.ASSETS.md); dependencies retain their own licenses. See the [artwork record](assets/branding/README.md) for the generated project icon.
+Original source and documentation are [MIT-licensed](LICENSE). The bundled MakeHuman assets retain their [CC0 notice and provenance](assets/makehuman/LICENSE.ASSETS.md); dependencies retain their own licenses. The project icon is documented in the [artwork record](assets/branding/README.md).
 
-Some authoring and camera tools were adapted from FireflyTheReal / julienfoss's fork; [integration notes](docs/firefly-integration.md) record their provenance and subsequent changes.
+Some authoring and camera tools were adapted from FireflyTheReal / julienfoss's fork; the [integration notes](docs/firefly-integration.md) record provenance and fixes.
 
 ClothCraft is independent of CLO, Marvelous Designer and ArtCraft. Public manuals inform workflow research; proprietary code, icons and garment examples are not included. The [manual study](docs/manual-study.md) records the references consulted.

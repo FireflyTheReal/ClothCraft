@@ -55,7 +55,7 @@ impl Resources {
         queue: &wgpu::Queue,
         layout: &wgpu::BindGroupLayout,
         data: [&[u8]; 8],
-        moving: usize,
+        (moving, rest_terms, rest_incident, rest_changed): (usize, &[u8], &[u8], bool),
     ) {
         let mut changed = false;
         for (i, bytes) in data
@@ -64,8 +64,20 @@ impl Resources {
             .chain(std::iter::once(&[][..]))
             .enumerate()
         {
-            let size = if i == 8 { moving * 16 } else { bytes.len() }.max(16);
-            if self.capacities.get(i).is_none_or(|c| *c < size) {
+            let resident = match i {
+                3 => rest_terms,
+                4 => rest_incident,
+                _ => &[],
+            };
+            let prefix = resident.len();
+            let size = if i == 8 {
+                moving * 16
+            } else {
+                prefix + bytes.len()
+            }
+            .max(16);
+            let grow = self.capacities.get(i).is_none_or(|c| *c < size);
+            if grow {
                 let capacity = size.next_power_of_two();
                 let buffer = device.create_buffer(&wgpu::BufferDescriptor {
                     label: Some("VBD persistent storage"),
@@ -91,8 +103,11 @@ impl Resources {
                 }
                 changed = true;
             }
+            if (grow || rest_changed) && !resident.is_empty() {
+                queue.write_buffer(&self.buffers[i], 0, resident);
+            }
             if !bytes.is_empty() {
-                queue.write_buffer(&self.buffers[i], 0, bytes);
+                queue.write_buffer(&self.buffers[i], prefix as u64, bytes);
             }
         }
         if changed {

@@ -1,0 +1,28 @@
+name: Feature idea or research hypothesis
+description: Suggest a better workflow or a testable physics/performance idea. Untested ideas are welcome.
+title: "[Idea] "
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What are you trying to achieve?
+      description: Describe the task or observed limitation in your own words.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you try?
+      description: A workflow sketch, example from another tool, paper or technical hypothesis is useful. You do not need to provide an implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: What would show whether it helps?
+      description: Describe one observable result or small experiment. Separate what you have tested from what you suspect; include source links if relevant.
+  - type: textarea
+    id: contribution
+    attributes:
+      label: Would you like to help with it?
+      description: Optional. Testing, design sketches, documentation, code and AI-assisted contributions are all welcome. Mention related work or a fork to avoid duplicate effort.

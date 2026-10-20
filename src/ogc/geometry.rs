@@ -10,11 +10,13 @@ pub enum Feature {
     Face(usize),
 }
 
+#[inline]
 pub fn vertex_feasible(p: DVec3, v: usize, x: &[DVec3], top: &Topology) -> bool {
     top.neighbors[v]
         .iter()
         .all(|j| (p - x[v]).dot(x[v] - x[*j]) >= -1e-14)
 }
+#[inline]
 pub fn edge_feasible(p: DVec3, e: usize, x: &[DVec3], top: &Topology) -> bool {
     let [a, b] = top.edges[e].map(|i| x[i]);
     let u = b - a;
@@ -28,6 +30,7 @@ pub fn edge_feasible(p: DVec3, e: usize, x: &[DVec3], top: &Topology) -> bool {
         })
 }
 
+#[inline]
 pub fn closest_triangle(p: DVec3, t: usize, x: &[DVec3], top: &Topology) -> (DVec3, Feature) {
     let ids = top.triangles[t];
     let [a, b, c] = ids.map(|i| x[i]);
@@ -75,6 +78,7 @@ pub fn closest_triangle(p: DVec3, t: usize, x: &[DVec3], top: &Topology) -> (DVe
     let denom = 1.0 / (va + vb + vc);
     (a + ab * (vb * denom) + ac * (vc * denom), Feature::Face(t))
 }
+#[inline]
 pub fn closest_segments(a: DVec3, b: DVec3, c: DVec3, d: DVec3) -> (f64, f64) {
     let u = b - a;
     let v = d - c;

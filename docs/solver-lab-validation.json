@@ -1,0 +1,235 @@
+{
+  "date": "2026-10-19",
+  "scope": "Short candidate screening; not a long-term settling or realtime guarantee",
+  "source_sha256": "E542E066F4BF662149F8603BAB47913A60498915689386F0BD51503E4D7AACCB",
+  "rust_initial_state_sha256": "18174FE9D1AFDAB39B95BD9DDE0826B5E02874319F51776A1BBCE179976F87DF",
+  "vertices": 5126,
+  "cloth_triangles": 9546,
+  "avatar_triangles": 26756,
+  "dt_s": 0.016666666666666666,
+  "steps_per_rust_run": 120,
+  "warmup_steps": 10,
+  "threads": 2,
+  "cpu": "AMD Ryzen 7 2700X",
+  "gpu": "NVIDIA RTX 3090 / Vulkan / driver 616.56",
+  "rustc": "1.97.1",
+  "background_load": "Uncontrolled; GPU pre-run sample 9%, 1594 MiB, P8",
+  "box3d_commit": "efca0c184d40fd6a82016983f1601c4d23965867",
+  "box3d_4096_rejected_at_step": 26,
+  "box3d_first_surface_intersection_step": 0,
+  "production_solver_changed": false,
+  "raw_directory": "output\\solver-lab-20261019",
+  "runs": [
+    {
+      "run": "avbd-finite-pull",
+      "backend": "AvbdFinite",
+      "gpu": false,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 1127.7879,
+      "p95_ms": 1179.308,
+      "mean_ms": 1135.515774545454,
+      "seam_gap_mm": 103.21386360590806,
+      "stretch_p95_percent": 69.34608252878922,
+      "minimum_distance_mm": 0.12853320708051816,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "avbd-finite-quiet",
+      "backend": "AvbdFinite",
+      "gpu": false,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 1133.6637,
+      "p95_ms": 1206.2523999999999,
+      "mean_ms": 1144.7270645454548,
+      "seam_gap_mm": 97.94671789805236,
+      "stretch_p95_percent": 67.77865360591673,
+      "minimum_distance_mm": 0.5866945998869318,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "box3d-4096-audit",
+      "backend": "external-audit",
+      "gpu": false,
+      "accepted_steps": null,
+      "requested_steps": null,
+      "failure": null,
+      "median_ms": null,
+      "p95_ms": null,
+      "mean_ms": null,
+      "seam_gap_mm": 154.83656263679154,
+      "stretch_p95_percent": 279.2183333581245,
+      "minimum_distance_mm": 0.0,
+      "final_intersection_check": {
+        "Err": "OGC initial intersection between faces 0 and 788; reset/rearrange before simulating"
+      },
+      "first_surface_intersection_step": 0
+    },
+    {
+      "run": "vbd-gpu-16-pull",
+      "backend": "Vbd",
+      "gpu": true,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 14.3875,
+      "p95_ms": 20.589199999999998,
+      "mean_ms": 15.50053,
+      "seam_gap_mm": 15.145067703384939,
+      "stretch_p95_percent": 19.544081320740837,
+      "minimum_distance_mm": 2.9308372900416146,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "vbd-gpu-16-quiet",
+      "backend": "Vbd",
+      "gpu": true,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 14.7163,
+      "p95_ms": 18.8871,
+      "mean_ms": 15.457201818181819,
+      "seam_gap_mm": 21.86417221064619,
+      "stretch_p95_percent": 19.548296123782038,
+      "minimum_distance_mm": 2.9044661740483226,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "vbd-gpu-4-pull",
+      "backend": "Vbd",
+      "gpu": true,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 10.8512,
+      "p95_ms": 15.7399,
+      "mean_ms": 11.919297272727274,
+      "seam_gap_mm": 11.618136925482913,
+      "stretch_p95_percent": 18.734126555285833,
+      "minimum_distance_mm": 2.9480874329705578,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "vbd-gpu-4-quiet",
+      "backend": "Vbd",
+      "gpu": true,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 11.2567,
+      "p95_ms": 18.1739,
+      "mean_ms": 12.67241818181818,
+      "seam_gap_mm": 11.699065537099925,
+      "stretch_p95_percent": 18.63087810981301,
+      "minimum_distance_mm": 2.8509417557359007,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "vbd-pull",
+      "backend": "Vbd",
+      "gpu": false,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 261.288,
+      "p95_ms": 284.9395,
+      "mean_ms": 263.35427999999996,
+      "seam_gap_mm": 13.457938405261357,
+      "stretch_p95_percent": 19.085163494904013,
+      "minimum_distance_mm": 2.4637065329252996,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "vbd-quiet",
+      "backend": "Vbd",
+      "gpu": false,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 259.3202,
+      "p95_ms": 282.29609999999997,
+      "mean_ms": 260.98528818181813,
+      "seam_gap_mm": 13.567373805289542,
+      "stretch_p95_percent": 18.964602839267066,
+      "minimum_distance_mm": 2.494833416360509,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "xpbd-pull",
+      "backend": "Xpbd",
+      "gpu": false,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 392.12019999999995,
+      "p95_ms": 429.307,
+      "mean_ms": 396.3149118181818,
+      "seam_gap_mm": 509.3697689090173,
+      "stretch_p95_percent": 351.3658262000329,
+      "minimum_distance_mm": 0.017410457356212876,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    },
+    {
+      "run": "xpbd-quiet",
+      "backend": "Xpbd",
+      "gpu": false,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "failure": null,
+      "median_ms": 391.5499,
+      "p95_ms": 419.1799,
+      "mean_ms": 398.73608909090916,
+      "seam_gap_mm": 475.35190377005836,
+      "stretch_p95_percent": 345.96580911004133,
+      "minimum_distance_mm": 0.05092140360227706,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "first_surface_intersection_step": null
+    }
+  ],
+  "executables": {
+    "solver_compare.exe": "2a732c6d2b3742975cb0a7a68b5677b27267867d9104c1145be83f46f4017d90",
+    "solver_compare_gpu.exe": "897252fe5dd0fe0655c3bb098528348a566b0295653ea51a125cb671142fb380",
+    "clothcraft_box3d_4096.exe": "cff98483dc0beade9af4665210e164fd9e8ce44a524e77dd4bde2507c5265437"
+  },
+  "validation": {
+    "cpu_tests_passed": 170,
+    "check_cpu_script": "passed (tests, CPU Clippy all targets, six templates, rustfmt)",
+    "desktop_runner_clippy": "passed with -D warnings",
+    "native_build": "passed",
+    "native_failure_replay": "same 26-state trace; expected exit 5 at capacity saturation",
+    "production_physics_changed": false
+  }
+}

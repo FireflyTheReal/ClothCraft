@@ -1,5 +1,36 @@
 //! Opt-in measurement of the actual window + worker, not an offscreen FPS claim.
 use std::time::Instant;
+/// Delivered physical time, including snapshots skipped by a slower renderer.
+/// Never infer throughput from GPU timestamps or the repaint counter.
+#[derive(Default)]
+pub(super) struct Cadence {
+    sample: Option<(Instant, f64, u64)>,
+    pub speed: Option<f64>,
+}
+impl Cadence {
+    pub fn update(&mut self, now: Instant, time: f64, generation: u64, playing: bool) {
+        if !playing {
+            self.sample = None;
+            self.speed = None;
+            return;
+        }
+        let Some((start, initial, previous_generation)) = self.sample else {
+            self.sample = Some((now, time, generation));
+            return;
+        };
+        if previous_generation != generation || time < initial {
+            self.sample = Some((now, time, generation));
+            self.speed = None;
+            return;
+        }
+        let elapsed = now.duration_since(start).as_secs_f64();
+        if elapsed >= 0.5 {
+            self.speed = Some((time - initial) / elapsed);
+            self.sample = Some((now, time, generation));
+        }
+    }
+}
+
 pub(super) struct PerfRun {
     boot: Instant,
     sample: Option<(Instant, f64, u64)>,
@@ -57,5 +88,22 @@ impl PerfRun {
             "simulation_speed":speed,"physics_steps_per_second":speed/dt,
             "ui_frames_per_second":fps,"ui_frame_interval_p95_ms":self.intervals[(self.intervals.len()*95/100).min(self.intervals.len()-1)],
             "scope":"Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s."}))
+    }
+}
+
+#[cfg(test)]
+mod cadence_tests {
+    use super::*;
+    #[test]
+    fn physical_rate_counts_time_not_snapshot_or_frame_count() {
+        let mut c = Cadence::default();
+        let now = Instant::now();
+        c.update(now, 10., 0, true);
+        c.update(now + std::time::Duration::from_secs(1), 10.5, 0, true);
+        assert_eq!(c.speed, Some(0.5)); // 30 physical 1/60 s steps, one snapshot.
+        c.update(now + std::time::Duration::from_secs(2), 0., 1, true);
+        assert_eq!(c.speed, None);
+        c.update(now + std::time::Duration::from_secs(3), 0.1, 1, false);
+        assert_eq!(c.speed, None);
     }
 }

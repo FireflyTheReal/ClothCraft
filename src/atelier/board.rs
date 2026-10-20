@@ -147,12 +147,14 @@ pub(super) struct Board {
     /// View-only rotation of the whole board, in radians. Presentation only: it
     /// transforms the window, never rest geometry, grain, masses or caches.
     pub view_rotation: f64,
-    /// Selected contour points of one panel, for multi-point moves. Indices into
+    /// Active-panel contour points, mirrored in the cross-panel selection. Indices into
     /// `PolygonPattern::points`; never mesh vertex indices.
     pub selection: Vec<usize>,
-    /// Panel the current selection belongs to, so a selection can never leak
-    /// across pieces.
+    /// Owner of the active point indices; other owners live in point_groups.
     pub selection_panel: Option<String>,
+    /// Additional panels in the transient contour selection. Never mesh IDs.
+    pub point_groups: std::collections::BTreeMap<String, Vec<usize>>,
+    pub group_shapes: std::collections::BTreeMap<String, PolygonPattern>,
     /// Snap resolved for the current pointer position, shown before the click.
     pub hover_snap: Option<Snap>,
     /// Boundary under the pointer, offered as an insert-point target.
@@ -174,6 +176,8 @@ impl Default for Board {
             view_rotation: 0.,
             selection: Vec::new(),
             selection_panel: None,
+            point_groups: Default::default(),
+            group_shapes: Default::default(),
             hover_snap: None,
             insert_hint: None,
             drag: None,
@@ -206,20 +210,45 @@ impl Board {
         let anchor = origin + authoring::rotate_2d(local, angle);
         self.screen(rect, self.world(rect, cursor) + anchor - press)
     }
-    pub(super) fn select_point(&mut self, panel: String, index: usize, add: bool) {
-        if self.selection_panel.as_ref() != Some(&panel) {
-            self.selection.clear();
-        }
-        self.selection_panel = Some(panel);
-        if add {
-            if let Some(at) = self.selection.iter().position(|p| *p == index) {
-                self.selection.remove(at);
+    pub(super) fn point_selections(&self) -> std::collections::BTreeMap<String, Vec<usize>> {
+        let mut groups = self.point_groups.clone();
+        if let Some(id) = &self.selection_panel {
+            if self.selection.is_empty() {
+                groups.remove(id);
             } else {
-                self.selection.push(index);
+                groups.insert(id.clone(), self.selection.clone());
             }
-        } else {
-            self.selection = vec![index];
         }
+        groups
+    }
+    pub(super) fn point_selected(&self, panel: &str, index: usize) -> bool {
+        if self.selection_panel.as_deref() == Some(panel) {
+            self.selection.contains(&index)
+        } else {
+            self.point_groups
+                .get(panel)
+                .is_some_and(|points| points.contains(&index))
+        }
+    }
+    pub(super) fn point_count(&self) -> usize {
+        self.point_selections().values().map(Vec::len).sum()
+    }
+    pub(super) fn select_point(&mut self, panel: String, index: usize, add: bool) {
+        let mut groups = if add {
+            self.point_selections()
+        } else {
+            Default::default()
+        };
+        let points = groups.entry(panel.clone()).or_insert_with(Vec::new);
+        if add && points.contains(&index) {
+            points.retain(|k| *k != index);
+        } else {
+            points.push(index);
+        }
+        points.sort_unstable();
+        self.selection = points.clone();
+        self.selection_panel = Some(panel);
+        self.point_groups = groups;
     }
     pub fn clear_preview(&mut self) {
         self.drag = None;
@@ -227,6 +256,8 @@ impl Board {
         self.layout = None;
         self.rotation = None;
         self.group_layout.clear();
+        self.group_shapes.clear();
+        self.point_groups.clear();
         // A committed or cancelled edit can change the point count, so a
         // selection never outlives the edit it was made against: stale indices
         // would move the wrong points.
@@ -430,6 +461,7 @@ impl Board {
 }
 enum Drag {
     Marquee {
+        path: Vec<egui::Pos2>,
         start: egui::Pos2,
         current: egui::Pos2,
         add: bool,
@@ -472,6 +504,7 @@ enum Drag {
         polygon: PolygonPattern,
         origins: Vec<(usize, DVec2)>,
         pointer: DVec2,
+        groups: Vec<(String, Vec<usize>, PolygonPattern, f64)>,
     },
     /// Moving a corner of the contour currently being drawn. Draft state only.
     DraftPoint(usize),
@@ -609,6 +642,7 @@ impl Atelier {
             .as_ref()
             .filter(|(id, _)| id == &p.id)
             .map(|(_, poly)| poly)
+            .or_else(|| self.authoring.board.group_shapes.get(&p.id))
             .or(p.polygon.as_ref())
     }
     /// Candidate geometry for the current frame: the draft plus every displayed
@@ -633,6 +667,7 @@ impl Atelier {
             let placed = |uv: DVec2| -> DVec2 { origin + authoring::rotate_2d(uv, angle) };
             let excluded = |k: usize| {
                 dragging.is_some_and(|(id, points)| id == panel.id && points.contains(&k))
+                    || (dragging.is_some() && self.authoring.board.point_selected(&panel.id, k))
             };
             for (k, point) in poly.points.iter().enumerate() {
                 if !excluded(k) {
@@ -807,6 +842,7 @@ impl Atelier {
         self.authoring.anchor = None;
         self.authoring.board.selection.clear();
         self.authoring.board.selection_panel = None;
+        self.authoring.board.point_groups.clear();
         if self.authoring.tool == Tool::Sew {
             if self.authoring.sewing.chain_mode {
                 self.authoring.sewing.sides[self.authoring.sewing.active].push(edge);
@@ -908,7 +944,9 @@ impl Atelier {
         });
         ui.horizontal(|ui| {
             self.primitive_menu(ui);
-            ui.menu_button("Edit", |ui| { ui.set_max_width(260.); self.selection_controls(ui); });
+            let quick = ui.small_button("Quick · Q").on_hover_text("Shapes, mirrors and booleans near the cursor");
+            self.smoke_target("quick_open", quick.rect.center());
+            if quick.clicked() { self.quick.open(ui.ctx(), quick.rect.left_bottom()); }
             let new=ui.small_button("New sheet").on_hover_text("Draw the first panel of a new garment; replaces the current garment when the contour is closed");
             self.smoke_target("replace",new.rect.center());
             if new.clicked() {
@@ -929,12 +967,26 @@ impl Atelier {
             ui.label("?").on_hover_text(match self.authoring.tool {
                 Tool::Draw => "Pen: click = corner · drag = curve · click the first corner to close",
                 Tool::Rectangle => "Rectangle: drag between two opposite corners",
-                Tool::InternalLine => "Inside the active panel: click / drag = line / curve · Enter: finish",
+                Tool::InternalLine => "Click a boundary to choose its panel, then draw inside · Enter: finish",
                 Tool::Sew => "Choose two boundaries in 2D or 3D, then create the seam in Properties",
                 Tool::Edit => "Drag points to edit · Shift+click to add · drag empty space to box select · Ctrl+C / Ctrl+V",
                 _ => "Right-click for tools · middle-drag to pan · wheel to zoom",
             });
         });
+        if self.authoring.tool == Tool::InternalLine {
+            let target = self
+                .authoring
+                .drafting
+                .line_panel
+                .as_deref()
+                .unwrap_or("Click a panel or boundary");
+            ui.small(format!(
+                "Internal line → {target} · Enter: finish · Esc: cancel"
+            ));
+        }
+        if self.authoring.tool == Tool::Measure {
+            ui.small("2D ruler · two clicks · third click: new measurement · Esc: clear · Ctrl: no snap. Board distance, not a 3D surface tape.");
+        }
         if !self.authoring.draft.is_empty()
             && matches!(self.authoring.tool, Tool::Draw | Tool::InternalLine)
         {
@@ -964,6 +1016,8 @@ impl Atelier {
                 }
             });
         }
+        self.selection_controls(ui);
+        self.sewing_strip(ui);
         ui.separator();
         let (rect, _) = ui.allocate_exact_size(
             ui.available_size().max(Vec2::splat(1.)),
@@ -980,7 +1034,32 @@ impl Atelier {
             self.fit_board(rect);
         }
         self.authoring.selection.board_rect = Some(rect);
-        if self.authoring.radial.blocked {
+        self.smoke_target("canvas_confirm", rect.left_bottom() + Vec2::new(30., -30.));
+        if let Some((i, poly)) = self
+            .project
+            .template
+            .panels
+            .iter()
+            .enumerate()
+            .find(|(_, p)| Some(&p.id) == self.authoring.selected.as_ref())
+            .and_then(|(i, p)| p.polygon.as_ref().map(|poly| (i, poly)))
+        {
+            let corners: Vec<_> = poly
+                .points
+                .iter()
+                .map(|p| {
+                    self.authoring.board.screen(
+                        rect,
+                        self.board_origin(i) + authoring::rotate_2d(*p, self.board_angle(i)),
+                    )
+                })
+                .collect();
+            let bounds = egui::Rect::from_points(&corners).expand(16.);
+            self.smoke_target("lasso_points", bounds.left_top());
+            self.smoke_target("box_points", bounds.left_top());
+            self.smoke_target("selection_end", bounds.right_bottom());
+        }
+        if self.authoring.radial.blocked || self.quick.blocked {
             self.paint_board(ui, rect, &response);
             return;
         }
@@ -998,6 +1077,7 @@ impl Atelier {
         {
             self.authoring.board.pan_by(ui.input(|i| i.pointer.delta()));
         }
+        self.sewing_wheel(&response);
         if let Some(pos) = response.hover_pos() {
             let zoom = ui.input(|i| i.smooth_scroll_delta.y);
             if zoom != 0. {
@@ -1024,20 +1104,34 @@ impl Atelier {
         } else {
             None
         };
-        self.board_events(&response, rect);
+        if !matches!(self.authoring.tool, Tool::Inspect | Tool::Measure)
+            && !self.sewing_canvas_confirm(&response)
+        {
+            self.board_events(&response, rect);
+        }
         self.paint_board(ui, rect, &response);
+        if self.authoring.tool == Tool::Measure {
+            self.measure_board(ui, rect, &response);
+        }
         if let Some(Drag::Marquee {
             start,
             current,
             points,
+            path,
             ..
         }) = &self.authoring.board.drag
         {
             let painter = ui.painter().with_clip_rect(rect);
             let r = egui::Rect::from_two_pos(*start, *current);
             let color = Color32::from_rgb(57, 145, 238);
-            painter.rect_filled(r, 2., color.gamma_multiply(0.12));
-            painter.rect_stroke(r, 2., Stroke::new(1., color), egui::StrokeKind::Inside);
+            if path.is_empty() {
+                painter.rect_filled(r, 2., color.gamma_multiply(0.12));
+                painter.rect_stroke(r, 2., Stroke::new(1.5, color), egui::StrokeKind::Inside);
+            } else {
+                let mut outline = path.clone();
+                outline.push(*current);
+                painter.add(egui::Shape::closed_line(outline, Stroke::new(2., color)));
+            }
             painter.text(
                 r.min - Vec2::new(0., 6.),
                 egui::Align2::LEFT_BOTTOM,
@@ -1255,18 +1349,28 @@ impl Atelier {
     ) -> Option<Drag> {
         let panel = &self.project.template.panels[index];
         let polygon = panel.polygon.clone()?;
-        let same_panel = self.authoring.board.selection_panel.as_ref() == Some(&panel.id);
-        if !same_panel {
-            self.authoring.board.selection.clear();
-            self.authoring.board.selection_panel = Some(panel.id.clone());
-        }
         let add = ctx.input(|i| i.modifiers.shift);
-        if add && !self.authoring.board.selection.contains(&k) {
-            self.authoring.board.selection.push(k);
-        } else if !add && !self.authoring.board.selection.contains(&k) {
-            self.authoring.board.selection.clear();
-            self.authoring.board.selection.push(k);
+        if !self.authoring.board.point_selected(&panel.id, k) {
+            self.authoring.board.select_point(panel.id.clone(), k, add);
         }
+        let selections = self.authoring.board.point_selections();
+        self.authoring.board.selection_panel = Some(panel.id.clone());
+        self.authoring.board.selection = selections.get(&panel.id).cloned().unwrap_or_default();
+        self.authoring.board.point_groups = selections.clone();
+        let groups = self
+            .project
+            .template
+            .panels
+            .iter()
+            .filter_map(|p| {
+                Some((
+                    p.id.clone(),
+                    selections.get(&p.id)?.clone(),
+                    p.polygon.clone()?,
+                    p.layout_rotation_degrees,
+                ))
+            })
+            .collect();
         // The single "primary" point stays available to numeric entry.
         self.authoring.anchor = Some((panel.id.clone(), k));
         // Grabbing a point is a point edit: no boundary stays selected, so Del
@@ -1290,6 +1394,7 @@ impl Atelier {
             polygon,
             origins,
             pointer,
+            groups,
         })
     }
     /// Begin a tool drag from a primary press that is not a view rotation.
@@ -1297,6 +1402,9 @@ impl Atelier {
     /// Point placement and point grabbing both use [`Board::resolve_snap`], so
     /// the coordinate that lands is the one the on-canvas indicator promised.
     fn board_press(&mut self, start: egui::Pos2, rect: egui::Rect, ctx: &egui::Context) {
+        if self.authoring.tool == Tool::InternalLine && !self.internal_line_target(rect, start) {
+            return;
+        }
         if self.authoring.tool == Tool::Edit {
             let hit = self.board_hit(rect, start);
             let points = self.authoring.selection.target == super::selection::BoxTarget::Points;
@@ -1304,6 +1412,13 @@ impl Atelier {
                 || (points && hit.as_ref().is_some_and(|h| matches!(h.part, Part::Body)))
             {
                 self.authoring.board.drag = Some(Drag::Marquee {
+                    path: if self.authoring.selection.shape
+                        == super::selection::SelectionShape::Lasso
+                    {
+                        vec![start]
+                    } else {
+                        vec![]
+                    },
                     start,
                     current: start,
                     add: ctx.input(|i| i.modifiers.shift),
@@ -1321,7 +1436,7 @@ impl Atelier {
             .resolve_snap(rect, start, &geometry, reference, angle_lock, suspended)
             .point;
         match self.authoring.tool {
-            Tool::Draw | Tool::Rectangle | Tool::InternalLine => {
+            Tool::Draw | Tool::Rectangle | Tool::Ellipse | Tool::Sector | Tool::InternalLine => {
                 // A press on a corner already placed moves that corner. Fixing a
                 // corner must not require leaving the pen.
                 if let Some(k) = self.draft_point_at(rect, start) {
@@ -1443,47 +1558,18 @@ impl Atelier {
     }
     /// Arrow-key nudge of the current point selection: one undo entry per press.
     fn nudge_selection(&mut self, direction: DVec2, coarse: bool) {
-        let Some(panel_id) = self.authoring.selected.clone() else {
+        let groups = self.authoring.board.point_selections();
+        if groups.is_empty() {
             return;
-        };
-        let Some(index) = self
-            .project
-            .template
-            .panels
-            .iter()
-            .position(|p| p.id == panel_id)
-        else {
-            return;
-        };
-        let mut points = if self.authoring.board.selection_panel.as_ref() == Some(&panel_id) {
-            self.authoring.board.selection.clone()
-        } else {
-            Vec::new()
-        };
-        if points.is_empty() {
-            // Fall back to the numeric-entry point, so one click can be nudged.
-            if let Some((id, k)) = self.authoring.anchor.as_ref()
-                && id == &panel_id
-            {
-                points.push(*k);
-            } else {
-                return;
-            }
         }
-        points.sort_unstable();
-        points.dedup();
-        // Undo the view rotation and the panel's board rotation so an arrow moves
-        // the point the way it is seen on screen.
         let step = if coarse { NUDGE_COARSE_MM } else { NUDGE_MM };
-        let delta_mm = self
-            .authoring
-            .board
-            .nudge_delta(direction, self.board_angle(index), step);
-        self.edit(Command::Nudge {
-            panel: panel_id,
-            points,
-            delta_mm,
-        });
+        let board_delta = self.authoring.board.nudge_delta(direction, 0., step) / 1000.;
+        if self.edit(Command::MovePointGroups {
+            groups: groups.clone().into_iter().collect(),
+            board_delta,
+        }) {
+            self.authoring.board.point_groups = groups;
+        }
     }
     /// Nearest displayed boundary to the pointer, as an insert-point target,
     /// with the material arclength of the projection. Corners are refused so the
@@ -1621,9 +1707,18 @@ impl Atelier {
                 .point;
             match &self.authoring.board.drag {
                 Some(Drag::Marquee {
-                    start, add, points, ..
+                    start,
+                    add,
+                    points,
+                    path,
+                    ..
                 }) => {
+                    let mut path = path.clone();
+                    if path.last().is_some_and(|p| p.distance(pos) >= 3.) {
+                        path.push(pos);
+                    }
                     self.authoring.board.drag = Some(Drag::Marquee {
+                        path,
                         start: *start,
                         current: pos,
                         add: *add,
@@ -1649,6 +1744,7 @@ impl Atelier {
                     polygon,
                     origins,
                     pointer,
+                    groups,
                 }) => {
                     // The grabbed point follows the pointer with its original
                     // grip offset, then snaps; every other selected point and the
@@ -1688,10 +1784,36 @@ impl Atelier {
                             controls[1] += shift;
                         }
                     }
+                    self.authoring.board.group_shapes.clear();
+                    let board_delta = snapped.point - primary;
+                    for (id, points, original, degrees) in groups {
+                        let delta = authoring::rotate_2d(board_delta, -*degrees);
+                        let mut preview = original.clone();
+                        for k in points {
+                            preview.points[*k] += delta;
+                            if let Some(c) = preview.curves.get_mut(&preview.edges[*k]) {
+                                c[0] += delta;
+                            }
+                            let previous = (*k + preview.points.len() - 1) % preview.points.len();
+                            if let Some(c) = preview.curves.get_mut(&preview.edges[previous]) {
+                                c[1] += delta;
+                            }
+                        }
+                        self.authoring
+                            .board
+                            .group_shapes
+                            .insert(id.clone(), preview);
+                    }
                     self.authoring.board.shape = Some((panel.clone(), moved));
                 }
                 Some(Drag::Draft(k)) => self.authoring.tangents[*k] = p - self.authoring.draft[*k],
                 Some(Drag::Rectangle(start)) => {
+                    let p = if response.ctx.input(|i| i.modifiers.shift) {
+                        let delta = p - *start;
+                        *start + delta.signum() * delta.abs().max_element()
+                    } else {
+                        p
+                    };
                     let lo = start.min(p);
                     let hi = start.max(p);
                     self.authoring.draft =
@@ -1784,17 +1906,23 @@ impl Atelier {
         if response.drag_stopped_by(egui::PointerButton::Primary) {
             match self.authoring.board.drag.take() {
                 Some(Drag::Marquee {
+                    mut path,
                     start,
                     current,
                     add,
                     points,
                 }) => {
-                    self.finish_marquee(
-                        rect,
-                        egui::Rect::from_two_pos(start, pos.unwrap_or(current)),
-                        add,
-                        points,
-                    );
+                    let end = pos.unwrap_or(current);
+                    if start.distance(end) < 3. && path.len() < 3 {
+                        return;
+                    }
+                    let region = if path.is_empty() {
+                        super::selection::Region::Box(egui::Rect::from_two_pos(start, end))
+                    } else {
+                        path.push(end);
+                        super::selection::Region::Lasso(path)
+                    };
+                    self.finish_marquee(rect, region, add, points);
                 }
                 Some(Drag::Rotate { .. }) => {
                     if let (Some((panel, origin)), Some((_, rotation_degrees))) = (
@@ -1829,18 +1957,30 @@ impl Atelier {
                         self.commit_contour(panel, polygon);
                     }
                 }
-                Some(Drag::Points { origins, .. }) => {
-                    if let Some((panel, preview)) = self.authoring.board.shape.take()
+                Some(Drag::Points {
+                    origins,
+                    groups,
+                    index,
+                    ..
+                }) => {
+                    if let Some((_, preview)) = self.authoring.board.shape.take()
                         && let Some((first, origin)) = origins.first()
                     {
                         let delta = preview.points[*first] - *origin;
-                        let points: Vec<usize> = origins.iter().map(|(k, _)| *k).collect();
+                        let board_delta = authoring::rotate_2d(delta, self.board_angle(index));
+                        self.authoring.board.group_shapes.clear();
                         if delta.length_squared() > 0. {
-                            self.edit(Command::MovePoints {
-                                panel,
-                                points,
-                                delta,
-                            });
+                            let selections: Vec<_> = groups
+                                .into_iter()
+                                .map(|(id, points, _, _)| (id, points))
+                                .collect();
+                            if self.edit(Command::MovePointGroups {
+                                groups: selections.clone(),
+                                board_delta,
+                            }) {
+                                self.authoring.board.point_groups =
+                                    selections.into_iter().collect();
+                            }
                         }
                     }
                 }
@@ -1855,6 +1995,11 @@ impl Atelier {
             } else if let Some((panel, k)) = self.delete_badge_at(rect, pos) {
                 self.edit(Command::RemovePoint { panel, point: k });
             } else if matches!(self.authoring.tool, Tool::Draw | Tool::InternalLine) {
+                if self.authoring.tool == Tool::InternalLine
+                    && !self.internal_line_target(rect, pos)
+                {
+                    return;
+                }
                 let close = self.authoring.tool == Tool::Draw
                     && self.authoring.draft.len() >= 3
                     && self
@@ -1908,7 +2053,7 @@ impl Atelier {
                         range: [0., 1.],
                     };
                     let t = self.boundary_parameter(&reference, rect, pos, false);
-                    self.pick_sewing_boundary(reference, t);
+                    self.pick_sewing_boundary(reference, t, pos);
                 } else {
                     self.cancel_preview();
                     self.authoring.edge = None;
@@ -1932,6 +2077,7 @@ impl Atelier {
                 self.authoring.edge = None;
                 self.authoring.board.selection.clear();
                 self.authoring.board.selection_panel = None;
+                self.authoring.board.point_groups.clear();
             }
         }
         if !response.ctx.egui_wants_keyboard_input() {
@@ -2013,6 +2159,39 @@ impl Atelier {
             });
         }
     }
+    /// A boundary click chooses its owner without placing an invalid endpoint
+    /// on the contour. Once drawing starts the target stays fixed until cancel.
+    fn internal_line_target(&mut self, rect: egui::Rect, pos: egui::Pos2) -> bool {
+        let hit = self.board_hit(rect, pos);
+        if self.authoring.draft.is_empty() {
+            let Some(hit) = hit else {
+                self.status =
+                    "Internal line: click inside a panel, or click its boundary to select it"
+                        .into();
+                return false;
+            };
+            let panel = &self.project.template.panels[hit.index];
+            self.authoring.drafting.line_panel = Some(panel.id.clone());
+            self.authoring.selected = Some(panel.id.clone());
+            self.inspector_tab = super::chrome::InspectorTab::Piece;
+            self.authoring.error = None;
+            if !matches!(hit.part, Part::Body) {
+                self.status = format!(
+                    "Internal line → {} · now click inside this panel",
+                    panel.name
+                );
+                return false;
+            }
+        } else if let Some(hit) = hit
+            && self.authoring.drafting.line_panel.as_ref()
+                != Some(&self.project.template.panels[hit.index].id)
+        {
+            self.status =
+                "Finish or cancel the current internal line before choosing another panel".into();
+            return false;
+        }
+        true
+    }
     fn paint_board(&mut self, ui: &egui::Ui, rect: egui::Rect, response: &egui::Response) {
         let mut smoke_targets: Vec<(String, egui::Pos2)> = vec![];
         let painter = ui.painter().with_clip_rect(rect);
@@ -2047,6 +2226,14 @@ impl Atelier {
                 let angle = self.board_angle(i);
                 let point = |uv| board.screen(rect, origin + authoring::rotate_2d(uv, angle));
                 let selected = self.authoring.selected.as_ref() == Some(&panel.id);
+                if i == 0 {
+                    for (name, uv) in [
+                        ("inside_a", DVec2::new(0.1, 0.15)),
+                        ("inside_b", DVec2::new(0.3, 0.15)),
+                    ] {
+                        smoke_targets.push((name.into(), point(uv)));
+                    }
+                }
                 let range = &self.scene.garment.panels[i];
                 let mut mesh = egui::Mesh::default();
                 let mut wire = Vec::new();
@@ -2079,6 +2266,17 @@ impl Atelier {
                     }
                 }
                 painter.add(egui::Shape::mesh(mesh));
+                for face in self.issue.faces.range(range.triangles.clone()) {
+                    let triangle = &self.scene.garment.mesh.triangles[*face];
+                    painter.add(egui::Shape::convex_polygon(
+                        triangle
+                            .vertices
+                            .map(|v| point(self.scene.garment.mesh.uv[v]))
+                            .to_vec(),
+                        Color32::from_rgba_unmultiplied(255, 95, 45, 120),
+                        Stroke::NONE,
+                    ));
+                }
                 painter.extend(wire);
                 smoke_targets.push((
                     format!("body_{}", panel.id),
@@ -2198,7 +2396,10 @@ impl Atelier {
                     // piece's points are emphasised and its selection ringed.
                     for (k, uv) in poly.points.iter().enumerate() {
                         let at = point(*uv);
-                        if !selected {
+                        if !selected
+                            && !board.point_selected(&panel.id, k)
+                            && !matches!(&board.drag, Some(Drag::Marquee { points: true, .. }))
+                        {
                             painter.circle_filled(at, 2.5, Color32::from_gray(0x9A));
                             continue;
                         }
@@ -2217,18 +2418,50 @@ impl Atelier {
                             },
                         );
                         painter.circle_stroke(at, 4., Stroke::new(1., Color32::BLACK));
-                        if self.authoring.board.selection_panel.as_ref() == Some(&panel.id)
-                            && self.authoring.board.selection.contains(&k)
+                        let previously_selected = board.point_selected(&panel.id, k);
+                        let point_selected = if let Some(Drag::Marquee {
+                            start,
+                            current,
+                            path,
+                            points: true,
+                            add,
+                            ..
+                        }) = &board.drag
                         {
+                            let region = if path.is_empty() {
+                                super::selection::Region::Box(egui::Rect::from_two_pos(
+                                    *start, *current,
+                                ))
+                            } else {
+                                let mut points = path.clone();
+                                points.push(*current);
+                                super::selection::Region::Lasso(points)
+                            };
+                            region.contains(at) || (*add && previously_selected)
+                        } else {
+                            previously_selected
+                        };
+                        if point_selected {
+                            painter.circle_filled(at, 6., Color32::from_rgb(24, 130, 239));
+                            painter.circle_stroke(at, 6., Stroke::new(1.5, Color32::WHITE));
                             painter.circle_stroke(
                                 at,
-                                8.,
-                                Stroke::new(2., Color32::from_rgb(0xE0, 0x6A, 0x00)),
+                                9.,
+                                Stroke::new(1.5, Color32::from_rgb(24, 130, 239)),
+                            );
+                            painter.text(
+                                at + Vec2::new(10., -10.),
+                                egui::Align2::LEFT_BOTTOM,
+                                format!("{}", k + 1),
+                                egui::FontId::monospace(11.),
+                                Color32::from_rgb(20, 90, 175),
                             );
                         }
                         // Smoke targets keep the historical key space: only the
                         // selected piece registers names, so nothing is shadowed.
-                        smoke_targets.push((format!("anchor_{k}"), at));
+                        if selected {
+                            smoke_targets.push((format!("anchor_{k}"), at));
+                        }
                     }
                 }
                 painter.text(
@@ -2271,6 +2504,31 @@ impl Atelier {
                 let h = point(*p + self.authoring.tangents[k]);
                 painter.line_segment([point(*p), h], Stroke::new(1., Color32::LIGHT_BLUE));
                 painter.circle_filled(h, 4., Color32::LIGHT_BLUE);
+            }
+        }
+        if matches!(self.authoring.tool, Tool::Ellipse | Tool::Sector)
+            && self.authoring.draft.len() == 4
+            && let Ok(poly) = marvelous_cloth::garment::shapes::primitive(
+                if self.authoring.tool == Tool::Ellipse {
+                    marvelous_cloth::garment::shapes::Primitive::Ellipse
+                } else {
+                    marvelous_cloth::garment::shapes::Primitive::Sector
+                },
+                self.authoring.draft[2] - self.authoring.draft[0],
+                self.authoring.drafting.sweep,
+                Default::default(),
+            )
+        {
+            for k in 0..poly.edges.len() {
+                if let Ok(points) = poly.edge_points(k) {
+                    painter.add(egui::Shape::line(
+                        points
+                            .into_iter()
+                            .map(|uv| point(uv + self.authoring.draft[0]))
+                            .collect(),
+                        Stroke::new(2., Color32::from_rgb(40, 150, 220)),
+                    ));
+                }
             }
         }
         if self.authoring.tool == Tool::Rectangle && self.authoring.draft.len() == 4 {
@@ -2445,13 +2703,13 @@ impl Atelier {
             );
         }
         // Selected points, and the delete badge that removes the focused one.
-        if !board.selection.is_empty() {
+        if board.point_count() > 0 {
             painter.text(
                 rect.right_top() + Vec2::new(-12., 12.),
                 egui::Align2::RIGHT_TOP,
                 format!(
                     "{} points selected · arrows nudge 1 mm (Shift 10 mm)",
-                    board.selection.len()
+                    board.point_count()
                 ),
                 font.clone(),
                 Color32::from_rgb(0xE0, 0x6A, 0x00),
@@ -3082,11 +3340,14 @@ mod tests {
         let mut board = Board {
             selection: vec![1, 3],
             selection_panel: Some("panel_1".into()),
+            point_groups: [("panel_2".into(), vec![2])].into_iter().collect(),
             ..Default::default()
         };
         board.clear_preview();
         assert!(board.selection.is_empty());
         assert!(board.selection_panel.is_none());
+        assert!(board.point_groups.is_empty());
+        assert_eq!(board.point_count(), 0);
     }
 
     #[test]
@@ -3120,7 +3381,7 @@ mod tests {
     }
 
     #[test]
-    fn shift_click_selection_toggles_and_never_leaks_between_panels() {
+    fn shift_click_selection_toggles_and_retains_explicit_panel_owners() {
         let mut board = Board::default();
         board.select_point("a".into(), 1, false);
         board.select_point("a".into(), 3, true);
@@ -3129,5 +3390,7 @@ mod tests {
         assert_eq!(board.selection, vec![3]);
         board.select_point("b".into(), 0, true);
         assert_eq!(board.selection, vec![0]);
+        assert_eq!(board.point_count(), 2);
+        assert!(board.point_selected("a", 3));
     }
 }

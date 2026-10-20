@@ -149,6 +149,8 @@ impl Atelier {
             appearance_controls(ui, &mut self.prefs.viewport, self.viewport.supports_msaa4());
             ui.separator();
             ui.strong("Overlays");
+            ui.checkbox(&mut self.clean_view, "Clean view · hide all annotations")
+                .on_hover_text("Show only the shaded garment and avatar. Keeps your overlay settings for later.");
             ui.checkbox(&mut self.wire, "Wireframe");
             ui.checkbox(&mut self.heat, "Strain map");
             ui.checkbox(&mut self.seam_links, "Seam links");
@@ -254,6 +256,20 @@ impl Atelier {
                             ));
                         }
                     });
+                    ui.collapsing("Motion / jitter", |ui| {
+                        let mut inspect = false;
+                        if let Some(m) = self.metrics.as_ref().and_then(|m| m.motion.as_ref()) {
+                            ui.small(format!("High-pass RMS {:.3} mm · max {:.3} mm", m.highpass_rms_m * 1000., m.highpass_max_m * 1000.));
+                            ui.small(format!("{} vertices with persistent oscillation", m.oscillating_vertices));
+                            if m.observed_seconds < 0.75 { ui.small("Collecting physical-step history…"); }
+                            inspect = ui.add_enabled(!m.hotspots.is_empty(), egui::Button::new("Inspect jitter hotspots"))
+                                .on_hover_text("Pause and mark faces around up to 12 strongest detected vertices. Export report includes motion measurements.").clicked();
+                        } else {
+                            ui.small("Run simulation to measure motion.");
+                        }
+                        ui.small("Repeated reversals, not rendering FPS. Real fabric vibration can also trigger this indicator.");
+                        if inspect { self.inspect_motion(); }
+                    });
                 }
             });
     }
@@ -263,13 +279,42 @@ impl Atelier {
     pub(super) fn garment_view(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         self.garment_header(ui);
+        if let Some(error) = self.simulation_error.clone() {
+            egui::Frame::group(ui.style()).show(ui, |ui| {
+                ui.colored_label(Color32::from_rgb(225, 120, 75), "SIMULATION PAUSED");
+                ui.label(&error);
+                ui.horizontal(|ui| {
+                    if ui.small_button("Inspect problem faces").clicked() {
+                        self.set_authoring_tool(Tool::Inspect, false);
+                    }
+                    if ui.small_button("Copy details").clicked() {
+                        ui.ctx().copy_text(error);
+                    }
+                });
+            });
+        }
+        self.sewing_strip(ui);
+        if self.authoring.tool == Tool::Grab {
+            ui.horizontal_wrapped(|ui| {
+                ui.strong("Grab");
+                ui.add(egui::Slider::new(&mut self.grab_radius_px, 0.0..=150.0).text("Radius (px)"))
+                    .on_hover_text("Size on screen. Zero uses the original point grab. The brush follows the picked piece's surface, avoiding nearby disconnected layers.");
+                ui.add(egui::Slider::new(&mut self.grab_strength, 0.25..=20.).logarithmic(true).text("Strength"))
+                    .on_hover_text("1× is the original point spring strength. Higher values pull harder; collision limits still apply. Changes apply to the next drag.");
+            });
+        }
+        if self.authoring.tool == Tool::Inspect {
+            self.issue_controls(ui);
+        }
         ui.separator();
         self.viewport.appearance = self.prefs.viewport.clone();
         let (rect, response) = ui.allocate_exact_size(
             ui.available_size().max(Vec2::splat(1.)),
             egui::Sense::click_and_drag(),
         );
-        if !self.authoring.radial.blocked {
+        self.authoring.selection.garment_rect = Some(rect);
+        if !self.authoring.radial.blocked && !self.quick.blocked {
+            self.sewing_wheel(&response);
             if response.secondary_clicked()
                 && !self.authoring.board.gesture_active()
                 && self.authoring.drag.is_none()
@@ -306,7 +351,7 @@ impl Atelier {
                 rect.center().y - ndc.y * rect.height() * 0.5,
             ));
         }
-        if !self.authoring.radial.blocked {
+        if !self.authoring.radial.blocked && !self.quick.blocked {
             self.camera.garment_interact(&response);
         }
         let size = rect.size() * ctx.pixels_per_point();
@@ -314,20 +359,25 @@ impl Atelier {
             [size.x as u32, size.y as u32],
             &self.camera,
             DrawModel {
+                marked_faces: if self.clean_view {
+                    None
+                } else {
+                    Some(&self.issue.faces)
+                },
                 mesh: &self.scene.garment.mesh,
                 state: &self.scene.state,
                 materials: &self.scene.garment.materials,
                 sphere: None,
                 avatar: Some(&self.scene.collider.surface),
                 collider: None,
-                seams: if self.seams {
+                seams: if self.seams && !self.clean_view {
                     &self.scene.garment.seams
                 } else {
                     &[]
                 },
             },
-            self.wire,
-            self.heat,
+            self.wire && !self.clean_view,
+            self.heat && !self.clean_view,
             false,
         );
         ui.painter().image(
@@ -336,11 +386,26 @@ impl Atelier {
             egui::Rect::from_min_max(egui::Pos2::ZERO, egui::pos2(1., 1.)),
             Color32::WHITE,
         );
-        self.paint_edges_3d(ui, rect);
-        self.paint_seam_links(&ui.painter().with_clip_rect(rect), rect, true);
-        self.paint_sewing_ranges(ui, rect, true);
-        self.paint_gizmo(ui, rect);
-        if let Some(g) = &self.grab {
+        if !self.clean_view {
+            self.issue_brush(ui, &response, rect);
+            self.paint_edges_3d(ui, rect);
+            self.paint_seam_links(&ui.painter().with_clip_rect(rect), rect, true);
+            self.paint_sewing_ranges(ui, rect, true);
+            self.paint_gizmo(ui, rect);
+            self.paint_selected_points_3d(ui, rect);
+            if self.authoring.tool == Tool::Grab
+                && let Some(p) = response.hover_pos()
+            {
+                ui.painter().with_clip_rect(rect).circle_stroke(
+                    p,
+                    self.grab_radius_px.max(4.),
+                    Stroke::new(1.5, Color32::from_rgb(255, 194, 64)),
+                );
+            }
+        }
+        if !self.clean_view
+            && let Some(g) = &self.grab
+        {
             let clip =
                 self.camera.matrix(rect.width() / rect.height()) * g.target.as_vec3().extend(1.);
             if clip.w > 0. {

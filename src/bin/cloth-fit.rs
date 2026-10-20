@@ -61,12 +61,18 @@ struct Args {
     /// Physical time step in seconds; independent of rendering rate.
     #[arg(long)]
     dt: Option<f64>,
-    /// Explicit hardware compute opt-in (OGC detection remains on CPU).
+    /// Hardware compute opt-in: GPU candidate filtering + VBD, f64 contact geometry.
     #[arg(long, conflicts_with = "reference")]
     gpu_sim: bool,
     /// Compare GPU energies/forces against f64 AD before each step (slow).
     #[arg(long, requires = "gpu_sim")]
     check_gpu_gradients: bool,
+    /// Compare performance with complete CPU candidate filtering (same physics).
+    #[arg(long, requires = "gpu_sim")]
+    cpu_contact_filter: bool,
+    /// Compare contacts and movement balls with the full f64 detector every step (slow).
+    #[arg(long, requires = "gpu_sim")]
+    check_gpu_contacts: bool,
 }
 fn run_ogc(
     args: &Args,
@@ -107,11 +113,14 @@ fn run_ogc(
         let (device, queue) =
             pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor {
                 label: Some("OGC VBD benchmark"),
-                required_features: adapter.features() & wgpu::Features::TIMESTAMP_QUERY,
+                required_features: adapter.features()
+                    & (wgpu::Features::TIMESTAMP_QUERY | wgpu::Features::SUBGROUP),
                 ..Default::default()
             }))?;
         let mut gpu = marvelous_cloth::gpu_vbd::GpuVbd::new(device, queue);
         gpu.check_gradients = args.check_gpu_gradients;
+        gpu.check_contacts = args.check_gpu_contacts;
+        gpu.filter_contacts = !args.cpu_contact_filter;
         Some(gpu)
     } else {
         None
@@ -124,7 +133,10 @@ fn run_ogc(
         args.output.join("initial.obj"),
         export::obj(&scene.garment, &scene.state),
     )?;
-    let mut log = fs::File::create(args.output.join("metrics.jsonl"))?;
+    let mut log = std::io::BufWriter::with_capacity(
+        64 * 1024,
+        fs::File::create(args.output.join("metrics.jsonl"))?,
+    );
     let start = Instant::now();
     let mut rows = Vec::new();
     for i in 0..args.steps {
@@ -151,6 +163,7 @@ fn run_ogc(
         }
         rows.push(m);
     }
+    log.flush()?;
     let wall_ms = start.elapsed().as_secs_f64() * 1000.;
     export::write_artifacts(
         &project.template,
@@ -160,11 +173,11 @@ fn run_ogc(
     )?;
     project.state = Some(scene.state.clone());
     project.save(&args.output.join("fitting-project.json"))?;
-    let report = serde_json::json!({"backend":if args.gpu_sim{"hybrid-cpu-ogc-gpu-vbd"}else{"cpu-f64-vbd-ogc"},"steps":args.steps,"settings":settings,
+    let report = serde_json::json!({"backend":if args.gpu_sim{"hybrid-cpu-ogc-gpu-vbd"}else{"cpu-f64-vbd-ogc"},"steps":args.steps,"settings":settings,"cpu_contact_filter":args.cpu_contact_filter,"check_gpu_contacts":args.check_gpu_contacts,"check_gpu_gradients":args.check_gpu_gradients,
         "vertices":scene.state.x.len(),"triangles":scene.garment.mesh.triangles.len(),"wall_ms":wall_ms,
         "mean_step_ms":if rows.is_empty(){0.}else{wall_ms/rows.len() as f64},"last":rows.last(),
         "seams":scene.garment.seams.iter().map(|s|serde_json::json!({"id":s.id,"max_gap_m":s.max_gap(&scene.state.x)})).collect::<Vec<_>>(),
-        "scope":"OGC two-sided VF/EE normal contact, self-contact, isotropic conservative bounds; local seam exclusions; no friction; fixed iteration residual is reported, not a converged Newton solve"});
+        "scope":"OGC two-sided VF/EE normal contact, self-contact, sparse directional bounds with isotropic fallback; local seam exclusions; no friction; fixed iteration budgets do not certify equilibrium"});
     fs::write(
         args.output.join("run.json"),
         serde_json::to_string_pretty(&report)?,

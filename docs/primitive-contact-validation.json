@@ -1,0 +1,156 @@
+{
+  "scope": "CPU only; 40 steps = 2/3 s, not an equilibrium certificate",
+  "runs": {
+    "control-quiet": {
+      "accepted_steps": 40,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "iterations": 16,
+      "dt": 0.016666666666666666,
+      "mean_full_step_ms": 946.0735833333334,
+      "p95_full_step_ms": 1053.5869,
+      "minimum_endpoint_distance_m": 0.0006582240916507431,
+      "final_sewing_gap_m": 0.017660435851235945,
+      "final_extension_p95_percent": 22.30380193323114,
+      "final_contact_terms": 14209
+    },
+    "control-pull": {
+      "accepted_steps": 40,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "iterations": 16,
+      "dt": 0.016666666666666666,
+      "mean_full_step_ms": 958.18862,
+      "p95_full_step_ms": 1098.1084999999998,
+      "minimum_endpoint_distance_m": 0.0006582240916507431,
+      "final_sewing_gap_m": 0.01660382611293636,
+      "final_extension_p95_percent": 22.198264821166134,
+      "final_contact_terms": 14264
+    },
+    "primitive-quiet": {
+      "accepted_steps": 40,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "iterations": 16,
+      "dt": 0.016666666666666666,
+      "mean_full_step_ms": 1389.6702933333336,
+      "p95_full_step_ms": 1637.3395,
+      "minimum_endpoint_distance_m": 0.0020730291595182763,
+      "final_sewing_gap_m": 0.02003058365681283,
+      "final_extension_p95_percent": 20.48753544445121,
+      "final_contact_terms": 79883
+    },
+    "primitive-pull": {
+      "accepted_steps": 40,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "iterations": 16,
+      "dt": 0.016666666666666666,
+      "mean_full_step_ms": 1426.6553366666667,
+      "p95_full_step_ms": 1739.5098,
+      "minimum_endpoint_distance_m": 0.0020730291595182763,
+      "final_sewing_gap_m": 0.021541734194900804,
+      "final_extension_p95_percent": 20.28893009362922,
+      "final_contact_terms": 78526
+    }
+  },
+  "interaction": {
+    "control": {
+      "peak_response_vs_quiet_m": 0.023122000878588945,
+      "release_net_motion_m": 0.024377292196552096,
+      "release_steps": 20
+    },
+    "primitive": {
+      "peak_response_vs_quiet_m": 0.027025541707466207,
+      "release_net_motion_m": 0.02738945595609537,
+      "release_steps": 20
+    }
+  },
+  "transitions": {
+    "synthetic-ee": {
+      "sample_count": 65,
+      "bounds_identical": true,
+      "maximum_absolute_refresh_delta_j": 0.0
+    },
+    "synthetic-pf": {
+      "sample_count": 65,
+      "bounds_identical": true,
+      "maximum_absolute_refresh_delta_j": 0.0
+    },
+    "dress-ee": {
+      "sample_count": 65,
+      "bounds_identical": true,
+      "maximum_absolute_refresh_delta_j": 0.0
+    },
+    "dress-pf": {
+      "sample_count": 65,
+      "bounds_identical": true,
+      "maximum_absolute_refresh_delta_j": 0.0
+    },
+    "vbd-control": {
+      "refresh_count": 9,
+      "min_delta_j": -0.44795645196702694,
+      "max_delta_j": 0.0882824208736619,
+      "sum_absolute_delta_j": 0.7294926586031897
+    },
+    "vbd-primitive": {
+      "refresh_count": 9,
+      "min_delta_j": 0.0,
+      "max_delta_j": 0.0,
+      "sum_absolute_delta_j": 0.0
+    }
+  },
+  "slide": {
+    "baseline": {
+      "minimum_j": 0.20372964932433701,
+      "maximum_j": 0.20372964932433701,
+      "maximum_tangential_force_n": 0.0
+    },
+    "primitive": {
+      "minimum_j": 0.20372964932433701,
+      "maximum_j": 0.40745929864867403,
+      "maximum_tangential_force_n": 79.54545454545456
+    }
+  },
+  "default_compatibility": {
+    "all_final_states_identical": true,
+    "mean_ms": {
+      "previous-control-quiet": 976.3529233333335,
+      "control-quiet": 946.0735833333334,
+      "repeat-control-quiet": 1436.5616499999999
+    },
+    "p95_ms": {
+      "previous-control-quiet": 1077.8632,
+      "control-quiet": 1053.5869,
+      "repeat-control-quiet": 2865.9401
+    },
+    "timing_repeat_variation_ratio": 1.518446001777698,
+    "performance_inconclusive_due_to_repeat_variability": true
+  },
+  "promotion_gate": {
+    "planar_tangential_tolerance_n": 1e-06,
+    "candidate_planar_sliding_passes": false,
+    "promoted": false,
+    "reason": "Artificial tangential force on a frictionless plane; contact-law ablation only"
+  },
+  "validation": {
+    "cpu_tests_passed": 183,
+    "gpu_tests_run": false,
+    "cpu_clippy": "passed",
+    "desktop_clippy": "passed",
+    "formatting": "passed",
+    "saved_project_sha256": "e542e066f4bf662149f8603bab47913a60498915689386f0bd51503e4d7aaccb"
+  }
+}

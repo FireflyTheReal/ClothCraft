@@ -1,0 +1,397 @@
+{
+  "date": "2026-10-20",
+  "scope": "Normalized single-patch plane field, guarded release and read-only dress mismatch audit",
+  "decision": "planar gate passed; general cloth integration not promoted",
+  "production_changed": false,
+  "gpu_used": false,
+  "new_dress_trajectory": false,
+  "full_mls_solver_implemented": false,
+  "checks": {
+    "distinct_targeted_cpu_tests": 49,
+    "base_suite_passed": 48,
+    "follow_up_suite_passed": 18,
+    "clippy_cpu_all_targets": "passed",
+    "clippy_desktop_all_targets": "passed",
+    "fmt": "passed",
+    "diff_check": "passed",
+    "rebuilt_static_accuracy": "matches initial scan; timings excluded"
+  },
+  "compiler": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "base_commit": "78b359cb2cbf8367e3615a5679d30184a14f851b",
+  "dirty_tree": true,
+  "cpu_threads": 2,
+  "source_files_archived": 178,
+  "input_project": {
+    "path": "output/solver-consistency-final-20261019/single-xpbd-4/source.json",
+    "sha256": "c3d03ce2664015efe628e3aaa1a35c8efd855936af69bfb7467b48065e5aa26a"
+  },
+  "static": {
+    "concave_crease_counterexample": {
+      "barrier_on_actual_face_j": 0.07153514192727146,
+      "field_m": 0.0018038800902311553,
+      "normal_coherence": 0.9807068040395932,
+      "point_on_actual_face": [
+        0.01,
+        0.002,
+        0.0
+      ]
+    },
+    "layer_counterexamples": [
+      {
+        "field_m": -0.0009993998800400337,
+        "height_m": 0.0,
+        "normal_coherence": 1.0,
+        "opposite_normals": false,
+        "query_gradient": [
+          0.0,
+          0.9993997601201344,
+          0.0
+        ],
+        "true_plane_distance_m": 0.0
+      },
+      {
+        "field_m": -0.0004996999625033148,
+        "height_m": 0.0005,
+        "normal_coherence": 1.0,
+        "opposite_normals": false,
+        "query_gradient": [
+          0.0,
+          0.9993998950311428,
+          0.0
+        ],
+        "true_plane_distance_m": 0.0005
+      },
+      {
+        "field_m": 0.0,
+        "height_m": 0.001,
+        "normal_coherence": 1.0,
+        "opposite_normals": false,
+        "query_gradient": [
+          0.0,
+          0.9993999399939995,
+          0.0
+        ],
+        "true_plane_distance_m": 0.001
+      },
+      {
+        "field_m": 0.000499699962503315,
+        "height_m": 0.0015,
+        "normal_coherence": 1.0,
+        "opposite_normals": false,
+        "query_gradient": [
+          0.0,
+          0.9993998950311428,
+          0.0
+        ],
+        "true_plane_distance_m": 0.0005
+      },
+      {
+        "field_m": 0.0009993998800400337,
+        "height_m": 0.002,
+        "normal_coherence": 1.0,
+        "opposite_normals": false,
+        "query_gradient": [
+          0.0,
+          0.9993997601201344,
+          0.0
+        ],
+        "true_plane_distance_m": 0.0
+      },
+      {
+        "field_m": 0.0009993998800400337,
+        "height_m": 0.0,
+        "normal_coherence": 0.0006001199599663007,
+        "opposite_normals": true,
+        "query_gradient": [
+          0.0,
+          0.0012003598398317994,
+          0.0
+        ],
+        "true_plane_distance_m": 0.0
+      },
+      {
+        "field_m": 0.0009998499812516573,
+        "height_m": 0.0005,
+        "normal_coherence": 0.00030003749668506283,
+        "opposite_normals": true,
+        "query_gradient": [
+          0.0,
+          0.0006000899811136051,
+          0.0
+        ],
+        "true_plane_distance_m": 0.0005
+      },
+      {
+        "field_m": 0.001,
+        "height_m": 0.001,
+        "normal_coherence": 0.0,
+        "opposite_normals": true,
+        "query_gradient": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "true_plane_distance_m": 0.001
+      },
+      {
+        "field_m": 0.0009998499812516575,
+        "height_m": 0.0015,
+        "normal_coherence": 0.00030003749668506283,
+        "opposite_normals": true,
+        "query_gradient": [
+          0.0,
+          -0.0006000899811136051,
+          0.0
+        ],
+        "true_plane_distance_m": 0.0005
+      },
+      {
+        "field_m": 0.0009993998800400337,
+        "height_m": 0.002,
+        "normal_coherence": 0.0006001199599663007,
+        "opposite_normals": true,
+        "query_gradient": [
+          0.0,
+          -0.0012003598398317994,
+          0.0
+        ],
+        "true_plane_distance_m": 0.0
+      }
+    ],
+    "planar_scans": [
+      {
+        "active_samples_max": 6,
+        "active_samples_min": 4,
+        "grid_cells_per_axis": 2,
+        "maximum_gap_error_m": 7.37257477290143E-18,
+        "maximum_lateral_force_n": 1.1457157353758233E-13,
+        "maximum_normal_force_error_n": 1.6484591469634324E-12,
+        "microseconds_per_jet3_query": 3.7066,
+        "sample_count": 8,
+        "support_m": 0.08,
+        "uneven": false
+      },
+      {
+        "active_samples_max": 8,
+        "active_samples_min": 8,
+        "grid_cells_per_axis": 2,
+        "maximum_gap_error_m": 7.589415207398531E-18,
+        "maximum_lateral_force_n": 8.760159180054893E-14,
+        "maximum_normal_force_error_n": 1.6768808563938364E-12,
+        "microseconds_per_jet3_query": 5.455299999999999,
+        "sample_count": 8,
+        "support_m": 0.2,
+        "uneven": false
+      },
+      {
+        "active_samples_max": 6,
+        "active_samples_min": 3,
+        "grid_cells_per_axis": 2,
+        "maximum_gap_error_m": 8.890457814381136E-18,
+        "maximum_lateral_force_n": 1.3101760682293512E-13,
+        "maximum_normal_force_error_n": 2.0179413695586845E-12,
+        "microseconds_per_jet3_query": 3.3662,
+        "sample_count": 8,
+        "support_m": 0.08,
+        "uneven": true
+      },
+      {
+        "active_samples_max": 8,
+        "active_samples_min": 8,
+        "grid_cells_per_axis": 2,
+        "maximum_gap_error_m": 8.023096076392733E-18,
+        "maximum_lateral_force_n": 9.532931148469529E-14,
+        "maximum_normal_force_error_n": 1.7905676941154525E-12,
+        "microseconds_per_jet3_query": 5.4792,
+        "sample_count": 8,
+        "support_m": 0.2,
+        "uneven": true
+      },
+      {
+        "active_samples_max": 67,
+        "active_samples_min": 52,
+        "grid_cells_per_axis": 8,
+        "maximum_gap_error_m": 7.37257477290143E-18,
+        "maximum_lateral_force_n": 9.099386826154683E-14,
+        "maximum_normal_force_error_n": 1.6484591469634324E-12,
+        "microseconds_per_jet3_query": 46.1933,
+        "sample_count": 128,
+        "support_m": 0.08,
+        "uneven": false
+      },
+      {
+        "active_samples_max": 128,
+        "active_samples_min": 128,
+        "grid_cells_per_axis": 8,
+        "maximum_gap_error_m": 7.589415207398531E-18,
+        "maximum_lateral_force_n": 7.652779469160725E-14,
+        "maximum_normal_force_error_n": 1.6768808563938364E-12,
+        "microseconds_per_jet3_query": 71.1811,
+        "sample_count": 128,
+        "support_m": 0.2,
+        "uneven": false
+      },
+      {
+        "active_samples_max": 72,
+        "active_samples_min": 34,
+        "grid_cells_per_axis": 8,
+        "maximum_gap_error_m": 5.637851296924623E-18,
+        "maximum_lateral_force_n": 9.845568954283847E-14,
+        "maximum_normal_force_error_n": 1.3073986337985843E-12,
+        "microseconds_per_jet3_query": 40.3603,
+        "sample_count": 128,
+        "support_m": 0.08,
+        "uneven": true
+      },
+      {
+        "active_samples_max": 128,
+        "active_samples_min": 128,
+        "grid_cells_per_axis": 8,
+        "maximum_gap_error_m": 5.854691731421724E-18,
+        "maximum_lateral_force_n": 6.51223174224333E-14,
+        "maximum_normal_force_error_n": 1.3358203432289883E-12,
+        "microseconds_per_jet3_query": 60.4164,
+        "sample_count": 128,
+        "support_m": 0.2,
+        "uneven": true
+      }
+    ],
+    "scope": "Single-patch local field, not a self-contact solver"
+  },
+  "pull_summary": [
+    {
+      "law": "LocalSurface(0.05)",
+      "hold": false,
+      "steps": 480,
+      "unconverged_steps": 0,
+      "line_search_failures": 0,
+      "minimum_gap_m": 0.001,
+      "max_position_error_m": 0.0,
+      "max_velocity_error_m_s": 0.0,
+      "final_velocity_m_s": [
+        0.003999999999999976,
+        0.0,
+        0.0
+      ],
+      "max_post_release_energy_rise_j": 0.0
+    },
+    {
+      "law": "LocalSurface(0.08)",
+      "hold": false,
+      "steps": 480,
+      "unconverged_steps": 0,
+      "line_search_failures": 0,
+      "minimum_gap_m": 0.001,
+      "max_position_error_m": 0.0,
+      "max_velocity_error_m_s": 0.0,
+      "final_velocity_m_s": [
+        0.003999999999999976,
+        0.0,
+        0.0
+      ],
+      "max_post_release_energy_rise_j": 0.0
+    },
+    {
+      "law": "LocalSurface(0.2)",
+      "hold": false,
+      "steps": 480,
+      "unconverged_steps": 0,
+      "line_search_failures": 0,
+      "minimum_gap_m": 0.001,
+      "max_position_error_m": 0.0,
+      "max_velocity_error_m_s": 0.0,
+      "final_velocity_m_s": [
+        0.003999999999999976,
+        0.0,
+        0.0
+      ],
+      "max_post_release_energy_rise_j": 0.0
+    },
+    {
+      "law": "LocalSurface(0.05)",
+      "hold": true,
+      "steps": 480,
+      "unconverged_steps": 0,
+      "line_search_failures": 0,
+      "minimum_gap_m": 0.001,
+      "max_position_error_m": 0.0,
+      "max_velocity_error_m_s": 0.0,
+      "final_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_post_release_energy_rise_j": 0.0
+    },
+    {
+      "law": "LocalSurface(0.08)",
+      "hold": true,
+      "steps": 480,
+      "unconverged_steps": 0,
+      "line_search_failures": 0,
+      "minimum_gap_m": 0.001,
+      "max_position_error_m": 0.0,
+      "max_velocity_error_m_s": 0.0,
+      "final_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_post_release_energy_rise_j": 0.0
+    },
+    {
+      "law": "LocalSurface(0.2)",
+      "hold": true,
+      "steps": 480,
+      "unconverged_steps": 0,
+      "line_search_failures": 0,
+      "minimum_gap_m": 0.001,
+      "max_position_error_m": 0.0,
+      "max_velocity_error_m_s": 0.0,
+      "final_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_post_release_energy_rise_j": 0.0
+    }
+  ],
+  "dress_summary": {
+    "query_count": 225,
+    "maximum_absolute_gap_error_m": 0.0016649507477418724,
+    "maximum_absolute_field_on_mesh_m": 0.0017340939469108131,
+    "gap_error_above_0_1_mm": 173,
+    "field_outside_activation_band": 199,
+    "minimum_normal_coherence": 0.8707562058614647,
+    "production_contacts_and_bounds_unchanged": true
+  },
+  "evidence_directory": "output/local-surface-20261020",
+  "evidence_sha256": {
+    "build-final.log": "aba2d92c68e3e165d17c6f6058387deddd8f5780b7d604a126c077804210f84c",
+    "clippy-cpu.log": "63c2cc07766808c2b66df66a6afdc3a1424397e03c777bb2d4388270fd2be659",
+    "clippy-desktop.log": "c5b91bbf3511970e6f4b7b59348e24060ac3eb4a5e6ffd7b7dd86ba109cafc7b",
+    "dress-summary.json": "2e8cc3b6c02d6432aa3bf0d90ef2e510be094baeaa2681bb924bb92ff19e1452",
+    "dress.json": "ca0425a46a295b27ed4ef0b082eace74c32ad39751095d4514b5c8ca96653d89",
+    "field-probe.exe": "3d0938102aad953a541f696e4fa6695535c4d929473686d7704b86fc9621f63c",
+    "pull-probe.exe": "21050d0505e5478cb602755a15ab36e38564dd010a5166e3ba5842a0381fb55d",
+    "pull-summary.json": "b94a702896c30c239a5ed11edc724a689ad67b7e76ae5541435ba94758a5f7df",
+    "pull.json": "1cb1bc7598cc74583d68f88c50276c426a054d7fdf11e1b8146cde4666015220",
+    "source-manifest.json": "167973b68c67b3052a200c6a6ec78fda0dee5546a9b0fd7dadd8be562c6f7b5e",
+    "static.json": "13bd072a393b96646ebdfd9b0d2dee7802bb2f7951d9e3ba03877aba085e6a34",
+    "tests-base.log": "640412b03490c570a890e4cc49d4e73a23190ba794dd9e48487ea88367c6fb10",
+    "tests-follow-up.log": "dd01c082e88e65ec0880b4af8400bc9c36a990cf3b216dd9d095b54d35a801c3",
+    "tests-initial.log": "2915746d062003bd9c308bd67342c9075dd412c1419a2547804e8b419da6205b"
+  },
+  "user_document_sha256": "e542e066f4bf662149f8603bab47913a60498915689386f0bd51503e4d7aaccb",
+  "primary_sources_read": [
+    "https://elrnv.com/fcses_tog21.pdf"
+  ],
+  "open_gates": [
+    "stable surface patch identities through folds and self-contact",
+    "support continuity under motion",
+    "conservative agreement with original triangle geometry",
+    "full solver incidence and differentiation",
+    "matched full-dress pull/release, collision and convergence validation",
+    "whole-step cost"
+  ]
+}

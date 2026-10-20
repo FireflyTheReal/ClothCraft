@@ -4,6 +4,8 @@ ClothCraft should outlive any one physics algorithm. Keep the garment model, edi
 
 ## Existing boundary — and what is still missing
 
+Update: [the solver lab](solver-lab.md) now contains concrete CPU adapters and a separate native Box3D harness. The [consistency study](solver-consistency.md) adds coupled optimization variants and quality-first diagnostics. The distinction below still applies to production: there is no universal plugin ABI or editor hot-swap selector, and research candidates must pass quality and contact gates before promotion.
+
 `GarmentTemplate` compiles into `CompiledGarment`; `State` stores positions, velocities and physical time. These CPU types do not depend on the window. `ReferenceSolver`, `VbdSolver` and `GpuVbd` consume that model today, with separate adapters in the CLI/worker. **There is not yet a common backend trait, runtime plugin ABI or hot-swap selector.** Newton's contact model differs from OGC; do not present them as physically equivalent options.
 
 The next backend interface must describe construction from a compiled model/collider, accepted stepping, diagnostic output, reset and teardown. Declare capabilities such as static/animated avatars, contact type, friction, precision and device needs. A topology/material change invalidates caches; switching algorithms requires an explicit state-transfer policy. Do not create an empty trait hierarchy: first implement and test two working adapters. Keep the historical `ReferenceSolver::step` API.

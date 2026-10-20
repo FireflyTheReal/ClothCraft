@@ -1,0 +1,1733 @@
+{
+  "date": "2026-10-18",
+  "status": "Experimental API retained; disabled by default; jitter unresolved. Rejected for production activation.",
+  "gpu": "NVIDIA GeForce RTX 3090; Vulkan; NVIDIA 616.56",
+  "cpu_workers": 2,
+  "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "base_commit": "78b359cb2cbf8367e3615a5679d30184a14f851b",
+  "dirty_workspace": true,
+  "input_document_sha256": "59778195dcd271e78c3ce08975776c3f59fda8786b58137faaa3d19a2ad452e7",
+  "document_unchanged": true,
+  "desktop_executable_unchanged": true,
+  "desktop_executable_sha256": "4270f808e6d460ff6f51c567aa0ee8488b08a09b9772408e70a9161a9c556c80",
+  "benchmark_executable_sha256": "2d204bb39b509ae43eef591a98380d9c579fd1b2bf657805d733b6abfd72ce77",
+  "normal_rest_trace_sha256": "a33c8cde373af02028b368b97b1af1e1c76b4f461060d3fb2f0663d4d3891948",
+  "normal_pull_trace_sha256": "04e6e9bf79b271be52bdb225e3fcbeca817a1754ec76e1fa4d4b4966878e1858",
+  "free_on_off_trace_sha256": "ae9916827bc70cb201f434b8227dbea70333a6e6f1c6243cad6e6c288a286c2b",
+  "shared_control_schedule": {
+    "settle_steps": 120,
+    "pull_steps": 60,
+    "hold_steps": 30,
+    "release_steps": 150,
+    "pull_m": 0.04,
+    "dt_s": 0.016666666666666666,
+    "grab_stiffness_n_m": 100,
+    "anchor": "baseline attachment at start of pull, shared by all branches"
+  },
+  "same_settings_between_normal_and_coupled": true,
+  "all_fresh_final_intersection_checks": "passed with existing local sewing exclusions",
+  "step_collision_invariant": "Every refinement acceptance remains in original OGC balls; no candidate/exclusion/radius reduction.",
+  "tests": {
+    "full_cpu_suite_before_final_test_addition": 154,
+    "final_seam_block_unit_tests": 7,
+    "distinct_passing_cpu_tests": 155,
+    "all_target_cpu_clippy": "passed with warnings denied",
+    "format": "passed",
+    "template_validation": {
+      "passed": 6,
+      "names": [
+        "two-panel",
+        "local-ease",
+        "tshirt",
+        "dress",
+        "curved-panels",
+        "partial-chain"
+      ]
+    }
+  },
+  "results": [
+    {
+      "source": "garment-membrane-rest",
+      "gpu_used": true,
+      "vertices": 6731,
+      "steps": 360,
+      "warmup_steps": 60,
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 120,
+          "final_motion": 2.6542668782110086e-05,
+          "minimum_distance_m": 0.002686250744802826,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 44.127,
+            "mean": 26.256469333333325,
+            "p95": 32.004999999999995
+          },
+          "phases": {
+            "settle": {
+              "samples": 300,
+              "highpass_rms_m": 3.263347253126065e-05,
+              "maximum_vertex_highpass_rms_m": 0.00020378453742575002,
+              "seams": {
+                "shoulder-right": 4.5897108155799764e-05,
+                "sleeve-top-right": 1.7460103426208613e-05,
+                "sleeve-under-right": 1.4415014111923088e-05,
+                "side-right": 1.3741107593711971e-05,
+                "side-left": 1.350821211620873e-05,
+                "sleeve-under-left": 1.5981140297028208e-05,
+                "sleeve-top-left": 2.2820069468906297e-05,
+                "shoulder-left": 4.624624577484717e-05,
+                "seam_1": 2.284849900745011e-05,
+                "seam_2": 1.37395312617749e-05,
+                "seam_3": 1.7531051580958263e-05,
+                "seam_4": 2.574732839847626e-05,
+                "seam_5": 0.0001678920159250573
+              },
+              "position_rms_to_reference_m": null,
+              "attachment_path_length_m": 0.08543160154778463,
+              "attachment_net_displacement_m": 0.003422528846741551,
+              "total_energy_end_minus_start_j": -0.01777747531437912,
+              "positive_energy_steps": 108
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        },
+        {
+          "autonomous_positive_energy_steps": 146,
+          "final_motion": 3.077552477884507e-05,
+          "minimum_distance_m": 0.0027915043129862036,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 10.3834,
+            "mean": 5.847326000000001,
+            "p95": 6.690899999999999
+          },
+          "step_ms": {
+            "max": 44.473,
+            "mean": 32.223045,
+            "p95": 37.7819
+          },
+          "phases": {
+            "settle": {
+              "samples": 300,
+              "highpass_rms_m": 3.4238810565888735e-05,
+              "maximum_vertex_highpass_rms_m": 0.00023940326192560838,
+              "seams": {
+                "shoulder-right": 9.537351727053325e-05,
+                "sleeve-top-right": 1.992778116507755e-05,
+                "sleeve-under-right": 1.2990346844445027e-05,
+                "side-right": 1.284063737094243e-05,
+                "side-left": 1.4436650552858872e-05,
+                "sleeve-under-left": 1.4591259711879094e-05,
+                "sleeve-top-left": 1.8600199840235466e-05,
+                "shoulder-left": 3.6498115946011705e-05,
+                "seam_1": 2.2132788576459165e-05,
+                "seam_2": 3.953229229252097e-05,
+                "seam_3": 1.7932154698079576e-05,
+                "seam_4": 3.9079276906704824e-05,
+                "seam_5": 0.00019268932104362426
+              },
+              "position_rms_to_reference_m": null,
+              "attachment_path_length_m": 0.11248783140009967,
+              "attachment_net_displacement_m": 0.0039501419260839395,
+              "total_energy_end_minus_start_j": -0.013074996325856958,
+              "positive_energy_steps": 133
+            }
+          },
+          "mean_accepted_blocks": 4.0,
+          "mean_objective_decrease_j": 3.406174783983141e-06
+        }
+      ],
+      "limits": "Highpass contains physical acceleration. Phase energy changes during pulling/hold/release do not remove control work. Annotations require identical mesh indexing. Timings are interleaved full-step measurements excluding offline audits, not native-window throughput."
+    },
+    {
+      "source": "garment-membrane-pull",
+      "gpu_used": true,
+      "vertices": 6731,
+      "steps": 360,
+      "warmup_steps": 60,
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 92,
+          "final_motion": 3.047685469594255e-05,
+          "minimum_distance_m": 0.002686250744802826,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 43.899,
+            "mean": 26.114001333333338,
+            "p95": 31.698200000000003
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 4.472447722466288e-05,
+              "maximum_vertex_highpass_rms_m": 0.0002224457009331669,
+              "seams": {
+                "shoulder-right": 3.7615567305805466e-05,
+                "sleeve-top-right": 3.0265409476573304e-05,
+                "sleeve-under-right": 2.5334495634067596e-05,
+                "side-right": 2.1169918686579494e-05,
+                "side-left": 2.0010978947501922e-05,
+                "sleeve-under-left": 2.5163946458883617e-05,
+                "sleeve-top-left": 4.302038106470224e-05,
+                "shoulder-left": 7.163456997159953e-05,
+                "seam_1": 3.5889796518043954e-05,
+                "seam_2": 2.5477926755060246e-05,
+                "seam_3": 2.93449801188629e-05,
+                "seam_4": 3.601386027465534e-05,
+                "seam_5": 0.00017559810653544706
+              },
+              "position_rms_to_reference_m": 0.011834087819995561,
+              "attachment_path_length_m": 0.020171625609357167,
+              "attachment_net_displacement_m": 0.006880396567630984,
+              "total_energy_end_minus_start_j": -0.015188066950202472,
+              "positive_energy_steps": 13
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 3.248931848730213e-05,
+              "maximum_vertex_highpass_rms_m": 0.00025873559900300454,
+              "seams": {
+                "shoulder-right": 3.598135592113959e-05,
+                "sleeve-top-right": 1.2644632421552894e-05,
+                "sleeve-under-right": 9.26042461251244e-06,
+                "side-right": 9.33848504940992e-06,
+                "side-left": 1.1820616511223466e-05,
+                "sleeve-under-left": 1.5836318567510627e-05,
+                "sleeve-top-left": 1.4794277816978714e-05,
+                "shoulder-left": 0.00014139720953952142,
+                "seam_1": 1.9447103700736873e-05,
+                "seam_2": 8.065993908359242e-06,
+                "seam_3": 1.6105612573023308e-05,
+                "seam_4": 2.3155840646908842e-05,
+                "seam_5": 0.00017071047412672854
+              },
+              "position_rms_to_reference_m": 0.016448940649893693,
+              "attachment_path_length_m": 0.036139240651714866,
+              "attachment_net_displacement_m": 0.032952933062992996,
+              "total_energy_end_minus_start_j": 0.01376696627537255,
+              "positive_energy_steps": 43
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 2.5706339071586825e-05,
+              "maximum_vertex_highpass_rms_m": 0.00019844237028156516,
+              "seams": {
+                "shoulder-right": 2.2558561070734205e-05,
+                "sleeve-top-right": 9.968824755018272e-06,
+                "sleeve-under-right": 8.590527485410702e-06,
+                "side-right": 7.363860117923847e-06,
+                "side-left": 8.148803659587526e-06,
+                "sleeve-under-left": 1.508566308137664e-05,
+                "sleeve-top-left": 2.241468456574413e-05,
+                "shoulder-left": 9.754783769005498e-05,
+                "seam_1": 1.2435678877721102e-05,
+                "seam_2": 5.712814146624476e-06,
+                "seam_3": 9.075123413499665e-06,
+                "seam_4": 1.2901042210574316e-05,
+                "seam_5": 6.0039873951342406e-05
+              },
+              "position_rms_to_reference_m": 0.019049891369161506,
+              "attachment_path_length_m": 0.0053759158130737015,
+              "attachment_net_displacement_m": 0.003110824518585043,
+              "total_energy_end_minus_start_j": -0.003860597028500834,
+              "positive_energy_steps": 6
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 3.06479603779909e-05,
+              "maximum_vertex_highpass_rms_m": 0.00024191307128129197,
+              "seams": {
+                "shoulder-right": 6.511065526815308e-05,
+                "sleeve-top-right": 1.531940543701038e-05,
+                "sleeve-under-right": 1.1328765033871946e-05,
+                "side-right": 9.599391802478655e-06,
+                "side-left": 1.0521660959916274e-05,
+                "sleeve-under-left": 1.1798664281332587e-05,
+                "sleeve-top-left": 1.120800267817429e-05,
+                "shoulder-left": 3.948318218752013e-05,
+                "seam_1": 1.7095465976084776e-05,
+                "seam_2": 7.102448497849923e-06,
+                "seam_3": 1.1394057006964021e-05,
+                "seam_4": 1.369626425920468e-05,
+                "seam_5": 0.0001703612613091723
+              },
+              "position_rms_to_reference_m": 0.017352254033999412,
+              "attachment_path_length_m": 0.08392475275162536,
+              "attachment_net_displacement_m": 0.030191917202821134,
+              "total_energy_end_minus_start_j": -0.005755990833681945,
+              "positive_energy_steps": 67
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        },
+        {
+          "autonomous_positive_energy_steps": 102,
+          "final_motion": 2.5576105889654193e-05,
+          "minimum_distance_m": 0.0027915043129862036,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 7.898000000000001,
+            "mean": 5.919659333333334,
+            "p95": 6.9279
+          },
+          "step_ms": {
+            "max": 49.427,
+            "mean": 31.85383733333331,
+            "p95": 37.29
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 4.815520363670636e-05,
+              "maximum_vertex_highpass_rms_m": 0.00024962128645386405,
+              "seams": {
+                "shoulder-right": 7.407631878193188e-05,
+                "sleeve-top-right": 2.5946253100126956e-05,
+                "sleeve-under-right": 1.688577844054285e-05,
+                "side-right": 1.9414345972921303e-05,
+                "side-left": 2.3134513587352933e-05,
+                "sleeve-under-left": 2.288108497026928e-05,
+                "sleeve-top-left": 3.5617566528502836e-05,
+                "shoulder-left": 5.34788431400599e-05,
+                "seam_1": 3.425060370658561e-05,
+                "seam_2": 6.463645320005426e-05,
+                "seam_3": 2.9159566127482194e-05,
+                "seam_4": 7.339389801665596e-05,
+                "seam_5": 0.0001802270103236072
+              },
+              "position_rms_to_reference_m": 0.011347063911290789,
+              "attachment_path_length_m": 0.02337433508506505,
+              "attachment_net_displacement_m": 0.005037713023561156,
+              "total_energy_end_minus_start_j": -0.012633600127177846,
+              "positive_energy_steps": 22
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 2.668260670834059e-05,
+              "maximum_vertex_highpass_rms_m": 0.00022321108122609645,
+              "seams": {
+                "shoulder-right": 9.69853589019675e-05,
+                "sleeve-top-right": 1.3437532145800365e-05,
+                "sleeve-under-right": 9.587233789550695e-06,
+                "side-right": 1.1308679014379223e-05,
+                "side-left": 1.3973061293428381e-05,
+                "sleeve-under-left": 1.5204072188714208e-05,
+                "sleeve-top-left": 1.3248989729259416e-05,
+                "shoulder-left": 4.162074531043118e-05,
+                "seam_1": 1.6798426585720338e-05,
+                "seam_2": 3.365204966524614e-05,
+                "seam_3": 1.7541336243324427e-05,
+                "seam_4": 2.394353389403703e-05,
+                "seam_5": 0.00011454238978597031
+              },
+              "position_rms_to_reference_m": 0.017115593849178712,
+              "attachment_path_length_m": 0.0339796046302943,
+              "attachment_net_displacement_m": 0.0330084594790063,
+              "total_energy_end_minus_start_j": 0.00989533466666126,
+              "positive_energy_steps": 51
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 1.9523748014467464e-05,
+              "maximum_vertex_highpass_rms_m": 0.0004826352006859971,
+              "seams": {
+                "shoulder-right": 0.00019057096092264046,
+                "sleeve-top-right": 1.0723659829895724e-05,
+                "sleeve-under-right": 8.476906046461205e-06,
+                "side-right": 5.445230853299348e-06,
+                "side-left": 6.6820445809450635e-06,
+                "sleeve-under-left": 8.828301359565633e-06,
+                "sleeve-top-left": 9.556988287482686e-06,
+                "shoulder-left": 5.83328177004332e-05,
+                "seam_1": 8.440919021243349e-06,
+                "seam_2": 2.8504985100873795e-05,
+                "seam_3": 8.41595647942843e-06,
+                "seam_4": 1.6254446032172928e-05,
+                "seam_5": 7.183413143583156e-05
+              },
+              "position_rms_to_reference_m": 0.019376913458771006,
+              "attachment_path_length_m": 0.0036497696369230987,
+              "attachment_net_displacement_m": 0.002526737305930973,
+              "total_energy_end_minus_start_j": -0.001396359144932191,
+              "positive_energy_steps": 10
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 2.6514230286449195e-05,
+              "maximum_vertex_highpass_rms_m": 0.00021473263742846275,
+              "seams": {
+                "shoulder-right": 5.504760078372347e-05,
+                "sleeve-top-right": 1.6600877022171344e-05,
+                "sleeve-under-right": 1.1567531261266203e-05,
+                "side-right": 7.88573556247328e-06,
+                "side-left": 9.280380749595758e-06,
+                "sleeve-under-left": 1.167779957839712e-05,
+                "sleeve-top-left": 1.1401110315219287e-05,
+                "shoulder-left": 2.9985674574377777e-05,
+                "seam_1": 1.632073427909684e-05,
+                "seam_2": 3.1141266822391295e-05,
+                "seam_3": 9.9876505346672e-06,
+                "seam_4": 2.257618380635376e-05,
+                "seam_5": 0.00016932477140296204
+              },
+              "position_rms_to_reference_m": 0.016041582197874257,
+              "attachment_path_length_m": 0.07804625112250693,
+              "attachment_net_displacement_m": 0.029601792256969944,
+              "total_energy_end_minus_start_j": -0.006639555065734992,
+              "positive_energy_steps": 67
+            }
+          },
+          "mean_accepted_blocks": 4.0,
+          "mean_objective_decrease_j": 3.0736793121215194e-06
+        }
+      ],
+      "limits": "Highpass contains physical acceleration. Phase energy changes during pulling/hold/release do not remove control work. Annotations require identical mesh indexing. Timings are interleaved full-step measurements excluding offline audits, not native-window throughput."
+    },
+    {
+      "source": "garment-components-pull",
+      "gpu_used": true,
+      "vertices": 6731,
+      "steps": 360,
+      "warmup_steps": 60,
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 92,
+          "final_motion": 3.047685469594255e-05,
+          "minimum_distance_m": 0.002686250744802826,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 32.127500000000005,
+            "mean": 18.435599999999994,
+            "p95": 22.2714
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 4.472447722466288e-05,
+              "maximum_vertex_highpass_rms_m": 0.0002224457009331669,
+              "seams": {
+                "shoulder-right": 3.7615567305805466e-05,
+                "sleeve-top-right": 3.0265409476573304e-05,
+                "sleeve-under-right": 2.5334495634067596e-05,
+                "side-right": 2.1169918686579494e-05,
+                "side-left": 2.0010978947501922e-05,
+                "sleeve-under-left": 2.5163946458883617e-05,
+                "sleeve-top-left": 4.302038106470224e-05,
+                "shoulder-left": 7.163456997159953e-05,
+                "seam_1": 3.5889796518043954e-05,
+                "seam_2": 2.5477926755060246e-05,
+                "seam_3": 2.93449801188629e-05,
+                "seam_4": 3.601386027465534e-05,
+                "seam_5": 0.00017559810653544706
+              },
+              "position_rms_to_reference_m": 0.011834087819995561,
+              "attachment_path_length_m": 0.020171625609357167,
+              "attachment_net_displacement_m": 0.006880396567630984,
+              "total_energy_end_minus_start_j": -0.015188066950202472,
+              "positive_energy_steps": 13
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 3.248931848730213e-05,
+              "maximum_vertex_highpass_rms_m": 0.00025873559900300454,
+              "seams": {
+                "shoulder-right": 3.598135592113959e-05,
+                "sleeve-top-right": 1.2644632421552894e-05,
+                "sleeve-under-right": 9.26042461251244e-06,
+                "side-right": 9.33848504940992e-06,
+                "side-left": 1.1820616511223466e-05,
+                "sleeve-under-left": 1.5836318567510627e-05,
+                "sleeve-top-left": 1.4794277816978714e-05,
+                "shoulder-left": 0.00014139720953952142,
+                "seam_1": 1.9447103700736873e-05,
+                "seam_2": 8.065993908359242e-06,
+                "seam_3": 1.6105612573023308e-05,
+                "seam_4": 2.3155840646908842e-05,
+                "seam_5": 0.00017071047412672854
+              },
+              "position_rms_to_reference_m": 0.016448940649893693,
+              "attachment_path_length_m": 0.036139240651714866,
+              "attachment_net_displacement_m": 0.032952933062992996,
+              "total_energy_end_minus_start_j": 0.01376696627537255,
+              "positive_energy_steps": 43
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 2.5706339071586825e-05,
+              "maximum_vertex_highpass_rms_m": 0.00019844237028156516,
+              "seams": {
+                "shoulder-right": 2.2558561070734205e-05,
+                "sleeve-top-right": 9.968824755018272e-06,
+                "sleeve-under-right": 8.590527485410702e-06,
+                "side-right": 7.363860117923847e-06,
+                "side-left": 8.148803659587526e-06,
+                "sleeve-under-left": 1.508566308137664e-05,
+                "sleeve-top-left": 2.241468456574413e-05,
+                "shoulder-left": 9.754783769005498e-05,
+                "seam_1": 1.2435678877721102e-05,
+                "seam_2": 5.712814146624476e-06,
+                "seam_3": 9.075123413499665e-06,
+                "seam_4": 1.2901042210574316e-05,
+                "seam_5": 6.0039873951342406e-05
+              },
+              "position_rms_to_reference_m": 0.019049891369161506,
+              "attachment_path_length_m": 0.0053759158130737015,
+              "attachment_net_displacement_m": 0.003110824518585043,
+              "total_energy_end_minus_start_j": -0.003860597028500834,
+              "positive_energy_steps": 6
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 3.06479603779909e-05,
+              "maximum_vertex_highpass_rms_m": 0.00024191307128129197,
+              "seams": {
+                "shoulder-right": 6.511065526815308e-05,
+                "sleeve-top-right": 1.531940543701038e-05,
+                "sleeve-under-right": 1.1328765033871946e-05,
+                "side-right": 9.599391802478655e-06,
+                "side-left": 1.0521660959916274e-05,
+                "sleeve-under-left": 1.1798664281332587e-05,
+                "sleeve-top-left": 1.120800267817429e-05,
+                "shoulder-left": 3.948318218752013e-05,
+                "seam_1": 1.7095465976084776e-05,
+                "seam_2": 7.102448497849923e-06,
+                "seam_3": 1.1394057006964021e-05,
+                "seam_4": 1.369626425920468e-05,
+                "seam_5": 0.0001703612613091723
+              },
+              "position_rms_to_reference_m": 0.017352254033999412,
+              "attachment_path_length_m": 0.08392475275162536,
+              "attachment_net_displacement_m": 0.030191917202821134,
+              "total_energy_end_minus_start_j": -0.005755990833681945,
+              "positive_energy_steps": 67
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        },
+        {
+          "autonomous_positive_energy_steps": 105,
+          "final_motion": 3.133529737724358e-05,
+          "minimum_distance_m": 0.002824797244259684,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 11.7544,
+            "mean": 3.9908790000000027,
+            "p95": 5.4517999999999995
+          },
+          "step_ms": {
+            "max": 93.6564,
+            "mean": 22.455682333333332,
+            "p95": 28.090400000000002
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 4.691013443666945e-05,
+              "maximum_vertex_highpass_rms_m": 0.00021080452419392596,
+              "seams": {
+                "shoulder-right": 5.208612441946037e-05,
+                "sleeve-top-right": 2.2556688800017127e-05,
+                "sleeve-under-right": 2.0041982534585813e-05,
+                "side-right": 2.567093543876912e-05,
+                "side-left": 2.8337265823799303e-05,
+                "sleeve-under-left": 2.3499786447629238e-05,
+                "sleeve-top-left": 2.5755884158716906e-05,
+                "shoulder-left": 4.827604305935789e-05,
+                "seam_1": 3.930097020405169e-05,
+                "seam_2": 2.7509765258675334e-05,
+                "seam_3": 3.268888829738239e-05,
+                "seam_4": 4.06258657632009e-05,
+                "seam_5": 0.000158590060217956
+              },
+              "position_rms_to_reference_m": 0.011427957240376154,
+              "attachment_path_length_m": 0.024584187983672106,
+              "attachment_net_displacement_m": 0.0039042415182222083,
+              "total_energy_end_minus_start_j": -0.010231976456704928,
+              "positive_energy_steps": 22
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 3.753988007738775e-05,
+              "maximum_vertex_highpass_rms_m": 0.0002716112787990895,
+              "seams": {
+                "shoulder-right": 5.69976022567881e-05,
+                "sleeve-top-right": 1.87392311024117e-05,
+                "sleeve-under-right": 1.56049191593095e-05,
+                "side-right": 1.7934514279504634e-05,
+                "side-left": 1.9916637630265452e-05,
+                "sleeve-under-left": 1.9889224680081854e-05,
+                "sleeve-top-left": 1.8864023522856793e-05,
+                "shoulder-left": 6.643507353073839e-05,
+                "seam_1": 2.2753235389474006e-05,
+                "seam_2": 1.262520015947845e-05,
+                "seam_3": 2.3620892519211682e-05,
+                "seam_4": 2.976418646963701e-05,
+                "seam_5": 0.00018273659373072005
+              },
+              "position_rms_to_reference_m": 0.01912019557597706,
+              "attachment_path_length_m": 0.0348113691956806,
+              "attachment_net_displacement_m": 0.03229969218931328,
+              "total_energy_end_minus_start_j": 0.009417479941226325,
+              "positive_energy_steps": 38
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 2.9464374243646958e-05,
+              "maximum_vertex_highpass_rms_m": 0.00026152952692247113,
+              "seams": {
+                "shoulder-right": 4.394693412189139e-05,
+                "sleeve-top-right": 1.1150023227263357e-05,
+                "sleeve-under-right": 1.1393110255095372e-05,
+                "side-right": 1.0886942479651304e-05,
+                "side-left": 1.0309051640332266e-05,
+                "sleeve-under-left": 1.6472409804367735e-05,
+                "sleeve-top-left": 1.4420170447949294e-05,
+                "shoulder-left": 5.713044498031532e-05,
+                "seam_1": 1.2198278351643734e-05,
+                "seam_2": 1.3038220436551846e-05,
+                "seam_3": 2.2349206847626733e-05,
+                "seam_4": 2.9372301201704077e-05,
+                "seam_5": 0.00010657570061656047
+              },
+              "position_rms_to_reference_m": 0.020901458495205895,
+              "attachment_path_length_m": 0.00539295460474576,
+              "attachment_net_displacement_m": 0.0014144992767885466,
+              "total_energy_end_minus_start_j": -0.004168883066773876,
+              "positive_energy_steps": 13
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 3.301350957996734e-05,
+              "maximum_vertex_highpass_rms_m": 0.00021999140259428931,
+              "seams": {
+                "shoulder-right": 4.210055634996495e-05,
+                "sleeve-top-right": 1.6809655153865205e-05,
+                "sleeve-under-right": 1.2675499160927117e-05,
+                "side-right": 1.1744456686851357e-05,
+                "side-left": 1.450871845044805e-05,
+                "sleeve-under-left": 1.4387363579906926e-05,
+                "sleeve-top-left": 1.6963461174747184e-05,
+                "shoulder-left": 5.7656026956285374e-05,
+                "seam_1": 2.1077529231597733e-05,
+                "seam_2": 9.251189313383819e-06,
+                "seam_3": 1.5442622192164698e-05,
+                "seam_4": 1.8947905395932763e-05,
+                "seam_5": 0.00016156550018084253
+              },
+              "position_rms_to_reference_m": 0.020584003961573748,
+              "attachment_path_length_m": 0.0852208015371496,
+              "attachment_net_displacement_m": 0.025340930322556385,
+              "total_energy_end_minus_start_j": -0.00590530785050003,
+              "positive_energy_steps": 73
+            }
+          },
+          "mean_accepted_blocks": 4.0,
+          "mean_objective_decrease_j": 3.491130793976557e-06
+        },
+        {
+          "autonomous_positive_energy_steps": 69,
+          "final_motion": 1.3395741420842247e-05,
+          "minimum_distance_m": 0.0028563256428872463,
+          "mode": "reference",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 54.4441,
+            "mean": 35.482983000000004,
+            "p95": 43.7736
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 2.3548472431745494e-05,
+              "maximum_vertex_highpass_rms_m": 0.00014054929949525974,
+              "seams": {
+                "shoulder-right": 1.3044967145462872e-05,
+                "sleeve-top-right": 1.1847856671147986e-05,
+                "sleeve-under-right": 9.54691369585915e-06,
+                "side-right": 9.438164885722509e-06,
+                "side-left": 2.0499043003938086e-05,
+                "sleeve-under-left": 1.904700172064673e-05,
+                "sleeve-top-left": 1.470648284199597e-05,
+                "shoulder-left": 1.7799033281357058e-05,
+                "seam_1": 1.8037236165931212e-05,
+                "seam_2": 1.566394826685507e-05,
+                "seam_3": 1.727380263355157e-05,
+                "seam_4": 2.1369471296465235e-05,
+                "seam_5": 5.482051316919735e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.007910886223389988,
+              "attachment_net_displacement_m": 0.0004724208463106455,
+              "total_energy_end_minus_start_j": -0.0016548145481922738,
+              "positive_energy_steps": 7
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 2.7197964797658293e-05,
+              "maximum_vertex_highpass_rms_m": 0.00017451155740106473,
+              "seams": {
+                "shoulder-right": 2.5024333896058188e-05,
+                "sleeve-top-right": 1.3681729018246207e-05,
+                "sleeve-under-right": 1.3694962654267633e-05,
+                "side-right": 1.3048334978606397e-05,
+                "side-left": 1.0362021877780847e-05,
+                "sleeve-under-left": 1.3653968145330965e-05,
+                "sleeve-top-left": 1.030837980516524e-05,
+                "shoulder-left": 2.5853173782067778e-05,
+                "seam_1": 2.165020321530382e-05,
+                "seam_2": 1.9287368154146454e-05,
+                "seam_3": 1.3522981474801737e-05,
+                "seam_4": 1.6206468107526368e-05,
+                "seam_5": 0.0001245310747515993
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.037774015063027536,
+              "attachment_net_displacement_m": 0.03439775922728088,
+              "total_energy_end_minus_start_j": 0.0120056092937606,
+              "positive_energy_steps": 55
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 1.9943181123978126e-05,
+              "maximum_vertex_highpass_rms_m": 0.00020585529388858584,
+              "seams": {
+                "shoulder-right": 1.6066530343620618e-05,
+                "sleeve-top-right": 1.538827143771356e-05,
+                "sleeve-under-right": 1.4109638673340876e-05,
+                "side-right": 1.0833251598792011e-05,
+                "side-left": 5.236034823561633e-06,
+                "sleeve-under-left": 8.344174028468255e-06,
+                "sleeve-top-left": 7.01399896244996e-06,
+                "shoulder-left": 1.380268459837647e-05,
+                "seam_1": 1.2834428702832668e-05,
+                "seam_2": 2.4364676111534878e-05,
+                "seam_3": 9.97457910283259e-06,
+                "seam_4": 1.3048080605083207e-05,
+                "seam_5": 2.8689264168866438e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.003241435323509551,
+              "attachment_net_displacement_m": 0.001245999677151264,
+              "total_energy_end_minus_start_j": 0.0003179396367665177,
+              "positive_energy_steps": 20
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 1.786264304152579e-05,
+              "maximum_vertex_highpass_rms_m": 0.0001540253354773961,
+              "seams": {
+                "shoulder-right": 2.7135301176207993e-05,
+                "sleeve-top-right": 1.1546070295029181e-05,
+                "sleeve-under-right": 1.3179461877053872e-05,
+                "side-right": 7.459564360819924e-06,
+                "side-left": 6.074638297679118e-06,
+                "sleeve-under-left": 9.434579335107178e-06,
+                "sleeve-top-left": 1.036078869289473e-05,
+                "shoulder-left": 2.2078459916289627e-05,
+                "seam_1": 1.268272619610554e-05,
+                "seam_2": 1.04951735450966e-05,
+                "seam_3": 6.556213387266009e-06,
+                "seam_4": 7.6268190652705495e-06,
+                "seam_5": 0.00011486082193211534
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.06947643929985647,
+              "attachment_net_displacement_m": 0.03195839146312568,
+              "total_energy_end_minus_start_j": -0.01001170858508793,
+              "positive_energy_steps": 50
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        }
+      ],
+      "limits": "Highpass contains physical acceleration. Phase energy changes during pulling/hold/release do not remove control work. Annotations require identical mesh indexing. Timings are interleaved full-step measurements excluding offline audits, not native-window throughput."
+    },
+    {
+      "source": "final-equal",
+      "gpu_used": false,
+      "vertices": 40,
+      "steps": 360,
+      "warmup_steps": 60,
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 73,
+          "final_motion": 9.595769186711941e-06,
+          "minimum_distance_m": 0.012,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 26.9892,
+            "mean": 4.477097333333333,
+            "p95": 5.0241
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 1.5055743591711691e-06,
+              "maximum_vertex_highpass_rms_m": 3.3472495795902556e-06,
+              "seams": {
+                "centre-seam": 1.4857365434123548e-06
+              },
+              "position_rms_to_reference_m": 0.00023281709141308299,
+              "attachment_path_length_m": 0.0014877196041957548,
+              "attachment_net_displacement_m": 9.807933369632523e-05,
+              "total_energy_end_minus_start_j": -1.0219882531914415e-07,
+              "positive_energy_steps": 12
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 1.1180762421957053e-05,
+              "maximum_vertex_highpass_rms_m": 2.1763477773050497e-05,
+              "seams": {
+                "centre-seam": 1.2654827740619224e-05
+              },
+              "position_rms_to_reference_m": 0.0011303300675899253,
+              "attachment_path_length_m": 0.03977871060857932,
+              "attachment_net_displacement_m": 0.03977583121191687,
+              "total_energy_end_minus_start_j": 0.00033034598614695154,
+              "positive_energy_steps": 59
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 1.4795930187426948e-05,
+              "maximum_vertex_highpass_rms_m": 3.8865738698912425e-05,
+              "seams": {
+                "centre-seam": 1.631225254794657e-05
+              },
+              "position_rms_to_reference_m": 0.0024799323398713275,
+              "attachment_path_length_m": 0.00012561115013363705,
+              "attachment_net_displacement_m": 0.00011864076395747366,
+              "total_energy_end_minus_start_j": -7.358295122272818e-06,
+              "positive_energy_steps": 7
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 3.1042379084917115e-05,
+              "maximum_vertex_highpass_rms_m": 7.57156924859625e-05,
+              "seams": {
+                "centre-seam": 2.865069038990812e-05
+              },
+              "position_rms_to_reference_m": 0.0051827624070612055,
+              "attachment_path_length_m": 0.09449632113972899,
+              "attachment_net_displacement_m": 0.0394909594568643,
+              "total_energy_end_minus_start_j": -0.00019220253172938517,
+              "positive_energy_steps": 41
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        },
+        {
+          "autonomous_positive_energy_steps": 23,
+          "final_motion": 1.195474290660384e-05,
+          "minimum_distance_m": 0.012,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 0.32689999999999997,
+            "mean": 0.10796533333333329,
+            "p95": 0.1313
+          },
+          "step_ms": {
+            "max": 6.282699999999999,
+            "mean": 4.527307000000004,
+            "p95": 5.222700000000001
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 8.262200633688326e-07,
+              "maximum_vertex_highpass_rms_m": 2.3253741406885713e-06,
+              "seams": {
+                "centre-seam": 7.068158725828924e-07
+              },
+              "position_rms_to_reference_m": 9.340322226578401e-05,
+              "attachment_path_length_m": 0.0011950104574258945,
+              "attachment_net_displacement_m": 0.0002488427815139512,
+              "total_energy_end_minus_start_j": -1.535179336431547e-08,
+              "positive_energy_steps": 0
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 1.1103338369164588e-05,
+              "maximum_vertex_highpass_rms_m": 2.427646756866247e-05,
+              "seams": {
+                "centre-seam": 1.1312256344838881e-05
+              },
+              "position_rms_to_reference_m": 0.0002636216069531012,
+              "attachment_path_length_m": 0.03976478461261228,
+              "attachment_net_displacement_m": 0.03976211329223543,
+              "total_energy_end_minus_start_j": 0.00032360025102901036,
+              "positive_energy_steps": 59
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 1.0420457025952636e-05,
+              "maximum_vertex_highpass_rms_m": 2.6803409631485166e-05,
+              "seams": {
+                "centre-seam": 1.0028949651610173e-05
+              },
+              "position_rms_to_reference_m": 0.0008991572485787964,
+              "attachment_path_length_m": 8.144421385891223e-05,
+              "attachment_net_displacement_m": 6.299384400427025e-05,
+              "total_energy_end_minus_start_j": -2.2377409337470677e-06,
+              "positive_energy_steps": 7
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 3.421517654303794e-05,
+              "maximum_vertex_highpass_rms_m": 7.991495976603468e-05,
+              "seams": {
+                "centre-seam": 3.112277674999089e-05
+              },
+              "position_rms_to_reference_m": 0.003253719550386433,
+              "attachment_path_length_m": 0.11382723025239112,
+              "attachment_net_displacement_m": 0.040011212107786256,
+              "total_energy_end_minus_start_j": -0.00019310369354910706,
+              "positive_energy_steps": 5
+            }
+          },
+          "mean_accepted_blocks": 1.0,
+          "mean_objective_decrease_j": 1.0415979545303784e-08
+        },
+        {
+          "autonomous_positive_energy_steps": 0,
+          "final_motion": 1.4071901293890323e-05,
+          "minimum_distance_m": 0.012,
+          "mode": "reference",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 21.5439,
+            "mean": 17.38338666666667,
+            "p95": 19.2473
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 8.24825753538404e-07,
+              "maximum_vertex_highpass_rms_m": 2.6462915116299534e-06,
+              "seams": {
+                "centre-seam": 3.9523296605042073e-07
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.0014927259209543452,
+              "attachment_net_displacement_m": 0.00013010195058044463,
+              "total_energy_end_minus_start_j": -1.9243842436234004e-08,
+              "positive_energy_steps": 0
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 1.2404618548743635e-05,
+              "maximum_vertex_highpass_rms_m": 2.2920866490469508e-05,
+              "seams": {
+                "centre-seam": 1.2543614906220357e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.039758513933922865,
+              "attachment_net_displacement_m": 0.03975571688744129,
+              "total_energy_end_minus_start_j": 0.0003221196038857843,
+              "positive_energy_steps": 59
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 9.848268796935376e-06,
+              "maximum_vertex_highpass_rms_m": 2.4061887251148073e-05,
+              "seams": {
+                "centre-seam": 1.0749980676906943e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 6.623011445627879e-05,
+              "attachment_net_displacement_m": 3.837090470465379e-05,
+              "total_energy_end_minus_start_j": -1.279660264752458e-06,
+              "positive_energy_steps": 0
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 4.759812134539741e-05,
+              "maximum_vertex_highpass_rms_m": 0.00011307785580012967,
+              "seams": {
+                "centre-seam": 4.418445229521001e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.10421209599033902,
+              "attachment_net_displacement_m": 0.03964049485583045,
+              "total_energy_end_minus_start_j": -0.00016658374411204768,
+              "positive_energy_steps": 0
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        }
+      ],
+      "limits": "Highpass contains physical acceleration. Phase energy changes during pulling/hold/release do not remove control work. Annotations require identical mesh indexing. Timings are interleaved full-step measurements excluding offline audits, not native-window throughput."
+    },
+    {
+      "source": "final-unequal",
+      "gpu_used": false,
+      "vertices": 40,
+      "steps": 360,
+      "warmup_steps": 60,
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 64,
+          "final_motion": 7.631812798397813e-06,
+          "minimum_distance_m": 0.012,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 21.9039,
+            "mean": 5.076671999999997,
+            "p95": 6.9388000000000005
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 3.257865571474018e-05,
+              "maximum_vertex_highpass_rms_m": 9.52996856598827e-05,
+              "seams": {
+                "centre-seam": 2.1277808977343156e-05
+              },
+              "position_rms_to_reference_m": 0.005715302884203041,
+              "attachment_path_length_m": 0.01360760921023255,
+              "attachment_net_displacement_m": 0.0009160960670208843,
+              "total_energy_end_minus_start_j": -4.7974637780223706e-05,
+              "positive_energy_steps": 7
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 1.4540301801822958e-05,
+              "maximum_vertex_highpass_rms_m": 3.680835136812843e-05,
+              "seams": {
+                "centre-seam": 1.3602849885155412e-05
+              },
+              "position_rms_to_reference_m": 0.0014925285076426353,
+              "attachment_path_length_m": 0.039859982526978234,
+              "attachment_net_displacement_m": 0.03985815885151626,
+              "total_energy_end_minus_start_j": 0.00019361386647259726,
+              "positive_energy_steps": 56
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 2.7653665925982408e-05,
+              "maximum_vertex_highpass_rms_m": 7.306526534596487e-05,
+              "seams": {
+                "centre-seam": 2.8828156404790587e-05
+              },
+              "position_rms_to_reference_m": 0.0011712189558092593,
+              "attachment_path_length_m": 0.00018708959010299494,
+              "attachment_net_displacement_m": 7.688063583857074e-05,
+              "total_energy_end_minus_start_j": -1.3344861920255857e-05,
+              "positive_energy_steps": 2
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 2.5072060841394914e-05,
+              "maximum_vertex_highpass_rms_m": 9.227411210625689e-05,
+              "seams": {
+                "centre-seam": 1.7665172976305725e-05
+              },
+              "position_rms_to_reference_m": 0.004961838316602285,
+              "attachment_path_length_m": 0.07474500655471793,
+              "attachment_net_displacement_m": 0.03364317587330059,
+              "total_energy_end_minus_start_j": -0.0001154469966007099,
+              "positive_energy_steps": 50
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        },
+        {
+          "autonomous_positive_energy_steps": 60,
+          "final_motion": 9.005267785245085e-06,
+          "minimum_distance_m": 0.012,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 3.3801,
+            "mean": 0.1383990000000001,
+            "p95": 0.1948
+          },
+          "step_ms": {
+            "max": 25.992500000000003,
+            "mean": 5.292379999999996,
+            "p95": 8.2597
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 2.728908850242647e-05,
+              "maximum_vertex_highpass_rms_m": 9.52131533530151e-05,
+              "seams": {
+                "centre-seam": 1.9818972424069686e-05
+              },
+              "position_rms_to_reference_m": 0.002704650728859137,
+              "attachment_path_length_m": 0.017833090537181427,
+              "attachment_net_displacement_m": 0.004336377631405979,
+              "total_energy_end_minus_start_j": -1.8021858943506608e-05,
+              "positive_energy_steps": 12
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 0.00014015857714503015,
+              "maximum_vertex_highpass_rms_m": 0.0008167169006410143,
+              "seams": {
+                "centre-seam": 2.6951636292833486e-05
+              },
+              "position_rms_to_reference_m": 0.0008578977013097909,
+              "attachment_path_length_m": 0.04007553273048922,
+              "attachment_net_displacement_m": 0.040055843600843494,
+              "total_energy_end_minus_start_j": 0.00014277665042095045,
+              "positive_energy_steps": 50
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 2.9979827646411718e-05,
+              "maximum_vertex_highpass_rms_m": 9.229120915634823e-05,
+              "seams": {
+                "centre-seam": 2.920298414176104e-05
+              },
+              "position_rms_to_reference_m": 0.0008892357444446113,
+              "attachment_path_length_m": 0.00020331909248542888,
+              "attachment_net_displacement_m": 2.48665552556812e-05,
+              "total_energy_end_minus_start_j": -1.0072357459173231e-05,
+              "positive_energy_steps": 0
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 2.640593044308647e-05,
+              "maximum_vertex_highpass_rms_m": 9.061919288446345e-05,
+              "seams": {
+                "centre-seam": 1.9599138849024455e-05
+              },
+              "position_rms_to_reference_m": 0.004003492715914249,
+              "attachment_path_length_m": 0.08110238491195594,
+              "attachment_net_displacement_m": 0.03129004845668697,
+              "total_energy_end_minus_start_j": -0.00011599135581077946,
+              "positive_energy_steps": 40
+            }
+          },
+          "mean_accepted_blocks": 1.0,
+          "mean_objective_decrease_j": 1.1231296402758096e-08
+        },
+        {
+          "autonomous_positive_energy_steps": 0,
+          "final_motion": 1.1199835031294716e-05,
+          "minimum_distance_m": 0.012,
+          "mode": "reference",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 98.0854,
+            "mean": 20.312225333333334,
+            "p95": 30.4952
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 6.688841313011266e-06,
+              "maximum_vertex_highpass_rms_m": 1.6884420950379825e-05,
+              "seams": {
+                "centre-seam": 4.894748366170877e-06
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.007696095090087313,
+              "attachment_net_displacement_m": 0.00022749890227172925,
+              "total_energy_end_minus_start_j": -1.2099180990710057e-06,
+              "positive_energy_steps": 0
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 9.912203792755608e-05,
+              "maximum_vertex_highpass_rms_m": 0.0005739085030788201,
+              "seams": {
+                "centre-seam": 2.6026484360846923e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.039989024124872284,
+              "attachment_net_displacement_m": 0.03997666111276341,
+              "total_energy_end_minus_start_j": 0.00016697513229826932,
+              "positive_energy_steps": 50
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 3.0124755091477004e-05,
+              "maximum_vertex_highpass_rms_m": 7.741635575349405e-05,
+              "seams": {
+                "centre-seam": 2.9857502141590663e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.00010110782135440274,
+              "attachment_net_displacement_m": 2.8565523738371423e-05,
+              "total_energy_end_minus_start_j": -7.032002363183132e-06,
+              "positive_energy_steps": 0
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 3.804749826937552e-05,
+              "maximum_vertex_highpass_rms_m": 0.00013117766402793277,
+              "seams": {
+                "centre-seam": 2.8619490822380808e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.09961245921801105,
+              "attachment_net_displacement_m": 0.029848155342433368,
+              "total_energy_end_minus_start_j": -0.00010309274379963207,
+              "positive_energy_steps": 0
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        }
+      ],
+      "limits": "Highpass contains physical acceleration. Phase energy changes during pulling/hold/release do not remove control work. Annotations require identical mesh indexing. Timings are interleaved full-step measurements excluding offline audits, not native-window throughput."
+    },
+    {
+      "source": "final-nonmatching",
+      "gpu_used": false,
+      "vertices": 48,
+      "steps": 360,
+      "warmup_steps": 60,
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 58,
+          "final_motion": 7.351137315100126e-06,
+          "minimum_distance_m": 0.012,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 8.003100000000002,
+            "mean": 5.420768666666668,
+            "p95": 5.9363
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 1.3500352292365538e-05,
+              "maximum_vertex_highpass_rms_m": 3.883267597889701e-05,
+              "seams": {
+                "centre-seam": 8.771813750992921e-06
+              },
+              "position_rms_to_reference_m": 0.0015558457576515725,
+              "attachment_path_length_m": 0.012180336031267764,
+              "attachment_net_displacement_m": 0.00513907790153116,
+              "total_energy_end_minus_start_j": -9.627576362747359e-06,
+              "positive_energy_steps": 10
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 9.45874163868477e-06,
+              "maximum_vertex_highpass_rms_m": 3.394090101323632e-05,
+              "seams": {
+                "centre-seam": 6.716957702068822e-06
+              },
+              "position_rms_to_reference_m": 0.000769850966160001,
+              "attachment_path_length_m": 0.039914953084385286,
+              "attachment_net_displacement_m": 0.03991360108808518,
+              "total_energy_end_minus_start_j": 0.00012229770770963433,
+              "positive_energy_steps": 59
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 7.101649266138823e-06,
+              "maximum_vertex_highpass_rms_m": 2.2731083153871795e-05,
+              "seams": {
+                "centre-seam": 6.2321889024822624e-06
+              },
+              "position_rms_to_reference_m": 0.001080452355754954,
+              "attachment_path_length_m": 3.4765578685109024e-05,
+              "attachment_net_displacement_m": 2.3580469191146765e-05,
+              "total_energy_end_minus_start_j": -9.033815216996643e-07,
+              "positive_energy_steps": 9
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 2.207026919841508e-05,
+              "maximum_vertex_highpass_rms_m": 9.994989871206301e-05,
+              "seams": {
+                "centre-seam": 1.2117088250903516e-05
+              },
+              "position_rms_to_reference_m": 0.005230035592760416,
+              "attachment_path_length_m": 0.08550519684757416,
+              "attachment_net_displacement_m": 0.040070361427494004,
+              "total_energy_end_minus_start_j": -0.00011098757884650534,
+              "positive_energy_steps": 40
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        },
+        {
+          "autonomous_positive_energy_steps": 52,
+          "final_motion": 7.194020895763059e-06,
+          "minimum_distance_m": 0.012,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 0.3067,
+            "mean": 0.13419599999999998,
+            "p95": 0.1639
+          },
+          "step_ms": {
+            "max": 6.7129,
+            "mean": 5.528590333333333,
+            "p95": 6.076899999999999
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 1.4008896227634619e-05,
+              "maximum_vertex_highpass_rms_m": 3.2187894373110486e-05,
+              "seams": {
+                "centre-seam": 1.2376549337786448e-05
+              },
+              "position_rms_to_reference_m": 0.0059861569622442655,
+              "attachment_path_length_m": 0.00785100672892038,
+              "attachment_net_displacement_m": 0.0006704280216676728,
+              "total_energy_end_minus_start_j": -7.956038690054568e-06,
+              "positive_energy_steps": 12
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 0.00010163056881840698,
+              "maximum_vertex_highpass_rms_m": 0.0006114334088281935,
+              "seams": {
+                "centre-seam": 1.4652459904194758e-05
+              },
+              "position_rms_to_reference_m": 0.005808885065340007,
+              "attachment_path_length_m": 0.04005869236431037,
+              "attachment_net_displacement_m": 0.03982629319424378,
+              "total_energy_end_minus_start_j": 4.407345626122883e-05,
+              "positive_energy_steps": 44
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 1.740477888667776e-05,
+              "maximum_vertex_highpass_rms_m": 5.492980324277948e-05,
+              "seams": {
+                "centre-seam": 7.64359160893778e-06
+              },
+              "position_rms_to_reference_m": 0.005496174798459866,
+              "attachment_path_length_m": 0.00012600434384628755,
+              "attachment_net_displacement_m": 4.042575446413921e-05,
+              "total_energy_end_minus_start_j": -6.632607503220811e-06,
+              "positive_energy_steps": 5
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 1.5354116533373706e-05,
+              "maximum_vertex_highpass_rms_m": 5.2977657990369125e-05,
+              "seams": {
+                "centre-seam": 1.2049248541888606e-05
+              },
+              "position_rms_to_reference_m": 0.006966456058489032,
+              "attachment_path_length_m": 0.08169954336446357,
+              "attachment_net_displacement_m": 0.031198583895404572,
+              "total_energy_end_minus_start_j": -7.470340454937552e-05,
+              "positive_energy_steps": 26
+            }
+          },
+          "mean_accepted_blocks": 1.0,
+          "mean_objective_decrease_j": 4.807931408266388e-09
+        },
+        {
+          "autonomous_positive_energy_steps": 3,
+          "final_motion": 1.146562591664118e-05,
+          "minimum_distance_m": 0.012,
+          "mode": "reference",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 25.970799999999997,
+            "mean": 21.416110333333346,
+            "p95": 23.5664
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 6.566722654310193e-06,
+              "maximum_vertex_highpass_rms_m": 1.9372675057138274e-05,
+              "seams": {
+                "centre-seam": 5.136671385638701e-06
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.006931814819113557,
+              "attachment_net_displacement_m": 0.00025067422570330364,
+              "total_energy_end_minus_start_j": -1.5947891849887874e-06,
+              "positive_energy_steps": 0
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 4.896791699171174e-05,
+              "maximum_vertex_highpass_rms_m": 0.00030133220508836043,
+              "seams": {
+                "centre-seam": 1.1689541522607232e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.03997365915547183,
+              "attachment_net_displacement_m": 0.03996466669831829,
+              "total_energy_end_minus_start_j": 0.00011530436702089641,
+              "positive_energy_steps": 54
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 5.797458050056177e-06,
+              "maximum_vertex_highpass_rms_m": 1.7570921743119574e-05,
+              "seams": {
+                "centre-seam": 5.27748460245999e-06
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 1.8102438405389564e-05,
+              "attachment_net_displacement_m": 1.0670049227249989e-05,
+              "total_energy_end_minus_start_j": -4.2084132237385496e-07,
+              "positive_energy_steps": 0
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 3.616080523041903e-05,
+              "maximum_vertex_highpass_rms_m": 0.00014920107404334468,
+              "seams": {
+                "centre-seam": 2.224873301804911e-05
+              },
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.10041183027952741,
+              "attachment_net_displacement_m": 0.03769480062564518,
+              "total_energy_end_minus_start_j": -0.00010722329723980573,
+              "positive_energy_steps": 3
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        }
+      ],
+      "limits": "Highpass contains physical acceleration. Phase energy changes during pulling/hold/release do not remove control work. Annotations require identical mesh indexing. Timings are interleaved full-step measurements excluding offline audits, not native-window throughput."
+    },
+    {
+      "source": "final-free",
+      "gpu_used": false,
+      "vertices": 20,
+      "steps": 360,
+      "warmup_steps": 60,
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 0,
+          "final_motion": 3.153505922000394e-05,
+          "minimum_distance_m": 0.0029991669132288508,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 5.195,
+            "mean": 2.925654666666667,
+            "p95": 3.4185000000000003
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 1.5697408784388948e-06,
+              "maximum_vertex_highpass_rms_m": 1.638250718311714e-06,
+              "seams": {},
+              "position_rms_to_reference_m": 0.5927304721718281,
+              "attachment_path_length_m": 0.39096163324204336,
+              "attachment_net_displacement_m": 0.3909488601741758,
+              "total_energy_end_minus_start_j": -0.03420704950000738,
+              "positive_energy_steps": 0
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 0.0004537857190088162,
+              "maximum_vertex_highpass_rms_m": 0.0008890468177288666,
+              "seams": {},
+              "position_rms_to_reference_m": 0.30064722737795,
+              "attachment_path_length_m": 0.04285272471326062,
+              "attachment_net_displacement_m": 0.04007466196094828,
+              "total_energy_end_minus_start_j": -0.016715846045303386,
+              "positive_energy_steps": 2
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 0.0003259184408035441,
+              "maximum_vertex_highpass_rms_m": 0.0005756969654400068,
+              "seams": {},
+              "position_rms_to_reference_m": 0.12303499095595363,
+              "attachment_path_length_m": 0.004076224748494278,
+              "attachment_net_displacement_m": 0.0003315018018623903,
+              "total_energy_end_minus_start_j": -0.005888516753197501,
+              "positive_energy_steps": 0
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 9.233540232075203e-05,
+              "maximum_vertex_highpass_rms_m": 0.0001592637771784341,
+              "seams": {},
+              "position_rms_to_reference_m": 0.27422673328947134,
+              "attachment_path_length_m": 0.7889750823887722,
+              "attachment_net_displacement_m": 0.7876132233016554,
+              "total_energy_end_minus_start_j": -0.06861172047974592,
+              "positive_energy_steps": 0
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        },
+        {
+          "autonomous_positive_energy_steps": 0,
+          "final_motion": 3.153505922000394e-05,
+          "minimum_distance_m": 0.0029991669132288508,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 4.3093,
+            "mean": 2.9289300000000007,
+            "p95": 3.3876
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 1.5697408784388948e-06,
+              "maximum_vertex_highpass_rms_m": 1.638250718311714e-06,
+              "seams": {},
+              "position_rms_to_reference_m": 0.5927304721718281,
+              "attachment_path_length_m": 0.39096163324204336,
+              "attachment_net_displacement_m": 0.3909488601741758,
+              "total_energy_end_minus_start_j": -0.03420704950000738,
+              "positive_energy_steps": 0
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 0.0004537857190088162,
+              "maximum_vertex_highpass_rms_m": 0.0008890468177288666,
+              "seams": {},
+              "position_rms_to_reference_m": 0.30064722737795,
+              "attachment_path_length_m": 0.04285272471326062,
+              "attachment_net_displacement_m": 0.04007466196094828,
+              "total_energy_end_minus_start_j": -0.016715846045303386,
+              "positive_energy_steps": 2
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 0.0003259184408035441,
+              "maximum_vertex_highpass_rms_m": 0.0005756969654400068,
+              "seams": {},
+              "position_rms_to_reference_m": 0.12303499095595363,
+              "attachment_path_length_m": 0.004076224748494278,
+              "attachment_net_displacement_m": 0.0003315018018623903,
+              "total_energy_end_minus_start_j": -0.005888516753197501,
+              "positive_energy_steps": 0
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 9.233540232075203e-05,
+              "maximum_vertex_highpass_rms_m": 0.0001592637771784341,
+              "seams": {},
+              "position_rms_to_reference_m": 0.27422673328947134,
+              "attachment_path_length_m": 0.7889750823887722,
+              "attachment_net_displacement_m": 0.7876132233016554,
+              "total_energy_end_minus_start_j": -0.06861172047974592,
+              "positive_energy_steps": 0
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        },
+        {
+          "autonomous_positive_energy_steps": 0,
+          "final_motion": 0.0002794827404939953,
+          "minimum_distance_m": 0.002731696099639007,
+          "mode": "reference",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 16.7834,
+            "mean": 11.507864000000007,
+            "p95": 13.4451
+          },
+          "phases": {
+            "settle": {
+              "samples": 60,
+              "highpass_rms_m": 1.487198373269009e-05,
+              "maximum_vertex_highpass_rms_m": 1.5812743848861396e-05,
+              "seams": {},
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.7873611611875959,
+              "attachment_net_displacement_m": 0.7868372761577601,
+              "total_energy_end_minus_start_j": -0.06758168536828514,
+              "positive_energy_steps": 0
+            },
+            "pull": {
+              "samples": 60,
+              "highpass_rms_m": 0.01000311155365234,
+              "maximum_vertex_highpass_rms_m": 0.015120656824015925,
+              "seams": {},
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.6829841801108173,
+              "attachment_net_displacement_m": 0.6366462943413148,
+              "total_energy_end_minus_start_j": -20.427503562752502,
+              "positive_energy_steps": 0
+            },
+            "hold": {
+              "samples": 30,
+              "highpass_rms_m": 8.661470621809992e-05,
+              "maximum_vertex_highpass_rms_m": 0.0001455671813733673,
+              "seams": {},
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 0.00014111802583823227,
+              "attachment_net_displacement_m": 2.8263943440816593e-05,
+              "total_energy_end_minus_start_j": -6.366316305821129e-05,
+              "positive_energy_steps": 0
+            },
+            "release": {
+              "samples": 150,
+              "highpass_rms_m": 0.0001438563199685255,
+              "maximum_vertex_highpass_rms_m": 0.0001488466325537181,
+              "seams": {},
+              "position_rms_to_reference_m": 0.0,
+              "attachment_path_length_m": 1.2335292253871395,
+              "attachment_net_displacement_m": 1.2332358545081101,
+              "total_energy_end_minus_start_j": -0.10662409196566244,
+              "positive_energy_steps": 0
+            }
+          },
+          "mean_accepted_blocks": 0.0,
+          "mean_objective_decrease_j": 0.0
+        }
+      ],
+      "limits": "Highpass contains physical acceleration. Phase energy changes during pulling/hold/release do not remove control work. Annotations require identical mesh indexing. Timings are interleaved full-step measurements excluding offline audits, not native-window throughput."
+    }
+  ],
+  "earlier_variants": [
+    {
+      "name": "garment-pairs-rest",
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 120,
+          "final_motion": 2.6542668782110086e-05,
+          "minimum_distance_m": 0.002686250744802826,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 40.4486,
+            "mean": 20.448648666666653,
+            "p95": 28.2384
+          }
+        },
+        {
+          "autonomous_positive_energy_steps": 154,
+          "final_motion": 2.923008555578796e-05,
+          "minimum_distance_m": 0.0028079934240295384,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 29.776799999999998,
+            "mean": 11.578250999999995,
+            "p95": 13.2864
+          },
+          "step_ms": {
+            "max": 52.9114,
+            "mean": 31.782434666666674,
+            "p95": 40.018100000000004
+          }
+        }
+      ]
+    },
+    {
+      "name": "garment-components-rest",
+      "results": [
+        {
+          "autonomous_positive_energy_steps": 120,
+          "final_motion": 2.6542668782110086e-05,
+          "minimum_distance_m": 0.002686250744802826,
+          "mode": "baseline",
+          "refinement_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0
+          },
+          "step_ms": {
+            "max": 67.70320000000001,
+            "mean": 19.056636666666662,
+            "p95": 25.691399999999998
+          }
+        },
+        {
+          "autonomous_positive_energy_steps": 149,
+          "final_motion": 2.8779313779301458e-05,
+          "minimum_distance_m": 0.002824797244259684,
+          "mode": "coupled",
+          "refinement_ms": {
+            "max": 7.5748999999999995,
+            "mean": 3.980514000000002,
+            "p95": 5.2955
+          },
+          "step_ms": {
+            "max": 54.8195,
+            "mean": 22.643381666666663,
+            "p95": 30.1382
+          }
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "No native UI review or native-window throughput test.",
+    "Full physics step timings exclude offline audits; background load varied across runs, so compare interleaved branches within a run.",
+    "A 64-iteration branch is not a converged oracle. Highpass motion includes physical acceleration.",
+    "Final intersection checks and movement-ball invariants are tested evidence, not an arbitrary-scene proof.",
+    "No UI default, damping, prediction, material, timestep or collision changes enabled. No commit or push."
+  ]
+}

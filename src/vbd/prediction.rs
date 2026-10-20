@@ -41,13 +41,21 @@ impl Prediction {
     }
     /// Called only after an accepted step; edits/reloads must not reuse history.
     pub fn record(&mut self, old_velocity: &[DVec3], state: &State, settings: &VbdSettings) {
-        self.acceleration = state
-            .v
-            .iter()
-            .zip(old_velocity)
-            .map(|(v, old)| (*v - *old) / settings.dt + settings.damping * *v)
-            .collect();
-        self.last = Some(state.clone());
+        self.acceleration.clear();
+        self.acceleration.extend(
+            state
+                .v
+                .iter()
+                .zip(old_velocity)
+                .map(|(v, old)| (*v - *old) / settings.dt + settings.damping * *v),
+        );
+        if let Some(last) = &mut self.last {
+            last.x.clone_from(&state.x);
+            last.v.clone_from(&state.v);
+            last.time = state.time;
+        } else {
+            self.last = Some(state.clone());
+        }
         self.gravity = settings.gravity;
         self.damping = settings.damping;
     }

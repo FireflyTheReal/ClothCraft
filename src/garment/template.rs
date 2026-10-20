@@ -158,6 +158,16 @@ pub struct GarmentTemplate {
     pub fabrics: Vec<Fabric>,
     pub panels: Vec<Panel>,
     pub seams: Vec<SeamSpec>,
+    /// Editable two-piece relations, never a solver constraint.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub mirror_links: Vec<MirrorLink>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MirrorLink {
+    pub a: String,
+    pub b: String,
+    pub axis: super::shapes::MirrorAxis,
 }
 #[derive(Clone, Debug)]
 pub struct PanelRange {
@@ -237,6 +247,19 @@ impl GarmentTemplate {
         unique_ids(self.panels.iter().map(|p| p.id.as_str()), "panel")?;
         unique_ids(self.fabrics.iter().map(|f| f.id.as_str()), "fabric")?;
         unique_ids(self.seams.iter().map(|s| s.id.as_str()), "seam")?;
+        let mut linked = std::collections::BTreeSet::new();
+        for link in &self.mirror_links {
+            for id in [&link.a, &link.b] {
+                if !linked.insert(id)
+                    || !self
+                        .panels
+                        .iter()
+                        .any(|p| &p.id == id && p.polygon.is_some())
+                {
+                    return Err("Mirror links require distinct polygon panels, with at most one partner per panel".into());
+                }
+            }
+        }
         for f in &self.fabrics {
             f.properties.bind(0.0).validate()?;
         }
@@ -456,6 +479,7 @@ impl GarmentTemplate {
             format: "marvelous-cloth-template".into(),
             version: 1,
             name: "Two panels / nonmatching seam".into(),
+            mirror_links: vec![],
             fabrics: vec![Fabric {
                 id: "woven-demo".into(),
                 name: "Uncalibrated woven reference".into(),

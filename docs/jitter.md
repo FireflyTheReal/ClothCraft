@@ -1,46 +1,48 @@
-# Oscillations de contact — 14 octobre 2026
+# Contact oscillation — 14 October 2026
 
-## Diagnostic et correction
+This is a historical correction and measurement record. It does not claim that current residual jitter is solved; see [the later rollback](settled-jitter.md) and [contact-refresh diagnosis](contact-refresh-follow-up.md).
 
-Le jitter signalé aux épaules existe dans les positions acceptées par le solveur. Sur un T-shirt déjà drapé, multiplier les itérations de 16 à 64 ne ramenait le déplacement haute fréquence P95 que de 0,701 à 0,564 mm. Une pièce horizontale, initialement 50 µm au-dessus de la zone de contact d'un plan, reproduisait des bonds normaux de 1,35 mm. Aucun rendu n'intervient dans ces reproductions.
+## Diagnosis and correction
 
-La détection n'incluait que les interactions déjà à une distance inférieure au rayon `r`. Une prédiction ou une itération pouvait entrer dans cette zone pendant le pas, sans rencontrer le potentiel correspondant. Le pas suivant réintroduisait une forte répulsion ; ses corrections devenaient de la vitesse. Les bornes OGC pouvaient empêcher une traversée sans empêcher cette oscillation de la couche d'offset.
+Reported shoulder jitter exists in accepted solver positions. On a draped T-shirt, increasing iterations from 16 to 64 reduced high-frequency displacement P95 only from 0.701 to 0.564 mm. A horizontal piece starting 50 µm above a plane's contact zone reproduced 1.35 mm normal jumps. Neither reproduction depends on rendering.
 
-`ogc/world.rs` conserve désormais les interactions admissibles proches jusqu'au rayon de recherche `rq`, y compris celles dont l'énergie vaut encore zéro. **L'activation physique reste à `r = 3 mm`** : ni force préventive à distance, ni nouvelle épaisseur, ni amortissement supplémentaire. La coloration inclut aussi ces termes dormants. Le potentiel et ses dérivées sont réévalués dans le solve et sa recherche locale ; centres, distances et rayons conservatifs restent ceux de la détection. Le tri et la déduplication des identifiants canoniques remplacent les insertions dans un arbre par contact ; les trajectoires du T-shirt sont identiques bit à bit avant/après cette optimisation.
+Detection included only interactions already closer than radius `r`. Prediction or an iteration could enter that region during a step without the corresponding potential. The next step reintroduced strong repulsion; corrections became velocity. OGC bounds could prevent crossing without preventing oscillation within the offset layer.
 
-Le [papier OGC](https://graphics.cs.utah.edu/research/projects/ogc/Offset_Geometric_Contact-SIGGRAPH2025.pdf), algorithmes 1–3 et §4.3, a été relu : sa sélection à `r` s'accompagne d'un renouvellement des ensembles pendant la résolution. Notre backend hybride n'effectue qu'une détection par pas. La conservation des termes jusqu'à `rq` est une adaptation indépendante à cet ordonnancement, pas une reproduction littérale de ces algorithmes. Les types de primitives et régions admissibles restent choisis lors de la détection ; cette extension ne garantit pas une couverture complète de toutes les activations lors de grands mouvements ou changements de feature.
+`ogc/world.rs` now retains nearby feasible interactions up to query radius `rq`, including zero-energy terms. **Physical activation remains `r = 3 mm`**: no preventive long-range force, new thickness or extra damping. Coloring includes dormant terms. Potential and derivatives are reevaluated during solving/local search; centers, distances and conservative radii remain those of detection. Canonical sorting/deduplication replaces per-contact tree insertion; T-shirt trajectories before/after this optimization are bitwise identical.
 
-Le calcul GPU travaille maintenant dans un repère translaté au centre du vêtement, calculé en f64 à chaque pas. Positions, cibles, bornes et saisie souris utilisent ce même repère ; la lecture rétablit les coordonnées mondiales. Membrane et coutures utilisent des différences de positions pour limiter les annulations en f32. Les dérivées utilisent les mêmes coefficients que ces expressions. La géométrie de repos, les poids matériels, la gravité, l'initialisation adaptative et les 16 itérations restent inchangés. Ce n'est pas un filtre d'affichage.
+The [OGC paper](https://graphics.cs.utah.edu/research/projects/ogc/Offset_Geometric_Contact-SIGGRAPH2025.pdf), Algorithms 1–3 and §4.3, was reread: selection at `r` accompanies refreshing sets during resolution. Our hybrid backend detects only once per step. Retaining terms to `rq` is an independent adaptation to that schedule, not a literal reproduction. Primitive types and feasible regions are still selected at detection; this extension does not guarantee complete force coverage under large movement or feature changes.
 
-`VbdMetrics.contacts` compte les termes d'énergie positive à la détection ; `contact_terms` compte toutes les interactions retenues. `ContactSet.contacts` comprend maintenant les termes dormants. Ne pas interpréter ce nombre comme un nombre de collisions actives. Le coût supplémentaire des termes dormants n'est pas gratuit ; le noyau GPU quitte leur évaluation avant les dérivées quand la distance dépasse `r`.
+GPU computation now uses a frame translated to the garment center, calculated in f64 each step. Positions, targets, bounds and mouse grabs share that frame; readback restores world coordinates. Membrane/sewing use position differences to reduce f32 cancellation. Derivatives use the same coefficients as those expressions. Rest geometry, material weights, gravity, adaptive initialization and 16 iterations remain unchanged. This is not a display filter.
 
-## Mesures
+`VbdMetrics.contacts` counts positive-energy terms at detection; `contact_terms` counts all retained interactions. `ContactSet.contacts` now includes dormant terms, so its size is not an active-collision count. Dormant terms have a cost; the GPU kernel exits their evaluation before derivatives when distance exceeds `r`.
 
-RTX 3090 / Vulkan, deux threads CPU, dt 1/60 s, 16 itérations, mêmes snapshots de départ dans chaque comparaison. Traces de trois secondes ; première seconde exclue des statistiques. Sélection fixe des sommets dont la hauteur initiale dépasse 1,35 m. Mesure : `norm(x[t] - (x[t-1] + x[t+1])/2)` ; elle retire le déplacement à vitesse constante, mais peut aussi mesurer une vibration physique. Les résultats complets et empreintes des états initiaux sont dans [jitter-validation.json](jitter-validation.json).
+## Measurements
 
-| Scène | P95 avant → après | RMS avant → après | Pointe après |
+RTX 3090 / Vulkan, two CPU threads, dt 1/60 s, 16 iterations, identical starting snapshots in each comparison. Three-second traces, first second excluded from statistics. Fixed selection of vertices whose initial height exceeds 1.35 m. Metric: `norm(x[t] - (x[t-1] + x[t+1])/2)` removes constant-velocity displacement but may also measure physical vibration. Full results and initial-state hashes: [jitter-validation.json](jitter-validation.json).
+
+| Scene | P95 before → after | RMS before → after | Peak after |
 |---|---:|---:|---:|
-| T-shirt, 2 454 sommets | 0,701 → 0,084 mm (**−88%**) | 0,307 → 0,045 mm | 0,860 mm |
-| T-shirt + tablier privé, 3 139 sommets | 0,729 → 0,111 mm (**−85%**) | 0,320 → 0,056 mm | 0,695 mm |
+| T-shirt, 2,454 vertices | 0.701 → 0.084 mm (**−88%**) | 0.307 → 0.045 mm | 0.860 mm |
+| T-shirt + private apron, 3,139 vertices | 0.729 → 0.111 mm (**−85%**) | 0.320 → 0.056 mm | 0.695 mm |
 
-La pièce sur plan ne présente plus le cycle de rebond : déplacement normal maximal mesuré après chauffe inférieur à 0,001 µm. Les tests utilisent une tolérance plus large de 1 µm. La première assertion essayée sur le déplacement **3D** échouait à quelques micromètres de relaxation tangentielle ; le test de contact mesure donc explicitement la composante normale, sans prétendre figer le glissement. Une translation de toute la scène de plus de 100 m ne change pas le résultat au-delà de 2 µm. Le test de tissu suspendu conserve environ 0,22% d'extension après cinq secondes. Un T-shirt neuf après quatre secondes donne un écart maximal de couture de 2,08 mm et un allongement P95 de 3,88%.
+The plane fixture no longer shows the bounce cycle: maximum measured normal displacement after warm-up is below 0.001 µm. Tests use a wider 1 µm tolerance. The first assertion on **3D** displacement failed because of a few micrometres of tangential relaxation; the contact test therefore measures the normal component explicitly, without claiming to freeze sliding. Translating the whole scene by over 100 m changes results by less than 2 µm. Supported cloth retains about 0.22% extension after five seconds. A fresh T-shirt after four seconds has maximum seam gap 2.08 mm and stretch P95 3.88%.
 
-La mesure native de cinq secondes après chauffe donne **60,01 images/s et 60,41 pas physiques/s** pour le T-shirt (1,007× ; rattrapage borné de l'horloge). Pour le tablier : **59,93 images/s et 50,18 pas physiques/s**, soit 0,836× ; **échec du seuil temps réel**. Les temps headless fluctuent avec la charge de la station ; ils ne prouvent pas un gain de débit contrôlé. Le tablier reste coûteux et quelques pointes subsistent : ni absence universelle de jitter, ni convergence complète, ni friction ne sont revendiquées.
+Five-second native measurements after warm-up give **60.01 frames/s and 60.41 physical steps/s** for the T-shirt (1.007×; bounded clock catch-up). For the apron: **59.93 frames/s and 50.18 physical steps/s**, or 0.836×: **the realtime gate fails**. Headless timings vary with workstation load and do not establish controlled throughput gains. The apron remains expensive and some spikes remain. No universal absence of jitter, full convergence or friction is claimed.
 
-## Vérifications et reproduction
+## Checks and reproduction
 
-78 tests CPU et trois tests GPU opt-in passent ; formatage, Clippy CPU/desktop et cinq templates passent. Le test natif de saisie souris passe. Les forces/énergies GPU d'un T-shirt drapé sont comparées à l'AD CPU sur deux pas : erreur absolue maximale de gradient 1,07×10⁻⁴ N. Les captures des scènes natives ont été inspectées. Les tests CPU du contact vérifient notamment l'activation au cours du même pas, l'absence de force avant `r`, les bornes originales et l'équivalence du cache avec une détection fraîche.
+78 CPU tests and three opt-in GPU tests pass; formatting, CPU/desktop Clippy and five templates pass. Native mouse grabbing passes. GPU forces/energies on a draped T-shirt are compared with CPU AD over two steps: maximum absolute gradient error 1.07×10⁻⁴ N. Native captures were inspected. CPU contact tests check activation within the same step, no force before `r`, original bounds and cached/fresh detection equivalence.
 
 ```powershell
 .\scripts\check-cpu.ps1
 cargo clippy --locked -j 2 --all-targets -- -D warnings
 cargo build --release --locked -j 2 --bin cloth-fit --example motion_probe
 
-# GPU explicite, hors suite ordinaire :
+# Explicit GPU use, outside the ordinary suite:
 cargo test --release --locked -j 2 --test gpu_motion -- --ignored --test-threads=1 --nocapture
-.\target\release\examples\motion_probe.exe --project chemin/vers/fitting-project.json --output output/motion --gpu --steps 180 --iterations 16
+.\target\release\examples\motion_probe.exe --project path/to/fitting-project.json --output output/motion --gpu --steps 180 --iterations 16
 python scripts/analyze-motion.py output/motion --min-y 1.35 --warmup 60
 .\target\release\cloth-fit.exe --project output/motion/fitting-project.json --steps 0 --ui-perf-smoke --output output/motion-ui
 ```
 
-`motion_probe` est CPU par défaut, écrit les états acceptés et leurs métriques avec buffers, sans modifier le projet source. Ces traces sont des diagnostics volumineux, pas un nouveau format d'édition. Les écritures sont hors de `step_ms` ; ce programme ne mesure pas la cadence d'une fenêtre. Le script Python n'utilise que la bibliothèque standard. Pour comparer deux versions, garder le même fichier de départ, vérifier l'empreinte d'état et les réglages, puis analyser les mêmes sommets. La référence avant correction est `f385ed0`, instrumentée avec ce même exemple ; les snapshots privés et les traces ne sont pas distribués dans Git.
+`motion_probe` defaults to CPU and buffers accepted states/metrics without modifying the source project. These large traces are diagnostics, not a new editing format. Writes are outside `step_ms`; the tool does not measure window cadence. The Python script uses only the standard library. To compare versions, retain the same input, check state hash/settings and analyze the same vertices. The pre-correction reference is `f385ed0`, instrumented with the same example; private snapshots/traces are not distributed in Git.

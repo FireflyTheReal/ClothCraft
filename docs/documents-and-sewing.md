@@ -19,9 +19,9 @@ Save / Discard / Cancel appears before opening, creating or closing with unsaved
 1. Select Sew, then select A and B in either view. Full edges are the default.
 2. Adjust From, To or Length in millimetres. Alternatively, enable **Pick partial range** and click two endpoints on the same boundary; repeat for the other side. Click order sets that segment's direction.
 3. Drag the pink endpoint handles in either view. Labels identify side, segment and direction; the thick highlighted portion is the actual sewing interval.
-4. Compare lengths. Reverse a segment or the entire B side if needed. Allow easing explicitly for unequal lengths, then Commit.
+4. Compare lengths in the card beside the pointer. Reverse a segment or the entire B side if needed. Explicitly allow different lengths, then click either canvas to stitch. Enter also confirms a single pair.
 
-Existing seams have Edit and Delete actions in Properties → Piece. Edit is a draft until Apply; Escape or Cancel abandons it. A single-edge pair can still be committed with Simulate. Multi-edge drafts require explicit Commit or Cancel first.
+Click a sewn boundary to select its seam. The nearby card has Edit and Delete actions; Del removes the selected seam and Ctrl+Z restores it. These actions also remain in Properties → Piece. Editing is a draft until confirmed; Escape or Cancel abandons it. A single-edge pair can still be committed with Simulate. For a multi-edge chain, Ctrl+click a canvas or Ctrl+Enter applies the draft; ordinary clicks keep adding segments. See [cursor interaction and selection](realtime-follow-up.md#sewing-at-the-cursor).
 
 Ranges use normalized **rest arclength**, not Bézier parameters or draped lengths. Two disjoint ranges on one boundary may belong to different seams. Overlapping ownership is rejected transactionally, including overlap within one chain. Remeshing retains semantic panel/edge references. An endpoint between mesh vertices uses interpolation; the surrounding mesh element still responds mechanically.
 

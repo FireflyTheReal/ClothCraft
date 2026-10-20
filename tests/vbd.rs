@@ -67,6 +67,7 @@ fn mouse_attachment_pulls_cloth_and_invalid_input_is_transactional() {
     let vertices = g.mesh.triangles[0].vertices;
     let center = vertices.iter().map(|i| s.x[*i] / 3.).sum::<DVec3>();
     let grab = Grab {
+        patch: Vec::new(),
         vertices,
         weights: [1. / 3.; 3],
         target: center + DVec3::Z * 0.01,
@@ -82,6 +83,7 @@ fn mouse_attachment_pulls_cloth_and_invalid_input_is_transactional() {
     assert!(moved.z > center.z);
     let old = s.clone();
     let bad = Grab {
+        patch: Vec::new(),
         target: DVec3::NAN,
         ..grab
     };

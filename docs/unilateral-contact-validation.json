@@ -1,0 +1,268 @@
+{
+  "date": "2026-10-20",
+  "scope": "CPU hard-contact QP and isolated planar point/rigid-wire release gates",
+  "production_changed": false,
+  "gpu_used": false,
+  "dress_trajectory_run": false,
+  "full_cloth_backend": false,
+  "hard_clearance_m": 0.001,
+  "ogc_radius_m": 0.003,
+  "step_s": 0.016666666666666666,
+  "normal_load_n": 225,
+  "mass_kg": 0.02,
+  "working_set_gate_passed": true,
+  "working_set_runs": 16,
+  "reference_runs": 4,
+  "working_set_completed_steps": 7680,
+  "max_reference_position_error_m": 1.7321799550273909e-10,
+  "max_reference_velocity_error_m_s": 1.0343309542193424e-10,
+  "min_swept_clearance_m": 0.001,
+  "max_post_release_energy_rise_j": 4.718447854656915e-16,
+  "all_linearized_control_runs": 16,
+  "all_linearized_incomplete_runs": 16,
+  "all_linearized_failures": [
+    {
+      "fixture": "PointTriangles",
+      "cells_per_axis": 1,
+      "row_copies": 1,
+      "held_release": false,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 0; feasibility=0.0000000000000000050729033840909655 m, stationarity=0.000000000000000031031676915590914 N, complementarity=0.00000002807947377798458 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "PointTriangles",
+      "cells_per_axis": 1,
+      "row_copies": 8,
+      "held_release": false,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 0; feasibility=0 m, stationarity=0.00000000000000007076311083754595 N, complementarity=0.00000002807947379359922 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "PointTriangles",
+      "cells_per_axis": 8,
+      "row_copies": 1,
+      "held_release": false,
+      "failure": "Unconverged inner QP: AllLinearized, frame 118, iter 1; feasibility=0.000000000000000005638030569685661 m, stationarity=0.000000000000000003471140604358717 N, complementarity=0.00000004532386976700779 J",
+      "completed_frames": 118
+    },
+    {
+      "fixture": "PointTriangles",
+      "cells_per_axis": 8,
+      "row_copies": 8,
+      "held_release": false,
+      "failure": "Unconverged inner QP: AllLinearized, frame 118, iter 1; feasibility=0 m, stationarity=0.000000000000000003469505532052631 N, complementarity=0.00000004532387103451697 J",
+      "completed_frames": 118
+    },
+    {
+      "fixture": "PointTriangles",
+      "cells_per_axis": 1,
+      "row_copies": 1,
+      "held_release": true,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 0; feasibility=0.0000000000000000050729033840909655 m, stationarity=0.000000000000000031031676915590914 N, complementarity=0.00000002807947377798458 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "PointTriangles",
+      "cells_per_axis": 1,
+      "row_copies": 8,
+      "held_release": true,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 0; feasibility=0 m, stationarity=0.00000000000000007076311083754595 N, complementarity=0.00000002807947379359922 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "PointTriangles",
+      "cells_per_axis": 8,
+      "row_copies": 1,
+      "held_release": true,
+      "failure": "Unconverged inner QP: AllLinearized, frame 118, iter 1; feasibility=0.000000000000000005638030569685661 m, stationarity=0.000000000000000003471140604358717 N, complementarity=0.00000004532386976700779 J",
+      "completed_frames": 118
+    },
+    {
+      "fixture": "PointTriangles",
+      "cells_per_axis": 8,
+      "row_copies": 8,
+      "held_release": true,
+      "failure": "Unconverged inner QP: AllLinearized, frame 118, iter 1; feasibility=0 m, stationarity=0.000000000000000003469505532052631 N, complementarity=0.00000004532387103451697 J",
+      "completed_frames": 118
+    },
+    {
+      "fixture": "TransverseWire",
+      "cells_per_axis": 1,
+      "row_copies": 1,
+      "held_release": false,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 1; feasibility=0.0000000000000000041579788589529536 m, stationarity=0.000000000000000013877787807814457 N, complementarity=0.0000013179788562693396 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "TransverseWire",
+      "cells_per_axis": 1,
+      "row_copies": 8,
+      "held_release": false,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 1; feasibility=0.000000000000000004157343584242513 m, stationarity=0.000000000000000027755575615628914 N, complementarity=0.0000013179788562691639 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "TransverseWire",
+      "cells_per_axis": 8,
+      "row_copies": 1,
+      "held_release": false,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 1; feasibility=0 m, stationarity=0.000000000000000013877787807814457 N, complementarity=0.0000013179788574848158 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "TransverseWire",
+      "cells_per_axis": 8,
+      "row_copies": 8,
+      "held_release": false,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 1; feasibility=0 m, stationarity=0.000000000000000013877787807814457 N, complementarity=0.0000013179788574862475 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "TransverseWire",
+      "cells_per_axis": 1,
+      "row_copies": 1,
+      "held_release": true,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 1; feasibility=0.0000000000000000041579788589529536 m, stationarity=0.000000000000000013877787807814457 N, complementarity=0.0000013179788562693396 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "TransverseWire",
+      "cells_per_axis": 1,
+      "row_copies": 8,
+      "held_release": true,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 1; feasibility=0.000000000000000004157343584242513 m, stationarity=0.000000000000000027755575615628914 N, complementarity=0.0000013179788562691639 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "TransverseWire",
+      "cells_per_axis": 8,
+      "row_copies": 1,
+      "held_release": true,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 1; feasibility=0 m, stationarity=0.000000000000000013877787807814457 N, complementarity=0.0000013179788574848158 J",
+      "completed_frames": 119
+    },
+    {
+      "fixture": "TransverseWire",
+      "cells_per_axis": 8,
+      "row_copies": 8,
+      "held_release": true,
+      "failure": "Unconverged inner QP: AllLinearized, frame 119, iter 1; feasibility=0 m, stationarity=0.000000000000000013877787807814457 N, complementarity=0.0000013179788574862475 J",
+      "completed_frames": 119
+    }
+  ],
+  "working_set_final_speeds_m_s": [
+    {
+      "fixture": "PointTriangles",
+      "held": false,
+      "cells": 1,
+      "copies": 1,
+      "speed": 0.003999999918612371
+    },
+    {
+      "fixture": "PointTriangles",
+      "held": false,
+      "cells": 1,
+      "copies": 8,
+      "speed": 0.003999999928248829
+    },
+    {
+      "fixture": "PointTriangles",
+      "held": false,
+      "cells": 8,
+      "copies": 1,
+      "speed": 0.003999999960319425
+    },
+    {
+      "fixture": "PointTriangles",
+      "held": false,
+      "cells": 8,
+      "copies": 8,
+      "speed": 0.003999999960319425
+    },
+    {
+      "fixture": "PointTriangles",
+      "held": true,
+      "cells": 1,
+      "copies": 1,
+      "speed": 0.0
+    },
+    {
+      "fixture": "PointTriangles",
+      "held": true,
+      "cells": 1,
+      "copies": 8,
+      "speed": 0.0
+    },
+    {
+      "fixture": "PointTriangles",
+      "held": true,
+      "cells": 8,
+      "copies": 1,
+      "speed": 0.0
+    },
+    {
+      "fixture": "PointTriangles",
+      "held": true,
+      "cells": 8,
+      "copies": 8,
+      "speed": 0.0
+    },
+    {
+      "fixture": "TransverseWire",
+      "held": false,
+      "cells": 1,
+      "copies": 1,
+      "speed": 0.004000000103433071
+    },
+    {
+      "fixture": "TransverseWire",
+      "held": false,
+      "cells": 1,
+      "copies": 8,
+      "speed": 0.004000000103433071
+    },
+    {
+      "fixture": "TransverseWire",
+      "held": false,
+      "cells": 8,
+      "copies": 1,
+      "speed": 0.0039999999853645996
+    },
+    {
+      "fixture": "TransverseWire",
+      "held": false,
+      "cells": 8,
+      "copies": 8,
+      "speed": 0.0039999999853645996
+    },
+    {
+      "fixture": "TransverseWire",
+      "held": true,
+      "cells": 1,
+      "copies": 1,
+      "speed": 0.0
+    },
+    {
+      "fixture": "TransverseWire",
+      "held": true,
+      "cells": 1,
+      "copies": 8,
+      "speed": 0.0
+    },
+    {
+      "fixture": "TransverseWire",
+      "held": true,
+      "cells": 8,
+      "copies": 1,
+      "speed": 0.0
+    },
+    {
+      "fixture": "TransverseWire",
+      "held": true,
+      "cells": 8,
+      "copies": 8,
+      "speed": 0.0
+    }
+  ],
+  "timing_scope": "Development binary, isolated point/rigid-wire CPU probe only; not cloth FPS or production step timing"
+}

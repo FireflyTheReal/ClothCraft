@@ -1,10 +1,10 @@
-# Maillage des patrons : Delaunay contrainte
+# Pattern meshing: constrained Delaunay
 
-`src/garment/meshing.rs` encapsule **Spade 2.15.1**, version fixée dans Cargo. Le patron reste la configuration de repos en mètres. Le maillage est un cache reconstructible ; les coutures continuent à référencer des noms de bords et des abscisses, jamais des indices.
+`src/garment/meshing.rs` wraps **Spade 2.15.1**, pinned in Cargo. The pattern remains the rest configuration in metres. The mesh is a rebuildable cache; seams continue to reference boundary names and coordinates, never indices.
 
-## Réglages
+## Settings
 
-Dans `panel.polygon.meshing` :
+In `panel.polygon.meshing`:
 
 ```json
 {
@@ -16,34 +16,34 @@ Dans `panel.polygon.meshing` :
 }
 ```
 
-Le mode isotrope utilise `anisotropy = 1`. Une valeur 2 autorise une taille deux fois plus grande **le long de l'axe** indiqué, et conserve la taille cible dans sa direction perpendiculaire. Cet axe décrit la résolution géométrique ; il ne modifie pas le droit-fil ni les propriétés physiques du tissu.
+Isotropic mode uses `anisotropy = 1`. A value of 2 allows twice the size **along the specified axis**, retaining target size perpendicular to it. This axis controls geometric resolution, not grain direction or physical fabric properties.
 
-La transformation constante utilisée est `q = (dot(p,a)/(h*r), dot(p,b)/h)`, où `a` et `b` sont les axes tournés, `h` la taille cible et `r` le rapport. La triangulation et le contrôle des angles se font dans cet espace métrique ; les UV exportés reviennent en mètres. Il s'agit d'une anisotropie globale par panneau, pas encore d'un champ spatial adaptatif suivant courbure ou contraintes.
+The constant transform is `q = (dot(p,a)/(h*r), dot(p,b)/h)`, where `a,b` are rotated axes, `h` is target size and `r` the ratio. Triangulation and angle checks occur in this metric space; exported UVs return to metres. Anisotropy is global per panel, not yet a spatial field adapting to curvature or stress.
 
-`target_edge_m` est une taille nominale d'équilatéral, **pas une borne stricte sur chaque arête**. La borne vérifiée est `aire métrique <= sqrt(3)/4`. L'angle demandé vaut 25° par défaut dans l'espace métrique. Les angles imposés par un contour aigu peuvent empêcher cette borne angulaire ; les valeurs réellement obtenues sont rapportées. En mode anisotrope, les angles euclidiens peuvent être plus petits.
+`target_edge_m` is a nominal equilateral size, **not a strict bound on every edge**. The checked bound is `metric area <= sqrt(3)/4`. The default requested angle is 25° in metric space. Acute contour angles may prevent satisfying that angle bound; actual values are reported. Euclidean angles can be smaller in anisotropic mode.
 
 ## Pipeline
 
-1. Valider le contour extérieur simple positif et les noms uniques ; valider aussi les trous horaires et les lignes intérieures disjointes s’ils sont présents.
-2. Échantillonner les bords selon leur longueur métrique et les imposer comme contraintes.
-3. Raffiner la Delaunay par insertion de points de Steiner avec une borne d'aire et un angle cible. Les arêtes de contour peuvent être subdivisées.
-4. Vérifier l'aire réellement obtenue. Si nécessaire, ajouter les centres des faces encore trop grandes et recommencer, au plus huit passes, avec un budget global de sommets.
-5. Retirer les faces extérieures, reconstruire les chaînes de bords ordonnées et compiler masses, éléments et coutures depuis les UV.
+1. Validate a simple positively oriented outer contour and unique names; also validate clockwise holes and disjoint internal lines when present.
+2. Sample boundaries by metric length and insert them as constraints.
+3. Refine Delaunay with Steiner points, an area bound and target angle. Boundary edges may subdivide.
+4. Check actual areas. If needed, add centers of oversized faces and repeat, for at most eight passes within a global vertex budget.
+5. Remove exterior faces, reconstruct ordered boundary chains and compile masses, elements and seams from UVs.
 
-Une limite de budget produit une erreur explicite. Elle ne renvoie pas silencieusement un maillage incomplet. Les caches d'essayage contiennent une signature du template, des UV et des triangles : une modification de maillage invalide les positions sauvegardées.
+Exhausting the budget produces an explicit error, never a silently incomplete mesh. Fitting caches carry a template/UV/triangle signature: a mesh change invalidates saved positions.
 
-Avec `holes`/`lines`, un cadre temporaire distant de deux unités métriques sépare l’enveloppe convexe des contraintes du tissu : cela évite les angles quasi nuls dus aux arrondis. Après raffinement, les faces hors matière et sommets du cadre sont retirés. Une ligne intérieure garde du tissu des deux côtés et produit une chaîne nommée utilisable par le modèle de couture. Le calcul peut raffiner inutilement les vides et épuiser le budget ; il échoue explicitement. Les entrées historiques sans trous/lignes gardent le chemin précédent. Voir [drafting-tools.md](drafting-tools.md) et `tests/drafting_tools.rs`.
+With `holes`/`lines`, a temporary frame two metric units away separates the convex hull from cloth constraints, avoiding near-zero angles from rounding. After refinement, faces outside material and frame vertices are removed. An internal line retains cloth on both sides and produces a named chain usable by sewing. Refinement may waste work in empty regions and exhaust the budget; it fails explicitly. Historical inputs without holes/lines retain the previous path. See [drafting-tools.md](drafting-tools.md) and `tests/drafting_tools.rs`.
 
-Le champ historique `subdivisions` reste accepté (0..4). Sans réglage explicite, il correspond désormais à `h = 0,1 / 2^subdivisions` m. Les nouveaux exemples enregistrent `meshing` explicitement. Le format de template reste v2, encore non publié ; le format v1 rectangulaire ne change pas.
+Legacy `subdivisions` remains accepted (0..4). Without explicit settings, it now maps to `h = 0.1 / 2^subdivisions` m. New examples store `meshing` explicitly. The template remains v2; rectangular v1 is unchanged.
 
-## Vérification
+## Verification
 
-`tests/meshing.rs` vérifie les contraintes de contour, la propriété locale de Delaunay sur les arêtes intérieures, l'aire et les angles métriques, la reproductibilité, la conservation de masse et de longueur de couture sous raffinement, ainsi que les erreurs de budget. Les cas anisotropes incluent un axe tourné de 37°.
+`tests/meshing.rs` checks boundary constraints, the local Delaunay property on internal edges, metric area/angles, reproducibility, mass and seam-length conservation under refinement, and budget failures. Anisotropic cases include an axis rotated by 37°.
 
-Commandes et captures : [premier essayage](first-fit.md). La densité réduit les erreurs géométriques de contact, mais ne remplace pas une collision continue ni les contacts entre faces.
+Commands and captures: [first fitting](first-fit.md). Density reduces geometric contact error but does not replace continuous collision or face contacts.
 
-## Sources consultées
+## Sources consulted
 
-- [Spade — triangulation contrainte et raffinement](https://docs.rs/spade/2.15.1/spade/struct.ConstrainedDelaunayTriangulation.html) : API utilisée, insertion de Steiner et limites de qualité.
-- [Paramètres de raffinement](https://docs.rs/spade/2.15.1/spade/struct.RefinementParameters.html) : aire, angle, budget et exclusion des faces extérieures.
-- [Dépôt et licence de Spade](https://github.com/Stoeoef/spade/blob/master/Cargo.toml) : MIT OR Apache-2.0. Ce backend est une dépendance déclarée, pas une réimplémentation revendiquée.
+- [Spade constrained triangulation and refinement](https://docs.rs/spade/2.15.1/spade/struct.ConstrainedDelaunayTriangulation.html): API used, Steiner insertion and quality limits.
+- [Refinement parameters](https://docs.rs/spade/2.15.1/spade/struct.RefinementParameters.html): area, angle, budget and exterior-face exclusion.
+- [Spade repository and license](https://github.com/Stoeoef/spade/blob/master/Cargo.toml): MIT OR Apache-2.0. This backend is a declared dependency, not a claimed reimplementation.

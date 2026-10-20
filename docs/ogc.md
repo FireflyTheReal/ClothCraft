@@ -1,71 +1,101 @@
-# Offset Geometric Contact et VBD
+# Offset Geometric Contact and VBD
 
-Implémentation Rust indépendante du contact normal décrit par Chen et al., **Offset Geometric Contact**, SIGGRAPH 2025. Source primaire : [projet et article](https://graphics.cs.utah.edu/research/projects/ogc/). Le PDF a été lu, notamment les sections 3.2–3.7 et les algorithmes 1–4. Le [tutoriel officiel IPC Toolkit](https://github.com/ipc-sim/ipc-toolkit/blob/main/docs/source/tutorials/ogc.rst) a aussi été consulté ; aucun code C++ n'a été incorporé.
+**19 October EE investigation:** [endpoint activation diagnosis and CPU experiment](edge-transition.md). The experimental interior potential is off by default and changes the contact law; it must not be described as unchanged OGC or an accepted jitter correction. Safety bounds remain identical.
 
-## Ce qui est implémenté
+**18 October CPU update:** independent edge-pair closest geometry uses four-lane f64 AVX when available, with the scalar oracle and automatic fallback. Both cached CPU candidates and hybrid primitive candidates share this path. No contact recycling, tolerance, exclusion, force law or movement-bound change. Read [CPU evidence and jitter diagnosis](cpu-contacts-and-jitter.md); the measured 9.8–10.6% detector saving is not a new GPU or full-step result.
 
-- `ogc/topology.rs` : adjacences et identifiants canoniques des faces, arêtes et sommets. Arêtes manifold, contours ouverts autorisés.
-- `ogc/geometry.rs` : régions admissibles des sommets et arêtes (équations 8–10 et 14–15), plus proches primitives, diagnostic d'intersection initiale.
-- `ogc/bvh.rs` : racines séparées tissu/mannequin, refit des primitives mobiles et filtrage des boîtes individuelles dans les feuilles. Requêtes sans limite silencieuse du nombre de candidats.
-- `ogc/candidates.rs` : cache conservatif des identifiants de paires. Recherche à `R + 2s + epsilon`, avec `R >= rq` arrondi vers le haut et `s = rayon OGC`. Réutilisation seulement si chaque sommet mobile reste à moins de `s` de son centre de cache et si `rq <= R`. Par convexité et inégalité triangulaire, une distance entre primitives varie au plus de `2s`. Les distances, régions admissibles, forces et bornes sont **recalculées à chaque détection**. La géométrie fixe ne peut pas changer sans reconstruction. Deux tâches CPU indépendantes fusionnent les minima et les contacts canoniques.
-- `ogc/world.rs` : VF dans les **deux sens**, EE, auto-contact, déduplication des contacts sur une même primitive, distances conservatives propagées aux sommets de chaque primitive. Les distances pour les bornes sont calculées même lorsque la région admissible ou le filtre des arêtes parallèles rejette une force.
-- `ogc/potential.rs` : activation quadratique puis logarithmique, dérivées exactes par AD, filtre polynomial des arêtes presque parallèles. Une interaction primitive canonique est intégrée une seule fois ; les contributions VV/VE communes aux parcours VF et EE sont fusionnées.
-- Bornes sphériques `0.45 * min(dVF, dEE, dFV)` autour des positions à la **dernière détection**, et non autour des positions à la dernière itération. Une projection prévue par OGC limite chaque proposition locale avant son contrôle énergétique.
-- `vbd.rs` : Euler implicite, même membrane anisotrope, flexion et coutures que la référence. Newton local 3×3, Hessienne exacte régularisée SPD, recherche locale décroissante. Coloration comprenant aussi les contacts et l'attachement souris : aucun élément partagé dans une couleur.
-- `gpu_vbd.rs`, `vbd.wgsl` : calcul des énergies, forces et itérations VBD sur GPU, Hessiennes locales positives approchées. Le gradient conserve les dérivées du filtre EE. Le mode `--check-gpu-gradients` compare énergies/forces GPU à l'AD f64 à géométrie identique arrondie en f32.
+**Settled-motion rollback (16 October):** the objective-based prediction rejection was removed after interactive testing showed jerky relaxation and impaired sliding. The previous adaptive prediction and local line search are restored, with original OGC balls and collision processing unchanged. Passive `motion` diagnostics remain. Jitter is unresolved; see [the rejected experiment](settled-jitter.md).
 
-## Prédiction et candidats conservatifs
+**16 October GPU search update:** the interactive backend now refits and queries the BVHs on GPU, with conservative box/projection rejection, local exclusion lists and overflow retries. Exact closest features, feasible regions and movement bounds remain f64 CPU work; contact energy definitions and their existing GPU/sparse CPU assembly are unchanged. The temporal leaf-pair cache described below remains the complete CPU path and fallback. Read [the current GPU contract and validation](gpu-contact-search.md). This is still a hybrid pipeline.
 
-**Correction du jitter :** les interactions géométriquement admissibles sont maintenant conservées jusqu'à `rq`, y compris quand leur potentiel est nul à la détection. Seul `r` active une force. Cette adaptation à la détection unique par pas permet à une interaction de devenir active pendant le solve, sans attendre le pas suivant. Elle ne garantit pas une couverture exhaustive après un grand mouvement ou un changement de feature. Coloration et recherche locale incluent les termes dormants ; les bornes ne changent pas. Un tri/dédoublonnage canonique remplace les insertions dans un arbre. Le GPU utilise des coordonnées translatées près du vêtement et des différences de positions. Voir [diagnostic, mesures et limites](jitter.md) ; `contacts` compte les interactions d'énergie positive à la détection, `contact_terms` toutes les interactions retenues.
+Independent Rust implementation of the normal-contact method described by Chen et al., **Offset Geometric Contact**, SIGGRAPH 2025. Primary source: [project and paper](https://graphics.cs.utah.edu/research/projects/ogc/). The PDF was read, particularly sections 3.2–3.7 and Algorithms 1–4. The [official IPC Toolkit tutorial](https://github.com/ipc-sim/ipc-toolkit/blob/main/docs/source/tutorials/ogc.rst) was also consulted; no C++ code was incorporated.
 
-La construction des candidats parcourt maintenant les arbres par **paires de nœuds** : points/faces pour VF, arêtes/arêtes pour EE. Un BVH de points possède lui aussi des racines mobiles/fixes ; seules les primitives mobiles sont refittées. Les paires fixes/fixes et les paires de boîtes éloignées sont rejetées par groupes ; les VF réciproques et les EE restent présents. Le parcours EE visite chaque paire non ordonnée une fois et conserve l'ordre historique des opérandes pour les calculs géométriques. Les tests comparent les ensembles aux recherches exhaustives après déformation. Voir [recherche et choix de performance](performance-research.md).
+## Implemented scope
 
-Le CPU et le GPU commencent le pas par une **initialisation adaptative VBD (§3.7)**, tronquée aux **bornes de la détection initiale**. La prédiction collective conserve la chute libre ; l'accélération estimée du dernier pas accepté évite de réinjecter artificiellement une chute libre dans les points déjà soutenus. La cible inertielle de l'objectif conserve toute la gravité. L'estimation tient compte de l'amortissement et son historique est invalidé après édition/rechargement. Elle respecte les sommets fixés et les marges f32 ; les centres ne sont pas déplacés entre prédiction et solve. Voir [diagnostic et correction de l'étirement](adaptive-initialization.md). Le test opt-in `tests/gpu_motion.rs` couvre la chute libre, la croissance des buffers, les bornes sous forte vitesse et le tissu suspendu sur plusieurs secondes.
+- `ogc/topology.rs`: face, edge and vertex adjacency and canonical IDs. Manifold edges; open boundaries allowed.
+- `ogc/geometry.rs`: vertex/edge feasible regions (Equations 8–10 and 14–15), closest primitives and initial-intersection diagnostics.
+- `ogc/bvh.rs`: separate cloth/avatar roots, moving-primitive refit and individual-box filtering within leaves. Queries have no silent candidate-count limit.
+- `ogc/candidates.rs`: conservative pair-ID cache. Search at `R + 2s + epsilon`, with upward-rounded `R >= rq` and `s = 2 × OGC radius`. Reuse only while every moving vertex remains within `s` of its cache center and `rq <= R`. Convexity and the triangle inequality bound primitive-distance changes by `2s`. Distances, feasible regions, forces and bounds are **recomputed at every detection**. Fixed geometry cannot change without reconstruction. Two independent CPU tasks merge minima and canonical contacts.
+- `ogc/world.rs`: VF in **both directions**, EE, self-contact, deduplication on the same primitive, and conservative distances propagated to every primitive vertex. Distances used for bounds are evaluated even when feasible-region or parallel-edge filters reject a force.
+- `ogc/potential.rs`: quadratic then logarithmic activation, exact AD derivatives and a polynomial nearly-parallel-edge filter. Each canonical primitive interaction is integrated once; shared VV/VE contributions from VF and EE traversals are merged.
+- Spherical bounds `0.45 * min(dVF, dEE, dFV)` around positions at the **last detection**, not the last iteration. The OGC projection limits each local proposal before its energy check.
+- `vbd.rs`: implicit Euler with the same anisotropic membrane, bending and sewing as the reference. Local 3×3 Newton, exact Hessian regularized to SPD, local descent search. Coloring includes contacts and mouse attachments: a color shares no element.
+- `gpu_vbd.rs`, `vbd.wgsl`: GPU energies, forces and VBD iterations with approximate positive local Hessians. The gradient retains EE-filter derivatives. `--check-gpu-gradients` compares GPU energies/forces against f64 AD at identical f32-rounded geometry.
 
-La construction des candidats utilise une borne inférieure de distance entre AABB ; le calcul exact VF/EE reste dans la détection à chaque pas, y compris le premier. Cela peut retenir des faux positifs mais ne doit retirer aucune paire proche. `tests/ogc_bvh.rs` compare cette borne aux distances géométriques et `tests/ogc_cache.rs` compare les résultats mis en cache à une reconstruction fraîche.
+## Prediction and conservative candidates
 
-Depuis la passe CPU du 15 octobre, les paires du cache passent aussi un filtre AABB **courant** avant la géométrie exacte. Seules les boîtes à distance supérieure au rayon de requête, avec marge d'arrondi vers l'extérieur, sont éliminées. Les distances potentiellement inférieures au rayon sont toujours évaluées, y compris pour les termes dormants et les régions inadmissibles qui bornent le mouvement. `aabb_rejections` mesure les évaluations exactes évitées. La coloration réutilise les incidences, avec les mêmes groupes et ordre de sommets. Voir [preuve locale, tests et limites](research-2026-10-15.md#implemented-safe-cost-reductions).
+**Earlier contact-activation correction:** feasible interactions are retained up to `rq`, even when their potential is zero at detection. Only `r` activates a force. With once-per-step detection, this allows activation during the solve instead of waiting for the next step. It does not guarantee exhaustive force coverage after large movement or a feature change. Coloring and local search include dormant terms; bounds remain unchanged. Canonical sorting/deduplication replaces tree insertion. GPU coordinates are translated near the garment and use position differences. See [diagnosis, measurements and limits](jitter.md). `contacts` counts positive-energy interactions at detection; `contact_terms` counts all retained interactions. Residual jitter remains unresolved.
 
-## Coefficient du raccord logarithmique
+Candidate construction traverses **pairs of tree nodes**: point/face for VF and edge/edge for EE. The point BVH also has moving/fixed roots; only moving primitives are refitted. Fixed/fixed and distant-box pairs are rejected in groups; reciprocal VF and EE remain. EE traversal visits each unordered pair once and preserves historical operand order for geometry calculations. Tests compare sets with exhaustive queries after deformation. See [performance research](performance-research.md).
 
-Le PDF affiche à l'équation 19 `k' = tau * k * (tau-r)^2`. Ce coefficient ne satisfait pas la continuité de la dérivée annoncée : `g'_quadratique(tau) = k*(tau-r)`, `g'_log(tau) = -k'/tau`. Le code utilise donc le coefficient **dérivé des conditions de raccord** `k' = k*tau*(r-tau)`. Avec `tau=r/2`, les deux dérivées secondes valent `k`. Le logarithme porte sur le rapport sans dimension `d/tau`. Des tests de différences finies et des deux côtés du raccord vérifient ce choix. À `d=r`, la loi est C1, pas C2 ; ne pas annoncer C2 partout.
+CPU and GPU steps start with **adaptive VBD initialization (§3.7)**, clipped to the **initial detection bounds**. Collective prediction preserves free fall; acceleration estimated from the last accepted step avoids repeatedly injecting free fall into supported vertices. The objective retains full gravity. The estimate accounts for damping and its history is invalidated after editing/reload. It respects fixed vertices and f32 margins; centers do not move between prediction and solve. See [stretch diagnosis and correction](adaptive-initialization.md). Opt-in `tests/gpu_motion.rs` covers free fall, buffer growth, high-speed bounds and supported cloth over several seconds.
 
-## Contrat et limites
+Candidate construction uses a lower bound on AABB distance. Exact VF/EE evaluation remains part of every detection, including the first step. False positives are allowed, but no nearby pair may be removed. `tests/ogc_bvh.rs` compares the bound with geometric distances; `tests/ogc_cache.rs` compares cached results with fresh reconstruction.
 
-OGC empêche de créer une intersection à partir d'un état séparé, pour les paires incluses dans la détection et sous les hypothèses géométriques de l'article. Il ne répare pas un état déjà traversé. Le constructeur refuse les intersections initiales détectées ; les erreurs de pas sont transactionnelles. Le diagnostic initial utilise des tolérances flottantes : ce n'est pas un prédicat géométrique exact certifié.
+Since the 15 October CPU pass, cached pairs also pass a **current** AABB filter before exact geometry. Only boxes farther than the query radius, with outward rounding allowance, are eliminated. Potentially closer distances are always evaluated, including dormant terms and infeasible regions that bound movement. `aabb_rejections` counts avoided exact evaluations. Coloring reuses incidence with unchanged groups/vertex order. See [local proof, tests and limits](research-2026-10-15.md#implemented-safe-cost-reductions). Since 16 October, the cache movement budget is two OGC radii and its search envelope grows accordingly; physical bounds remain unchanged. See [measurements and the two-moving-primitive regression](precision-stall.md#candidate-cache-cost).
 
-Les coutures conservent deux bords distincts. Les sommets reliés par une même quadrature de couture sont donc exclus **localement** des collisions correspondantes. Les panneaux entiers restent en auto-contact. La garantie ne couvre pas les paires exclues. Une topologie cousue ou un traitement d'épaisseur dédié reste nécessaire pour des coutures industrielles.
+Since the 16 October continuity pass, the temporal cache stores **BVH leaf pairs**, without expanding every primitive pair during reconstruction. Each detection filters current leaf boxes, then current primitive boxes, applies the same local exclusions and recomputes exact f64 geometry. Coverage `R + 2s` and reuse conditions are unchanged. `candidate_blocks` counts leaf pairs; `candidate_pairs` counts their possibilities before exclusions/current filtering. See [coverage and measurements](realtime-follow-up.md#cost-reductions).
 
-Les contacts normaux sont doubles faces, y compris sur le mannequin. Nous n'utilisons pas la variante volumique unilatérale du §3.9. Pas de friction de Coulomb, avatar animé, restitution de collisions déjà présentes ni fils physiques. Les paramètres de tissu ne sont pas calibrés.
+## Logarithmic join coefficient
 
-Le rayon d'offset (m) est distinct de l'épaisseur matérielle. `stiffness` est un coefficient **N/m par paire**, pas la pression N/m³ de l'ancien collider. Son effet dépend donc du maillage et de la multiplicité des contacts ; une convergence en résolution n'est pas revendiquée.
+Equation 19 of the PDF displays `k' = tau * k * (tau-r)^2`. This coefficient does not satisfy the stated derivative continuity: `g'_quadratic(tau) = k*(tau-r)`, `g'_log(tau) = -k'/tau`. The code uses the coefficient **derived from the join conditions**, `k' = k*tau*(r-tau)`. With `tau=r/2`, both second derivatives equal `k`. The logarithm uses the dimensionless ratio `d/tau`. Finite differences and both sides of the join test this choice. At `d=r`, the law is C1, not C2; do not claim C2 everywhere.
 
-Les ensembles de contacts sont figés entre deux détections. Le CPU les renouvelle lorsque suffisamment de sommets atteignent leur borne. Le backend hybride renouvelle la détection **une fois par pas**, et conserve les mêmes centres/rayons durant toutes les itérations GPU. Cela préserve les bornes mais peut ralentir le glissement et la relaxation. Le GPU soustrait une marge d'arrondi aux rayons ; une séparation inférieure à 2 µm interrompt le pas. Ce n'est pas une implémentation entièrement résidente sur GPU : BVH, détection, coloration, empaquetage et lecture des résultats restent CPU. Les allocations GPU, bind groups, readback et queries sont réutilisés et agrandis au besoin ; les données dynamiques sont toujours transférées par pas. Les termes matériels et leur incidence sont compilés une fois par vêtement, avec invalidation par identité Arc conservée. Un workgroup de 32 threads assemble les contributions de chaque sommet ; les réductions sont synchronisées et la coloration reste inchangée. La somme parallèle modifie les arrondis f32 : les trajectoires ne sont pas bit à bit identiques à l’ancien noyau série.
+## Sparse directional extension (19 October)
 
-Un budget fixe de VBD ne garantit pas la convergence du minimiseur à chaque pas. Le résidu CPU est indiqué ; le résidu GPU non calculé est `null`. `step_ms` est un temps mural complet. Sur GPU, `detection_ms` inclut détection et coloration ; `solve_ms` inclut préparation, transferts et attente GPU. Aucun de ces nombres n'est un timestamp GPU pur.
+The VBD constructor now enables a sparse extension for pairs closer than
+`query_radius / 64`: verified fixed separating half-spaces replace that pair's
+isotropic restriction. Other pair bounds and the query-radius envelope remain.
+The hybrid path solves these vertices in f64 on CPU, with the unchanged
+implicit objective. Raw `OgcWorld` defaults to the historical isotropic mode.
+The ball-only descriptions above remain the baseline and fallback, not the
+complete feasible region of a directional vertex. Read the
+[safety argument, integration, laboratory and limitations](directional-contact.md)
+before changing clipping, refreshing regions, or interpreting stall reports.
 
-Le champ séparé `gpu_compute_ms`, lorsqu'il est disponible, est mesuré par timestamps matériels de la passe compute. Il exclut la détection CPU et les transferts. Réglages de la passe retenue : rayon 3 mm, raideur de contact 100 000 N/m par paire, coutures de patron 50 000 N/m², 8 itérations, pas de 1/60 s. Ces choix ne constituent pas une calibration matérielle.
+## Contract and limitations
 
-Le test `--ui-interaction-smoke` injecte des événements de pointeur dans une vraie fenêtre egui, vérifie qu'un triangle a été saisi et qu'un pas avec cet attachement a été accepté, écrit `interaction.json`, capture puis ferme la fenêtre. Il nécessite explicitement le GPU et reste hors des tests ordinaires.
+OGC prevents a new intersection from a separated state for pairs included in detection, under the paper's geometric assumptions. It does not repair existing intersections. Construction rejects detected initial intersections; step errors are transactional. The initial diagnostic uses floating-point tolerances, not certified exact geometric predicates.
 
-## Temps réel
+Seams retain two distinct boundaries. Vertices joined by the same sewing quadrature are therefore excluded **locally** from the corresponding collisions. Whole panels remain in self-contact. The guarantee does not cover excluded pairs. Sewn topology or dedicated thickness handling is still needed for industrial sewing semantics.
 
-La passe [Turbo](turbo-perf.md) mesure séparément le débit physique et la vraie fenêtre. `atelier/worker.rs` possède l’état courant et une horloge à pas fixe, indépendante du dessin. Rattrapage borné à quatre pas après une pointe de durée, sans augmenter dt ni réduire les itérations. Les contrôles les plus récents remplacent les anciens ; un seul résultat attend l’interface, et les générations empêchent un ancien maillage de remplacer le nouveau. `--ui-perf-smoke` mesure cinq secondes après une seconde de chauffe, avec le compteur de frames egui unique, et écrit `ui-perf.json`.
+Normal contacts are two-sided, including the mannequin. We do not use the unilateral volumetric variant in §3.9. There is no Coulomb friction, animated avatar, repair of existing intersections or physical yarn model. Fabric parameters are uncalibrated.
 
-## Exécuter
+Offset radius (m) is distinct from material thickness. `stiffness` is **N/m per pair**, not the historical collider pressure coefficient in N/m³. Its effect depends on mesh resolution and contact multiplicity; resolution convergence is not claimed.
+
+Contact sets remain fixed between detections. CPU detection refreshes when enough vertices reach their bounds. The hybrid backend detects **once per step**, retaining the same centers/radii through all GPU iterations. This preserves bounds but can slow sliding and relaxation. GPU radii subtract a rounding margin; precision-limited vertices remain in f64 and are excluded from GPU solve dispatches. Two local f64 sweeps use the same objective and original bounds. Numerically unresolved separation (≤ 0.1 nm) can still stop a step. See [stall reproduction and checks](realtime-follow-up.md).
+
+This remains hybrid: BVH refit/query runs on GPU, while exact f64 contact geometry, movement balls, coloring, dynamic packing and readback processing remain CPU work. GPU allocations, bind groups, readbacks and queries are reused/grown as needed; dynamic data still transfers per step. Static material terms and incidence remain resident; only contact/grab tails upload each step, except after reconstruction or buffer growth. Material terms/incidence compile once per garment, invalidated by retained Arc identity. A 32-thread workgroup assembles each vertex's contributions; reductions are synchronized and coloring is unchanged. Parallel sums change f32 rounding, so trajectories are not bitwise identical to the historical serial kernel.
+
+A fixed VBD budget does not guarantee minimizer convergence at each step. CPU residuals are reported; uncomputed GPU residuals are `null`. `step_ms` is complete wall time. On GPU, `detection_ms` includes detection/coloring; `solve_ms` includes preparation, transfers and GPU waits. None is a pure GPU timestamp.
+
+`gpu_compute_ms`, when available, is a hardware timestamp of the VBD compute pass. It excludes GPU contact search, CPU work and transfers. `contact_profile.filter_dispatch_ms` includes contact submission/wait/readback and is a wall-clock measurement. The historical OGC validation used a 3 mm radius, contact stiffness 100,000 N/m per pair, seam stiffness 50,000 N/m², eight iterations and a 1/60 s step. The current private-garment benchmark preserves its 16 iterations. These settings are not a material calibration.
+
+`--ui-interaction-smoke` injects pointer events into a real egui window, checks that a triangle was grabbed and an attached step accepted, writes `interaction.json`, captures and closes the window. It explicitly requires the GPU and remains outside ordinary tests.
+
+## Realtime scheduling
+
+**Precision-limited vertices (16 October):** the hybrid backend retains vertices whose ball is dominated by the f32 roundoff margin in double precision. Two sparse CPU local-minimization sweeps use the same objective and original OGC balls after GPU readback. No radius or contact is relaxed. `precision_vertices` / `precision_ms` report the work. See [the stall diagnosis, invariant and tests](precision-stall.md).
+
+The [Turbo pass](turbo-perf.md) separately measures physical throughput and actual window cadence. `atelier/worker.rs` owns current state and a fixed-step clock independent of drawing. Catch-up is limited to four steps after a duration spike, without increasing dt or reducing iterations. Newest controls replace older ones; only one result waits for the UI, and generation numbers prevent old meshes from replacing new ones. `--ui-perf-smoke` measures five seconds after one second of warm-up using the unique egui frame counter and writes `ui-perf.json`.
+
+## Run
 
 ```powershell
-# Référence OGC/VBD sans GPU
+# OGC/VBD reference without GPU
 cargo run --release --locked --no-default-features -j 2 --bin cloth-fit -- --steps 30 --mesh-mm 30 --output output/ogc-cpu
 
-# Calcul GPU explicitement demandé, mesures complètes
+# Explicit GPU computation with full measurements
 cargo run --release --locked -j 2 --bin cloth-fit -- --gpu-sim --steps 120 --mesh-mm 30 --output output/ogc-gpu
 
-# Validation numérique GPU (coûteuse, opt-in)
+# Numerical GPU validation (expensive, opt-in)
 cargo run --release --locked -j 2 --bin cloth-fit -- --gpu-sim --check-gpu-gradients --steps 4 --mesh-mm 50 --output output/ogc-check
 
-# Atelier : calcul asynchrone, saisir le tissu au bouton gauche
+# Workspace: asynchronous simulation, left-button cloth grabbing
 cargo run --release --locked -j 2 --bin cloth-fit -- --steps 0 --view --output output/atelier
 ```
 
-`--reference` conserve le Newton/PCG historique avec sa pénalité de contact discrète. Ne pas le confondre avec OGC. `--gpu-benchmark` mesure toujours le **rendu** ; `--gpu-sim` exécute le calcul de physique hybride. Les tests ordinaires restent entièrement CPU ; ils valident aussi le WGSL via Naga.
+`--reference` retains historical Newton/PCG with its discrete contact penalty; it is distinct from OGC. `--gpu-benchmark` measures **rendering**; `--gpu-sim` runs hybrid physics. Ordinary tests remain CPU-only and also validate WGSL through Naga.
+
+## Finite-primitive ablation
+
+The [CPU finite-distance experiment](primitive-contact.md) removes feature-refresh energy jumps by retaining complete primitive pairs and evaluating finite distances during the solve. It keeps geometric movement bounds, enlarges force coverage, and is off by default. It fails the planar tangential-force gate; it is not a promoted OGC implementation change or a full IPC/GCP backend.

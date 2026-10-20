@@ -9,6 +9,9 @@ use marvelous_cloth::garment::seam::{BoundaryRef, Side};
 
 impl Atelier {
     pub(super) fn edge_interaction(&mut self, response: &egui::Response, rect: egui::Rect) {
+        if self.sewing_canvas_confirm(response) {
+            return;
+        }
         if !matches!(self.authoring.tool, Tool::Edit | Tool::Sew) {
             return;
         }
@@ -73,7 +76,7 @@ impl Atelier {
             self.authoring.hover_edge = Some(edge.clone());
             if response.clicked() {
                 let t = self.boundary_parameter(&edge, rect, pointer, true);
-                self.pick_sewing_boundary(edge, t);
+                self.pick_sewing_boundary(edge, t, pointer);
             }
             return;
         }

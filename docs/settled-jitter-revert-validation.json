@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-16",
+  "status": "prediction_rejection_removed_passive_detector_retained",
+  "input_sha256": "f9c90c2f00d9208d9287ccfc15c1b7f7ae0beefeeefde03a282cc9fa8d95ac97",
+  "same_settings": true,
+  "trajectory": {
+    "steps": 360,
+    "before_sha256": "a33c8cde373af02028b368b97b1af1e1c76b4f461060d3fb2f0663d4d3891948",
+    "restored_sha256": "a33c8cde373af02028b368b97b1af1e1c76b4f461060d3fb2f0663d4d3891948",
+    "byte_identical_positions_velocities_and_times": true
+  },
+  "minimum_detected_separation_m": 0.002686250744802826,
+  "physical_metrics_identical": true,
+  "compared_physical_metrics": [
+    "time_s",
+    "dt_s",
+    "iterations",
+    "contacts",
+    "contact_terms",
+    "minimum_distance_m",
+    "max_seam_gap_m",
+    "extension_p95_percent",
+    "extension_max_percent",
+    "precision_vertices"
+  ],
+  "checks": {
+    "cpu_suite": true,
+    "release_build": true,
+    "gpu_regressions_and_shader_checks": true,
+    "desktop_clippy": true,
+    "gpu_trace": true
+  },
+  "passed_test_counts": {
+    "revert-cpu.log": [
+      8,
+      0,
+      0,
+      0,
+      11,
+      1,
+      2,
+      5,
+      13,
+      15,
+      2,
+      3,
+      2,
+      7,
+      12,
+      0,
+      0,
+      0,
+      2,
+      3,
+      16,
+      11,
+      3,
+      3,
+      5,
+      6,
+      3,
+      2,
+      4,
+      3,
+      0
+    ],
+    "revert-gpu-tests.log": [
+      1,
+      4,
+      2,
+      3
+    ]
+  },
+  "binaries_sha256": {
+    "pre_experiment_probe": "de4d2500bead19c8e5a41a14aaebfa132616e637a8c302363d2cb993cef621fb",
+    "restored_probe": "1143ef0420b35bf34ee1981cc98f00e6fa06f70d1bb31bcc5a4b62117af84382",
+    "restored_desktop": "4270f808e6d460ff6f51c567aa0ee8488b08a09b9772408e70a9161a9c556c80"
+  },
+  "limits": [
+    "This restores the prior trajectory on the saved benchmark; it is not a new jitter fix.",
+    "The user-reported interactive regression was not recorded as a reproducible pointer trajectory.",
+    "The passive detector is retained. It does not alter positions, velocities or solver settings.",
+    "Historical performance and oscillation gains of the rejected experiment are withdrawn."
+  ]
+}

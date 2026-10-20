@@ -1,6 +1,6 @@
-//! Conservative temporal broad phase. Cache IDs only; exact distances and balls
-//! are updated every step. Movement <= s keeps an rq+2s envelope conservative.
-use super::{bvh::Bvh, topology::Topology};
+//! Conservative temporal broad phase. Cache BVH leaf pairs, not expanded
+//! primitive pairs. Movement <= s keeps an rq+2s envelope conservative.
+use super::bvh::Bvh;
 use glam::DVec3;
 
 #[derive(Clone, Debug)]
@@ -8,6 +8,7 @@ pub(super) struct Candidates {
     centers: Vec<DVec3>,
     radius: f64,
     skin: f64,
+    pub pair_count: usize,
     pub vf: Vec<[usize; 2]>,
     pub ee: Vec<[usize; 2]>,
 }
@@ -21,44 +22,33 @@ impl Candidates {
                 .all(|(a, b)| a.distance_squared(*b) <= self.skin * self.skin)
     }
     pub fn build(
-        top: &Topology,
         trees: (&Bvh, &Bvh, &Bvh),
         x: &[DVec3],
         moving: usize,
         radius: f64,
         skin: f64,
-        adjacent: impl Fn(usize, usize) -> bool + Sync,
     ) -> Self {
         let search = radius + 2. * skin + 1e-12;
         let (vf, ee) = rayon::join(
-            || {
-                let mut vf = Vec::new();
-                trees.0.pairs_with(trees.1, search, |v, t| {
-                    if !top.triangles[t].iter().any(|i| adjacent(v, *i)) {
-                        vf.push([v, t]);
-                    }
-                });
-                vf
-            },
-            || {
-                let mut ee = Vec::new();
-                trees.2.self_pairs(search, |e, f| {
-                    let ids = top.edges[e];
-                    let js = top.edges[f];
-                    if !ids.iter().any(|i| js.iter().any(|j| adjacent(*i, *j))) {
-                        // Preserve legacy geometric operand order: moving edge
-                        // first for fixed/moving pairs, canonical otherwise.
-                        ee.push(if ids.iter().all(|i| *i >= moving) {
-                            [f, e]
-                        } else {
-                            [e, f]
-                        });
-                    }
-                });
-                ee
-            },
+            || trees.0.leaf_pairs(trees.1, search, false),
+            || trees.2.leaf_pairs(trees.2, search, true),
         );
+        let pair_count = vf
+            .iter()
+            .map(|[a, b]| trees.0.leaf_ids(*a).len() * trees.1.leaf_ids(*b).len())
+            .sum::<usize>()
+            + ee.iter()
+                .map(|[a, b]| {
+                    let n = trees.2.leaf_ids(*a).len();
+                    if a == b {
+                        n * (n - 1) / 2
+                    } else {
+                        n * trees.2.leaf_ids(*b).len()
+                    }
+                })
+                .sum::<usize>();
         Self {
+            pair_count,
             centers: x[..moving].to_vec(),
             radius,
             skin,

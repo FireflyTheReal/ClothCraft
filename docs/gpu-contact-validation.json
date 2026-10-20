@@ -1,0 +1,429 @@
+{
+  "date": "2026-10-16",
+  "hardware": {
+    "gpu": "NVIDIA RTX 3090",
+    "cpu": "AMD Ryzen 7 2700X",
+    "cpu_threads": 2
+  },
+  "scene": {
+    "vertices": 6731,
+    "triangles": 12682,
+    "panels": 5,
+    "dt_s": 0.016666666666666666,
+    "iterations": 16,
+    "private_geometry_included": false
+  },
+  "runs": {
+    "before-start": {
+      "steps": 240,
+      "final_time_s": 3.9999999999999907,
+      "step_ms": {
+        "mean": 25.929702083333332,
+        "p95": 35.488400000000006,
+        "max": 47.790600000000005
+      },
+      "detection_ms": {
+        "mean": 17.417063333333335,
+        "p95": 25.2494,
+        "max": 32.5988
+      },
+      "solve_ms": {
+        "mean": 8.51263875,
+        "p95": 11.779200000000003,
+        "max": 17.329100000000007
+      },
+      "gpu_compute_ms": {
+        "mean": 4.559653866666666,
+        "p95": 6.856416,
+        "max": 9.39856
+      },
+      "contact_refit_ms": {
+        "mean": 1.0230804166666667,
+        "max": 2.3449999999999998
+      },
+      "contact_candidates_ms": {
+        "mean": 2.446505,
+        "max": 8.722199999999999
+      },
+      "contact_narrow_ms": {
+        "mean": 12.992665416666666,
+        "max": 27.139699999999998
+      },
+      "contact_candidate_pairs": {
+        "mean": 2889162.2125,
+        "max": 3461678
+      },
+      "contact_candidate_blocks": {
+        "mean": 103970.55416666667,
+        "max": 123651
+      },
+      "contact_aabb_rejections": {
+        "mean": 2660862.15,
+        "max": 3212037
+      },
+      "cache_rebuilds": 123,
+      "quality": {
+        "minimum_distance_m": 2.0595054710450947e-06,
+        "max_seam_gap_m": 0.5177704836449901,
+        "extension_p95_percent": 53.39652468941085,
+        "extension_max_percent": 438.7143585196622
+      }
+    },
+    "before-paired": {
+      "steps": 240,
+      "final_time_s": 3.9999999999999907,
+      "step_ms": {
+        "mean": 35.215099583333334,
+        "p95": 52.6778,
+        "max": 71.1796
+      },
+      "detection_ms": {
+        "mean": 23.509455,
+        "p95": 38.3674,
+        "max": 56.378299999999996
+      },
+      "solve_ms": {
+        "mean": 11.705644583333333,
+        "p95": 19.2402,
+        "max": 28.170799999999996
+      },
+      "gpu_compute_ms": {
+        "mean": 6.161017066666667,
+        "p95": 9.567104,
+        "max": 15.391968
+      },
+      "contact_refit_ms": {
+        "mean": 1.7563070833333334,
+        "max": 9.0787
+      },
+      "contact_candidates_ms": {
+        "mean": 3.281207916666667,
+        "max": 19.471
+      },
+      "contact_narrow_ms": {
+        "mean": 17.0561575,
+        "max": 47.116
+      },
+      "contact_candidate_pairs": {
+        "mean": 2889162.2125,
+        "max": 3461678
+      },
+      "contact_candidate_blocks": {
+        "mean": 103970.55416666667,
+        "max": 123651
+      },
+      "contact_aabb_rejections": {
+        "mean": 2660862.15,
+        "max": 3212037
+      },
+      "cache_rebuilds": 123,
+      "quality": {
+        "minimum_distance_m": 2.0595054710450947e-06,
+        "max_seam_gap_m": 0.5177704836449901,
+        "extension_p95_percent": 53.39652468941085,
+        "extension_max_percent": 438.7143585196622
+      }
+    },
+    "final-paired": {
+      "steps": 240,
+      "final_time_s": 3.9999999999999907,
+      "step_ms": {
+        "mean": 16.223930416666665,
+        "p95": 24.968,
+        "max": 44.529199999999996
+      },
+      "detection_ms": {
+        "mean": 8.137542083333333,
+        "p95": 12.9397,
+        "max": 26.6569
+      },
+      "solve_ms": {
+        "mean": 8.086388333333334,
+        "p95": 11.725199999999997,
+        "max": 18.4294
+      },
+      "gpu_compute_ms": {
+        "mean": 3.549734,
+        "p95": 4.615744,
+        "max": 6.432032
+      },
+      "contact_refit_ms": {
+        "mean": 0.15089666666666668,
+        "max": 0.6713
+      },
+      "contact_candidates_ms": {
+        "mean": 0.0016195833333333333,
+        "max": 0.0053
+      },
+      "contact_narrow_ms": {
+        "mean": 4.053809583333333,
+        "max": 19.4229
+      },
+      "contact_filter_ms": {
+        "mean": 2.4472258333333334,
+        "max": 8.6032
+      },
+      "contact_filter_pairs": {
+        "mean": 23893.3125,
+        "max": 38111
+      },
+      "contact_gpu_filtered": {
+        "mean": 1,
+        "max": true
+      },
+      "contact_spatial_queries": {
+        "mean": 79653,
+        "max": 79653
+      },
+      "contact_spatial_retries": {
+        "mean": 0.016666666666666666,
+        "max": 1
+      },
+      "contact_filter_prepare_ms": {
+        "mean": 0.2759991666666667,
+        "max": 3.8128
+      },
+      "contact_filter_dispatch_ms": {
+        "mean": 1.8699745833333334,
+        "max": 7.9486
+      },
+      "contact_filter_decode_ms": {
+        "mean": 0.23245458333333333,
+        "max": 1.2586
+      },
+      "contact_candidate_pairs": {
+        "mean": 0,
+        "max": 0
+      },
+      "contact_candidate_blocks": {
+        "mean": 0,
+        "max": 0
+      },
+      "contact_aabb_rejections": {
+        "mean": 0,
+        "max": 0
+      },
+      "cache_rebuilds": 0,
+      "quality": {
+        "minimum_distance_m": 2.0595054710450947e-06,
+        "max_seam_gap_m": 0.5177704836449901,
+        "extension_p95_percent": 53.39652468941085,
+        "extension_max_percent": 438.7143585196622
+      }
+    },
+    "final-long": {
+      "steps": 1800,
+      "final_time_s": 29.999999999999577,
+      "step_ms": {
+        "mean": 17.93268188888889,
+        "p95": 22.533,
+        "max": 45.169399999999996
+      },
+      "detection_ms": {
+        "mean": 8.982036222222222,
+        "p95": 11.9054,
+        "max": 33.1522
+      },
+      "solve_ms": {
+        "mean": 8.950645666666667,
+        "p95": 11.221099999999996,
+        "max": 14.8089
+      },
+      "gpu_compute_ms": {
+        "mean": 4.374658755555555,
+        "p95": 5.906016,
+        "max": 8.984192
+      },
+      "contact_refit_ms": {
+        "mean": 0.10796305555555556,
+        "max": 0.6132000000000001
+      },
+      "contact_candidates_ms": {
+        "mean": 0.0012948888888888888,
+        "max": 0.0664
+      },
+      "contact_narrow_ms": {
+        "mean": 5.263173055555556,
+        "max": 15.746099999999998
+      },
+      "contact_filter_ms": {
+        "mean": 2.359832111111111,
+        "max": 32.2334
+      },
+      "contact_filter_pairs": {
+        "mean": 38998.91,
+        "max": 77146
+      },
+      "contact_gpu_filtered": {
+        "mean": 1,
+        "max": true
+      },
+      "contact_spatial_queries": {
+        "mean": 79653,
+        "max": 79653
+      },
+      "contact_spatial_retries": {
+        "mean": 0.002777777777777778,
+        "max": 1
+      },
+      "contact_filter_prepare_ms": {
+        "mean": 0.19610088888888888,
+        "max": 2.2644
+      },
+      "contact_filter_dispatch_ms": {
+        "mean": 1.9073602222222221,
+        "max": 29.773899999999998
+      },
+      "contact_filter_decode_ms": {
+        "mean": 0.1978457777777778,
+        "max": 0.9337
+      },
+      "contact_candidate_pairs": {
+        "mean": 0,
+        "max": 0
+      },
+      "contact_candidate_blocks": {
+        "mean": 0,
+        "max": 0
+      },
+      "contact_aabb_rejections": {
+        "mean": 0,
+        "max": 0
+      },
+      "cache_rebuilds": 0,
+      "quality": {
+        "minimum_distance_m": 1.4405332854660373e-07,
+        "max_seam_gap_m": 0.004157191446468123,
+        "extension_p95_percent": 5.528189109066584,
+        "extension_max_percent": 29.687865470248354
+      }
+    }
+  },
+  "exact_state_equality_240_steps": true,
+  "exact_state_equality_1800_steps": true,
+  "oracle": {
+    "initial_steps": 120,
+    "draped_steps": 120,
+    "all_contacts_incidence_counts_and_radii_identical": true
+  },
+  "native": {
+    "window-final-start": {
+      "last_delivered_step": {
+        "broad_phase_rebuilds": 0,
+        "contact_profile": {
+          "aabb_rejections": 0,
+          "candidate_blocks": 0,
+          "candidate_pairs": 0,
+          "candidates_ms": 0.0017000000000000001,
+          "filter_decode_ms": 0.4169,
+          "filter_dispatch_ms": 2.6818,
+          "filter_ms": 3.5154,
+          "filter_pairs": 46308,
+          "filter_prepare_ms": 0.3313,
+          "gpu_filtered": true,
+          "narrow_ms": 8.911000000000001,
+          "refit_ms": 0.2814,
+          "spatial_queries": 79653,
+          "spatial_retries": 0
+        },
+        "contact_terms": 10820,
+        "contacts": 422,
+        "detection_ms": 14.4359,
+        "detection_updates": 1,
+        "dt_s": 0.016666666666666666,
+        "extension_max_percent": 416.22125217336156,
+        "extension_p95_percent": 40.17580742606166,
+        "gpu_compute_ms": 4.277664,
+        "gpu_subgroups": true,
+        "iterations": 16,
+        "max_seam_gap_m": 0.44191010750817183,
+        "minimum_distance_m": 2.297972582315053e-07,
+        "precision_ms": 0.3789,
+        "precision_vertices": 5,
+        "residual_rms_n": null,
+        "solve_ms": 8.587599999999998,
+        "step_ms": 23.0235,
+        "time_s": 5.33333333333332,
+        "truncated_vertices": 0
+      },
+      "passed": false,
+      "physics_steps_per_second": 54.0308283956764,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 4.516666666666652,
+      "simulation_speed": 0.9005138065946067,
+      "ui_frame_interval_p95_ms": 23.409,
+      "ui_frames_per_second": 60.012100911803124,
+      "wall_seconds": 5.0156551
+    },
+    "window-final-late": {
+      "last_delivered_step": {
+        "broad_phase_rebuilds": 0,
+        "contact_profile": {
+          "aabb_rejections": 0,
+          "candidate_blocks": 0,
+          "candidate_pairs": 0,
+          "candidates_ms": 0.0013,
+          "filter_decode_ms": 0.17679999999999998,
+          "filter_dispatch_ms": 1.8775,
+          "filter_ms": 2.3405,
+          "filter_pairs": 33738,
+          "filter_prepare_ms": 0.19080000000000003,
+          "gpu_filtered": true,
+          "narrow_ms": 5.9585,
+          "refit_ms": 0.1652,
+          "spatial_queries": 79653,
+          "spatial_retries": 0
+        },
+        "contact_terms": 10762,
+        "contacts": 392,
+        "detection_ms": 10.3201,
+        "detection_updates": 1,
+        "dt_s": 0.016666666666666666,
+        "extension_max_percent": 29.705101503833585,
+        "extension_p95_percent": 5.493185979205539,
+        "gpu_compute_ms": 3.1048,
+        "gpu_subgroups": true,
+        "iterations": 16,
+        "max_seam_gap_m": 0.00412143161382745,
+        "minimum_distance_m": 1.371679499687987e-07,
+        "precision_ms": 0.9768000000000001,
+        "precision_vertices": 8,
+        "residual_rms_n": null,
+        "solve_ms": 8.3384,
+        "step_ms": 18.6585,
+        "time_s": 34.21666666666601,
+        "truncated_vertices": 0
+      },
+      "passed": false,
+      "physics_steps_per_second": 45.4474673920376,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 3.7999999999997875,
+      "simulation_speed": 0.7574577898672934,
+      "ui_frame_interval_p95_ms": 21.911,
+      "ui_frames_per_second": 59.998630197386326,
+      "wall_seconds": 5.0167812
+    }
+  },
+  "realtime_60_everywhere_verified": false,
+  "tests": {
+    "opt_in_gpu": 6,
+    "wgsl_cpu_validation": 3,
+    "cpu_no_default_features": 138,
+    "desktop_selected_targets": 64,
+    "cpu_template_validations": 6,
+    "clippy_cpu": true,
+    "clippy_desktop_all_targets": true,
+    "note": "Desktop and CPU suites overlap; do not sum them as unique tests."
+  },
+  "fresh_final_cpu_probe": {
+    "time_s": 29.999999999999577,
+    "contact_probe_error": null,
+    "minimum_distance_m": 1.440245512390543e-07
+  },
+  "notes": [
+    "Desktop load and GPU clocks were not controlled. Both old and new timings vary between runs.",
+    "Whole-step timings include readback and current quality diagnostics; VBD GPU timestamps exclude contact search.",
+    "The final GPU path refits and queries the BVHs each step; there is no temporal CPU candidate-cache rebuild.",
+    "No mesh, dt, material, iteration or collision-radius reduction."
+  ]
+}

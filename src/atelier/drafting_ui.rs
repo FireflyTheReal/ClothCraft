@@ -13,7 +13,7 @@ use marvelous_cloth::{
 pub(super) struct DraftingUi {
     kind: Primitive,
     size_mm: [f64; 2],
-    sweep: f64,
+    pub sweep: f64,
     operand: String,
     keep_tool: bool,
     width_mm: f64,
@@ -88,6 +88,7 @@ impl Atelier {
         });
     }
     pub(super) fn drafting_properties(&mut self, ui: &mut egui::Ui, panel: &Panel) {
+        self.linked_mirror_properties(ui, &panel.id);
         ui.collapsing("Mirrors and booleans", |ui| {
             ui.small("X: left / right · Y: up / down in local pattern coordinates.");
             ui.horizontal_wrapped(|ui| {
@@ -121,6 +122,36 @@ impl Atelier {
             ui.separator();
             self.boolean_properties(ui, panel);
         });
+    }
+    pub(super) fn linked_mirror_properties(&mut self, ui: &mut egui::Ui, panel: &str) {
+        let link = self
+            .project
+            .template
+            .mirror_links
+            .iter()
+            .find(|l| l.a == panel || l.b == panel)
+            .cloned();
+        if let Some(link) = link {
+            let partner = if link.a == panel { link.b } else { link.a };
+            ui.strong(format!("Linked mirror {:?} · {partner}", link.axis));
+            ui.small("Edit either piece. Shape, curves, internal lines and grain update together on release. Placement and fabric stay independent.");
+            if ui.button("Unlink mirror").clicked() {
+                self.edit(Command::UnlinkMirror {
+                    panel: panel.into(),
+                });
+            }
+        } else {
+            ui.horizontal(|ui| {
+                ui.label("Linked copy");
+                for (axis, name) in [(MirrorAxis::X, "X"), (MirrorAxis::Y, "Y")] {
+                    let button = ui.button(name).on_hover_text("Create a mirrored partner. Later shape edits update both pieces; undo restores both.");
+                    self.smoke_target_ui(ui, &format!("linked_mirror_{name}"), button.rect);
+                    if button.clicked() {
+                        self.edit(Command::LinkedMirror { panel: panel.into(), axis });
+                    }
+                }
+            });
+        }
     }
     fn boolean_properties(&mut self, ui: &mut egui::Ui, panel: &Panel) {
         ui.label("Boolean · A = active panel");

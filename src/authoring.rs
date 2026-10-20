@@ -13,6 +13,7 @@ use crate::{
 use glam::{DQuat, DVec2, DVec3, EulerRot};
 pub mod clipboard;
 mod geometry;
+mod linked;
 use crate::garment::shapes::{BooleanOp, MirrorAxis, Primitive};
 
 pub enum Command {
@@ -37,6 +38,13 @@ pub enum Command {
         panel: String,
         axis: MirrorAxis,
         copy_side: Option<i8>,
+    },
+    LinkedMirror {
+        panel: String,
+        axis: MirrorAxis,
+    },
+    UnlinkMirror {
+        panel: String,
     },
     Boolean {
         a: String,
@@ -92,6 +100,12 @@ pub enum Command {
         points: Vec<usize>,
         delta: DVec2,
     },
+    /// Move contour selections on several panels by one board-space delta.
+    /// Panel presentation rotations are inverted independently; compilation is atomic.
+    MovePointGroups {
+        groups: Vec<(String, Vec<usize>)>,
+        board_delta: DVec2,
+    },
     /// Move contour points by an exact metric step given in millimetres.
     Nudge {
         panel: String,
@@ -138,6 +152,9 @@ pub enum Command {
     },
     RemovePanel {
         panel: String,
+    },
+    RemovePanels {
+        panels: Vec<String>,
     },
     Sew {
         a: BoundaryRef,
@@ -223,6 +240,7 @@ pub fn layout(template: &GarmentTemplate, index: usize) -> DVec2 {
 pub fn same_physics(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
     let without_layout = |t: &GarmentTemplate| {
         let mut t = t.clone();
+        t.mirror_links.clear();
         for p in &mut t.panels {
             p.layout_2d = None;
             p.layout_rotation_degrees = 0.;
@@ -485,10 +503,28 @@ fn seam_uses(template: &GarmentTemplate, panel: &str, edge: &str) -> bool {
 
 /// An error leaves the input byte-for-byte unchanged; no partial edit is visible.
 pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String> {
+    linked::check_command(source, &command)?;
     let mut template = source.clone();
     let mut selected = None;
     let mut new_point = None;
     match command {
+        Command::LinkedMirror { panel, axis } => {
+            let copy = geometry::mirror(&mut template, &panel, axis, Some(1))?;
+            template
+                .mirror_links
+                .push(crate::garment::template::MirrorLink {
+                    a: panel,
+                    b: copy.clone(),
+                    axis,
+                });
+            selected = Some(copy);
+        }
+        Command::UnlinkMirror { panel } => {
+            template
+                .mirror_links
+                .retain(|l| l.a != panel && l.b != panel);
+            selected = Some(panel);
+        }
         Command::Paste { clipboard, center } => {
             selected = clipboard.paste(&mut template, center)?.first().cloned();
         }
@@ -551,11 +587,11 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .panels
                 .iter_mut()
                 .find(|p| p.id == panel)
-                .ok_or("Panneau absent")?;
+                .ok_or("Panel not found")?;
             let poly = p
                 .polygon
                 .as_mut()
-                .ok_or("Les lignes demandent un panneau v2")?;
+                .ok_or("Internal lines require a v2 polygonal panel")?;
             let id = unused_id("line", poly.paths()?.into_iter().map(|(name, _)| name));
             poly.lines.push(crate::garment::domain::InternalLine {
                 id,
@@ -569,16 +605,19 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 s.references()
                     .any(|r| r.panel == panel && r.edge.as_ref() == Some(&line))
             }) {
-                return Err("Supprimer la couture avant de supprimer sa ligne intérieure".into());
+                return Err("Remove the seam before deleting its internal line".into());
             }
             let p = template
                 .panels
                 .iter_mut()
                 .find(|p| p.id == panel)
-                .ok_or("Panneau absent")?;
-            let poly = p.polygon.as_mut().ok_or("Panneau v2 requis")?;
+                .ok_or("Panel not found")?;
+            let poly = p
+                .polygon
+                .as_mut()
+                .ok_or("A v2 polygonal panel is required")?;
             if !poly.lines.iter().any(|l| l.id == line) {
-                return Err("Ligne absente".into());
+                return Err("Internal line not found".into());
             }
             poly.lines.retain(|l| l.id != line);
             selected = Some(panel);
@@ -827,6 +866,38 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             remap_anchors(p, &points, |point| point + delta)?;
             normalize(p);
             selected = Some(panel);
+        }
+        Command::MovePointGroups {
+            groups,
+            board_delta,
+        } => {
+            if !board_delta.is_finite() || groups.is_empty() {
+                return Err("Select points and use a finite move delta".into());
+            }
+            // Freeze derived board origins before any panel changes its extent.
+            let origins: Vec<_> = (0..source.panels.len())
+                .map(|i| layout(source, i))
+                .collect();
+            for (p, origin) in template.panels.iter_mut().zip(origins) {
+                p.layout_2d = Some(origin);
+            }
+            let mut seen = std::collections::BTreeSet::new();
+            for (id, points) in groups {
+                if !seen.insert(id.clone()) {
+                    return Err("A panel may occur only once in a point move".into());
+                }
+                let index = template
+                    .panels
+                    .iter()
+                    .position(|p| p.id == id)
+                    .ok_or("Panel not found")?;
+                let origin = layout(&template, index);
+                let p = &mut template.panels[index];
+                p.layout_2d = Some(origin);
+                let delta = rotate_2d(board_delta, -p.layout_rotation_degrees);
+                remap_anchors(p, &points, |point| point + delta)?;
+                normalize(p);
+            }
         }
         Command::Nudge {
             panel,
@@ -1135,6 +1206,23 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
                 .seams
                 .retain(|s| s.references().all(|r| r.panel != panel));
         }
+        Command::RemovePanels { panels } => {
+            let ids: std::collections::BTreeSet<_> = panels.into_iter().collect();
+            if ids.is_empty()
+                || ids
+                    .iter()
+                    .any(|id| !template.panels.iter().any(|p| &p.id == id))
+            {
+                return Err("Select existing panels to delete".into());
+            }
+            if ids.len() >= template.panels.len() {
+                return Err("Keep at least one panel".into());
+            }
+            template.panels.retain(|p| !ids.contains(&p.id));
+            template
+                .seams
+                .retain(|s| s.references().all(|r| !ids.contains(&r.panel)));
+        }
         Command::Sew {
             a,
             b,
@@ -1198,6 +1286,7 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             template.seams.retain(|s| s.id != seam);
         }
     }
+    linked::synchronize(source, &mut template)?;
     let garment = template.compile()?;
     Ok(Edit {
         reset_simulation: !same_physics(source, &template),

@@ -13,6 +13,38 @@ fn settings(r: f64) -> OgcSettings {
         ..Default::default()
     }
 }
+
+#[test]
+fn flattened_neighbor_face_restricts_motion_without_an_active_contact_force() {
+    // Public reproduction of an apparent pin: one nearly collapsed triangle
+    // adjacent to an ordinary one. No avatar, seams, pins or private geometry.
+    let height = 3e-6;
+    let x = vec![
+        DVec3::new(-0.01, 0., 0.),
+        DVec3::new(0.01, 0., 0.),
+        DVec3::new(0., height, 0.),
+        DVec3::new(0., -0.01, 0.),
+    ];
+    let triangles = vec![[0, 1, 2], [1, 0, 3]];
+    let mut world = OgcWorld::new(&x, triangles, x.len(), []).unwrap();
+    world.validate_start(&x).unwrap();
+    let config = settings(0.003);
+    let c = world.detect(&x, 0.006, &config).unwrap();
+    assert_eq!(c.active_contacts, 0);
+    assert!((c.minimum_distance - height).abs() < 1e-14);
+    for r in &c.radii {
+        assert!((*r - config.relaxation * height).abs() < 1e-14);
+    }
+    // Collective translation is geometrically safe but exceeds independent
+    // isotropic balls. This is evidence of conservatism, not authorization to
+    // remove these pairs from collision bounds.
+    let shift = DVec3::Z * 0.001;
+    let moved: Vec<_> = x.iter().map(|p| *p + shift).collect();
+    world.validate_start(&moved).unwrap();
+    let after = world.detect(&moved, 0.006, &config).unwrap();
+    assert_eq!(c.radii, after.radii);
+    assert!(c.truncate(2, moved[2]).1);
+}
 #[test]
 fn two_stage_potential_is_c2_at_join_and_has_barrier() {
     let r = 0.01;

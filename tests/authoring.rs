@@ -121,7 +121,7 @@ fn rigid_gizmo_preserves_pivot_rest_mass_and_triangle_lengths() {
 }
 
 #[test]
-fn seams_survive_remaillage_and_panel_deletion_removes_references() {
+fn seams_survive_remeshing_and_panel_deletion_removes_references() {
     let t = fixture();
     let mut t = authoring::apply(
         &t,

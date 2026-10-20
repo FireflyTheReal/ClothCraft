@@ -1,5 +1,7 @@
 # Primitives, mirrors, booleans and internal sewing
 
+19 October update: [panel tools](panel-tools.md) adds linked mirror pairs, automatic internal-line ownership and a 2D ruler. The independent copy operations described below remain independent. Partial and chained sewing are also now available; see [documents and sewing](documents-and-sewing.md).
+
 Implemented on 2026-10-15. CPU authoring operations, independent of the physical backend. They compile and validate the complete result before committing; failed edits leave the document intact. Every successful edit is undoable. Native window interaction and GPU draping of these new cases still need an explicitly scheduled validation pass.
 
 ## Use the tools
@@ -7,11 +9,11 @@ Implemented on 2026-10-15. CPU authoring operations, independent of the physical
 - **Shapes** in the toolbar creates a rectangle, circle/ellipse or arc sector at the board center. Enter dimensions in mm; **Circle: H = W** makes a circle. An arc is a closed fabric sector, with two radial edges. Its dimensions describe the supporting ellipse. Arcs are cubic approximations, flattened with the existing 0.25 mm tolerance.
 - Select a piece, open **Mirrors and booleans**. **Mirror X/Y** reflects material geometry in place. **−X/+X/−Y/+Y** creates an independent mirrored copy beside it. Axes refer to local 2D coordinates; board rotation is respected. Copies do not copy sewing relationships to other pieces. These are not linked instances.
 - For **Union**, **A − B** or **Intersection**, overlap two pieces on the 2D board. Select A, choose B in the inspector, then the operation. **Keep B** retains the cutter. Results inherit A's fabric, grain, meshing and 3D frame. Islands become separate panels; cutouts become real holes. Both inputs must have no seams, pins, internal lines or target lengths: edits never silently discard those references. Empty/invalid results are rejected. Curves become sampled straight boundaries with new names.
-- Select a piece, choose **Ligne intérieure**, click anchors and click-drag for symmetric Bézier tangents. **Finish line** or Enter commits an open sewing path. Backspace removes an anchor; Escape cancels. Stay strictly inside material. In **Edit**, select the line and drag anchors/handles; **Smooth tangents** provides handles on a straight line. Changing its length can be rejected if an equal-length seam would become invalid.
+- Select a piece, choose **Internal line**, click anchors and click-drag for symmetric Bézier tangents. **Finish line** or Enter commits an open sewing path. Backspace removes an anchor; Escape cancels. Stay strictly inside material. In **Edit**, select the line and drag anchors/handles; **Smooth tangents** provides handles on a straight line. Changing its length can be rejected if an equal-length seam would become invalid.
 - **Sew** pairs that line with another piece's boundary in 2D or 3D. Alternatively select the line and **Create and sew a ruffle**: width in mm, length ratio 1–4. A ratio of 1.5 creates a strip 50% longer than the receiving line with explicit ease. Adjust its initial 3D placement before simulation, especially along a curve. This is gathered material with a finite seam penalty, not guaranteed folds or collision-free placement.
 - **Delete line** removes an unsewn line. Remove its seam first if needed; Ctrl+Z restores edits.
 
-Still missing: partial/1:N sewing, offsets, intersecting/joined paths, darts, allowances, linked symmetry and automatic ruffle arrangement. Internal lines add no fold/crease energy. Hole rims can be selected/sewn; dedicated hole point editing is absent.
+Still missing: offsets, intersecting/joined paths, darts, allowances, symmetry within one panel and automatic ruffle arrangement. Partial/chain sewing and paired linked mirrors are now implemented. Internal lines add no fold/crease energy. Hole rims can be selected/sewn; dedicated hole point editing is absent.
 
 ## Persistent model
 

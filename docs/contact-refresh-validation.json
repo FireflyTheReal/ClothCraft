@@ -1,0 +1,32 @@
+{
+  "accepted_steps": 6,
+  "failure": null,
+  "final_intersection_check": {
+    "Ok": null
+  },
+  "state_matches_control": true,
+  "refresh_delta_j": 0.0882824208736619,
+  "dominant_kind": "PointFace",
+  "dominant_delta_j": 0.08828207024783091,
+  "cpu_only": true,
+  "production_force_law_changed": false,
+  "synthetic-face": {
+    "samples": 65,
+    "bounds_identical": true,
+    "first_active_alpha": 0.515625,
+    "first_active_energy_j": 0.5658531796220095,
+    "first_active_gradient_norm_n": 1377.8379795979138,
+    "initial_feature_feasible": false
+  },
+  "dress-face": {
+    "samples": 65,
+    "bounds_identical": true,
+    "first_active_alpha": 0.71875,
+    "first_active_energy_j": 0.09178757473716877,
+    "first_active_gradient_norm_n": 175.40634125789097,
+    "initial_feature_feasible": false
+  },
+  "focused_tests_passed": 30,
+  "cpu_all_target_clippy": "pass",
+  "desktop_all_target_check": "pass"
+}

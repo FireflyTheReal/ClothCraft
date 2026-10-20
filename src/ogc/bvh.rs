@@ -48,6 +48,19 @@ struct Node {
     start: usize,
     end: usize,
     dynamic: bool,
+    escape: usize,
+}
+/// Read-only topology and boxes from the last CPU refit.
+/// Accelerators must refit moving boxes from the current query positions.
+#[derive(Clone, Copy)]
+pub struct NodeView {
+    pub bounds: Bounds,
+    pub children: Option<[usize; 2]>,
+    pub start: usize,
+    pub end: usize,
+    pub dynamic: bool,
+    /// First preorder node after this subtree, possibly nodes.len().
+    pub escape: usize,
 }
 #[derive(Clone, Debug, Default)]
 pub struct Bvh {
@@ -58,6 +71,22 @@ pub struct Bvh {
     dynamic_nodes: usize,
 }
 impl Bvh {
+    pub fn nodes(&self) -> impl ExactSizeIterator<Item = NodeView> + '_ {
+        self.nodes.iter().map(|n| NodeView {
+            bounds: n.bounds,
+            children: n.children,
+            start: n.start,
+            end: n.end,
+            dynamic: n.dynamic,
+            escape: n.escape,
+        })
+    }
+    pub fn roots(&self) -> &[usize] {
+        &self.roots
+    }
+    pub fn dynamic_node_count(&self) -> usize {
+        self.dynamic_nodes
+    }
     /// Current primitive box, updated by each refit (including cache reuse).
     pub(super) fn primitive_bounds(&self, id: usize) -> Bounds {
         self.primitive_bounds[id]
@@ -99,6 +128,7 @@ impl Bvh {
             start,
             end,
             dynamic: self.order[start..end].iter().any(|i| dynamic[*i]),
+            escape: id + 1,
         });
         if end - start > 8 {
             let d = box_.max - box_.min;
@@ -118,6 +148,7 @@ impl Bvh {
             let b = self.build(bounds, dynamic, mid, end);
             self.nodes[id].children = Some([a, b]);
         }
+        self.nodes[id].escape = self.nodes.len();
         id
     }
     pub fn refit(&mut self, bounds: &[Bounds]) {
@@ -195,7 +226,46 @@ impl Bvh {
     pub fn self_pairs(&self, radius: f64, visit: impl FnMut(usize, usize)) {
         self.pairs(self, radius, true, visit);
     }
+    pub(super) fn leaf_ids(&self, node: usize) -> &[usize] {
+        let n = &self.nodes[node];
+        &self.order[n.start..n.end]
+    }
+    pub fn primitive_order(&self) -> &[usize] {
+        &self.order
+    }
+    pub(super) fn leaf_bounds(&self, node: usize) -> Bounds {
+        self.nodes[node].bounds
+    }
+    pub(super) fn leaf_pairs(&self, other: &Self, radius: f64, same: bool) -> Vec<[usize; 2]> {
+        let mut pairs = Vec::new();
+        self.visit_leaf_pairs(other, radius, same, |a, b| pairs.push([a, b]));
+        pairs
+    }
     fn pairs(&self, other: &Self, radius: f64, same: bool, mut visit: impl FnMut(usize, usize)) {
+        self.visit_leaf_pairs(other, radius, same, |a, b| {
+            for (offset, &i) in self.leaf_ids(a).iter().enumerate() {
+                let start = if same && a == b { offset + 1 } else { 0 };
+                for &j in &other.leaf_ids(b)[start..] {
+                    if self.primitive_bounds[i].distance_squared(other.primitive_bounds[j])
+                        <= radius * radius
+                    {
+                        if same {
+                            visit(i.min(j), i.max(j));
+                        } else {
+                            visit(i, j);
+                        }
+                    }
+                }
+            }
+        });
+    }
+    fn visit_leaf_pairs(
+        &self,
+        other: &Self,
+        radius: f64,
+        same: bool,
+        mut visit: impl FnMut(usize, usize),
+    ) {
         let mut stack = Vec::with_capacity(128);
         for (i, a) in self.roots.iter().enumerate() {
             for b in other.roots.iter().skip(if same { i } else { 0 }) {
@@ -224,20 +294,7 @@ impl Bvh {
                 stack.extend(children.map(|c| (a, c)));
                 continue;
             }
-            for (offset, i) in self.order[na.start..na.end].iter().enumerate() {
-                let start = nb.start + if same && a == b { offset + 1 } else { 0 };
-                for j in &other.order[start..nb.end] {
-                    if self.primitive_bounds[*i].distance_squared(other.primitive_bounds[*j])
-                        <= radius2
-                    {
-                        if same {
-                            visit((*i).min(*j), (*i).max(*j));
-                        } else {
-                            visit(*i, *j);
-                        }
-                    }
-                }
-            }
+            visit(a, b);
         }
     }
 }

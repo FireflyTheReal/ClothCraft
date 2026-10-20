@@ -136,6 +136,34 @@ fn partitioned_bvh_matches_exhaustive_queries_after_large_deformations() {
                 bvh.query(q, only_moving, |i| actual.push(i));
                 actual.sort_unstable();
                 assert_eq!(actual, expected);
+                let nodes: Vec<_> = bvh.nodes().collect();
+                let mut threaded = Vec::new();
+                for &root in bvh.roots() {
+                    let end = nodes[root].escape;
+                    let mut index = root;
+                    while index < end {
+                        let node = nodes[index];
+                        assert!(node.escape > index && node.escape <= end);
+                        if (only_moving && !node.dynamic) || !node.bounds.overlaps(q) {
+                            index = node.escape;
+                        } else if let Some(children) = node.children {
+                            assert_eq!(children[0], index + 1);
+                            index += 1;
+                        } else {
+                            for &id in &bvh.primitive_order()[node.start..node.end] {
+                                if boxes[id].overlaps(q) {
+                                    threaded.push(id);
+                                }
+                            }
+                            index = node.escape;
+                        }
+                    }
+                }
+                threaded.sort_unstable();
+                assert_eq!(
+                    threaded, expected,
+                    "stackless traversal must match exhaustive queries"
+                );
             }
         }
     }

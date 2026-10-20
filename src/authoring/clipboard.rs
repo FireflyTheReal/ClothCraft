@@ -21,6 +21,9 @@ impl PatternClipboard {
             return Err("Select between 1 and 64 panels to copy".into());
         }
         let mut template = source.clone();
+        template
+            .mirror_links
+            .retain(|l| ids.contains(&l.a) && ids.contains(&l.b));
         template.panels = source
             .panels
             .iter()
@@ -173,6 +176,15 @@ impl PatternClipboard {
                 r.panel = panels[&r.panel].clone();
             }
             target.seams.push(copy);
+        }
+        for link in &self.template.mirror_links {
+            target
+                .mirror_links
+                .push(crate::garment::template::MirrorLink {
+                    a: panels[&link.a].clone(),
+                    b: panels[&link.b].clone(),
+                    axis: link.axis,
+                });
         }
         if target.panels.iter().any(|p| p.polygon.is_some()) {
             target.version = 2;

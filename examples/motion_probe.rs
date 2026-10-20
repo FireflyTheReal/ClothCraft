@@ -18,12 +18,12 @@ struct Args {
     output: PathBuf,
     #[arg(long, default_value_t = 180)]
     steps: usize,
-    #[arg(long, default_value_t = 16)]
-    iterations: usize,
-    #[arg(long, default_value_t = 1. / 60.)]
-    dt: f64,
-    #[arg(long, default_value_t = 1.5)]
-    damping: f64,
+    #[arg(long)]
+    iterations: Option<usize>,
+    #[arg(long)]
+    dt: Option<f64>,
+    #[arg(long)]
+    damping: Option<f64>,
     /// Explicit hardware opt-in; default remains CPU.
     #[arg(long)]
     gpu: bool,
@@ -40,12 +40,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(&scene.collider.surface),
         &scene.state,
     )?;
-    let settings = VbdSettings {
-        dt: args.dt,
-        iterations: args.iterations,
-        damping: args.damping,
+    let mut settings = project.simulation.clone().unwrap_or(VbdSettings {
+        dt: 1. / 60.,
         ..Default::default()
-    };
+    });
+    if let Some(v) = args.iterations {
+        settings.iterations = v;
+    }
+    if let Some(v) = args.dt {
+        settings.dt = v;
+    }
+    if let Some(v) = args.damping {
+        settings.damping = v;
+    }
     settings.validate()?;
     #[cfg(not(feature = "desktop"))]
     if args.gpu {
@@ -64,7 +71,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         eprintln!("{:?}", adapter.get_info());
         let (device, queue) =
-            pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default()))?;
+            pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor {
+                required_features: adapter.features()
+                    & (wgpu::Features::TIMESTAMP_QUERY | wgpu::Features::SUBGROUP),
+                ..Default::default()
+            }))?;
         Some(marvelous_cloth::gpu_vbd::GpuVbd::new(device, queue))
     } else {
         None
@@ -95,6 +106,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     trace.flush()?;
     metrics.flush()?;
+    project.simulation = Some(settings.clone());
     project.state = Some(scene.state);
     project.save(&args.output.join("fitting-project.json"))?;
     fs::write(

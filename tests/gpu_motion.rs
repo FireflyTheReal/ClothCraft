@@ -150,8 +150,9 @@ fn gpu_dense_free_panel_falls_and_rebuilds_after_topology_growth() {
     let (device, queue) =
         pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).unwrap();
     let gpu = GpuVbd::new(device, queue);
-    // Reuse the same GPU allocations across an actual change in topology.
-    for (nx, ny) in [(6, 4), (20, 12)] {
+    // Reuse allocations across growth AND shrinkage; stale resident tails must
+    // not change the acceleration of the new free panel.
+    for (nx, ny) in [(6, 4), (20, 12), (3, 2)] {
         let mut t = GarmentTemplate::two_panel_demo();
         t.panels.truncate(1);
         t.seams.clear();
@@ -204,4 +205,62 @@ fn gpu_dense_free_panel_falls_and_rebuilds_after_topology_growth() {
             assert!(p.distance(before.x[i]) <= contacts.radii[i] + 1e-8);
         }
     }
+}
+
+#[test]
+#[ignore = "uses a hardware GPU; run explicitly with --ignored"]
+fn supported_piece_does_not_delay_an_unrelated_free_fall() {
+    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
+    let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
+        power_preference: wgpu::PowerPreference::HighPerformance,
+        ..Default::default()
+    }))
+    .unwrap();
+    assert_ne!(adapter.get_info().device_type, wgpu::DeviceType::Cpu);
+    let (device, queue) =
+        pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).unwrap();
+    let mut gpu = GpuVbd::new(device, queue);
+    gpu.check_gradients = true;
+    let mut t = GarmentTemplate::two_panel_demo();
+    for (i, p) in t.panels.iter_mut().enumerate() {
+        p.pins.clear();
+        p.pattern = marvelous_cloth::model::Pattern {
+            width: 0.12,
+            height: 0.12,
+            nx: 3,
+            ny: 3,
+        };
+        p.placement.rotation_degrees = DVec3::new(90., 0., 0.);
+        p.placement.translation = if i == 0 {
+            DVec3::new(-0.06, 0.00305, 0.06)
+        } else {
+            DVec3::new(2., 1., 0.06)
+        };
+    }
+    t.seams.clear();
+    let g = Arc::new(t.compile().unwrap());
+    let mut state = g.initial_state.clone();
+    let old = state.clone();
+    let (_, floor) = common::resting_patch(DVec3::ZERO);
+    let mut solver = VbdSolver::new(g.clone(), Some(&floor), &state).unwrap();
+    let settings = VbdSettings {
+        dt: 1. / 60.,
+        ..Default::default()
+    };
+    gpu.step(&mut solver, &mut state, &settings, None).unwrap();
+    assert_eq!(state.time, settings.dt);
+    let fall = settings.gravity * settings.dt.powi(2) / (1. + settings.damping * settings.dt);
+    for v in g.panels[1].vertices.clone() {
+        assert!(
+            (state.x[v] - old.x[v] - fall).length() < 2e-5,
+            "Free piece must keep falling beside a piece supported by contact"
+        );
+    }
+    assert!(
+        state
+            .x
+            .iter()
+            .zip(&old.x)
+            .any(|(a, b)| a.distance(*b) > 1e-9)
+    );
 }

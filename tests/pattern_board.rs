@@ -216,3 +216,160 @@ fn moving_anchor_can_rebase_local_uv_without_moving_untouched_world_points() {
     );
     assert!(edit.reset_simulation);
 }
+
+#[test]
+fn multi_panel_point_move_uses_one_board_delta_and_one_undo() {
+    let mut t = drawing();
+    let id = t.panels[0].id.clone();
+    t = authoring::apply(&t, Command::Duplicate { panel: id.clone() })
+        .unwrap()
+        .template;
+    t.panels[1].layout_rotation_degrees = 90.;
+    let other = t.panels[1].id.clone();
+    let position = |t: &marvelous_cloth::garment::GarmentTemplate, i, k| {
+        let p = &t.panels[i];
+        authoring::layout(t, i)
+            + authoring::rotate_2d(
+                p.polygon.as_ref().unwrap().points[k],
+                p.layout_rotation_degrees,
+            )
+    };
+    let before: Vec<_> = (0..2)
+        .map(|i| (0..4).map(|k| position(&t, i, k)).collect::<Vec<_>>())
+        .collect();
+    let delta = DVec2::new(0.008, 0.004);
+    let edit = authoring::apply(
+        &t,
+        Command::MovePointGroups {
+            groups: vec![(id, vec![1, 1]), (other, vec![2])],
+            board_delta: delta,
+        },
+    )
+    .unwrap();
+    for (i, points) in before.iter().enumerate() {
+        for (k, old) in points.iter().enumerate() {
+            let expected = *old
+                + if (i == 0 && k == 1) || (i == 1 && k == 2) {
+                    delta
+                } else {
+                    DVec2::ZERO
+                };
+            assert!(position(&edit.template, i, k).distance(expected) < 1e-12);
+        }
+    }
+    let mut history = authoring::History::default();
+    history.record(t.clone());
+    let restored = history.restore(&edit.template, false).unwrap();
+    assert_eq!(
+        serde_json::to_value(restored.template).unwrap(),
+        serde_json::to_value(&t).unwrap()
+    );
+    assert!(!history.can_undo());
+}
+
+#[test]
+fn multi_panel_edits_fail_atomically_and_remove_owned_seams() {
+    let t = drawing();
+    let t = authoring::apply(
+        &t,
+        Command::Duplicate {
+            panel: t.panels[0].id.clone(),
+        },
+    )
+    .unwrap()
+    .template;
+    let original = serde_json::to_value(&t).unwrap();
+    assert!(
+        authoring::apply(
+            &t,
+            Command::MovePointGroups {
+                groups: vec![
+                    (t.panels[0].id.clone(), vec![1]),
+                    (t.panels[1].id.clone(), vec![99])
+                ],
+                board_delta: DVec2::splat(0.001),
+            }
+        )
+        .is_err()
+    );
+    assert_eq!(serde_json::to_value(&t).unwrap(), original);
+    assert!(
+        authoring::apply(
+            &t,
+            Command::RemovePanels {
+                panels: t.panels.iter().map(|p| p.id.clone()).collect()
+            }
+        )
+        .is_err()
+    );
+    let source = presets::basic(GarmentKind::Tshirt, 0);
+    let source = authoring::apply(
+        &source,
+        Command::Duplicate {
+            panel: source.panels[0].id.clone(),
+        },
+    )
+    .unwrap()
+    .template;
+    let ids = source
+        .panels
+        .iter()
+        .take(2)
+        .map(|p| p.id.clone())
+        .collect::<Vec<_>>();
+    let edit = authoring::apply(
+        &source,
+        Command::RemovePanels {
+            panels: ids.clone(),
+        },
+    )
+    .unwrap();
+    assert_eq!(edit.template.panels.len(), source.panels.len() - 2);
+    assert!(
+        edit.template
+            .seams
+            .iter()
+            .all(|s| s.references().all(|r| !ids.contains(&r.panel)))
+    );
+}
+
+#[test]
+fn group_move_preserves_linked_mirror_contract() {
+    use marvelous_cloth::garment::shapes::MirrorAxis;
+    let t = drawing();
+    let id = t.panels[0].id.clone();
+    let t = authoring::apply(
+        &t,
+        Command::LinkedMirror {
+            panel: id.clone(),
+            axis: MirrorAxis::X,
+        },
+    )
+    .unwrap()
+    .template;
+    let partner = t.panels[1].id.clone();
+    let changed = authoring::apply(
+        &t,
+        Command::MovePointGroups {
+            groups: vec![(id.clone(), vec![1])],
+            board_delta: DVec2::new(0.005, 0.),
+        },
+    )
+    .unwrap();
+    assert_ne!(
+        serde_json::to_value(&t.panels[1].polygon).unwrap(),
+        serde_json::to_value(&changed.template.panels[1].polygon).unwrap()
+    );
+    let original = serde_json::to_value(&t).unwrap();
+    let error = authoring::apply(
+        &t,
+        Command::MovePointGroups {
+            groups: vec![(id, vec![1]), (partner, vec![1])],
+            board_delta: DVec2::new(0.005, 0.),
+        },
+    )
+    .err()
+    .unwrap();
+    assert!(error.contains("one member"));
+    assert_eq!(serde_json::to_value(&t).unwrap(), original);
+}

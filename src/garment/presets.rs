@@ -156,6 +156,7 @@ pub fn basic(kind: GarmentKind, subdivisions: u32) -> GarmentTemplate {
         .collect();
     GarmentTemplate {
         format: "marvelous-cloth-template".into(),
+        mirror_links: vec![],
         version: 2,
         name: format!("{} / MakeHuman 1.75 m engineering fixture", kind.name()),
         fabrics: vec![Fabric {

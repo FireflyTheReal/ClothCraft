@@ -1,8 +1,8 @@
-# Templates de couture v1 et v2
+# Sewing templates v1 and v2
 
-Les règles rectangulaires v1 ci-dessous restent compatibles. Le v2 ajoute les contours polygonaux, noms de segments et paramètres de Delaunay : voir [meshing.md](meshing.md) et [first-fit.md](first-fit.md). Les coutures utilisent la même formulation intégrée dans les deux versions.
+The rectangular v1 rules below remain compatible. v2 adds polygon contours, segment names and Delaunay settings: see [meshing.md](meshing.md) and [first-fit.md](first-fit.md). Both versions use the same integrated sewing formulation. Later ordered-chain extensions are documented in [documents-and-sewing.md](documents-and-sewing.md).
 
-Exemples exécutables : [two-panel.json](../examples/templates/two-panel.json) et [local-ease.json](../examples/templates/local-ease.json). Les types Rust avec `deny_unknown_fields` sont la définition normative actuelle ; le compilateur complète la désérialisation par la validation géométrique et des références.
+Runnable examples: [two-panel.json](../examples/templates/two-panel.json) and [local-ease.json](../examples/templates/local-ease.json). Rust types with `deny_unknown_fields` are the current normative definition; compilation supplements deserialization with geometry/reference validation.
 
 ```powershell
 cargo run --locked --no-default-features -j 2 --bin cloth-template -- validate examples/templates/two-panel.json
@@ -10,21 +10,21 @@ cargo run --locked --no-default-features -j 2 --bin cloth-template -- bake examp
 cargo run --locked --release --no-default-features -j 2 --bin cloth-template -- simulate examples/templates/two-panel.json --steps 30 --threads 2 --output output/template-simulation
 ```
 
-`example chemin.json` crée un exemple en refusant d'écraser un fichier. `bake` et `simulate` remplacent leurs artefacts à noms fixes dans le dossier de sortie. `simulate` renvoie un code d'échec si un pas n'a pas convergé ; les métriques et l'état final restent enregistrés pour diagnostic. Aucun de ces modes ne crée de fenêtre.
+`example path.json` creates an example and refuses to overwrite a file. `bake` and `simulate` replace fixed-name artifacts in their output directory. `simulate` returns failure if a step did not converge; metrics and final state remain available for diagnosis. None of these modes opens a window.
 
-## Panneaux et matières
+## Panels and fabrics
 
-La racine contient `format: "marvelous-cloth-template"`, `version: 1`, `name`, `fabrics`, `panels`, `seams`. Les IDs sont uniques dans chaque famille, ASCII alphanumériques ou `_`/`-`, de 1 à 80 caractères. Limites actuelles : 1..128 panneaux, au plus 512 coutures. Un tissu doit exister pour chaque référence `fabric`.
+The root contains `format: "marvelous-cloth-template"`, `version: 1`, `name`, `fabrics`, `panels`, `seams`. IDs are unique within each family: 1–80 ASCII alphanumeric, `_` or `-` characters. Current limits: 1–128 panels and at most 512 seams. Every `fabric` reference must resolve.
 
-Chaque panneau fournit un rectangle `pattern` (`width`, `height` en mètres, `nx`, `ny` en cellules), un tissu `fabric`, `grain_degrees`, un `placement` et éventuellement des `pins` (`top_left`, `top_right`, `bottom_right`, `bottom_left`). Dimensions : 0,01..100 m ; résolution : 1..128 cellules par axe. Modifier la résolution ne change pas la définition des coutures.
+Each panel supplies a rectangular `pattern` (`width`, `height` in metres; `nx`, `ny` cells), `fabric`, `grain_degrees`, `placement` and optional `pins` (`top_left`, `top_right`, `bottom_right`, `bottom_left`). Dimensions: 0.01–100 m; resolution: 1–128 cells per axis. Resolution changes do not change seam definitions.
 
-Dans le patron, u va à droite et v vers le bas. Le grain à 0° correspond à +u, à 90° à +v ; la trame est perpendiculaire. Le placement transforme `(u,-v,0)` par `R = Rx Ry Rz`, puis ajoute `translation`. Les angles sont en degrés, avec vecteurs colonnes. Les pins se placent aux coins transformés.
+In pattern space, u points right and v down. Grain 0° corresponds to +u, 90° to +v; weft is perpendicular. Placement transforms `(u,-v,0)` with `R = Rx Ry Rz`, then adds `translation`. Angles are degrees, using column vectors. Pins lie at transformed corners.
 
-`FabricProperties` contient `warp`, `weft`, `shear` (N/m), `bend_warp`, `bend_weft` (N·m), `density` (kg/m²), `thickness` (m), `compression_ratio` (0..1) et `compression_transition` (déformation de Green). Les valeurs de l'exemple sont non calibrées. Le droit-fil ne fait pas partie des propriétés partagées du tissu.
+`FabricProperties` contains `warp`, `weft`, `shear` (N/m), `bend_warp`, `bend_weft` (N·m), `density` (kg/m²), `thickness` (m), `compression_ratio` (0..1) and `compression_transition` (Green strain). Example parameters are uncalibrated. Grain is not a shared fabric property.
 
-## Bords et coutures
+## Boundaries and seams
 
-Les bords suivent le contour dans cet ordre : `top` gauche → droite ; `right` haut → bas ; `bottom` droite → gauche ; `left` bas → haut. `range: [a,b]` est un intervalle de longueur au repos normalisée, avec `0 <= a < b <= 1`. Son extension doit être d'au moins 1e-9. Il ne s'agit pas d'indices de sommets.
+Boundaries follow the contour: `top` left→right; `right` top→bottom; `bottom` right→left; `left` bottom→top. `range: [a,b]` is a normalized rest-arclength interval, `0 <= a < b <= 1`, with extent at least 1e-9. These are not vertex indices.
 
 ```json
 {
@@ -38,13 +38,13 @@ Les bords suivent le contour dans cet ordre : `top` gauche → droite ; `right` 
 }
 ```
 
-Après restriction aux intervalles, `reverse_b` inverse la direction de B. Chaque paire de crans `notches: [[s,t],...]` décrit la correspondance entre A et B dans ces coordonnées locales, **après** inversion de B. Les extrémités `(0,0)` et `(1,1)` sont implicites ; les crans intérieurs doivent croître strictement dans les deux composantes. La correspondance `t = phi(s)` est linéaire par morceaux.
+After trimming the intervals, `reverse_b` reverses B. Each `notches: [[s,t],...]` pair maps A to B in these local coordinates, **after** B reversal. Endpoints `(0,0)` and `(1,1)` are implicit; interior notches must increase strictly in both components. The correspondence `t = phi(s)` is piecewise linear.
 
-L'exemple `[0.4,0.6]` répartit des longueurs différentes de part et d'autre du cran. Les longueurs globales ou locales différentes sont refusées sans `allow_ease: true`. Ce drapeau autorise la correspondance et émet un avertissement ; il ne redimensionne pas le repos et ne génère pas de fronces physiques. Il ne représente pas non plus l'aisance vêtement-corps du travail EASE.
+For example, `[0.4,0.6]` distributes unequal lengths around the notch. Unequal global/local lengths require `allow_ease: true`. This flag permits the correspondence and emits a warning; it does not resize rest geometry or generate a physical gather construction. It also does not represent body/garment ease from the EASE research.
 
-## Énergie de couture
+## Sewing energy
 
-Pour les longueurs restreintes LA et LB :
+For trimmed lengths LA and LB:
 
 ```text
 g(s) = xA(s) - xB(phi(s))
@@ -52,24 +52,24 @@ dmu = (LA ds + LB dphi)/2
 E = k/2 integral |g(s)|² dmu
 ```
 
-`k = stiffness` est en N/m². La mesure moyenne traite les deux côtés symétriquement ; à longueurs identiques et correspondance uniforme, elle redevient la longueur du bord. La partition combine sommets des deux bords et crans. Deux points de Gauss par intervalle intègrent exactement l'énergie quadratique du raccord linéaire. La raideur totale ne croît donc pas artificiellement avec le nombre de sommets.
+`k = stiffness` is N/m². The average measure treats both sides symmetrically; at equal lengths with uniform correspondence, it becomes boundary length. The partition combines both boundaries' vertices and notches. Two Gauss points per interval exactly integrate the quadratic energy of the linear connection. Total stiffness therefore does not artificially grow with vertex count.
 
-Un échantillon a `g = sum(c_i x_i)` ; les indices répétés sont fusionnés et `sum(c_i)=0`. Gradient : `k w c_i g`. Hessienne : `k w c_i c_j I`, positive semi-définie. L'énergie est objective, les forces et couples internes s'équilibrent. Il s'agit d'une pénalité de raccord, pas d'une contrainte dure, d'un multiplicateur de Lagrange ou de points de fil explicites.
+A sample has `g = sum(c_i x_i)`; repeated indices merge and `sum(c_i)=0`. Gradient: `k w c_i g`. Hessian: `k w c_i c_j I`, positive semidefinite. Energy is objective; internal forces and torques balance. This is a connection penalty, not a hard constraint, Lagrange multiplier or explicit yarn stitches.
 
-Le maximum d'ouverture est évalué à toutes les extrémités de la partition : la norme d'un écart linéaire y atteint son maximum. Le RMS est intégré avec la même mesure que l'énergie. Les tolérances de comparaison des longueurs sont relatives à 1e-8 ; elles ne constituent pas une tolérance manufacturière.
+Maximum gap is evaluated at all partition endpoints, where the norm of a linear gap reaches its maximum. RMS uses the same measure as energy. Relative length-comparison tolerance is 1e-8, not a manufacturing tolerance.
 
-## Artefacts et limites
+## Artifacts and initial scope
 
-- `patterns.svg` : vue du repos, grain, bords colorés et crans ; pas un patron imprimable à l'échelle, aucune marge de couture.
-- `cloth.obj` : positions simulées et groupes par panneau ; `vt` contient les coordonnées locales en mètres.
-- `fibers.json` : une entrée par triangle, directions monde chaîne/trame, stretches, cosinus du cisaillement et validité. L'ordre correspond aux faces OBJ.
-- `grain-guides.obj` : deux lignes centrales par panneau, interpolées sur les triangles de la surface déformée ; aucune mécanique de fil supplémentaire.
-- `template.json` : copie de la définition éditable. `initial.obj`, `metrics.jsonl` et `run.json` s'ajoutent en simulation.
+- `patterns.svg`: rest view, grain, colored boundaries and notches; no scale-correct printing or seam allowance.
+- `cloth.obj`: simulated positions and per-panel groups; `vt` holds local coordinates in metres.
+- `fibers.json`: one entry per triangle, world warp/weft directions, stretches, shear cosine and validity; order matches OBJ faces.
+- `grain-guides.obj`: two central lines per panel, interpolated on deformed surface triangles; no added yarn mechanics.
+- `template.json`: editable definition copy. Simulation also writes `initial.obj`, `metrics.jsonl` and `run.json`.
 
-Panneaux rectangulaires uniquement. Pas de courbes, pinces géométriques, marges, patrons industriels, avatar, fermeture éclair, plis de couture, fil explicite ou contact entre panneaux. Un assemblage qui converge peut toujours s'auto-intersecter. Les placements sont explicites, sans arrangement automatique autour d'un corps. Le CLI multi-panneaux n'est pas encore branché sur l'éditeur desktop.
+The initial v1 CLI handled rectangles only, with explicit placements, no avatar or inter-panel contact; even converged assemblies could self-intersect. Polygon/Bézier editing, avatar fitting and contact were added later and use separate documented paths. Darts, seam allowance, industrial pattern semantics, zippers, physical seam folds and explicit yarn mechanics remain outside this template foundation. See the current [roadmap](../ROADMAP.md) instead of treating this historical scope as the current editor feature list.
 
 ## Optional curve and board fields
 
-A polygon may now include `"curves": {"edge_name": [[c1_u, c1_v], [c2_u, c2_v]]}`. Coordinates are local material meters; the edge's existing consecutive anchors remain its endpoints. Missing entries are straight. Unknown edge names and non-finite controls are rejected. Curves are flattened to 0.25 mm tolerance before meshing, then sampled segment chains are rejoined under the original edge ID. No holes or topology-changing anchor insert/delete editor yet.
+A polygon may now include `"curves": {"edge_name": [[c1_u, c1_v], [c2_u, c2_v]]}`. Coordinates are local material meters; the edge's existing consecutive anchors remain its endpoints. Missing entries are straight. Unknown edge names and non-finite controls are rejected. Curves are flattened to 0.25 mm tolerance before meshing, then sampled segment chains are rejoined under the original edge ID. Holes and limited contour insert/delete editing were added later; see [drafting tools](drafting-tools.md) and [authoring](authoring.md).
 
 A panel may include `"layout_2d": [x, y]`, the board location of its local material origin in meters, and `"layout_rotation_degrees": 30.0`, the board rotation (clockwise in its downward-positive screen coordinates). Display uses `origin + rotation(local_uv)`. Both fields are presentation metadata, excluded from physical signatures; neither changes material rest geometry or grain. Omitted layout is arranged deterministically beside preceding pieces. The angle defaults to zero, must be finite, and is omitted at zero to preserve historical state-cache signatures. Old files omit these fields and remain valid. New files with these extensions require this editor version; older strict readers may reject unknown fields.

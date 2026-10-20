@@ -7,6 +7,7 @@ use marvelous_cloth::{
 
 #[derive(Default)]
 pub(super) struct SewingDraft {
+    pub card: Option<egui::Pos2>,
     pub chain_mode: bool,
     pub sides: [Vec<BoundaryRef>; 2],
     pub active: usize,
@@ -14,7 +15,279 @@ pub(super) struct SewingDraft {
     pub partial: bool,
     pub start: Option<(BoundaryRef, f64)>,
 }
+/// Use the same relative tolerance as the seam compiler. Display rounding must
+/// not suggest that two edges can sew without easing when compilation rejects it.
+fn needs_easing(lengths: [f64; 2]) -> bool {
+    (lengths[0] - lengths[1]).abs() > 1e-8 * lengths[0].max(lengths[1])
+}
+
+/// The primary action deliberately includes consent to unequal-length sewing.
+/// Return whether that consent was given; unrelated clicks do not change it.
+fn sewing_primary_action(ui: &mut egui::Ui, editing: bool, easing_needed: bool) -> Option<bool> {
+    let label = match (editing, easing_needed) {
+        (false, false) => "Sew these edges",
+        (false, true) => "Sew with easing",
+        (true, false) => "Apply seam changes",
+        (true, true) => "Apply with easing",
+    };
+    let button = ui.add_sized(
+        [ui.available_width(), 34.],
+        egui::Button::new(egui::RichText::new(label).strong()).fill(ui.visuals().selection.bg_fill),
+    );
+    button.clicked().then_some(easing_needed)
+}
+
 impl Atelier {
+    /// A deliberate third click confirms the visible pair. Widget clicks and
+    /// endpoint drags keep their own ownership; no underlying edge is selected.
+    pub(super) fn sewing_canvas_confirm(&mut self, response: &egui::Response) -> bool {
+        if self.authoring.tool == Tool::Sew
+            && self.sewing_sides().iter().all(|s| !s.is_empty())
+            && (!self.authoring.sewing.chain_mode || response.ctx.input(|i| i.modifiers.command))
+            && response.clicked()
+        {
+            self.commit_seam();
+            return true;
+        }
+        false
+    }
+    pub(super) fn sewing_context(&mut self, ctx: &egui::Context) {
+        if !matches!(self.authoring.tool, Tool::Edit | Tool::Sew)
+            || self.quick.blocked
+            || self.authoring.radial.blocked
+        {
+            return;
+        }
+        let sides = self.sewing_sides();
+        let drafting = self.authoring.tool == Tool::Sew
+            && (sides.iter().any(|s| !s.is_empty()) || self.authoring.sewing.start.is_some());
+        let ready = drafting && sides.iter().all(|s| !s.is_empty());
+        let seams = self.edge_seams();
+        let at = if drafting {
+            self.authoring.sewing.card
+        } else {
+            self.authoring.selection.seam_card
+        };
+        let Some(at) = at.filter(|_| drafting || !seams.is_empty()) else {
+            return;
+        };
+        // Keep the card inside a canvas. Covering the inspector makes its
+        // range/chain controls impossible to click near the board's right edge.
+        let bounds = [
+            self.authoring.selection.board_rect,
+            self.authoring.selection.garment_rect,
+        ]
+        .into_iter()
+        .flatten()
+        .find(|r| r.contains(at))
+        .unwrap_or_else(|| ctx.content_rect())
+        .intersect(ctx.content_rect());
+        let x = if at.x + 306. <= bounds.right() {
+            at.x + 22.
+        } else {
+            at.x - 306.
+        };
+        let at = egui::pos2(
+            x.clamp(bounds.left(), (bounds.right() - 306.).max(bounds.left())),
+            (at.y + 18.).clamp(bounds.top(), (bounds.bottom() - 330.).max(bounds.top())),
+        );
+        egui::Window::new("Sewing at cursor")
+            .id(egui::Id::new("sewing-context"))
+            .title_bar(false)
+            .resizable(false)
+            .collapsible(false)
+            .fixed_pos(at)
+            .default_width(280.)
+            .max_width(280.)
+            .order(egui::Order::Foreground)
+            .show(ctx, |ui| {
+                if ready {
+                    let lengths = sides
+                        .each_ref()
+                        .map(|s| self.sewing_curve(s, false).map_or(0., |c| c.length * 1000.));
+                    ui.strong(if self.authoring.sewing.editing.is_some() {
+                        "EDIT SEAM"
+                    } else {
+                        "3 · CONFIRM SEAM"
+                    });
+                    for (side, refs) in sides.iter().enumerate() {
+                        let details = format!(
+                            "{}: {}",
+                            if side == 0 { "A" } else { "B" },
+                            refs.iter().map(|r| format!("{} / {}", r.panel,
+                                r.edge.as_deref().unwrap_or("boundary")))
+                                .collect::<Vec<_>>().join(" + ")
+                        );
+                        ui.add(egui::Label::new(egui::RichText::new(&details).small()).truncate())
+                            .on_hover_text(details);
+                    }
+                    ui.label(format!("A {:.1} mm  ↔  B {:.1} mm", lengths[0], lengths[1]));
+                    ui.small(format!(
+                        "Difference {:.1} mm",
+                        (lengths[0] - lengths[1]).abs()
+                    ));
+                    ui.separator();
+                    let flip = ui.checkbox(&mut self.authoring.reverse, "Swap seam ends · F");
+                    self.smoke_target_ui(ui, "cursor_flip", flip.rect);
+                    let ease = ui.checkbox(&mut self.authoring.ease, "Allow different lengths · E");
+                    self.smoke_target_ui(ui, "cursor_ease", ease.rect);
+                    if flip.changed() || ease.changed() {
+                        self.authoring.error = None;
+                    }
+                    if let Some(error) = &self.authoring.error {
+                        ui.colored_label(Color32::from_rgb(225, 120, 75), error);
+                    }
+                    let easing_needed = needs_easing(lengths) && !self.authoring.ease;
+                    if easing_needed {
+                        ui.colored_label(Color32::from_rgb(225, 155, 65),
+                            "Different lengths: easing gathers the longer side. It does not soften the fabric.");
+                    }
+                    if let Some(allow_ease) = sewing_primary_action(
+                        ui, self.authoring.sewing.editing.is_some(), easing_needed,
+                    ) {
+                        self.authoring.ease |= allow_ease;
+                        self.commit_seam();
+                    }
+                    if self.authoring.sewing.chain_mode {
+                        ui.small("Keep adding edges, or Ctrl+Enter to apply");
+                    } else if !easing_needed {
+                        ui.small("Or click either canvas / press Enter to sew");
+                    }
+                    ui.small("F / Shift+wheel: flip direction · Esc: cancel");
+                    if ui.small_button("Cancel · Esc").clicked() {
+                        self.authoring.ends.clear();
+                        self.authoring.sewing = Default::default();
+                    }
+                } else if drafting {
+                    ui.strong(if self.authoring.sewing.partial && self.authoring.sewing.start.is_some() {
+                        "PICK THE END OF THIS RANGE"
+                    } else if self.authoring.sewing.chain_mode {
+                        "BUILD THE TWO SEAM SIDES"
+                    } else {
+                        "2 · CLICK THE SECOND EDGE"
+                    });
+                    ui.label("Choose a boundary in either the 2D or 3D view.");
+                    if !self.authoring.sewing.chain_mode && self.authoring.sewing.start.is_none() {
+                        ui.small("The highlighted edge is side A. The next edge becomes side B.");
+                    }
+                    if self.authoring.sewing.chain_mode {
+                        ui.horizontal(|ui| {
+                            ui.selectable_value(&mut self.authoring.sewing.active, 0, "Add to A");
+                            ui.selectable_value(&mut self.authoring.sewing.active, 1, "Add to B");
+                        });
+                    }
+                    if ui.small_button("Cancel · Esc").clicked() {
+                        self.authoring.ends.clear();
+                        self.authoring.sewing = Default::default();
+                    }
+                } else {
+                    ui.strong("SELECTED SEAM");
+                    for id in seams {
+                        ui.horizontal(|ui| {
+                            if ui
+                                .selectable_label(
+                                    self.authoring.selection.seam.as_ref() == Some(&id),
+                                    &id,
+                                )
+                                .clicked()
+                            {
+                                self.authoring.selection.seam = Some(id.clone());
+                            }
+                            if ui.small_button("Edit").clicked() {
+                                self.begin_seam_edit(&id);
+                                self.authoring.sewing.card = Some(at);
+                            }
+                            let delete = ui.small_button("Delete");
+                            self.smoke_target_ui(ui, "cursor_delete_seam", delete.rect);
+                            if delete.clicked() {
+                                self.remove_seam(id);
+                            }
+                        });
+                    }
+                    ui.small("Del removes the selected seam · Ctrl+Z restores it");
+                }
+            });
+    }
+    pub(super) fn sewing_shortcuts(&mut self, ctx: &egui::Context) {
+        if ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::F)) {
+            self.authoring.reverse = !self.authoring.reverse;
+            self.authoring.error = None;
+        }
+        if ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::E)) {
+            self.authoring.ease = !self.authoring.ease;
+            self.authoring.error = None;
+        }
+        let modifiers = if self.authoring.sewing.chain_mode {
+            egui::Modifiers::CTRL
+        } else {
+            egui::Modifiers::NONE
+        };
+        if ctx.input_mut(|i| i.consume_key(modifiers, egui::Key::Enter)) {
+            self.commit_seam();
+        }
+    }
+
+    pub(super) fn sewing_wheel(&mut self, response: &egui::Response) {
+        if self.authoring.tool != Tool::Sew || !response.hovered() {
+            return;
+        }
+        let flipped = response.ctx.input_mut(|i| {
+            let mut count = 0;
+            i.events.retain(|e| {
+                if matches!(e, egui::Event::MouseWheel { modifiers, delta, .. } if modifiers.shift && delta.length_sq() > 0.) {
+                    count += 1; false
+                } else { true }
+            });
+            if count > 0 { i.smooth_scroll_delta = Vec2::ZERO; }
+            count % 2 == 1
+        });
+        if flipped {
+            self.authoring.reverse = !self.authoring.reverse;
+            self.authoring.error = None;
+        }
+    }
+
+    pub(super) fn sewing_strip(&mut self, ui: &mut egui::Ui) {
+        if self.authoring.tool != Tool::Sew {
+            return;
+        }
+        let sides = self.sewing_sides();
+        let lengths = sides
+            .each_ref()
+            .map(|s| self.sewing_curve(s, false).map_or(0., |c| c.length * 1000.));
+        let ready = sides.iter().all(|s| !s.is_empty());
+        ui.horizontal_wrapped(|ui| {
+            ui.strong(if ready {
+                "3 · Confirm seam"
+            } else if sides.iter().any(|s| !s.is_empty()) {
+                "2 · Pick second edge"
+            } else {
+                "1 · Pick first edge"
+            });
+            ui.label(format!("A {:.1} / B {:.1} mm", lengths[0], lengths[1]));
+            let flip = ui.selectable_label(self.authoring.reverse, "Flip · F").on_hover_text("Reverse side B · F or Shift + wheel over either canvas");
+            self.smoke_target_ui(ui, "quick_flip", flip.rect);
+            if flip.clicked() { self.authoring.reverse = !self.authoring.reverse; self.authoring.error = None; }
+            let ease = ui.selectable_label(self.authoring.ease, "Ease · E").on_hover_text("Explicitly allow unequal lengths. This changes correspondence, not the fabric's elasticity.");
+            self.smoke_target_ui(ui, "quick_ease", ease.rect);
+            if ease.clicked() { self.authoring.ease = !self.authoring.ease; self.authoring.error = None; }
+            if ui.add_enabled(ready, egui::Button::new(if self.authoring.sewing.editing.is_some() { "Apply" } else { "Sew" })).on_hover_text("Enter commits a pair · Ctrl+Enter commits a chain").clicked() { self.commit_seam(); }
+        });
+        ui.horizontal_wrapped(|ui| {
+            if self.authoring.sewing.chain_mode {
+                ui.selectable_value(&mut self.authoring.sewing.active, 0, "Add to A");
+                ui.selectable_value(&mut self.authoring.sewing.active, 1, "Add to B");
+            }
+            if ready && needs_easing(lengths) && !self.authoring.ease {
+                ui.colored_label(
+                    Color32::from_rgb(200, 110, 35),
+                    "Different lengths · click Sew with easing beside the cursor, or press E",
+                );
+            } else {
+                ui.small("F / Shift+wheel: direction · E: easing · Q: quick actions");
+            }
+        });
+    }
     /// Closest point in screen space, converted back to normalized rest arclength.
     pub(super) fn boundary_parameter(
         &self,
@@ -83,17 +356,28 @@ impl Atelier {
         let painter = ui.painter().with_clip_rect(rect);
         let mut sides = self.sewing_sides();
         let draft = sides.iter().enumerate().flat_map(|(s, rs)| {
-            rs.iter()
-                .enumerate()
-                .map(move |(i, r)| (r.clone(), Color32::from_rgb(248, 117, 188), Some((s, i))))
+            rs.iter().enumerate().map(move |(i, r)| {
+                (
+                    r.clone(),
+                    Color32::from_rgb(248, 117, 188),
+                    Some((s, i)),
+                    true,
+                )
+            })
         });
         let stored = self.project.template.seams.iter().flat_map(|s| {
-            s.references()
-                .map(|r| (r.clone(), super::seam_links::seam_color(&s.id), None))
+            s.references().map(|r| {
+                (
+                    r.clone(),
+                    super::seam_links::seam_color(&s.id),
+                    None,
+                    self.authoring.selection.seam.as_ref() == Some(&s.id),
+                )
+            })
         });
         let ranges: Vec<_> = stored.chain(draft).collect();
         let mut updated = false;
-        for (r, color, handle) in ranges {
+        for (r, color, handle, selected) in ranges {
             let Some(curve) = self.display_boundary(&r, false) else {
                 continue;
             };
@@ -138,6 +422,9 @@ impl Atelier {
             let points: Vec<_> = (0..=32).map(|k| screen(k as f64 / 32.)).collect();
             for pair in points.windows(2) {
                 if let [Some(a), Some(b)] = pair {
+                    if selected {
+                        painter.line_segment([*a, *b], Stroke::new(6., Color32::WHITE));
+                    }
                     painter.line_segment([*a, *b], Stroke::new(3., color));
                 }
             }
@@ -221,7 +508,39 @@ impl Atelier {
         )
         .ok()
     }
-    pub(super) fn pick_sewing_boundary(&mut self, mut edge: BoundaryRef, t: f64) {
+    pub(super) fn pick_sewing_boundary(
+        &mut self,
+        mut edge: BoundaryRef,
+        t: f64,
+        pointer: egui::Pos2,
+    ) {
+        self.authoring.sewing.card = Some(pointer);
+        self.authoring.selection.seam_card = Some(pointer);
+        self.authoring.selection.seam = self
+            .project
+            .template
+            .seams
+            .iter()
+            .find(|s| {
+                s.references()
+                    .any(|r| same_edge(r, &edge) && t >= r.range[0] && t <= r.range[1])
+            })
+            .map(|s| s.id.clone());
+        if self.authoring.tool == Tool::Sew
+            && self.authoring.ends.is_empty()
+            && !self.authoring.sewing.chain_mode
+            && !self.authoring.sewing.partial
+            && self.authoring.selection.seam.is_some()
+        {
+            self.cancel_preview();
+            self.authoring.selected = Some(edge.panel.clone());
+            self.authoring.edge = Some(edge);
+            self.authoring.anchor = None;
+            self.authoring.board.selection.clear();
+            self.authoring.board.point_groups.clear();
+            self.authoring.board.selection_panel = None;
+            return;
+        }
         if self.authoring.tool == Tool::Sew && self.authoring.sewing.partial {
             if let Some((start, s)) = self.authoring.sewing.start.take() {
                 if !same_edge(&start, &edge) {
@@ -241,7 +560,14 @@ impl Atelier {
                 return;
             }
         }
+        self.authoring.error = None;
         self.select_boundary(edge);
+        self.status = if self.sewing_sides().iter().all(|s| !s.is_empty()) {
+            "Seam preview ready · click Sew beside the cursor or press Enter"
+        } else {
+            "First edge selected · click the second edge in either view"
+        }
+        .into();
     }
     pub(super) fn begin_seam_edit(&mut self, id: &str) {
         let Some(s) = self
@@ -402,7 +728,7 @@ impl Atelier {
         ui.checkbox(&mut self.authoring.reverse, "Reverse the entire B side");
         let easing = ui.checkbox(&mut self.authoring.ease, "Allow easing (different lengths)");
         self.smoke_target_ui(ui, "sew_easing", easing.rect);
-        if (lengths[0] - lengths[1]).abs() > 1e-5 && !self.authoring.ease {
+        if needs_easing(lengths) && !self.authoring.ease {
             ui.colored_label(
                 Color32::GOLD,
                 "Lengths differ. Adjust the ranges or explicitly allow easing.",
@@ -439,6 +765,13 @@ impl Atelier {
         if a.is_empty() || b.is_empty() {
             return false;
         }
+        let lengths = [&a, &b].map(|side| self.sewing_curve(side, false).map_or(0., |c| c.length));
+        if needs_easing(lengths) && !self.authoring.ease {
+            self.authoring.error = Some(
+                "These edges have different lengths. Click Sew with easing to gather the longer side, or adjust the ranges.".into()
+            );
+            return false;
+        }
         if self.edit(Command::SewChain {
             seam: self.authoring.sewing.editing.clone(),
             a,
@@ -446,11 +779,59 @@ impl Atelier {
             reverse: self.authoring.reverse,
             ease: self.authoring.ease,
         }) {
+            self.authoring.ends.clear();
             self.authoring.sewing = Default::default();
-            self.status = "Seam committed · Simulate to assemble".into();
+            self.authoring.selection.seam_card = None;
+            self.status = "Seam created · pick two more edges, or press Space to simulate".into();
             true
         } else {
             false
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unequal_length_primary_action_requires_an_explicit_click() {
+        let ctx = egui::Context::default();
+        let mut center = egui::Pos2::ZERO;
+        let mut frame = |events| {
+            let mut consent = None;
+            let mut output = ctx.run_ui(
+                egui::RawInput {
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(320., 240.),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ui| {
+                    egui::CentralPanel::default().show(ui, |ui| {
+                        center = ui.next_widget_position() + Vec2::new(120., 17.);
+                        consent = sewing_primary_action(ui, false, true);
+                    });
+                },
+            );
+            output.textures_delta.clear();
+            (consent, center)
+        };
+        let (initial, at) = frame(vec![]);
+        assert_eq!(initial, None);
+        let click = |pressed| egui::Event::PointerButton {
+            pos: at,
+            button: egui::PointerButton::Primary,
+            pressed,
+            modifiers: egui::Modifiers::NONE,
+        };
+        assert_eq!(
+            frame(vec![egui::Event::PointerMoved(at), click(true)]).0,
+            None
+        );
+        assert_eq!(frame(vec![click(false)]).0, Some(true));
+        assert_eq!(frame(vec![]).0, None);
     }
 }

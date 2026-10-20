@@ -1,6 +1,6 @@
 # Fabric library, mass and stretch
 
-In the inspector, select a piece and open **Tissu · poids et stretch**. Choose a preset, adjust its mass, thickness and extension, then **Appliquer le tissu**. The default scope is the selected panel; **Appliquer à tous les panneaux** is explicit. Editing one panel detaches its shared material when necessary. Applied values participate in undo/redo and template/project JSON export.
+In the inspector, select a piece and open **Fabric · weight and stretch**. Choose a preset, adjust its mass, thickness and extension, then **Apply fabric**. The default scope is the selected panel; **Apply to all panels** is explicit. Editing one panel detaches its shared material when necessary. Applied values participate in undo/redo and template/project JSON export.
 
 The displayed panel/garment mass is the sum of lumped vertex masses from rest area × surface density; it excludes accessories, seam thread and the avatar. Changing fabric rebuilds masses, energies and solver caches while preserving compatible geometry and velocities. It does not remesh, change material UVs or overwrite the panel grain. This is an instantaneous parameter edit, not a mass-transfer experiment conserving momentum.
 

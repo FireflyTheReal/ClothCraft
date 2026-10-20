@@ -10,7 +10,7 @@ pub(super) fn add_polygon(
     replace: bool,
 ) -> Result<String, String> {
     if !origin.is_finite() {
-        return Err("Position 2D invalide".into());
+        return Err("Invalid 2D position".into());
     }
     let id = unused_id("panel", t.panels.iter().map(|p| p.id.clone()));
     let placement = if let Some(p) = t.panels.first().filter(|_| !replace) {
@@ -61,19 +61,19 @@ pub(super) fn mirror(
     copy_side: Option<i8>,
 ) -> Result<String, String> {
     if copy_side.is_some_and(|s| s != -1 && s != 1) {
-        return Err("Sens de miroir invalide".into());
+        return Err("Invalid mirror direction".into());
     }
     let index = t
         .panels
         .iter()
         .position(|p| p.id == id)
-        .ok_or("Panneau absent")?;
+        .ok_or("Panel not found")?;
     let mut p = t.panels[index].clone();
     p.layout_2d = Some(layout(t, index));
     let poly = p
         .polygon
         .as_mut()
-        .ok_or("Miroir : panneau polygonal v2 requis")?;
+        .ok_or("Mirroring requires a v2 polygonal panel")?;
     let reversed: std::collections::BTreeSet<_> = poly
         .edges
         .iter()
@@ -94,7 +94,7 @@ pub(super) fn mirror(
     .rem_euclid(180.);
     if let Some(side) = copy_side {
         p.id = unused_id("panel", t.panels.iter().map(|p| p.id.clone()));
-        p.name = format!("{} miroir", p.name);
+        p.name = format!("{} mirror", p.name);
         let delta = match axis {
             MirrorAxis::X => DVec2::new(p.pattern.width + 0.05, 0.),
             MirrorAxis::Y => DVec2::new(0., p.pattern.height + 0.05),
@@ -126,18 +126,18 @@ pub(super) fn boolean(
     keep_tool: bool,
 ) -> Result<String, String> {
     if a == b {
-        return Err("Choisir deux panneaux distincts".into());
+        return Err("Choose two different panels".into());
     }
     let ai = t
         .panels
         .iter()
         .position(|p| p.id == a)
-        .ok_or("Panneau A absent")?;
+        .ok_or("Panel A not found")?;
     let bi = t
         .panels
         .iter()
         .position(|p| p.id == b)
-        .ok_or("Panneau B absent")?;
+        .ok_or("Panel B not found")?;
     for id in [a, b] {
         let p = t.panels.iter().find(|p| p.id == id).unwrap();
         if t.seams
@@ -156,11 +156,11 @@ pub(super) fn boolean(
     let ap = original
         .polygon
         .as_ref()
-        .ok_or("Panneau A polygonal v2 requis")?;
+        .ok_or("Panel A must be a v2 polygon")?;
     let mut bp = t.panels[bi]
         .polygon
         .clone()
-        .ok_or("Panneau B polygonal v2 requis")?;
+        .ok_or("Panel B must be a v2 polygon")?;
     let into_a = |v: DVec2| {
         rotate_2d(
             layout(t, bi) + rotate_2d(v, t.panels[bi].layout_rotation_degrees) - layout(t, ai),
@@ -185,7 +185,7 @@ pub(super) fn boolean(
         } else {
             unused_id("panel", t.panels.iter().map(|p| p.id.clone()))
         };
-        p.name = format!("{} · booléen {}", original.name, i + 1);
+        p.name = format!("{} · boolean {}", original.name, i + 1);
         p.layout_2d = Some(origin);
         p.polygon = Some(polygon);
         normalize(&mut p);
@@ -206,25 +206,28 @@ pub(super) fn ruffle(
         || !width.is_finite()
         || !(0.005..=1.).contains(&width)
     {
-        return Err("Volant : largeur 5..1000 mm et ratio 1..4".into());
+        return Err("Ruffle: width must be 5..1000 mm and ratio 1..4".into());
     }
     let index = t
         .panels
         .iter()
         .position(|p| p.id == panel)
-        .ok_or("Panneau absent")?;
+        .ok_or("Panel not found")?;
     let source = t.panels[index].clone();
-    let poly = source.polygon.as_ref().ok_or("Panneau v2 requis")?;
+    let poly = source
+        .polygon
+        .as_ref()
+        .ok_or("A v2 polygonal panel is required")?;
     let path = poly
         .lines
         .iter()
         .find(|l| l.id == line)
-        .ok_or("Sélectionner une ligne intérieure")?;
+        .ok_or("Select an internal line")?;
     if t.seams.iter().any(|s| {
         s.references()
             .any(|r| r.panel == panel && r.edge.as_deref() == Some(line))
     }) {
-        return Err("Ligne déjà cousue".into());
+        return Err("This line is already sewn".into());
     }
     let points = path.samples()?;
     let length: f64 = points.windows(2).map(|p| p[0].distance(p[1])).sum();
@@ -241,7 +244,7 @@ pub(super) fn ruffle(
         );
     let id = add_polygon(t, polygon, origin, source.fabric.clone(), false)?;
     let strip = t.panels.last_mut().unwrap();
-    strip.name = format!("Volant de {}", source.name);
+    strip.name = format!("Ruffle for {}", source.name);
     strip.placement = source.placement.clone();
     strip.placement.translation =
         source

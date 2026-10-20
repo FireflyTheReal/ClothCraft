@@ -121,11 +121,14 @@ impl Atelier {
             let Some(spec) = self.project.template.seams.iter().find(|s| s.id == seam.id) else {
                 continue;
             };
-            let selected = self
-                .authoring
-                .edge
-                .as_ref()
-                .is_some_and(|e| spec.references().any(|r| same_edge(e, r)));
+            let selected = if let Some(id) = &self.authoring.selection.seam {
+                id == &spec.id
+            } else {
+                self.authoring
+                    .edge
+                    .as_ref()
+                    .is_some_and(|e| spec.references().any(|r| same_edge(e, r)))
+            };
             let hover = self
                 .authoring
                 .hover_edge

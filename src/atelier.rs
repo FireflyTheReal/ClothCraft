@@ -28,10 +28,16 @@ mod fabrics_ui;
 mod gizmo;
 #[path = "atelier/icons.rs"]
 mod icons;
+#[path = "atelier/issue_ui.rs"]
+mod issue_ui;
 #[path = "atelier/layout.rs"]
 mod layout;
+#[path = "atelier/measure.rs"]
+mod measure;
 #[path = "atelier/perf.rs"]
 mod perf;
+#[path = "atelier/quick_actions.rs"]
+mod quick_actions;
 #[path = "atelier/radial.rs"]
 mod radial;
 #[path = "atelier/seam_links.rs"]
@@ -94,7 +100,18 @@ pub fn run(
     let icon =
         eframe::icon_data::from_png_bytes(include_bytes!("../assets/branding/clothcraft-icon.png"))
             .map_err(|error| format!("Cannot decode the bundled ClothCraft icon: {error}"))?;
+    let mut wgpu_options = eframe::egui_wgpu::WgpuConfiguration::default();
+    if let eframe::egui_wgpu::WgpuSetup::CreateNew(setup) = &mut wgpu_options.wgpu_setup {
+        let base = setup.device_descriptor.clone();
+        setup.device_descriptor = std::sync::Arc::new(move |adapter| {
+            let mut descriptor = base(adapter);
+            descriptor.required_features |= adapter.features()
+                & (eframe::wgpu::Features::TIMESTAMP_QUERY | eframe::wgpu::Features::SUBGROUP);
+            descriptor
+        });
+    }
     let options = eframe::NativeOptions {
+        wgpu_options,
         renderer: eframe::Renderer::Wgpu,
         viewport: egui::ViewportBuilder::default()
             .with_icon(icon)
@@ -139,6 +156,8 @@ pub fn run(
                 .unwrap_or_default();
             Ok(Box::new(Atelier {
                 document: documents_ui::DocumentUi::new(&output, files.source, files.modified),
+                issue: Default::default(),
+                quick: Default::default(),
                 authoring,
                 prefs,
                 settings_open: false,
@@ -167,17 +186,23 @@ pub fn run(
                 heat: false,
                 seams: false,
                 seam_links,
+                clean_view: false,
                 gpu: true,
                 settings: simulation,
                 metrics: None,
+                cadence: Default::default(),
+                simulation_error: None,
                 status: "Ready · Space to start the simulation".into(),
                 grab: None,
+                grab_radius_px: 30.,
+                grab_strength: 1.,
                 drag_plane: None,
                 smoke: smoke || drag_test || perf_test || authoring_test,
                 perf: perf_test.then(perf::PerfRun::new),
                 drag_test,
                 smoke_point: None,
                 smoke_tick: 0,
+                smoke_started: std::time::Instant::now(),
                 smoke_grabbed: false,
                 smoke_applied: false,
                 smoke_captured: false,
@@ -215,6 +240,10 @@ pub fn run(
     Ok(())
 }
 struct Atelier {
+    cadence: perf::Cadence,
+    simulation_error: Option<String>,
+    issue: issue_ui::IssueUi,
+    quick: quick_actions::QuickActions,
     document: documents_ui::DocumentUi,
     authoring: AuthoringUi,
     /// Loaded from `output/preferences.json` before the first frame and saved
@@ -243,17 +272,21 @@ struct Atelier {
     heat: bool,
     seams: bool,
     seam_links: bool,
+    clean_view: bool,
     gpu: bool,
     settings: VbdSettings,
     metrics: Option<VbdMetrics>,
     status: String,
     grab: Option<Grab>,
+    grab_radius_px: f32,
+    grab_strength: f64,
     drag_plane: Option<(glam::DVec3, glam::DVec3)>,
     smoke: bool,
     frames: u32,
     drag_test: bool,
     smoke_point: Option<egui::Pos2>,
     smoke_tick: u32,
+    smoke_started: std::time::Instant,
     smoke_grabbed: bool,
     smoke_applied: bool,
     smoke_captured: bool,
@@ -317,6 +350,7 @@ impl Atelier {
                     None
                 };
                 self.scene = scene;
+                self.issue.invalidate();
                 self.project = p;
                 self.generation += 1;
                 self.playing = false;
@@ -407,11 +441,33 @@ impl Atelier {
             }
             if let Some((vertices, weights)) = picked {
                 let target = origin + best * dir;
+                let (edge_origin, edge_dir) = self
+                    .camera
+                    .ray(pos + egui::vec2(self.grab_radius_px, 0.), rect);
+                let radius = picking::ray_plane(edge_origin, edge_dir, target, dir)
+                    .map_or(0., |edge| edge.distance(target));
+                let patch = self
+                    .scene
+                    .garment
+                    .panels
+                    .iter()
+                    .find(|panel| panel.vertices.contains(&vertices[0]))
+                    .map_or_else(Vec::new, |panel| {
+                        marvelous_cloth::vbd::grab::surface_patch(
+                            &self.scene.garment.mesh,
+                            &self.scene.state.x,
+                            panel.triangles.clone(),
+                            vertices,
+                            target,
+                            radius,
+                        )
+                    });
                 self.grab = Some(Grab {
+                    patch,
                     vertices,
                     weights,
                     target,
-                    stiffness: 150.,
+                    stiffness: 150. * self.grab_strength,
                 });
                 self.drag_plane = Some((target, dir));
                 self.playing = true;
@@ -446,7 +502,12 @@ impl eframe::App for Atelier {
         let Some(origin) = self.smoke_point else {
             return;
         };
-        self.smoke_tick += 1;
+        // Startup shader compilation may outlast a short render-frame script.
+        // Keep the actual pointer held until the worker accepts a grabbed step;
+        // wall-clock deadlines below still turn a stalled worker into a failure.
+        if self.smoke_tick != 14 || self.smoke_applied || self.simulation_error.is_some() {
+            self.smoke_tick += 1;
+        }
         let tick = self.smoke_tick;
         let pos = origin + Vec2::new((tick.saturating_sub(2).min(12) * 5) as f32, 0.);
         if tick <= 15 {
@@ -476,6 +537,8 @@ impl eframe::App for Atelier {
         ) {
             self.set_authoring_tool(tool, rotate);
         }
+        self.quick_actions(&ctx);
+        self.sewing_context(&ctx);
         self.clipboard_shortcuts(&ctx);
         self.frames += 1;
         self.authoring.hover_edge = None;
@@ -484,6 +547,7 @@ impl eframe::App for Atelier {
             self.pending = false;
             match done.result {
                 Ok((state, m)) => {
+                    self.simulation_error = None;
                     self.document.dirty = true;
                     self.smoke_applied |= done.had_grab;
                     self.scene.state = state;
@@ -492,11 +556,13 @@ impl eframe::App for Atelier {
                 }
                 Err(e) => {
                     self.playing = false;
+                    self.simulation_error = Some(e.clone());
                     self.status = e;
                 }
             }
         }
         if !self.authoring.radial.blocked
+            && !self.quick.blocked
             && ctx.input(|i| i.key_pressed(egui::Key::Space))
             && !ctx.egui_wants_keyboard_input()
         {
@@ -579,6 +645,7 @@ impl eframe::App for Atelier {
             self.authoring.board.snap_mm = self.prefs.snap_mm;
         }
         egui::Panel::bottom("status").show(ui, |ui| {
+            self.cadence.update(std::time::Instant::now(), self.scene.state.time, self.generation, self.playing);
             ui.horizontal(|ui| {
                 ui.colored_label(
                     if self.playing {
@@ -589,6 +656,12 @@ impl eframe::App for Atelier {
                     if self.playing { "Simulation" } else { "Pause" },
                 );
                 ui.separator();
+                if let Some(speed) = self.cadence.speed {
+                    ui.colored_label(if speed >= 0.95 {workspace::ACCENT} else {Color32::GOLD},
+                        format!("{:.0} steps/s · {:.2}×", speed/self.settings.dt, speed))
+                        .on_hover_text("Actual physical time advanced per wall-clock second. Independent of render FPS.");
+                    ui.separator();
+                }
                 ui.add(egui::Label::new(&self.status).truncate())
                     .on_hover_text(&self.status);
             });
@@ -605,6 +678,7 @@ impl eframe::App for Atelier {
                 let area = ui.available_rect_before_wrap();
                 let panes = layout::arrange(ui, area, &mut self.prefs.workspace);
                 self.authoring.selection.board_rect = None;
+                self.authoring.selection.garment_rect = None;
                 for (id, rect) in [
                     ("garment", panes.garment),
                     ("patterns", panes.patterns),
@@ -635,13 +709,14 @@ impl eframe::App for Atelier {
             self.prefs_dirty = false;
         }
         if let Some(perf) = &mut self.perf
-            && let Some(report) = perf.tick(
+            && let Some(mut report) = perf.tick(
                 self.scene.state.time,
                 ctx.cumulative_frame_nr(),
                 self.settings.dt,
                 self.metrics.is_some(),
             )
         {
+            report["last_delivered_step"] = serde_json::to_value(&self.metrics).unwrap();
             self.playing = false;
             if let Err(e) = std::fs::write(
                 self.output.join("ui-perf.json"),
@@ -669,7 +744,11 @@ impl eframe::App for Atelier {
                     && self.frames == 8)
                     || self.authoring_smoke.as_ref().is_some_and(|s| s.finished)
                     || drag_finished
-                    || (self.authoring_smoke.is_none() && self.perf.is_none() && self.frames > 110)
+                    || (self.authoring_smoke.is_none()
+                        && self.perf.is_none()
+                        && ((!self.drag_test && self.frames > 110)
+                            || (self.drag_test
+                                && self.smoke_started.elapsed() > Duration::from_secs(15))))
                     || self.perf.as_ref().is_some_and(|p| p.finished))
             {
                 self.smoke_captured = true;
@@ -707,7 +786,10 @@ impl eframe::App for Atelier {
                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             }
-            if (self.authoring_smoke.is_none() && self.perf.is_none() && self.frames > 120)
+            if (self.authoring_smoke.is_none()
+                && self.perf.is_none()
+                && ((!self.drag_test && self.frames > 120)
+                    || (self.drag_test && self.smoke_started.elapsed() > Duration::from_secs(20))))
                 || self.perf.as_ref().is_some_and(|p| p.expired())
             {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);

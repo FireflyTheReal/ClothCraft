@@ -1,0 +1,135 @@
+{
+  "date": "2026-10-18",
+  "scope": "CPU edge-contact SIMD and offline jitter diagnosis; physical laws unchanged",
+  "cpu": "AMD Ryzen 7 2700X, 16 logical processors; two Rayon workers",
+  "compiler": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "gpu_used": false,
+  "avx_used": true,
+  "input": {
+    "scenario": "Private saved Garment, not distributed",
+    "document_sha256": "59778195dcd271e78c3ce08975776c3f59fda8786b58137faaa3d19a2ad452e7",
+    "initial_state_matches_archived_trace": true,
+    "vertices": 6731,
+    "steps": 360,
+    "dt_s": 0.016666666666666666,
+    "warmup_steps": 60,
+    "query_radius_m": 0.012
+  },
+  "detector_runs": [
+    {
+      "states_compared_bitwise": 361,
+      "samples_after_warmup": 300,
+      "minimum_distance_m": 0.002967852517872346,
+      "mean_detection_reduction_percent": 10.636517957509561,
+      "timing": {
+        "scalar_detector_ms": {
+          "mean": 25.219152333333334,
+          "p50": 24.602700000000002,
+          "p95": 28.9425
+        },
+        "simd_detector_ms": {
+          "mean": 22.53671266666664,
+          "p50": 21.8629,
+          "p95": 26.031599999999997
+        },
+        "scalar_geometry_ms": {
+          "mean": 22.062563999999995,
+          "p50": 21.6008,
+          "p95": 24.8346
+        },
+        "simd_geometry_ms": {
+          "mean": 19.406589000000004,
+          "p50": 18.8663,
+          "p95": 22.419700000000002
+        }
+      }
+    },
+    {
+      "states_compared_bitwise": 361,
+      "samples_after_warmup": 300,
+      "minimum_distance_m": 0.002967852517872346,
+      "mean_detection_reduction_percent": 9.80720119063444,
+      "timing": {
+        "scalar_detector_ms": {
+          "mean": 25.762174999999996,
+          "p50": 25.0604,
+          "p95": 30.618699999999997
+        },
+        "simd_detector_ms": {
+          "mean": 23.23562666666667,
+          "p50": 22.518,
+          "p95": 28.0184
+        },
+        "scalar_geometry_ms": {
+          "mean": 22.543475666666673,
+          "p50": 22.116,
+          "p95": 25.8999
+        },
+        "simd_geometry_ms": {
+          "mean": 20.014105333333347,
+          "p50": 19.598000000000003,
+          "p95": 23.3083
+        }
+      }
+    }
+  ],
+  "jitter": {
+    "resolved": false,
+    "selected_hotspots": 12,
+    "directly_on_seam_5": 6,
+    "highpass_rms_m_range": [
+      0.00016402489983589997,
+      0.00020378453742575002
+    ],
+    "seam_5": {
+      "id": "seam_5",
+      "rest_lengths_m": [
+        0.09,
+        0.08000000000000007
+      ],
+      "stiffness_n_m2": 50000.0,
+      "rest_length_ratio": 1.124999999999999,
+      "mean_energy_j": 2.06789673046154e-05,
+      "peak_gap_m": 0.00042492567748886366
+    },
+    "seam_5_endpoint_without_active_contact": {
+      "panel": "panel_3",
+      "highpass_rms_m": 0.00017467228305966914,
+      "active_contact_mean": 0.0,
+      "minimum_ball_radius_m": 0.0013560126785181266,
+      "mean_sewing_force_n": 0.0776314127184859
+    },
+    "leading_hotspot_active_key_change_fraction": 0.31,
+    "leading_hotspot_max_refresh_force_delta_n": 0.11189154872918167,
+    "interpretation": "Supports a coupled seam/material convergence investigation; nearby contact changes also occur. Fresh endpoint forces/bounds do not reproduce in-step GPU sets or clipping. Highpass motion is not by itself numerical jitter."
+  },
+  "checks": {
+    "cpu_tests_passed": 148,
+    "cpu_all_target_clippy_warnings_denied": "passed",
+    "format_check": "passed",
+    "random_and_boundary_edge_pairs_bitwise": 40000,
+    "moving_cached_and_direct_frames": 80,
+    "shared_control_pull_hold_release_steps_bitwise": 180,
+    "finite_difference_and_free_fall_force_audit": "passed",
+    "full_cpu_script": "passed, exit 0",
+    "template_validations_passed": [
+      "two-panel",
+      "local-ease",
+      "tshirt",
+      "dress",
+      "curved-panels",
+      "partial-chain"
+    ]
+  },
+  "desktop_executable_sha256": "4270f808e6d460ff6f51c567aa0ee8488b08a09b9772408e70a9161a9c556c80",
+  "saved_document_unchanged": true,
+  "desktop_executable_replaced": false,
+  "commit_or_push": false,
+  "limitations": [
+    "CPU detector timing is not hybrid full-step or render FPS.",
+    "Vertex/face closest geometry remains scalar.",
+    "AVX portability fallback is implemented; no other architecture was run.",
+    "No new interactive GPU assessment or general collision certificate."
+  ],
+  "local_evidence_directory": "output/cpu-contact-probe/"
+}

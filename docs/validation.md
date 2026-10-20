@@ -1,14 +1,14 @@
-# Validation Phase 1 — 14 octobre 2026
+# Phase 1 validation — 14 October 2026
 
-**Archive des premières passes CPU.** Les restrictions GPU et fonctionnalités absentes décrites ci-dessous correspondent à ces exécutions historiques. L'état courant inclut l'avatar, la Delaunay et le rendu vérifié : voir [premier essayage](first-fit.md) et [maillage](meshing.md). La passe courante valide 40 tests CPU, Clippy sans avertissement sur CPU et desktop, puis des captures natives/GPU séparées.
+**Archive of the first CPU passes.** GPU restrictions and absent features below describe those historical runs. Avatar fitting, Delaunay and verified rendering were added later: see [first fitting](first-fit.md) and [meshing](meshing.md). That subsequent pass validated 40 CPU tests, warning-free CPU/desktop Clippy and separate native/GPU captures. Consult the current [handoff](handoff.md) for later results.
 
 ## Conditions
 
-Windows, Rust/Cargo 1.97.1, AMD Ryzen 7 2700X Eight-Core Processor. Les simulations ci-dessous utilisent le binaire `release` construit **sans la feature desktop**, quatre threads Rayon, `dt = 1/60 s`, un patron de 1 × 1 m avec 10 × 10 cellules (121 sommets, 200 triangles), les paramètres par défaut et 120 pas (2 secondes simulées).
+Windows, Rust/Cargo 1.97.1, AMD Ryzen 7 2700X Eight-Core Processor. Simulations below use the **no-desktop-feature** release binary, four Rayon threads, `dt = 1/60 s`, a 1×1 m pattern with 10×10 cells (121 vertices, 200 triangles), default parameters and 120 steps (two simulated seconds).
 
-Aucun test GPU, adaptateur wgpu, fenêtre graphique ou programme CUDA n'a été lancé. Le GPU de l'utilisateur était réservé à un autre travail. Ces durées sont celles d'une exécution locale sur une machine non isolée ; elles ne constituent pas une étude statistique ni une comparaison CPU/GPU.
+No GPU test, wgpu adapter, graphics window or CUDA program was launched. The user's GPU was reserved for other work. These are local timings on an unisolated machine, not a statistical study or CPU/GPU comparison. Current small-check policy uses two CPU jobs/threads; the four-thread commands below are historical evidence.
 
-## Commandes effectivement exécutées
+## Commands actually run
 
 ```powershell
 cargo build --locked -j 4
@@ -20,85 +20,85 @@ cargo fmt --all -- --check
 cargo tree --locked --no-default-features -e normal --prefix none
 ```
 
-La suite compile aussi `cargo build --locked --release --no-default-features -j 4`. L'arbre normal du build sans desktop ne contient ni eframe, egui, winit ni wgpu. Le test de shader utilise uniquement le parseur/validateur Naga sur CPU.
+The suite also compiles `cargo build --locked --release --no-default-features -j 4`. The no-desktop normal dependency tree contains no eframe, egui, winit or wgpu. Shader tests use only Naga's CPU parser/validator.
 
-Le build desktop a été adapté aux API courantes de `glam` (module caméra), egui (panneaux) et wgpu (pipeline/profondeur). Un signalement Clippy sur la règle du produit de la différentiation automatique est explicitement autorisé à cet endroit, avec justification ; le contrôle final réussit avec `-D warnings`.
+The desktop build was adapted to the current glam camera, egui panel and wgpu pipeline/depth APIs. A Clippy warning for automatic differentiation's product rule is explicitly allowed at that location with a justification; the final check passes with `-D warnings`.
 
-## Tests réussis : 17
+## Passing tests: 17
 
-Seize tests numériques/intégration dans `tests/numerics.rs` :
+Sixteen numerical/integration tests in `tests/numerics.rs` cover:
 
-- gradients/Hessiennes de membrane en tension, compression et repos, flexion et contact, comparés aux différences finies ; symétrie des Hessiennes ;
-- repos plat sans force, masse intégrée égale à densité × aire ;
-- énergie invariante sous mouvement rigide, transformation des forces, bilan force/couple interne ;
-- permutation chaîne/trame par rotation du droit-fil de 90° et réponse plus souple en compression ;
-- chute libre conforme à Euler implicite avec damping ;
-- points fixés exacts, réduction de l'objectif et convergence sur 20 pas suspendus ;
-- drapé sur sphère avec contact effectif pendant 35 pas ;
-- pénétration initiale peu profonde signalée et réduite ;
-- état conservé après un pas invalide, rejet des triangles dégénérés ;
-- budget Newton atteint distinct d'une convergence ;
-- sérialisation JSON, export OBJ/UV et rejet de paramètres invalides ;
-- flexion presque plate résolue jusqu'à une perturbation de position de `1e-10 m`, énergie positive sans clamp.
+- Membrane gradients/Hessians in tension, compression and rest, bending and contact, compared with finite differences; Hessian symmetry.
+- Force-free flat rest and integrated mass equal to density × area.
+- Rigid-motion energy invariance, force transformation and internal force/torque balance.
+- Warp/weft exchange under 90° grain rotation and softer compression response.
+- Analytical implicit-Euler free fall with damping.
+- Exact fixed points, objective decrease and convergence over 20 suspended steps.
+- Sphere draping with active contact over 35 steps.
+- Reported/reduced shallow initial penetration.
+- State preservation after an invalid step; rejection of degenerate triangles.
+- Distinction between exhausted Newton budget and convergence.
+- JSON serialization, OBJ/UV export and invalid-parameter rejection.
+- Nearly flat bending down to a `1e-10 m` position perturbation, positive energy without clamping.
 
-Un test dans `tests/shader.rs` valide syntaxe et sémantique du shader WGSL sans périphérique graphique. Le chargement effectif du JSON produit par le CLI a également été exécuté avec un pas headless convergé.
+One `tests/shader.rs` test validates WGSL syntax/semantics without a graphics device. Loading a CLI-produced JSON was also exercised with one converged headless step.
 
-## Mesures finales
+## Final measurements
 
-Valeurs copiées des résultats réels dans [phase1-results.json](phase1-results.json). Le script peut écraser les fichiers `output/cpu-suite/` lors d'une nouvelle exécution ; cette copie conserve les valeurs de cette session.
+Values copied from actual results into [phase1-results.json](phase1-results.json). The script can overwrite `output/cpu-suite/` on rerun; this copy retains that session's values.
 
-| Scène | Pas convergés | Moyenne CPU / pas | Résidu RMS final | Déformation axiale max finale |
+| Scene | Converged steps | Mean CPU / step | Final RMS residual | Final maximum axial strain |
 |---|---:|---:|---:|---:|
-| Sphère, droit-fil 0° | 120/120 | 31,330 ms | 3,418e-10 N | 2,160 % |
-| Suspendu, 0° | 120/120 | 12,313 ms | 9,043e-12 N | 7,234 % |
-| Suspendu, 45° | 120/120 | 16,721 ms | 2,560e-9 N | 5,909 % |
-| Suspendu, 90° | 120/120 | 9,935 ms | 6,283e-7 N | 4,414 % |
+| Sphere, grain 0° | 120/120 | 31.330 ms | 3.418e-10 N | 2.160% |
+| Suspended, 0° | 120/120 | 12.313 ms | 9.043e-12 N | 7.234% |
+| Suspended, 45° | 120/120 | 16.721 ms | 2.560e-9 N | 5.909% |
+| Suspended, 90° | 120/120 | 9.935 ms | 6.283e-7 N | 4.414% |
 
-Tolérance au dernier pas : `1e-6 N`. La déformation affichée est `max(|lambda_warp-1|, |lambda_weft-1|)` sur les triangles, pas une borne sur toutes les valeurs singulières de F. Les temps différents entre angles reflètent aussi leurs nombres d'itérations et vitesses de relaxation ; ce ne sont pas des benchmarks entre solveurs.
+Final tolerance: `1e-6 N`. Displayed strain is the maximum `max(|lambda_warp-1|, |lambda_weft-1|)` over triangles, not a bound on every singular value of F. Timing differences between angles also reflect iteration counts and relaxation speeds; these are not comparisons between solvers.
 
-Pour la sphère : pénétration maximale des sommets sur toute la trajectoire **0,750330 mm**, pénétration finale **0,178627 mm**, 53 sommets en contact à la fin. Énergies finales : membrane 0,008915918 J, flexion 0,005072804 J, contact 0,000114867 J. Le stockage estimé des tableaux d'éléments au dernier pas est de 561 664 octets ; ce n'est pas la mémoire totale du processus.
+For the sphere: maximum vertex penetration over the trajectory **0.750330 mm**, final penetration **0.178627 mm**, 53 contacting vertices at the end. Final energies: membrane 0.008915918 J, bending 0.005072804 J, contact 0.000114867 J. Estimated final element-array storage: 561,664 bytes, not total process memory.
 
-L'énergie de flexion a été reformulée algébriquement avec la différence des normales unitaires pour éviter les valeurs négatives de l'ordre de `1e-18 J` dues à l'annulation de `1-cos(theta)` au repos. Les tests et la suite de quatre scènes ont été réexécutés après cette correction ; le tableau ci-dessus correspond à la version corrigée.
+Bending energy was algebraically reformulated using differences of unit normals to avoid negative values around `1e-18 J` from cancellation in `1-cos(theta)` at rest. Tests and all four scenes were rerun afterward; the table is from the corrected version.
 
-Les sorties comprennent les OBJ avec UV, projets JSON, résumés et séries complètes de métriques par pas. Le binaire desktop est construit dans `target/debug/marvelous-cloth.exe` ; le binaire CPU seul dans `target/release/marvelous-cloth.exe`.
+Outputs include OBJ/UV, JSON projects, summaries and complete per-step metric series. The desktop binary was built at `target/debug/marvelous-cloth.exe`; the CPU-only binary at `target/release/marvelous-cloth.exe`.
 
-## Ce qui reste à valider
+## What remained unvalidated at that stage
 
-La fenêtre, l'interaction réelle et le rendu sur le pilote GPU n'ont pas été testés visuellement. La compilation et Naga ne remplacent pas ce contrôle. La vérification visuelle est reportée jusqu'à disponibilité du GPU.
+The window, actual interaction and rendering on the GPU driver had not been visually tested. Compilation and Naga do not replace that check; it was deferred until GPU availability.
 
-Les tests ne prouvent ni absence de traversée, ni robustesse sous toutes les grandes déformations. Le contact actuel ne mesure que les sommets contre la sphère ; les faces/arêtes, self-collisions, CCD, friction, couches et avatars sont absents. La flexion directionnelle est simplifiée et les paramètres ne sont pas calibrés. Aucun résultat 10k/50k/200k sommets, GPU compute, VBD/AVBD/PD ou IPC n'est revendiqué.
+Tests proved neither nonintersection nor robustness under every large deformation. Contact then checked only vertices against a sphere; face/edge contact, self-collision, CCD, friction, layers and avatars were absent. Directional bending is simplified and parameters uncalibrated. No result for 10k/50k/200k vertices, GPU compute, VBD/AVBD/PD or IPC was claimed in this initial pass.
 
-## Incrément templates et coutures — 14 octobre 2026
+## Template and sewing increment — 14 October 2026
 
-Le pipeline multi-panneaux a été implémenté et vérifié sur CPU uniquement. Les 31 tests comprennent les 17 tests précédents, 11 tests de templates/coutures et 3 tests d'attachements matériels. `scripts/check-cpu.ps1` a réussi : formatage, tests, Clippy sans avertissement et validation des deux exemples.
+The multi-panel pipeline was implemented and checked on CPU only. Its 31 tests included the preceding 17, 11 template/sewing tests and three material-attachment tests. `scripts/check-cpu.ps1` passed formatting, tests, warning-free Clippy and both example validations.
 
-Après intégration, `cargo build --locked -j 2`, `cargo clippy --locked --all-targets -j 2 -- -D warnings` (features desktop par défaut) et `cargo fmt --all -- --check` ont également réussi. Ces commandes compilent et analysent le renderer sans l'exécuter. La CI GitHub est préparée, pas exécutée à distance.
+After integration, `cargo build --locked -j 2`, `cargo clippy --locked --all-targets -j 2 -- -D warnings` (default desktop features) and `cargo fmt --all -- --check` also passed. These compile/analyze the renderer without running it. GitHub CI was prepared, not remotely executed.
 
-Les nouveaux tests portent sur l'intégration analytique d'une ouverture constante/linéaire avec maillages différents, gradients/Hessiennes par différences finies, symétrie et forme quadratique positive, bilans de forces/couples, invariance rigide, inversion de bord, intervalles partiels, crans, easing explicite, rejets des entrées invalides, sommets communs, masses/droit-fil indépendants, sérialisation, résolution multi-matière comparée à des résolutions indépendantes et échec transactionnel pour une couture compilée invalide. Les guides sont vérifiés sur une surface pliée à 90° et après changement de résolution.
+New tests cover analytical constant/linear gap integration on different meshes; gradient/Hessian finite differences; symmetry and positive quadratic form; force/torque balance; rigid invariance; boundary reversal; partial intervals; notches; explicit easing; invalid inputs; shared vertices; independent mass/grain; serialization; multi-material solving compared with independent solves; and transactional failure for an invalid compiled seam. Guides are checked on a 90° folded surface and after changing resolution.
 
-Commande réellement exécutée, binaire release sans feature desktop :
+Actually executed command, release binary without desktop:
 
 ```powershell
 .\target\release\cloth-template.exe simulate examples/templates/two-panel.json --steps 30 --threads 2 --output output/template-simulation
 ```
 
-| Mesure | Résultat |
+| Measurement | Result |
 |---|---:|
-| Panneaux / sommets / triangles | 2 / 60 / 80 |
-| Résolutions des panneaux | 3×4 et 4×7 cellules |
-| Couture / échantillons Gauss | 1 / 20 |
-| Pas convergés | 30 / 30 |
-| Temps physique | 0,5 s |
-| Ouverture maximale initiale | 96,4197 mm |
-| Ouverture maximale finale | 1,7740 mm |
-| Ouverture RMS finale | 0,6255 mm |
-| Résidu RMS final | 9,8055e-9 N |
-| Tolérance finale | 2,8534e-6 N |
-| Énergie de couture finale | 5,8684e-4 J |
-| Moyenne CPU par pas | 29,75 ms |
+| Panels / vertices / triangles | 2 / 60 / 80 |
+| Panel resolutions | 3×4 and 4×7 cells |
+| Seams / Gauss samples | 1 / 20 |
+| Converged steps | 30 / 30 |
+| Physical time | 0.5 s |
+| Initial maximum gap | 96.4197 mm |
+| Final maximum gap | 1.7740 mm |
+| Final RMS gap | 0.6255 mm |
+| Final RMS residual | 9.8055e-9 N |
+| Final tolerance | 2.8534e-6 N |
+| Final sewing energy | 5.8684e-4 J |
+| Mean CPU / step | 29.75 ms |
 
-Valeurs complètes conservées dans [template-results.json](template-results.json). Le temps est indicatif sur la machine de travail avec deux threads, pas un benchmark de capacité. Les deux panneaux sont placés explicitement en 3D ; le panneau gauche a deux coins fixés. `k=5000 N/m²` est une valeur de démonstration non calibrée. La tolérance inclut le terme relatif au résidu initial du pas.
+Full values: [template-results.json](template-results.json). Timing is indicative on the two-thread workstation, not a capacity benchmark. Both panels are explicitly placed in 3D; the left has two fixed corners. `k=5000 N/m²` is an uncalibrated demonstration value. Tolerance includes the step-initial residual's relative term.
 
-`local-ease.json` a été validé et exporté avec avertissement de longueurs locales différentes ; aucune revendication de fronces physiques ou de simulation validée n'est faite pour cet exemple. Le SVG généré a été analysé comme XML et les 80 repères de fibres de la simulation ont été vérifiés valides. Aucune fenêtre ni aucun adaptateur GPU n'a été créé.
+`local-ease.json` was validated/exported with an unequal-local-length warning; no physical-gather or validated-simulation claim is made for it. Generated SVG parsed as XML; all 80 simulation fiber frames were valid. No window or GPU adapter was created.
 
-La convergence Newton ne prouve ni l'exactitude industrielle d'une couture, ni l'absence d'auto-intersection : le raccord est une pénalité, les panneaux n'ont pas de contact mutuel et les surépaisseurs/plis/points ne sont pas modélisés. La GUI reste à un panneau ; le nouveau format est disponible dans la bibliothèque et le CLI.
+Newton convergence establishes neither industrial seam fidelity nor nonintersection: the connection is a penalty, the panels in this example have no mutual contact, and seam thickness/folds/stitches are not modeled. The GUI was still single-panel at that historical stage; the new format was available through the library/CLI. Later workspace capabilities are documented separately.

@@ -1,0 +1,210 @@
+{
+  "date": "2026-10-16",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "cpu": "AMD Ryzen 7 2700X",
+    "rayon_threads": 2
+  },
+  "conditions": "Local sequential runs, other desktop applications active; no concurrent compilation. Timings are not isolated hardware limits.",
+  "settings": {
+    "dt_s": 0.016666666666666666,
+    "iterations": 16,
+    "private_scene_vertices": 6731,
+    "private_scene_triangles": 12682,
+    "resolution_and_physics_unchanged": true
+  },
+  "baseline": "Saved executable from start of the investigation, including the earlier sparse f64 precision patch; old 2 micrometre global cutoff.",
+  "paired_240_steps": [
+    {
+      "run": "paired-baseline-9e7935",
+      "steps": 240,
+      "step_mean_ms": 34.92015416666667,
+      "step_p95_ms": 58.5056,
+      "gpu_mean_ms": 5.386850933333333,
+      "candidate_rebuild_mean_ms": 25.20450162601626,
+      "candidate_rebuild_p95_ms": 32.412499999999994,
+      "rebuilds": 123,
+      "identical_baseline_state": true
+    },
+    {
+      "run": "paired-baseline-b6f519",
+      "steps": 240,
+      "step_mean_ms": 43.08326541666667,
+      "step_p95_ms": 77.0629,
+      "gpu_mean_ms": 5.933671066666666,
+      "candidate_rebuild_mean_ms": 30.98449837398374,
+      "candidate_rebuild_p95_ms": 41.1768,
+      "rebuilds": 123,
+      "identical_baseline_state": true
+    },
+    {
+      "run": "paired-blocks-b2600a",
+      "steps": 240,
+      "step_mean_ms": 28.021731666666668,
+      "step_p95_ms": 35.7149,
+      "gpu_mean_ms": 5.302254133333333,
+      "candidate_rebuild_mean_ms": 5.005899186991869,
+      "candidate_rebuild_p95_ms": 6.5847,
+      "rebuilds": 123,
+      "identical_baseline_state": true
+    },
+    {
+      "run": "paired-blocks-b58c0a",
+      "steps": 240,
+      "step_mean_ms": 28.315119166666666,
+      "step_p95_ms": 36.5122,
+      "gpu_mean_ms": 4.850887866666667,
+      "candidate_rebuild_mean_ms": 5.150661788617886,
+      "candidate_rebuild_p95_ms": 6.2489,
+      "rebuilds": 123,
+      "identical_baseline_state": true
+    },
+    {
+      "run": "paired-mask-b9b063",
+      "steps": 240,
+      "step_mean_ms": 36.672108333333334,
+      "step_p95_ms": 60.2511,
+      "gpu_mean_ms": 5.443693466666667,
+      "candidate_rebuild_mean_ms": 14.720347967479675,
+      "candidate_rebuild_p95_ms": 21.8898,
+      "rebuilds": 123,
+      "identical_baseline_state": true
+    },
+    {
+      "run": "paired-mask-cc951f",
+      "steps": 240,
+      "step_mean_ms": 35.15762791666667,
+      "step_p95_ms": 56.455600000000004,
+      "gpu_mean_ms": 5.0851224,
+      "candidate_rebuild_mean_ms": 14.023121951219512,
+      "candidate_rebuild_p95_ms": 20.479,
+      "rebuilds": 123,
+      "identical_baseline_state": true
+    }
+  ],
+  "long_run": {
+    "steps": 1800,
+    "simulated_seconds": 29.999999999999577,
+    "step_mean_ms": 34.62515711111111,
+    "step_p95_ms": 44.3023,
+    "last_seam_gap_m": 0.004157191446468123,
+    "last_extension_p95_percent": 5.528189109066584,
+    "last_extension_max_percent": 29.687865470248354,
+    "fresh_contact_probe_error": null,
+    "fresh_minimum_distance_m": 1.440245512390543e-07
+  },
+  "native_cadence": {
+    "tshirt": {
+      "passed": true,
+      "physics_steps_per_second": 60.40833402148544,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 5.050000000000181,
+      "simulation_speed": 1.0068055670247573,
+      "ui_frame_interval_p95_ms": 19.3985,
+      "ui_frames_per_second": 60.009599143453684,
+      "wall_seconds": 5.0158642
+    },
+    "dress": {
+      "passed": true,
+      "physics_steps_per_second": 58.88744371782874,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 4.916666666666843,
+      "simulation_speed": 0.9814573952971456,
+      "ui_frame_interval_p95_ms": 20.990000000000002,
+      "ui_frames_per_second": 60.085154437511235,
+      "wall_seconds": 5.0095569
+    },
+    "garment": {
+      "passed": false,
+      "physics_steps_per_second": 32.06519599213721,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 2.6833333333333265,
+      "simulation_speed": 0.5344199332022869,
+      "ui_frame_interval_p95_ms": 21.953400000000002,
+      "ui_frames_per_second": 59.94797511573494,
+      "wall_seconds": 5.0210203
+    }
+  },
+  "native_authoring": {
+    "workflow": {
+      "checks": {
+        "box_selects_contour_points": true,
+        "canvas_click_commits_seam": true,
+        "cursor_deletes_seam": true,
+        "cursor_easing": true,
+        "cursor_flip": true,
+        "cursor_flip_restored": true,
+        "lasso_selects_contour_points": true,
+        "mixed_2d_3d_preview": true,
+        "undo_restores_seam": true,
+        "unequal_lengths_require_explicit_easing": true
+      },
+      "completed_pointer_actions": 21,
+      "expected_actions": 21,
+      "passed": true,
+      "scenario": "workflow"
+    },
+    "quick": {
+      "checks": {
+        "arc_drag": true,
+        "boolean_union": true,
+        "easing": true,
+        "ellipse_drag": true,
+        "flip_off": true,
+        "flip_on": true,
+        "mirror_copy": true,
+        "painted_visible_faces": true,
+        "report_reopens_identical_state": true
+      },
+      "completed_pointer_actions": 23,
+      "expected_actions": 23,
+      "passed": true,
+      "scenario": "quick"
+    },
+    "full": {
+      "anchor_edited": true,
+      "bezier_drawn": true,
+      "completed_pointer_actions": 55,
+      "expected_actions": 55,
+      "export_reload_compiles": true,
+      "fabric_applied_preserving_drape": true,
+      "handle_edited": true,
+      "layout_preserved_physics": true,
+      "new_panel_simulated": true,
+      "panels": 2,
+      "partial_and_multi_edge_sewing": true,
+      "passed": true,
+      "pending_seam_committed_on_play": true,
+      "rectangle_drawn": true,
+      "redo_observed": true,
+      "rotated_with_gizmo": true,
+      "rotation_2d_preserved_physics": true,
+      "rotation_axes_xyz": [
+        true,
+        true,
+        true
+      ],
+      "seam_removed_preserving_drape": true,
+      "seams": 1,
+      "sewing_selected_in_2d_and_3d": true,
+      "translated_with_gizmo": true,
+      "undo_observed": true
+    }
+  },
+  "gpu_regressions": {
+    "passed": 5,
+    "opt_in": true,
+    "growth_then_shrink_passed": true
+  },
+  "cpu_validation": {
+    "core_tests_passed": 137,
+    "template_fixtures_passed": 6,
+    "desktop_library_tests_passed": 19,
+    "desktop_ui_tests_passed": 42,
+    "wgsl_tests_passed": 2,
+    "default_suite_uses_gpu": false,
+    "all_target_clippy_passed": true,
+    "formatting_passed": true
+  },
+  "release_build_passed": true
+}

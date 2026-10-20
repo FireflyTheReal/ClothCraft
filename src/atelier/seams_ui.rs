@@ -18,6 +18,11 @@ impl Atelier {
             .collect()
     }
     pub(super) fn seam_edge_highlighted(&self, edge: &BoundaryRef) -> bool {
+        if let Some(id) = &self.authoring.selection.seam
+            && let Some(seam) = self.project.template.seams.iter().find(|s| &s.id == id)
+        {
+            return seam.references().any(|r| same_edge(edge, r));
+        }
         self.authoring.edge.as_ref().is_some_and(|selected| {
             same_edge(selected, edge)
                 || self.project.template.seams.iter().any(|s| {
@@ -28,6 +33,8 @@ impl Atelier {
     }
     pub(super) fn remove_seam(&mut self, seam: String) {
         if self.edit(Command::RemoveSeam { seam }) {
+            self.authoring.selection.seam = None;
+            self.authoring.selection.seam_card = None;
             self.status = "Seam removed · drape preserved · Ctrl+Z to undo".into();
         }
     }
@@ -74,10 +81,13 @@ impl Atelier {
                         edit = Some(seam.id.clone());
                     }
                     if ui
-                        .selectable_label(selected.contains(&seam.id), &seam.id)
+                        .selectable_label(
+                            self.authoring.selection.seam.as_ref() == Some(&seam.id),
+                            &seam.id,
+                        )
                         .clicked()
                     {
-                        select = Some(seam.a.clone());
+                        select = Some((seam.a.clone(), seam.id.clone()));
                     }
                     if ui
                         .small_button("Delete")
@@ -98,11 +108,13 @@ impl Atelier {
                 ));
             }
         });
-        if let Some(edge) = select {
+        if let Some((edge, id)) = select {
             self.playing = false;
             self.authoring.tool = Tool::Edit;
             self.authoring.ends.clear();
             self.select_boundary(edge);
+            self.authoring.selection.seam = Some(id);
+            self.authoring.selection.seam_card = None;
         }
         if let Some(seam) = remove {
             self.remove_seam(seam);

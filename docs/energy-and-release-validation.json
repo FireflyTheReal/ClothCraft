@@ -1,0 +1,937 @@
+{
+  "date": "2026-10-16",
+  "gpu_used": false,
+  "max_cpu_workers": 2,
+  "production_physics_changed": false,
+  "checks": {
+    "final-tests.log": true,
+    "clippy.log": true
+  },
+  "desktop_binary_sha256": "4270f808e6d460ff6f51c567aa0ee8488b08a09b9772408e70a9161a9c556c80",
+  "toy_model": {
+    "model": "two_scalar_masses_no_contact",
+    "gpu_used": false,
+    "parameters": {
+      "mass": 0.001,
+      "dt": 0.016666666666666666,
+      "drag": 1.5,
+      "support": 1.0,
+      "seam": 1000.0,
+      "span": 0.1,
+      "rest": 0.05
+    },
+    "scalar_16": {
+      "equilibrium": [
+        0.02498750624687656,
+        0.07501249375312272
+      ],
+      "stored_equilibrium_energy_j": 0.0006246876561719141,
+      "max_release_energy_rise_j": 1.6529317310867296e-05,
+      "release_energy_rise_steps": 88,
+      "max_release_residual_work_j": 1.906406932234467e-05,
+      "final_offset_m": 1.0784318735974907e-06,
+      "maximum_balance_error_j": 2.228713090815515e-17
+    },
+    "coupled_exact": {
+      "equilibrium": [
+        0.02498750624687656,
+        0.07501249375312272
+      ],
+      "stored_equilibrium_energy_j": 0.0006246876561719141,
+      "max_release_energy_rise_j": 2.168404344971009e-19,
+      "release_energy_rise_steps": 0,
+      "max_release_residual_work_j": 5.126542395783682e-17,
+      "final_offset_m": 1.4183099139586375e-14,
+      "maximum_balance_error_j": 3.3806326539172073e-17
+    }
+  },
+  "runs": {
+    "sewn-16": {
+      "summary": {
+        "cpu_workers": 2,
+        "gpu_used": false,
+        "max_accounting_error_j": 5.984795992119984e-17,
+        "mode": "cpu_pull_hold_release",
+        "positive_change_steps": 66,
+        "settings": {
+          "contact": {
+            "radius": 0.003,
+            "refresh_fraction": 0.01,
+            "relaxation": 0.45,
+            "stiffness": 100000.0
+          },
+          "damping": 1.5,
+          "dt": 0.016666666666666666,
+          "gravity": [
+            0.0,
+            -9.81,
+            0.0
+          ],
+          "iterations": 16
+        },
+        "steps": 360,
+        "vertices": 40,
+        "warning": "Diagnostic only. Fixed-feature accounting separates contact refresh and control changes; it is not a convergence or collision certificate. CPU replay does not reproduce GPU iterations."
+      },
+      "all": {
+        "steps": 360,
+        "net_mechanical_change_excluding_control_j": -0.582729439311723,
+        "positive_change_steps": 66,
+        "max_positive_change_j": 7.185410400247932e-05,
+        "sum_positive_changes_j": 0.00016406086272122418,
+        "positive_frozen_model_change_steps": 66,
+        "contributions_j": {
+          "drag_loss_j": 0.000308113799924784,
+          "implicit_kinetic_loss_j": 0.0051346623356721645,
+          "nonlinear_remainder_j": -0.5714270847512329,
+          "residual_work_j": -0.005859578424892538
+        },
+        "sum_contact_refresh_j": 0.0,
+        "sum_control_change_j": 0.0018121309110663089,
+        "max_residual_rms_n": 0.025414180959125253,
+        "max_balance_error_j": 5.984795992119984e-17,
+        "initial_energy": {
+          "bending_j": 0.0,
+          "contact_j": -0.0,
+          "grab_j": 0.0,
+          "gravity_j": 0.15906547124999992,
+          "kinetic_j": 0.0,
+          "membrane_j": 1.9643170985562763e-30,
+          "sewing_j": 0.5861437499999997
+        },
+        "final_energy_frozen_contact": {
+          "bending_j": 0.00018737211559622077,
+          "contact_j": -0.0,
+          "grab_j": 0.0,
+          "gravity_j": 0.1595423217410106,
+          "kinetic_j": 1.953393523067257e-09,
+          "membrane_j": 0.004258799113479213,
+          "sewing_j": 0.00030341792586321937
+        },
+        "minimum_distance_m": 0.012,
+        "attachment_displacement_m": [
+          -0.020693820093426477,
+          0.0003555552513128113,
+          0.006560702164994998
+        ]
+      },
+      "phases": {
+        "settle": {
+          "steps": 120,
+          "net_mechanical_change_excluding_control_j": -0.5809322581444997,
+          "positive_change_steps": 14,
+          "max_positive_change_j": 7.185410400247932e-05,
+          "sum_positive_changes_j": 0.0001583534196904507,
+          "positive_frozen_model_change_steps": 14,
+          "contributions_j": {
+            "drag_loss_j": 0.0002692085990742301,
+            "implicit_kinetic_loss_j": 0.005118437156742314,
+            "nonlinear_remainder_j": -0.5697801947177654,
+            "residual_work_j": -0.00576441767091778
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": 0.0,
+          "max_residual_rms_n": 0.025414180959125253,
+          "max_balance_error_j": 5.984795992119984e-17,
+          "initial_energy": {
+            "bending_j": 0.0,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.15906547124999992,
+            "kinetic_j": 0.0,
+            "membrane_j": 1.9643170985562763e-30,
+            "sewing_j": 0.5861437499999997
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.00020744334802192397,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.1595395838600859,
+            "kinetic_j": 6.439627213657438e-07,
+            "membrane_j": 0.004224048559174677,
+            "sewing_j": 0.00030524337549564555
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            -0.021339551540153434,
+            9.131468972789492e-05,
+            0.0006585038274040372
+          ]
+        },
+        "pull": {
+          "steps": 60,
+          "net_mechanical_change_excluding_control_j": -0.0016399668170501334,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 1.3283910739431762e-05,
+            "implicit_kinetic_loss_j": 1.7599723879517586e-06,
+            "nonlinear_remainder_j": -0.001597382050784752,
+            "residual_work_j": -2.7540883137998214e-05
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": 0.001833425164320122,
+          "max_residual_rms_n": 0.0001705291417463133,
+          "max_balance_error_j": 8.576208590949791e-21,
+          "initial_energy": {
+            "bending_j": 0.00020744334802192397,
+            "contact_j": -0.0,
+            "grab_j": 5.4327846364889034e-08,
+            "gravity_j": 0.1595395838600859,
+            "kinetic_j": 6.439627213657438e-07,
+            "membrane_j": 0.004224048559174677,
+            "sewing_j": 0.00030524337549564555
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.00017484115477598856,
+            "contact_j": -0.0,
+            "grab_j": 1.6610084623511274e-05,
+            "gravity_j": 0.1594636308848987,
+            "kinetic_j": 7.418963962906467e-06,
+            "membrane_j": 0.004488815251397655,
+            "sewing_j": 0.00031910511311073896
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            -0.0001921924082447929,
+            0.0005156402712095387,
+            0.03985435991484023
+          ]
+        },
+        "hold": {
+          "steps": 30,
+          "net_mechanical_change_excluding_control_j": -1.6137172320374788e-05,
+          "positive_change_steps": 2,
+          "max_positive_change_j": 2.912819985342421e-08,
+          "sum_positive_changes_j": 4.2229450354040494e-08,
+          "positive_frozen_model_change_steps": 2,
+          "contributions_j": {
+            "drag_loss_j": 2.5345624661757884e-06,
+            "implicit_kinetic_loss_j": 3.617364900734405e-06,
+            "nonlinear_remainder_j": -9.513087215765168e-06,
+            "residual_work_j": -4.721577376994287e-07
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": 0.0,
+          "max_residual_rms_n": 0.000258328905464868,
+          "max_balance_error_j": 1.7999450129153882e-21,
+          "initial_energy": {
+            "bending_j": 0.00017484115477598856,
+            "contact_j": -0.0,
+            "grab_j": 1.6610084623511274e-05,
+            "gravity_j": 0.1594636308848987,
+            "kinetic_j": 7.418963962906467e-06,
+            "membrane_j": 0.004488815251397655,
+            "sewing_j": 0.00031910511311073896
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.00018373013855662492,
+            "contact_j": -0.0,
+            "grab_j": 2.1294253253813252e-05,
+            "gravity_j": 0.1594579709614304,
+            "kinetic_j": 6.278896522848419e-07,
+            "membrane_j": 0.004470994158130258,
+            "sewing_j": 0.00031966687942573723
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            -4.3133308355897126e-05,
+            5.20850887676394e-05,
+            -3.6569022481947044e-05
+          ]
+        },
+        "release": {
+          "steps": 150,
+          "net_mechanical_change_excluding_control_j": -0.00014107717785253996,
+          "positive_change_steps": 50,
+          "max_positive_change_j": 3.745411437150244e-07,
+          "sum_positive_changes_j": 5.665213580419454e-06,
+          "positive_frozen_model_change_steps": 50,
+          "contributions_j": {
+            "drag_loss_j": 2.308672764494608e-05,
+            "implicit_kinetic_loss_j": 1.084784164116636e-05,
+            "nonlinear_remainder_j": -3.999489546736416e-05,
+            "residual_work_j": -6.714771309906325e-05
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": -2.1294253253813252e-05,
+          "max_residual_rms_n": 0.0012377105600000018,
+          "max_balance_error_j": 8.470329472543003e-21,
+          "initial_energy": {
+            "bending_j": 0.00018373013855662492,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.1594579709614304,
+            "kinetic_j": 6.278896522848419e-07,
+            "membrane_j": 0.004470994158130258,
+            "sewing_j": 0.00031966687942573723
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.00018737211559622077,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.1595423217410106,
+            "kinetic_j": 1.953393523067257e-09,
+            "membrane_j": 0.004258799113479213,
+            "sewing_j": 0.00030341792586321937
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            0.0008498965604768344,
+            -0.0009529638237388838,
+            -0.03361893541784108
+          ]
+        }
+      },
+      "trace_sha256": "1ec3cbe39205fd69c61faa853fbfd3a1a2d5b01b9f36af2a6fa004a0a5a91b64"
+    },
+    "sewn-64": {
+      "summary": {
+        "cpu_workers": 2,
+        "gpu_used": false,
+        "max_accounting_error_j": 7.676151381197371e-17,
+        "mode": "cpu_pull_hold_release",
+        "positive_change_steps": 0,
+        "settings": {
+          "contact": {
+            "radius": 0.003,
+            "refresh_fraction": 0.01,
+            "relaxation": 0.45,
+            "stiffness": 100000.0
+          },
+          "damping": 1.5,
+          "dt": 0.016666666666666666,
+          "gravity": [
+            0.0,
+            -9.81,
+            0.0
+          ],
+          "iterations": 64
+        },
+        "steps": 360,
+        "vertices": 40,
+        "warning": "Diagnostic only. Fixed-feature accounting separates contact refresh and control changes; it is not a convergence or collision certificate. CPU replay does not reproduce GPU iterations."
+      },
+      "all": {
+        "steps": 360,
+        "net_mechanical_change_excluding_control_j": -0.5826718437416389,
+        "positive_change_steps": 0,
+        "max_positive_change_j": 0.0,
+        "sum_positive_changes_j": 0,
+        "positive_frozen_model_change_steps": 0,
+        "contributions_j": {
+          "drag_loss_j": 0.0003327247668387186,
+          "implicit_kinetic_loss_j": 0.0060645278595339545,
+          "nonlinear_remainder_j": -0.5753743781394364,
+          "residual_work_j": -0.0009002129758301302
+        },
+        "sum_contact_refresh_j": 0.0,
+        "sum_control_change_j": 0.0017539211781196873,
+        "max_residual_rms_n": 0.005575103676214181,
+        "max_balance_error_j": 7.676151381197371e-17,
+        "initial_energy": {
+          "bending_j": 0.0,
+          "contact_j": -0.0,
+          "grab_j": 0.0,
+          "gravity_j": 0.15906547124999992,
+          "kinetic_j": 0.0,
+          "membrane_j": 1.9643170985562763e-30,
+          "sewing_j": 0.5861437499999997
+        },
+        "final_energy_frozen_contact": {
+          "bending_j": 0.00018740849714381444,
+          "contact_j": -0.0,
+          "grab_j": 0.0,
+          "gravity_j": 0.15954357487267828,
+          "kinetic_j": 2.5476501138382864e-07,
+          "membrane_j": 0.004256504156977833,
+          "sewing_j": 0.0003035563946690288
+        },
+        "minimum_distance_m": 0.012,
+        "attachment_displacement_m": [
+          -0.015385683497265532,
+          0.0004272297556178195,
+          0.009947917770075716
+        ]
+      },
+      "phases": {
+        "settle": {
+          "steps": 120,
+          "net_mechanical_change_excluding_control_j": -0.5809362109750233,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 0.00028525270923113324,
+            "implicit_kinetic_loss_j": 0.006036662300423517,
+            "nonlinear_remainder_j": -0.5737329214305943,
+            "residual_work_j": -0.0008813745347745677
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": 0.0,
+          "max_residual_rms_n": 0.005575103676214181,
+          "max_balance_error_j": 7.676151381197371e-17,
+          "initial_energy": {
+            "bending_j": 0.0,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.15906547124999992,
+            "kinetic_j": 0.0,
+            "membrane_j": 1.9643170985562763e-30,
+            "sewing_j": 0.5861437499999997
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.00020536050318583965,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.15954621603253166,
+            "kinetic_j": 5.504585248045773e-08,
+            "membrane_j": 0.004217480003477814,
+            "sewing_j": 0.0003038986899283506
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            -0.0159210261321045,
+            5.350120762748212e-05,
+            -0.0026968200684275617
+          ]
+        },
+        "pull": {
+          "steps": 60,
+          "net_mechanical_change_excluding_control_j": -0.0016101395434385227,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 1.0686352629856366e-05,
+            "implicit_kinetic_loss_j": 8.913614525904946e-07,
+            "nonlinear_remainder_j": -0.0015960807410646107,
+            "residual_work_j": -2.481088291464749e-06
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": 0.0017685926671892449,
+          "max_residual_rms_n": 1.7699753410607787e-05,
+          "max_balance_error_j": 1.1501119236937297e-20,
+          "initial_energy": {
+            "bending_j": 0.00020536050318583965,
+            "contact_j": -0.0,
+            "grab_j": 5.432784636488332e-08,
+            "gravity_j": 0.15954621603253166,
+            "kinetic_j": 5.504585248045773e-08,
+            "membrane_j": 0.004217480003477814,
+            "sewing_j": 0.0003038986899283506
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.0001787114647921581,
+            "contact_j": -0.0,
+            "grab_j": 1.2064925696785742e-05,
+            "gravity_j": 0.1594664764439339,
+            "kinetic_j": 2.605826026201008e-06,
+            "membrane_j": 0.0044539227264584905,
+            "sewing_j": 0.0003176820118193218
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            -0.00020462243418634118,
+            0.0004353102583174451,
+            0.039864254563429936
+          ]
+        },
+        "hold": {
+          "steps": 30,
+          "net_mechanical_change_excluding_control_j": -2.0671488230206334e-05,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 4.010383614525298e-06,
+            "implicit_kinetic_loss_j": 7.364270136122883e-06,
+            "nonlinear_remainder_j": -8.166746365003365e-06,
+            "residual_work_j": -1.1300881145547831e-06
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": 0.0,
+          "max_residual_rms_n": 3.868799796406781e-05,
+          "max_balance_error_j": 4.923379005915621e-21,
+          "initial_energy": {
+            "bending_j": 0.0001787114647921581,
+            "contact_j": -0.0,
+            "grab_j": 1.2064925696785742e-05,
+            "gravity_j": 0.1594664764439339,
+            "kinetic_j": 2.605826026201008e-06,
+            "membrane_j": 0.0044539227264584905,
+            "sewing_j": 0.0003176820118193218
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.00018602397251158998,
+            "contact_j": -0.0,
+            "grab_j": 1.4671489069557702e-05,
+            "gravity_j": 0.15946606213762357,
+            "kinetic_j": 2.6069631345544323e-07,
+            "membrane_j": 0.004426989014929964,
+            "sewing_j": 0.0003167846000485264
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            -1.2595713727400759e-05,
+            5.1758298683424186e-05,
+            -1.3509024425754912e-05
+          ]
+        },
+        "release": {
+          "steps": 150,
+          "net_mechanical_change_excluding_control_j": -0.00010482173494676197,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 3.2775321363203515e-05,
+            "implicit_kinetic_loss_j": 1.9609927521719685e-05,
+            "nonlinear_remainder_j": -3.720922141229651e-05,
+            "residual_work_j": -1.5227264649542263e-05
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": -1.4671489069557702e-05,
+          "max_residual_rms_n": 0.00031738233754973085,
+          "max_balance_error_j": 6.724978380056115e-21,
+          "initial_energy": {
+            "bending_j": 0.00018602397251158998,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.15946606213762357,
+            "kinetic_j": 2.6069631345544323e-07,
+            "membrane_j": 0.004426989014929964,
+            "sewing_j": 0.0003167846000485264
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.00018740849714381444,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.15954357487267828,
+            "kinetic_j": 2.5476501138382864e-07,
+            "membrane_j": 0.004256504156977833,
+            "sewing_j": 0.0003035563946690288
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            0.0007437732346531056,
+            -0.000949868009876953,
+            -0.02655808595640878
+          ]
+        }
+      },
+      "trace_sha256": "3e43a327ceceb2149e101602da088fb6370bd0cff9a391f736ce5c048a05129e"
+    },
+    "free-16": {
+      "summary": {
+        "cpu_workers": 2,
+        "gpu_used": false,
+        "max_accounting_error_j": 5.421010862427522e-19,
+        "mode": "cpu_pull_hold_release",
+        "positive_change_steps": 0,
+        "settings": {
+          "contact": {
+            "radius": 0.003,
+            "refresh_fraction": 0.01,
+            "relaxation": 0.45,
+            "stiffness": 100000.0
+          },
+          "damping": 1.5,
+          "dt": 0.016666666666666666,
+          "gravity": [
+            0.0,
+            -9.81,
+            0.0
+          ],
+          "iterations": 16
+        },
+        "steps": 360,
+        "vertices": 20,
+        "warning": "Diagnostic only. Fixed-feature accounting separates contact refresh and control changes; it is not a convergence or collision certificate. CPU replay does not reproduce GPU iterations."
+      },
+      "all": {
+        "steps": 360,
+        "net_mechanical_change_excluding_control_j": -0.16348140410172143,
+        "positive_change_steps": 0,
+        "max_positive_change_j": 0.0,
+        "sum_positive_changes_j": 0,
+        "positive_frozen_model_change_steps": 0,
+        "contributions_j": {
+          "drag_loss_j": 0.009237876754143755,
+          "implicit_kinetic_loss_j": 0.0011924554201799304,
+          "nonlinear_remainder_j": -0.0032840935241822294,
+          "residual_work_j": -0.149767013104894
+        },
+        "sum_contact_refresh_j": 3.470167841312526e-08,
+        "sum_control_change_j": 0.0033451489324428595,
+        "max_residual_rms_n": 0.03119664113736067,
+        "max_balance_error_j": 5.421010862427522e-19,
+        "initial_energy": {
+          "bending_j": 0.0,
+          "contact_j": -0.0,
+          "grab_j": 0.0,
+          "gravity_j": 0.07504649999999999,
+          "kinetic_j": 0.0,
+          "membrane_j": 7.706733857911909e-31,
+          "sewing_j": -0.0
+        },
+        "final_energy_frozen_contact": {
+          "bending_j": 6.646439032052e-09,
+          "contact_j": -0.0,
+          "grab_j": 0.0,
+          "gravity_j": -0.0855529260058696,
+          "kinetic_j": 0.00046286720941927695,
+          "membrane_j": 2.9698073269884433e-07,
+          "sewing_j": -0.0
+        },
+        "minimum_distance_m": 0.0029991669132288508,
+        "attachment_displacement_m": [
+          0.051042940167161946,
+          -1.5640358026732837,
+          -0.02776104202682327
+        ]
+      },
+      "phases": {
+        "settle": {
+          "steps": 120,
+          "net_mechanical_change_excluding_control_j": -0.06808386109649231,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 0.004120247433150746,
+            "implicit_kinetic_loss_j": 0.0001771287213807204,
+            "nonlinear_remainder_j": -2.7803033688761055e-07,
+            "residual_work_j": -0.06378620691162395
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": 0.0,
+          "max_residual_rms_n": 0.0032636966167005565,
+          "max_balance_error_j": 5.421010862427522e-19,
+          "initial_energy": {
+            "bending_j": 0.0,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.07504649999999999,
+            "kinetic_j": 0.0,
+            "membrane_j": 7.706733857911909e-31,
+            "sewing_j": -0.0
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.0,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": 0.006262432792260939,
+            "kinetic_j": 0.0006992847866973223,
+            "membrane_j": 9.213245494020888e-07,
+            "sewing_j": -0.0
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            -0.03433057448018627,
+            -0.7824132397197913,
+            0.0
+          ]
+        },
+        "pull": {
+          "steps": 60,
+          "net_mechanical_change_excluding_control_j": -0.020490387446071342,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 0.0012251421773105794,
+            "implicit_kinetic_loss_j": 0.0007406068040326236,
+            "nonlinear_remainder_j": -0.002762279647863211,
+            "residual_work_j": -0.015762393518543347
+          },
+          "sum_contact_refresh_j": 3.470167841312526e-08,
+          "sum_control_change_j": 0.003371284571176804,
+          "max_residual_rms_n": 0.03119664113736067,
+          "max_balance_error_j": 2.981555974335137e-19,
+          "initial_energy": {
+            "bending_j": 0.0,
+            "contact_j": -0.0,
+            "grab_j": 5.432784636488341e-08,
+            "gravity_j": 0.006262432792260939,
+            "kinetic_j": 0.0006992847866973223,
+            "membrane_j": 9.213245494020888e-07,
+            "sewing_j": -0.0
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.0012334168055691778,
+            "contact_j": -0.0,
+            "grab_j": 1.3766638120471941e-05,
+            "gravity_j": -0.011873288600550437,
+            "kinetic_j": 0.00045867858919763097,
+            "membrane_j": 1.0962596276280009e-05,
+            "sewing_j": -0.0
+          },
+          "minimum_distance_m": 0.0029991669132288508,
+          "attachment_displacement_m": [
+            -0.0003305008314973684,
+            0.0009505669033210221,
+            0.04006202345173
+          ]
+        },
+        "hold": {
+          "steps": 30,
+          "net_mechanical_change_excluding_control_j": -0.006186041737391318,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 0.00044965768210779425,
+            "implicit_kinetic_loss_j": 0.00019633048765959577,
+            "nonlinear_remainder_j": -0.0004946795994579206,
+            "residual_work_j": -0.005045373968166006
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": 0.0,
+          "max_residual_rms_n": 0.0037418397541194625,
+          "max_balance_error_j": 3.2526065174565133e-19,
+          "initial_energy": {
+            "bending_j": 0.0012334168055691778,
+            "contact_j": -0.0,
+            "grab_j": 1.3766638120471941e-05,
+            "gravity_j": -0.011873288600550437,
+            "kinetic_j": 0.00045867858919763097,
+            "membrane_j": 1.0962596276280009e-05,
+            "sewing_j": -0.0
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 2.2583818938454834e-05,
+            "contact_j": -0.0,
+            "grab_j": 2.613563873394451e-05,
+            "gravity_j": -0.016509449993199782,
+            "kinetic_j": 0.0001024535358440377,
+            "membrane_j": 1.577129090515084e-05,
+            "sewing_j": -0.0
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            -2.7070285982810915e-05,
+            -0.00021334676293828514,
+            -0.00025227723440408856
+          ]
+        },
+        "release": {
+          "steps": 150,
+          "net_mechanical_change_excluding_control_j": -0.06872111382176646,
+          "positive_change_steps": 0,
+          "max_positive_change_j": 0.0,
+          "sum_positive_changes_j": 0,
+          "positive_frozen_model_change_steps": 0,
+          "contributions_j": {
+            "drag_loss_j": 0.0034428294615746376,
+            "implicit_kinetic_loss_j": 7.838940710699049e-05,
+            "nonlinear_remainder_j": -2.685624652420795e-05,
+            "residual_work_j": -0.06517303870656058
+          },
+          "sum_contact_refresh_j": 0.0,
+          "sum_control_change_j": -2.613563873394451e-05,
+          "max_residual_rms_n": 0.002924698661323966,
+          "max_balance_error_j": 3.2526065174565133e-19,
+          "initial_energy": {
+            "bending_j": 2.2583818938454834e-05,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": -0.016509449993199782,
+            "kinetic_j": 0.0001024535358440377,
+            "membrane_j": 1.577129090515084e-05,
+            "sewing_j": -0.0
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 6.646439032052e-09,
+            "contact_j": -0.0,
+            "grab_j": 0.0,
+            "gravity_j": -0.0855529260058696,
+            "kinetic_j": 0.00046286720941927695,
+            "membrane_j": 2.9698073269884433e-07,
+            "sewing_j": -0.0
+          },
+          "minimum_distance_m": 0.012,
+          "attachment_displacement_m": [
+            0.08540886183175503,
+            -0.7800791666212639,
+            -0.06720423828674724
+          ]
+        }
+      },
+      "trace_sha256": "498c8b6cece9dcdef78b5847d14d8a0a0bb6ad51417ffc2ebaaa52989659a362"
+    },
+    "garment-replay": {
+      "summary": {
+        "cpu_workers": 2,
+        "gpu_used": false,
+        "max_accounting_error_j": 1.4210854715202004e-14,
+        "mode": "cpu_replay_of_accepted_states",
+        "positive_change_steps": 121,
+        "settings": {
+          "contact": {
+            "radius": 0.003,
+            "refresh_fraction": 0.01,
+            "relaxation": 0.45,
+            "stiffness": 100000.0
+          },
+          "damping": 1.5,
+          "dt": 0.016666666666666666,
+          "gravity": [
+            0.0,
+            -9.81,
+            0.0
+          ],
+          "iterations": 16
+        },
+        "steps": 360,
+        "vertices": 6731,
+        "warning": "Diagnostic only. Fixed-feature accounting separates contact refresh and control changes; it is not a convergence or collision certificate. CPU replay does not reproduce GPU iterations."
+      },
+      "all": {
+        "steps": 360,
+        "net_mechanical_change_excluding_control_j": 0.003637068195788599,
+        "positive_change_steps": 121,
+        "max_positive_change_j": 0.055991345183515194,
+        "sum_positive_changes_j": 0.21343368536517185,
+        "positive_frozen_model_change_steps": 126,
+        "contributions_j": {
+          "drag_loss_j": 0.004839737482724237,
+          "implicit_kinetic_loss_j": 0.00870415562769468,
+          "nonlinear_remainder_j": -4.996163294683074,
+          "residual_work_j": 5.475451780101184
+        },
+        "sum_contact_refresh_j": -0.46210752411189726,
+        "sum_control_change_j": 0.0,
+        "max_residual_rms_n": 72.69987828520384,
+        "max_balance_error_j": 1.4210854715202004e-14,
+        "initial_energy": {
+          "bending_j": 0.037009747197390516,
+          "contact_j": 2.752948576760465e-05,
+          "grab_j": 0.0,
+          "gravity_j": 3.4520266389107546,
+          "kinetic_j": 1.894241036960343e-05,
+          "membrane_j": 0.12388528022129244,
+          "sewing_j": 0.008838768916816968
+        },
+        "final_energy_frozen_contact": {
+          "bending_j": 0.03841840732165634,
+          "contact_j": 3.6600341458600736e-05,
+          "grab_j": 0.0,
+          "gravity_j": 3.441672288331569,
+          "kinetic_j": 2.5058601861128104e-05,
+          "membrane_j": 0.13606519659377567,
+          "sewing_j": 0.00922642769403589
+        },
+        "minimum_distance_m": 0.002686250744802826,
+        "attachment_displacement_m": [
+          -0.0007357119084177577,
+          -0.0014280935814123819,
+          -0.0008887187332946578
+        ]
+      },
+      "phases": {
+        "archived": {
+          "steps": 360,
+          "net_mechanical_change_excluding_control_j": 0.003637068195788599,
+          "positive_change_steps": 121,
+          "max_positive_change_j": 0.055991345183515194,
+          "sum_positive_changes_j": 0.21343368536517185,
+          "positive_frozen_model_change_steps": 126,
+          "contributions_j": {
+            "drag_loss_j": 0.004839737482724237,
+            "implicit_kinetic_loss_j": 0.00870415562769468,
+            "nonlinear_remainder_j": -4.996163294683074,
+            "residual_work_j": 5.475451780101184
+          },
+          "sum_contact_refresh_j": -0.46210752411189726,
+          "sum_control_change_j": 0.0,
+          "max_residual_rms_n": 72.69987828520384,
+          "max_balance_error_j": 1.4210854715202004e-14,
+          "initial_energy": {
+            "bending_j": 0.037009747197390516,
+            "contact_j": 2.752948576760465e-05,
+            "grab_j": 0.0,
+            "gravity_j": 3.4520266389107546,
+            "kinetic_j": 1.894241036960343e-05,
+            "membrane_j": 0.12388528022129244,
+            "sewing_j": 0.008838768916816968
+          },
+          "final_energy_frozen_contact": {
+            "bending_j": 0.03841840732165634,
+            "contact_j": 3.6600341458600736e-05,
+            "grab_j": 0.0,
+            "gravity_j": 3.441672288331569,
+            "kinetic_j": 2.5058601861128104e-05,
+            "membrane_j": 0.13606519659377567,
+            "sewing_j": 0.00922642769403589
+          },
+          "minimum_distance_m": 0.002686250744802826,
+          "attachment_displacement_m": [
+            -0.0007357119084177577,
+            -0.0014280935814123819,
+            -0.0008887187332946578
+          ]
+        }
+      },
+      "trace_sha256": "130075919e164a3d85525da9f376a9d988137a8e42cd8f2429d7614413cefc20",
+      "after_60_steps": {
+        "steps": 300,
+        "net_mechanical_change_excluding_control_j": -0.01946284078991046,
+        "positive_change_steps": 108,
+        "max_positive_change_j": 0.0013926238953200427,
+        "sum_positive_changes_j": 0.015450931176936319,
+        "positive_frozen_model_change_steps": 113,
+        "contributions_j": {
+          "drag_loss_j": 0.0011706650668602684,
+          "implicit_kinetic_loss_j": 0.0009753821435857691,
+          "nonlinear_remainder_j": -5.163173738194052,
+          "residual_work_j": 5.589998167792573
+        },
+        "sum_contact_refresh_j": -0.4441412231779789,
+        "sum_control_change_j": 0.0,
+        "max_residual_rms_n": 72.69987828520384,
+        "max_balance_error_j": 1.4210854715202004e-14,
+        "initial_energy": {
+          "bending_j": 0.03797502713861605,
+          "contact_j": 3.814164080655692e-05,
+          "grab_j": 0.0,
+          "gravity_j": 3.4171108686416387,
+          "kinetic_j": 0.000465733523408061,
+          "membrane_j": 0.17895322513555376,
+          "sewing_j": 0.010363820048067608
+        },
+        "final_energy_frozen_contact": {
+          "bending_j": 0.03841840732165634,
+          "contact_j": 3.6600341458600736e-05,
+          "grab_j": 0.0,
+          "gravity_j": 3.441672288331569,
+          "kinetic_j": 2.5058601861128104e-05,
+          "membrane_j": 0.13606519659377567,
+          "sewing_j": 0.00922642769403589
+        },
+        "minimum_distance_m": 0.002967852517872346,
+        "attachment_displacement_m": [
+          0.000890308296592833,
+          0.00293958233446312,
+          0.0015099372644942488
+        ]
+      }
+    }
+  },
+  "limits": [
+    "Actual Garment states were recorded earlier on GPU; this pass only evaluates them on CPU.",
+    "Contact refresh changes the measured potential model. Residual includes movement-bound reactions, not just incomplete convergence.",
+    "The sewn fixtures use the same relative pointer protocol but choose the grab origin from their own settled state; their absolute target paths differ.",
+    "A positive-energy step does not by itself establish an indefinitely sustained oscillation or identify the cause.",
+    "The toy coupled solve is not integrated into the cloth solver. No interactive or GPU performance claim."
+  ]
+}

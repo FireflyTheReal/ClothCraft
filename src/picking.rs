@@ -1,5 +1,27 @@
 //! Ray picking independent of the UI. Attachments retain barycentric weights.
 use glam::DVec3;
+/// Closest cloth hit, excluding cloth hidden by the avatar. No backface culling.
+pub fn visible_cloth_face(
+    scene: &crate::fitting::FittingScene,
+    origin: DVec3,
+    direction: DVec3,
+) -> Option<usize> {
+    let (face, distance) = scene
+        .garment
+        .mesh
+        .triangles
+        .iter()
+        .enumerate()
+        .filter_map(|(i, t)| {
+            ray_triangle(origin, direction, t.vertices.map(|v| scene.state.x[v]))
+                .map(|(d, _)| (i, d))
+        })
+        .min_by(|a, b| a.1.total_cmp(&b.1))?;
+    (!scene
+        .collider
+        .occludes_ray(origin, direction, distance - 1e-5))
+    .then_some(face)
+}
 pub fn ray_triangle(
     origin: DVec3,
     direction: DVec3,

@@ -1,0 +1,247 @@
+{
+  "date": "2026-10-20",
+  "scope": "Isolated GCP Appendix A factors, rejected product-weighting trial, read-only frozen-dress classification",
+  "production_changed": false,
+  "gpu_used": false,
+  "new_cloth_trajectory": false,
+  "full_gcp_implemented": false,
+  "checks": {
+    "targeted_cpu_tests": 25,
+    "clippy_cpu_all_targets": "passed",
+    "clippy_desktop_all_targets": "passed",
+    "fmt": "passed",
+    "diff_check": "passed",
+    "rebuilt_probe_matches": "identical JSON"
+  },
+  "compiler": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "base_commit": "78b359cb2cbf8367e3615a5679d30184a14f851b",
+  "dirty_tree": true,
+  "cpu_threads": 2,
+  "source_files_archived": 168,
+  "probe": {
+    "active_production_terms_factor_bins": {
+      "EdgeEdge": [
+        0,
+        17,
+        450,
+        0
+      ],
+      "PointEdge": [
+        0,
+        0,
+        2,
+        0
+      ],
+      "PointFace": [
+        0,
+        24,
+        201,
+        0
+      ]
+    },
+    "bin_labels": [
+      "zero",
+      "fractional",
+      "one",
+      "evaluation_error"
+    ],
+    "coverage_warning": "Counts over production terms do not establish the required GCP lower-feature contact coverage.",
+    "parallel_sweep": [
+      {
+        "degrees": 0.0,
+        "gcp_full_edge_factor": 0.0,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 0.0,
+        "positive_only_signed_energy_j": -0.20372964932433701,
+        "product_link_energy_j": 0.0,
+        "product_link_normal_force_n": -0.0,
+        "single_representative_force_n": 0.0
+      },
+      {
+        "degrees": 0.001,
+        "gcp_full_edge_factor": 9.279162863989347e-12,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 6.092347467197838e-07,
+        "positive_only_signed_energy_j": -0.2037294010859744,
+        "product_link_energy_j": 2.4823836148427556e-07,
+        "product_link_normal_force_n": 0.00027415563355406006,
+        "single_representative_force_n": 0.00013707781801195135
+      },
+      {
+        "degrees": 0.01,
+        "gcp_full_edge_factor": 9.277749677599139e-08,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 6.0922555421024376e-05,
+        "positive_only_signed_energy_j": -0.20370482586263328,
+        "product_link_energy_j": 2.4822710516530025e-05,
+        "product_link_normal_force_n": 0.027414314875000914,
+        "single_representative_force_n": 0.013707574969730485
+      },
+      {
+        "degrees": 0.1,
+        "gcp_full_edge_factor": 0.0009136986112242921,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 0.006083063051218746,
+        "positive_only_signed_energy_j": -0.20125104871985175,
+        "product_link_energy_j": 0.0024710618676073133,
+        "product_link_normal_force_n": 2.7290525504292913,
+        "single_representative_force_n": 1.368689186524218
+      },
+      {
+        "degrees": 0.25,
+        "gcp_full_edge_factor": 0.03284836665199112,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 0.03771447256818532,
+        "positive_only_signed_energy_j": -0.18836253678279957,
+        "product_link_energy_j": 0.01507733127433743,
+        "product_link_normal_force_n": 16.651476831436703,
+        "single_representative_force_n": 8.485756327841697
+      },
+      {
+        "degrees": 0.5,
+        "gcp_full_edge_factor": 0.3790243626311515,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 0.1465056522620886,
+        "positive_only_signed_energy_j": -0.1440345590055599,
+        "product_link_energy_j": 0.05532225625177877,
+        "product_link_normal_force_n": 61.09816463537336,
+        "single_representative_force_n": 32.96377175896993
+      },
+      {
+        "degrees": 0.75,
+        "gcp_full_edge_factor": 0.957277189746989,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 0.3133184813485153,
+        "positive_only_signed_energy_j": -0.07606512066040332,
+        "product_link_energy_j": 0.10766470054740486,
+        "product_link_normal_force_n": 118.9054106870604,
+        "single_representative_force_n": 70.49665830341594
+      },
+      {
+        "degrees": 1.0,
+        "gcp_full_edge_factor": 1.0,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 0.5164000507383214,
+        "positive_only_signed_energy_j": 0.006682353171639108,
+        "product_link_energy_j": 0.15608361811853916,
+        "product_link_normal_force_n": 172.3794950416729,
+        "single_representative_force_n": 116.19001141612232
+      },
+      {
+        "degrees": 1.5,
+        "gcp_full_edge_factor": 1.0,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 0.9009214981959032,
+        "positive_only_signed_energy_j": 0.16335919246807834,
+        "product_link_energy_j": 0.20172972713810447,
+        "product_link_normal_force_n": 222.7912763580574,
+        "single_representative_force_n": 202.7073370940782
+      },
+      {
+        "degrees": 2.0,
+        "gcp_full_edge_factor": 1.0,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 1.0,
+        "positive_only_signed_energy_j": 0.20372964932433701,
+        "product_link_energy_j": 0.20372964932933704,
+        "product_link_normal_force_n": 225.0,
+        "single_representative_force_n": 225.0
+      },
+      {
+        "degrees": 5.0,
+        "gcp_full_edge_factor": 1.0,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 1.0,
+        "positive_only_signed_energy_j": 0.20372964932433701,
+        "product_link_energy_j": 0.20372964932933704,
+        "product_link_normal_force_n": 225.0,
+        "single_representative_force_n": 225.0
+      },
+      {
+        "degrees": 90.0,
+        "gcp_full_edge_factor": 1.0,
+        "gcp_half_edge_factors": [
+          0.0,
+          0.0
+        ],
+        "gcp_shared_vertex_edge_factor": 1.0,
+        "ogc_parallel_weight": 1.0,
+        "positive_only_signed_energy_j": 0.20372964932433701,
+        "product_link_energy_j": 0.20372964932933704,
+        "product_link_normal_force_n": 225.0,
+        "single_representative_force_n": 225.0
+      }
+    ],
+    "project": "output/solver-consistency-final-20261019/single-xpbd-4/source.json",
+    "scope": "Scalar feature factors and a rejected product-weight forest trial; no GCP force law, collision or trajectory validation",
+    "state_time_s": 49.449999999998475,
+    "width": 0.01
+  },
+  "primary_sources_read": [
+    "https://arxiv.org/html/2402.00719v3",
+    "https://arxiv.org/html/2307.15908",
+    "https://huangzizhou.github.io/research/smooth-contact.html"
+  ],
+  "evidence_sha256": {
+    "output/parallel-mollifier-20261020/probe.json": "2c7808aaf3b86ca333a260a6f27f53c6c1797bc906f22a74d14228575411d5f8",
+    "output/parallel-mollifier-20261020/verified-probe.json": "2c7808aaf3b86ca333a260a6f27f53c6c1797bc906f22a74d14228575411d5f8",
+    "output/parallel-mollifier-20261020/tests.log": "837678915cedc03591dcf99c5792f19ac04ddf41f3506fe40b979076643ef58a",
+    "output/parallel-mollifier-20261020/clippy-cpu-final.log": "013bf3c2a70c48ff1a50e05fba9738447baa7511bdc87dd3ee8c6b93120a984a",
+    "output/parallel-mollifier-20261020/clippy-desktop-final.log": "793eb77c50c8e2a738e2b0238a20b09c588c58dee7341db2eb66d6cabfd1fd8a",
+    "output/parallel-mollifier-20261020/source-manifest.json": "7a42eaca618173ce7bd79acb698b56165c7f53b62c5ecfcaa095db55f566215e",
+    "output/parallel-mollifier-20261020/probe.exe": "b980788b1e5583fe974f1196418eb1db634ed3077fc5347441295c3596401562"
+  },
+  "user_document_sha256": "e542e066f4bf662149f8603bab47913a60498915689386f0bd51503e4d7aaccb",
+  "open_gates": [
+    "complete VF EE VE VV coverage",
+    "directional factors and high-arity derivatives",
+    "open two-sided cloth",
+    "quadrature and reference geometry",
+    "full dress collisions, convergence and pull/release",
+    "whole-step cost"
+  ]
+}

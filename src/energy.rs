@@ -7,7 +7,7 @@ use crate::{
 use glam::DVec3;
 
 /// Smooth tension/compression blend; p(0)=0, asymptotic positive part.
-fn axial<S: Scalar>(strain: S, stiffness: f64, m: &Material) -> S {
+pub(crate) fn axial<S: Scalar>(strain: S, stiffness: f64, m: &Material) -> S {
     let delta = S::c(m.compression_transition);
     let p = (strain + (strain * strain + delta * delta).sqrt() - delta) * S::c(0.5);
     S::c(0.5 * stiffness)
@@ -78,7 +78,8 @@ pub fn bending_element(x: &[DVec3], h: &Hinge, m: &Material) -> Element {
     Element::from_jet(&h.vertices, bending(p, h, m))
 }
 pub fn stretches(x: &[DVec3], t: &Triangle, m: &Material) -> [f64; 2] {
-    fiber_frame(x, t, m).stretch
+    let [w, v] = fiber_deformation(x, t, m);
+    [w.length(), v.length()]
 }
 
 /// World-space continuum fiber directions, not explicit yarn geometry.
@@ -90,7 +91,8 @@ pub struct FiberFrame {
     pub shear_cosine: f64,
     pub valid: bool,
 }
-pub fn fiber_frame(x: &[DVec3], t: &Triangle, m: &Material) -> FiberFrame {
+#[inline]
+fn fiber_deformation(x: &[DVec3], t: &Triangle, m: &Material) -> [DVec3; 2] {
     let ds = [
         x[t.vertices[1]] - x[t.vertices[0]],
         x[t.vertices[2]] - x[t.vertices[0]],
@@ -99,6 +101,10 @@ pub fn fiber_frame(x: &[DVec3], t: &Triangle, m: &Material) -> FiberFrame {
     let (s, c) = m.grain_degrees.to_radians().sin_cos();
     let w = f[0] * c + f[1] * s;
     let v = -f[0] * s + f[1] * c;
+    [w, v]
+}
+pub fn fiber_frame(x: &[DVec3], t: &Triangle, m: &Material) -> FiberFrame {
+    let [w, v] = fiber_deformation(x, t, m);
     let stretch = [w.length(), v.length()];
     let valid = stretch.iter().all(|v| v.is_finite() && *v > 1e-12)
         && w.cross(v).length() > 1e-10 * stretch[0] * stretch[1];

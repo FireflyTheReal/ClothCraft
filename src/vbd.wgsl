@@ -1,10 +1,10 @@
 // Independent VBD implementation. Exact energy/gradient; SPD Gauss-Newton
 // local Hessians. OGC candidates and conservative radii are supplied by f64 CPU.
-struct Term { ids:vec4u, info:vec4u, a:vec4f, b:vec4f, c:vec4f, d:vec4f }
+struct Term { ids:vec4u, info:vec4u, a:vec4f, b:vec4f, c:vec4f }
 struct Config { offset:u32, count:u32, moving:u32, pad:u32 }
 @group(0) @binding(0) var<storage,read_write> positions:array<vec4f>;
 @group(0) @binding(1) var<storage,read> targets:array<vec4f>;
-@group(0) @binding(2) var<storage,read> ranges:array<vec2u>;
+@group(0) @binding(2) var<storage,read> ranges:array<vec4u>;
 @group(0) @binding(3) var<storage,read> terms:array<Term>;
 @group(0) @binding(4) var<storage,read> incident:array<u32>;
 struct Ball { center_radius:vec4f, guess:vec4f }
@@ -98,9 +98,59 @@ fn evaluate(t:Term,v:u32,p:vec3f)->Result {
     }
     return r;
 }
+// Line search needs energy only. Keep the same scalar expressions/guards as
+// evaluate, without constructing gradients, bending Jacobians or Hessians.
+fn energy_value(t:Term,v:u32,p:vec3f)->f32 {
+    var x:array<vec3f,4>;var local=4u;
+    for(var j=0u;j<4u;j++){x[j]=point(t.ids[j],v,p);if j<t.info.y && t.ids[j]==v{local=j;}}
+    if local==4u{return 0.0;}
+    if t.info.x==0u {
+        let e1=x[1]-x[0];let e2=x[2]-x[0];
+        let w=t.a.y*e1+t.a.z*e2;let f=t.b.y*e1+t.b.z*e2;
+        let ew=0.5*(dot(w,w)-1);let ef=0.5*(dot(f,f)-1);let shear=dot(w,f);
+        let aw=axial(ew,t.b.w,t.c.z,t.c.w);let af=axial(ef,t.c.x,t.c.z,t.c.w);
+        return t.a.w*(aw.x+af.x+0.5*t.c.y*shear*shear);
+    }
+    if t.info.x==1u {
+        let e=x[1]-x[0];let u=x[2]-x[0];let w=x[3]-x[0];
+        let na=cross(e,u);let nb=cross(w,e);let la=length(na);let lb=length(nb);
+        if min(la,lb)<1e-12 {return 1e30;}
+        let a=na/la;let b=nb/lb;let d=a-b;
+        return 0.5*t.a.x*dot(d,d);
+    }
+    if t.info.x==2u {
+        var d=t.c.w*x[0]-t.c.xyz;
+        for(var j=1u;j<t.info.y;j++){d+=t.a[j]*(x[j]-x[0]);}
+        return 0.5*t.b.x*dot(d,d);
+    }
+    var d=0.0;var moll=1.0;
+    if t.info.x==10u {
+        let q=x[0]-x[1];d=length(q);
+    } else if t.info.x==11u {
+        let e=x[2]-x[1];let s=dot(x[0]-x[1],e)/max(dot(e,e),1e-20);let q=x[0]-x[1]-s*e;d=length(q);
+    } else if t.info.x==12u {
+        let e=x[2]-x[1];let f=x[3]-x[1];let n=normalize(cross(e,f));let h=dot(x[0]-x[1],n);d=abs(h);
+    } else {
+        let e=x[1]-x[0];let f=x[3]-x[2];let n=cross(e,f);let n2=dot(n,n);
+        if n2<1e-24{return 0.0;}
+        let w=x[0]-x[2];let h=dot(w,n)/sqrt(n2);d=abs(h);
+        let q=n2/t.a.z;
+        if q<1 {moll=q*(2-q);}
+    }
+    if d>=t.a.x{return 0.0;}
+    return moll*barrier(d,t.a.x,t.a.y).x;
+}
 fn objective(v:u32,p:vec3f)->f32 {
     let q=p-targets[v].xyz;var e=0.5*targets[v].w*dot(q,q);
-    for(var i=ranges[v].x;i<ranges[v].y;i++){e+=evaluate(terms[incident[i]],v,p).e;}return e;
+    for(var i=0u;i<incident_count(v);i++){e+=energy_value(terms[incident_at(v,i)],v,p);}return e;
+}
+// A virtual concatenation preserves the previous per-lane summation order.
+// The static prefix stays resident; only contact/grab incidence is uploaded.
+fn incident_count(v:u32)->u32 {let r=ranges[v];return r.y-r.x+r.w-r.z;}
+fn incident_at(v:u32,i:u32)->u32 {
+    let r=ranges[v];let rest=r.y-r.x;
+    if i<rest {return incident[r.x+i];}
+    return incident[r.z+i-rest];
 }
 // Adaptive initialization from the previous accepted acceleration. The inertia
 // target still contains full gravity. Keep the ORIGINAL OGC balls and fixed pins.
@@ -128,21 +178,20 @@ var<workgroup> finished:u32;
 fn assemble(v:u32,lane:u32) {
     let p=positions[v].xyz;
     var e=0.0;var g=vec3f(0);var h=mat3x3f();
-    for(var i=ranges[v].x+lane;i<ranges[v].y;i+=32u) {
-        let a=evaluate(terms[incident[i]],v,p);e+=a.e;g+=a.g;h+=a.h;
+    for(var i=lane;i<incident_count(v);i+=32u) {
+        let a=evaluate(terms[incident_at(v,i)],v,p);e+=a.e;g+=a.g;h+=a.h;
     }
     if lane==0u {let q=p-targets[v].xyz;e+=0.5*targets[v].w*dot(q,q);g+=q*targets[v].w;h+=I*targets[v].w;}
-    energies[lane]=e;gradients[lane]=g;hessians[lane]=h;
-    workgroupBarrier();
-    for(var stride=16u;stride>0u;stride/=2u) {
-        if lane<stride {energies[lane]+=energies[lane+stride];gradients[lane]+=gradients[lane+stride];hessians[lane]+=hessians[lane+stride];}
-        workgroupBarrier();
-    }
+    reduce_system(e,g,h,lane);
 }
 @compute @workgroup_size(32)
 fn probe(@builtin(workgroup_id) group:vec3u,@builtin(local_invocation_index) lane:u32){
     let v=group.x;if v>=config.moving{return;}
     assemble(v,lane);
+    var e=0.0;
+    for(var i=lane;i<incident_count(v);i+=32u){e+=energy_value(terms[incident_at(v,i)],v,positions[v].xyz);}
+    if lane==0u {let q=positions[v].xyz-targets[v].xyz;e+=0.5*targets[v].w*dot(q,q);}
+    reduce_energy(e,lane);
     if lane==0u {probes[v]=vec4f(gradients[0],energies[0]);}
 }
 @compute @workgroup_size(32)
@@ -166,13 +215,9 @@ fn iterate(@builtin(workgroup_id) group:vec3u,@builtin(local_invocation_index) l
         }
         workgroupBarrier();
         var e=0.0;
-        for(var i=ranges[v].x+lane;i<ranges[v].y;i+=32u){e+=evaluate(terms[incident[i]],v,candidate).e;}
+        for(var i=lane;i<incident_count(v);i+=32u){e+=energy_value(terms[incident_at(v,i)],v,candidate);}
         if lane==0u {let q=candidate-targets[v].xyz;e+=0.5*targets[v].w*dot(q,q);}
-        energies[lane]=e;workgroupBarrier();
-        for(var stride=16u;stride>0u;stride/=2u){
-            if lane<stride {energies[lane]+=energies[lane+stride];}
-            workgroupBarrier();
-        }
+        reduce_energy(e,lane);
         if lane==0u && energies[0]<=initial_energy+1e-9 && energies[0]<1e25 {
             positions[v]=vec4f(candidate,positions[v].w);finished=1u;
         }

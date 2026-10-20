@@ -86,3 +86,39 @@ fn cached_broad_phase_catches_a_pair_entering_the_query_radius() {
     assert_eq!(b.active_contacts, 0);
     assert_eq!(b.value(&x, &s), 0.);
 }
+
+#[test]
+fn wider_cache_covers_two_primitives_moving_towards_each_other() {
+    let mut x = vec![
+        DVec3::new(0., 0., 0.),
+        DVec3::new(1., 0., 0.),
+        DVec3::new(0., 1., 0.),
+        DVec3::new(0., 0., 0.12),
+        DVec3::new(1., 0., 0.12),
+        DVec3::new(0., 1., 0.12),
+    ];
+    let original = OgcWorld::new(&x, vec![[0, 1, 2], [3, 4, 5]], 6, []).unwrap();
+    let mut cached = original.clone();
+    let settings = OgcSettings {
+        radius: 0.02,
+        ..Default::default()
+    };
+    let first = cached.detect(&x, 0.05, &settings).unwrap();
+    assert_eq!(first.vertex_face_candidates, 0);
+    for (i, p) in x.iter_mut().enumerate() {
+        p.z += if i < 3 { 0.039 } else { -0.039 };
+    }
+    let a = cached.detect(&x, 0.05, &settings).unwrap();
+    let b = original.clone().detect(&x, 0.05, &settings).unwrap();
+    assert!(!a.broad_phase_rebuilt);
+    assert!(a.vertex_face_candidates > 0);
+    assert_eq!(a.radii, b.radii);
+    assert_eq!(a.minimum_distance, b.minimum_distance);
+    let key = |s: &marvelous_cloth::ogc::ContactSet| {
+        s.contacts
+            .iter()
+            .map(|c| (c.kind, c.vertices, c.mollifier_epsilon))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(key(&a), key(&b));
+}

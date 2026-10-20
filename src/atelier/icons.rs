@@ -78,10 +78,16 @@ pub(super) enum Icon {
     Seam,
     Notch,
     Gradient,
+    Ellipse,
+    Arc,
+    Union,
+    Subtract,
+    Intersect,
+    Measure,
 }
 
 #[cfg(test)]
-const ALL: [Icon; 34] = [
+const ALL: [Icon; 40] = [
     Icon::Select,
     Icon::Edit,
     Icon::Pen,
@@ -116,6 +122,12 @@ const ALL: [Icon; 34] = [
     Icon::Seam,
     Icon::Notch,
     Icon::Gradient,
+    Icon::Ellipse,
+    Icon::Arc,
+    Icon::Union,
+    Icon::Subtract,
+    Icon::Intersect,
+    Icon::Measure,
 ];
 
 // ---------------------------------------------------------------------------
@@ -223,6 +235,51 @@ fn arrow_head(tip: [f32; 2], toward: [f32; 2], length: f32, half_angle_deg: f32)
 /// testable. Coordinates stay inside `0..1` including stroke extents.
 pub(super) fn geometry(icon: Icon) -> Vec<Prim> {
     match icon {
+        Icon::Measure => vec![
+            stroke_rect([0.10, 0.30], [0.90, 0.70]),
+            seg([0.25, 0.30], [0.25, 0.50]),
+            seg([0.40, 0.30], [0.40, 0.58]),
+            seg([0.55, 0.30], [0.55, 0.50]),
+            seg([0.70, 0.30], [0.70, 0.58]),
+        ],
+        Icon::Ellipse => vec![circle([0.5, 0.5], 0.34)],
+        Icon::Arc => vec![
+            arc([0.5, 0.5], 0.36, -145., 80., 20),
+            path(&[[0.205, 0.293], [0.5, 0.5], [0.563, 0.855]]),
+        ],
+        Icon::Union => vec![closed(&[
+            [0.12, 0.15],
+            [0.58, 0.15],
+            [0.58, 0.42],
+            [0.88, 0.42],
+            [0.88, 0.88],
+            [0.42, 0.88],
+            [0.42, 0.58],
+            [0.12, 0.58],
+        ])],
+        Icon::Subtract => vec![
+            closed(&[
+                [0.12, 0.15],
+                [0.63, 0.15],
+                [0.63, 0.4],
+                [0.4, 0.4],
+                [0.4, 0.7],
+                [0.12, 0.7],
+            ]),
+            path(&[
+                [0.7, 0.43],
+                [0.88, 0.43],
+                [0.88, 0.88],
+                [0.43, 0.88],
+                [0.43, 0.77],
+            ]),
+        ],
+        Icon::Intersect => vec![
+            stroke_rect([0.12, 0.15], [0.64, 0.65]),
+            stroke_rect([0.4, 0.4], [0.88, 0.88]),
+            seg([0.42, 0.62], [0.62, 0.42]),
+            seg([0.42, 0.51], [0.51, 0.42]),
+        ],
         // Pointer arrow.
         Icon::Select => vec![closed(&[
             [0.30, 0.10],
@@ -751,7 +808,7 @@ mod tests {
         // Recorded per icon. If a glyph silently loses its geometry (or gains a
         // stray primitive), the count changes and this fails instead of the
         // blank button reaching the user.
-        let expected: [(Icon, usize); 34] = [
+        let expected: [(Icon, usize); 40] = [
             (Icon::Select, 1),
             (Icon::Edit, 3),
             (Icon::Pen, 3),
@@ -786,6 +843,12 @@ mod tests {
             (Icon::Seam, 4),
             (Icon::Notch, 3),
             (Icon::Gradient, 4),
+            (Icon::Ellipse, 1),
+            (Icon::Arc, 2),
+            (Icon::Union, 1),
+            (Icon::Subtract, 2),
+            (Icon::Intersect, 4),
+            (Icon::Measure, 5),
         ];
         // A new variant without a recorded count is itself a regression.
         assert_eq!(expected.len(), ALL.len());

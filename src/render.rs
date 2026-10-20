@@ -14,6 +14,7 @@ pub mod appearance;
 mod environment;
 
 pub struct DrawModel<'a> {
+    pub marked_faces: Option<&'a std::collections::BTreeSet<usize>>,
     pub mesh: &'a Mesh,
     pub state: &'a State,
     pub materials: &'a [Material],
@@ -580,6 +581,7 @@ impl Viewport {
             size,
             camera,
             DrawModel {
+                marked_faces: None,
                 mesh,
                 state,
                 materials: std::slice::from_ref(&p.material),
@@ -603,6 +605,7 @@ impl Viewport {
         contacts: bool,
     ) -> egui::TextureId {
         let DrawModel {
+            marked_faces,
             mesh,
             state,
             materials,
@@ -692,7 +695,7 @@ impl Viewport {
                     ]);
                 }
             };
-        for t in &mesh.triangles {
+        for (face, t) in mesh.triangles.iter().enumerate() {
             let material = &materials[t.material];
             let strain = if heat {
                 energy::stretches(&state.x, t, material)
@@ -709,7 +712,9 @@ impl Viewport {
                         .iter()
                         .any(|i| s.penetration(state.x[*i], material.thickness) > 0.0)
                 });
-            let color = if contact {
+            let color = if marked_faces.is_some_and(|faces| faces.contains(&face)) {
+                [1.0, 0.23, 0.10]
+            } else if contact {
                 [1.0, 0.2, 0.25]
             } else if heat {
                 [0.15 + 0.8 * v, 0.75 * (1.0 - v) + 0.15, 0.95 * (1.0 - v)]

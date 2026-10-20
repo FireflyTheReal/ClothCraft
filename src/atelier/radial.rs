@@ -63,7 +63,7 @@ const ITEMS: [(Tool, bool, Icon, &str, &str); 8] = [
         false,
         Icon::Pen,
         "Internal line",
-        "Draw a sewing path on the active panel",
+        "Click a panel boundary, then draw inside",
     ),
 ];
 
@@ -90,6 +90,9 @@ fn wheel_center(at: egui::Pos2, bounds: egui::Rect) -> egui::Pos2 {
 }
 
 impl Radial {
+    pub fn close(&mut self) {
+        self.center = None;
+    }
     pub fn open(&mut self, ctx: &egui::Context, at: egui::Pos2) {
         self.center = Some(wheel_center(at, ctx.content_rect()));
         self.blocked = true;
@@ -110,8 +113,7 @@ impl Radial {
         let hover = ctx
             .input(|i| i.pointer.hover_pos())
             .and_then(|p| sector(p - center));
-        let enabled =
-            |i: usize| has_panel || !matches!(ITEMS[i].0, Tool::Place | Tool::InternalLine);
+        let enabled = |i: usize| has_panel || !matches!(ITEMS[i].0, Tool::Place);
         let mut chosen = None;
         let mut close = ctx.input(|i| i.key_pressed(egui::Key::Escape) || !i.focused);
         if ctx.input(|i| i.pointer.primary_clicked()) {

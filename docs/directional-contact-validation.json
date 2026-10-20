@@ -1,0 +1,443 @@
+{
+  "scope": "Full solver step wall time excludes offline audits and trace export; oracle timings are validation only.",
+  "runs": {
+    "isotropic": {
+      "steps": 360,
+      "simulated_seconds": 5.999999999999659,
+      "step_ms": {
+        "mean": 20.125574166666667,
+        "p50": 20.190350000000002,
+        "p95": 23.1984,
+        "max": 34.251400000000004
+      },
+      "fresh_minimum_distance_m": 2.701586237575778e-06,
+      "final_minimum_area_ratio": 0.00021984442798639694,
+      "final_collapsed_faces": 2,
+      "final_seam_gap_m": 0.08511527713226978,
+      "final_extension_p95_percent": 26.032828604257286,
+      "initially_restricted_vertices": 9,
+      "restricted_net_motion_mm": {
+        "mean": 1.457950566533287,
+        "p50": 0.44579057111480314,
+        "p95": 2.8996681587602082,
+        "max": 2.8996681587602082
+      },
+      "restricted_settle_motion_mm": {
+        "mean": 0.4028652543204809,
+        "p50": 0.1484750144829001,
+        "p95": 0.7774985750350262,
+        "max": 0.7774985750350262
+      },
+      "directional_vertices": {
+        "mean": 0,
+        "p50": 0.0,
+        "p95": 0,
+        "max": 0
+      },
+      "precision_ms": {
+        "mean": 0.24285083333333332,
+        "p50": 0.22375,
+        "p95": 0.3513,
+        "max": 0.7652
+      },
+      "final_highpass_rms_m": 5.337766602816093e-05,
+      "final_intersection_check": "passed",
+      "phase_step_ms": {
+        "settle": {
+          "mean": 19.6757825,
+          "p50": 19.5714,
+          "p95": 23.4461,
+          "max": 34.251400000000004
+        },
+        "pull": {
+          "mean": 21.028923333333335,
+          "p50": 20.88195,
+          "p95": 23.5229,
+          "max": 26.8107
+        },
+        "hold": {
+          "mean": 21.64409,
+          "p50": 21.48775,
+          "p95": 23.383000000000003,
+          "max": 25.5593
+        },
+        "release": {
+          "mean": 19.820364666666666,
+          "p50": 19.68405,
+          "p95": 21.9225,
+          "max": 24.2962
+        }
+      },
+      "settle_attachment_motion_mm": 0.7691626874358979,
+      "pull_attachment_motion_mm": 0.44557060306052704,
+      "hold_attachment_motion_mm": 0.35116964269356343,
+      "release_attachment_motion_mm": 1.3154843729815675
+    },
+    "directional": {
+      "steps": 360,
+      "simulated_seconds": 5.999999999999659,
+      "step_ms": {
+        "mean": 19.660661944444445,
+        "p50": 19.0831,
+        "p95": 24.3044,
+        "max": 40.5216
+      },
+      "fresh_minimum_distance_m": 0.00013640586683897292,
+      "final_minimum_area_ratio": 0.7290210426200084,
+      "final_collapsed_faces": 0,
+      "final_seam_gap_m": 0.003376586896855267,
+      "final_extension_p95_percent": 2.8876027285048123,
+      "initially_restricted_vertices": 9,
+      "restricted_net_motion_mm": {
+        "mean": 284.07328629564245,
+        "p50": 175.30409860843474,
+        "p95": 432.6319619793946,
+        "max": 432.6319619793946
+      },
+      "restricted_settle_motion_mm": {
+        "mean": 105.42881514384867,
+        "p50": 85.40220132415638,
+        "p95": 146.3536068675753,
+        "max": 146.3536068675753
+      },
+      "directional_vertices": {
+        "mean": 0.06388888888888888,
+        "p50": 0.0,
+        "p95": 0,
+        "max": 9
+      },
+      "precision_ms": {
+        "mean": 0.002861666666666667,
+        "p50": 9.999999999999999e-05,
+        "p95": 0.00019999999999999998,
+        "max": 0.4132
+      },
+      "final_highpass_rms_m": 6.574441238493971e-05,
+      "final_intersection_check": "passed",
+      "phase_step_ms": {
+        "settle": {
+          "mean": 20.8777425,
+          "p50": 20.84095,
+          "p95": 25.0224,
+          "max": 32.7968
+        },
+        "pull": {
+          "mean": 21.484936666666666,
+          "p50": 21.228,
+          "p95": 25.2626,
+          "max": 40.5216
+        },
+        "hold": {
+          "mean": 20.337136666666666,
+          "p50": 19.5729,
+          "p95": 24.8007,
+          "max": 25.1669
+        },
+        "release": {
+          "mean": 17.821992666666667,
+          "p50": 17.9416,
+          "p95": 20.4448,
+          "max": 21.9058
+        }
+      },
+      "settle_attachment_motion_mm": 143.87820238536958,
+      "pull_attachment_motion_mm": 58.098177709172546,
+      "hold_attachment_motion_mm": 4.172460216784558,
+      "release_attachment_motion_mm": 254.64927236984298
+    },
+    "oracle": {
+      "steps": 360,
+      "simulated_seconds": 5.999999999999659,
+      "step_ms": {
+        "mean": 41.22833444444444,
+        "p50": 41.19115,
+        "p95": 48.2217,
+        "max": 57.5848
+      },
+      "fresh_minimum_distance_m": 0.00013640586683897292,
+      "final_minimum_area_ratio": 0.7290210426200084,
+      "final_collapsed_faces": 0,
+      "final_seam_gap_m": 0.003376586896855267,
+      "final_extension_p95_percent": 2.8876027285048123,
+      "initially_restricted_vertices": 9,
+      "restricted_net_motion_mm": {
+        "mean": 284.07328629564245,
+        "p50": 175.30409860843474,
+        "p95": 432.6319619793946,
+        "max": 432.6319619793946
+      },
+      "restricted_settle_motion_mm": {
+        "mean": 105.42881514384867,
+        "p50": 85.40220132415638,
+        "p95": 146.3536068675753,
+        "max": 146.3536068675753
+      },
+      "directional_vertices": {
+        "mean": 0.06388888888888888,
+        "p50": 0.0,
+        "p95": 0,
+        "max": 9
+      },
+      "precision_ms": {
+        "mean": 0.003903611111111111,
+        "p50": 9.999999999999999e-05,
+        "p95": 0.00019999999999999998,
+        "max": 0.7982
+      },
+      "final_highpass_rms_m": 6.574441238493971e-05,
+      "final_intersection_check": "passed",
+      "phase_step_ms": {
+        "settle": {
+          "mean": 42.02525583333333,
+          "p50": 42.09395,
+          "p95": 48.7765,
+          "max": 57.5848
+        },
+        "pull": {
+          "mean": 43.25871333333333,
+          "p50": 42.716049999999996,
+          "p95": 48.910000000000004,
+          "max": 52.380900000000004
+        },
+        "hold": {
+          "mean": 42.075446666666664,
+          "p50": 42.455200000000005,
+          "p95": 48.073100000000004,
+          "max": 49.0745
+        },
+        "release": {
+          "mean": 39.60922333333333,
+          "p50": 39.021699999999996,
+          "p95": 47.444100000000006,
+          "max": 54.247
+        }
+      },
+      "settle_attachment_motion_mm": 143.87820238536958,
+      "pull_attachment_motion_mm": 58.098177709172546,
+      "hold_attachment_motion_mm": 4.172460216784558,
+      "release_attachment_motion_mm": 254.64927236984298
+    }
+  },
+  "oracle_trajectory_identical": true,
+  "natural_pull_release": {
+    "steps": 360,
+    "mean_step_ms": 18.974935555555554,
+    "p95_step_ms": 22.4723,
+    "minimum_distance_m": 0.00013640586683897292,
+    "final_area_ratio": 0.7392083207172577,
+    "final_seam_gap_m": 0.003916942928085336,
+    "final_extension_p95_percent": 2.8167292250657727,
+    "final_highpass_rms_m": 5.853920067893646e-05,
+    "positive_energy_autonomous_steps": 0,
+    "final_intersection_check": "passed",
+    "pull_attachment_motion_mm": 72.24357175646341,
+    "hold_attachment_motion_mm": 27.68785296974439,
+    "release_attachment_motion_mm": 217.9505634403256
+  },
+  "date": "2026-10-19",
+  "hardware": "NVIDIA GeForce RTX 3090, Vulkan, NVIDIA 616.56",
+  "cpu_workers": 2,
+  "model": "5126 vertices; 9546 faces; 6 panels; 7 seams; saved material and dt=1/60; 16 iterations",
+  "limits": "Floating-point contact checks with existing seam exclusions; no exact predicates or global jitter cure. No steady 60 Hz claim. Single-run timing, including cold first step.",
+  "cpu_dress_smoke": {
+    "steps": 12,
+    "minimum_initial_witness_motion_mm": 28.501741460016415,
+    "maximum_initial_witness_motion_mm": 36.93945884941061,
+    "final_minimum_area_ratio": 0.23669584044412137,
+    "final_collapsed_faces": 0,
+    "final_intersection_check": "passed"
+  },
+  "public_nonmatching_seam_fixture": {
+    "scope": "Full solver step wall time excludes offline audits and trace export; oracle timings are validation only.",
+    "runs": {
+      "isotropic": {
+        "steps": 360,
+        "simulated_seconds": 5.999999999999984,
+        "step_ms": {
+          "mean": 2.0452325,
+          "p50": 1.885,
+          "p95": 2.6616,
+          "max": 48.5622
+        },
+        "fresh_minimum_distance_m": 0.012,
+        "final_minimum_area_ratio": 0.7841381575425652,
+        "final_collapsed_faces": 0,
+        "final_seam_gap_m": 0.0026195010854894994,
+        "final_extension_p95_percent": 4.565832018263483,
+        "initially_restricted_vertices": 0,
+        "restricted_net_motion_mm": null,
+        "restricted_settle_motion_mm": null,
+        "directional_vertices": {
+          "mean": 0,
+          "p50": 0.0,
+          "p95": 0,
+          "max": 0
+        },
+        "precision_ms": {
+          "mean": 6.222222222222222e-05,
+          "p50": 0.0,
+          "p95": 0.00019999999999999998,
+          "max": 0.0006
+        },
+        "final_highpass_rms_m": 1.0786754043870426e-05,
+        "final_intersection_check": "passed",
+        "phase_step_ms": {
+          "settle": {
+            "mean": 2.3816858333333335,
+            "p50": 1.9521,
+            "p95": 2.9045,
+            "max": 48.5622
+          },
+          "pull": {
+            "mean": 2.10228,
+            "p50": 2.0521,
+            "p95": 2.7296,
+            "max": 3.0561
+          },
+          "hold": {
+            "mean": 1.7851966666666668,
+            "p50": 1.59045,
+            "p95": 2.5289,
+            "max": 2.9143
+          },
+          "release": {
+            "mean": 1.805258,
+            "p50": 1.7738999999999998,
+            "p95": 2.4267999999999996,
+            "max": 3.0861
+          }
+        },
+        "settle_attachment_motion_mm": 53.04209965260139,
+        "pull_attachment_motion_mm": 39.85511985063506,
+        "hold_attachment_motion_mm": 0.050783102585286066,
+        "release_attachment_motion_mm": 42.333781718176986
+      },
+      "directional": {
+        "steps": 360,
+        "simulated_seconds": 5.999999999999984,
+        "step_ms": {
+          "mean": 1.9471138888888888,
+          "p50": 1.71905,
+          "p95": 2.5578,
+          "max": 47.9438
+        },
+        "fresh_minimum_distance_m": 0.012,
+        "final_minimum_area_ratio": 0.7841381575425652,
+        "final_collapsed_faces": 0,
+        "final_seam_gap_m": 0.0026195010854894994,
+        "final_extension_p95_percent": 4.565832018263483,
+        "initially_restricted_vertices": 0,
+        "restricted_net_motion_mm": null,
+        "restricted_settle_motion_mm": null,
+        "directional_vertices": {
+          "mean": 0,
+          "p50": 0.0,
+          "p95": 0,
+          "max": 0
+        },
+        "precision_ms": {
+          "mean": 4.638888888888888e-05,
+          "p50": 0.0,
+          "p95": 9.999999999999999e-05,
+          "max": 0.0007
+        },
+        "final_highpass_rms_m": 1.0786754043870426e-05,
+        "final_intersection_check": "passed",
+        "phase_step_ms": {
+          "settle": {
+            "mean": 2.212159166666667,
+            "p50": 1.7178999999999998,
+            "p95": 2.6744,
+            "max": 47.9438
+          },
+          "pull": {
+            "mean": 1.92403,
+            "p50": 1.8635000000000002,
+            "p95": 2.6646,
+            "max": 2.964
+          },
+          "hold": {
+            "mean": 1.8836966666666666,
+            "p50": 1.78175,
+            "p95": 2.8211,
+            "max": 2.8295
+          },
+          "release": {
+            "mean": 1.7569946666666667,
+            "p50": 1.6586500000000002,
+            "p95": 2.4812,
+            "max": 3.2231
+          }
+        },
+        "settle_attachment_motion_mm": 53.04209965260139,
+        "pull_attachment_motion_mm": 39.85511985063506,
+        "hold_attachment_motion_mm": 0.050783102585286066,
+        "release_attachment_motion_mm": 42.333781718176986
+      },
+      "oracle": {
+        "steps": 360,
+        "simulated_seconds": 5.999999999999984,
+        "step_ms": {
+          "mean": 2.0777638888888887,
+          "p50": 1.86395,
+          "p95": 2.7661000000000002,
+          "max": 49.446
+        },
+        "fresh_minimum_distance_m": 0.012,
+        "final_minimum_area_ratio": 0.7841381575425652,
+        "final_collapsed_faces": 0,
+        "final_seam_gap_m": 0.0026195010854894994,
+        "final_extension_p95_percent": 4.565832018263483,
+        "initially_restricted_vertices": 0,
+        "restricted_net_motion_mm": null,
+        "restricted_settle_motion_mm": null,
+        "directional_vertices": {
+          "mean": 0,
+          "p50": 0.0,
+          "p95": 0,
+          "max": 0
+        },
+        "precision_ms": {
+          "mean": 6.027777777777777e-05,
+          "p50": 9.999999999999999e-05,
+          "p95": 0.00019999999999999998,
+          "max": 0.0005
+        },
+        "final_highpass_rms_m": 1.0786754043870426e-05,
+        "final_intersection_check": "passed",
+        "phase_step_ms": {
+          "settle": {
+            "mean": 2.3658683333333332,
+            "p50": 1.84315,
+            "p95": 2.9832,
+            "max": 49.446
+          },
+          "pull": {
+            "mean": 1.8680216666666667,
+            "p50": 1.76765,
+            "p95": 2.65,
+            "max": 2.7372
+          },
+          "hold": {
+            "mean": 1.7811333333333332,
+            "p50": 1.7216,
+            "p95": 2.4722,
+            "max": 2.5592
+          },
+          "release": {
+            "mean": 1.9905033333333333,
+            "p50": 1.9079000000000002,
+            "p95": 2.7661000000000002,
+            "max": 3.5088
+          }
+        },
+        "settle_attachment_motion_mm": 53.04209965260139,
+        "pull_attachment_motion_mm": 39.85511985063506,
+        "hold_attachment_motion_mm": 0.050783102585286066,
+        "release_attachment_motion_mm": 42.333781718176986
+      }
+    },
+    "oracle_trajectory_identical": true
+  },
+  "isotropic_trajectory_identical_to_previous_turn": true
+}

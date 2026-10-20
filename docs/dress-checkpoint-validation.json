@@ -1,0 +1,406 @@
+{
+  "date": "2026-10-19",
+  "production_physics_changed": false,
+  "jitter_fixed": false,
+  "hardware": "NVIDIA RTX 3090",
+  "cpu_workers": 2,
+  "runs": {
+    "drape-30s": {
+      "checkpoint_sha256": "3d6eaad24038563c2f643a7aa499441dd409154d32a78198ae308305210fd5da",
+      "state_time_s": 79.44999999999678,
+      "physical_duration_s": 30.0,
+      "settings": {
+        "contact": {
+          "radius": 0.003,
+          "refresh_fraction": 0.01,
+          "relaxation": 0.45,
+          "stiffness": 100000.0
+        },
+        "damping": 1.5,
+        "dt": 0.016666666666666666,
+        "gravity": [
+          0.0,
+          -9.81,
+          0.0
+        ],
+        "iterations": 16
+      },
+      "classification": "Draped checkpoint with preserved velocities; equilibrium is not certified",
+      "restart": "Prediction, motion and contact caches are rebuilt; use identical warmup for comparisons",
+      "components": [
+        {
+          "panels": [
+            "back",
+            "front",
+            "panel_1",
+            "panel_2",
+            "panel_3"
+          ],
+          "vertices": 4878,
+          "final_speed_rms_m_s_unweighted": 0.0037984700433167577,
+          "centroid_displacement_m": [
+            -0.0667477114695539,
+            0.05036125789589143,
+            -0.09483773078260796
+          ]
+        },
+        {
+          "panels": [
+            "panel_4"
+          ],
+          "vertices": 248,
+          "final_speed_rms_m_s_unweighted": 0.2124554613943553,
+          "centroid_displacement_m": [
+            0.07398637518356195,
+            -6.163083763708068,
+            1.9060376633239784e-05
+          ]
+        }
+      ],
+      "tail_seconds": 5.0,
+      "tail_step_ms": {
+        "mean": 9.647068333333333,
+        "p95": 10.6535,
+        "max": 12.978399999999999
+      },
+      "tail_ms_per_1_60s": 9.647068333333333,
+      "tail_motion": {
+        "speed_rms_m_s": 0.04504912829540505,
+        "highpass_rms_m": 1.087322972966445e-05,
+        "oscillating_vertices": 7.633333333333334
+      },
+      "tail_seam_gap_max_m": 0.00372835095334925,
+      "tail_prestep_min_separation_m": 0.002995394932656047
+    },
+    "rest16": {
+      "checkpoint_sha256": "1e282c0ae1bc406c504ed4f52ff6e14ed7a6cbf4a55c0e36d1ec3633293477bd",
+      "state_time_s": 89.44999999999621,
+      "physical_duration_s": 10.0,
+      "settings": {
+        "contact": {
+          "radius": 0.003,
+          "refresh_fraction": 0.01,
+          "relaxation": 0.45,
+          "stiffness": 100000.0
+        },
+        "damping": 1.5,
+        "dt": 0.016666666666666666,
+        "gravity": [
+          0.0,
+          -9.81,
+          0.0
+        ],
+        "iterations": 16
+      },
+      "classification": "Draped checkpoint with preserved velocities; equilibrium is not certified",
+      "restart": "Prediction, motion and contact caches are rebuilt; use identical warmup for comparisons",
+      "components": [
+        {
+          "panels": [
+            "back",
+            "front",
+            "panel_1",
+            "panel_2",
+            "panel_3"
+          ],
+          "vertices": 4878,
+          "final_speed_rms_m_s_unweighted": 0.014403024872972264,
+          "centroid_displacement_m": [
+            0.003089221179665758,
+            -0.0028071347458691557,
+            -0.010103699809242308
+          ]
+        },
+        {
+          "panels": [
+            "panel_4"
+          ],
+          "vertices": 248,
+          "final_speed_rms_m_s_unweighted": 0.19332708670893448,
+          "centroid_displacement_m": [
+            -0.010221413402254593,
+            -2.0377474154977944,
+            -2.0113285687517468e-05
+          ]
+        }
+      ],
+      "tail_seconds": 5.0,
+      "tail_step_ms": {
+        "mean": 11.305390666666666,
+        "p95": 12.267999999999999,
+        "max": 13.0554
+      },
+      "tail_ms_per_1_60s": 11.305390666666666,
+      "tail_motion": {
+        "speed_rms_m_s": 0.04979881521751153,
+        "highpass_rms_m": 3.495454933043148e-05,
+        "oscillating_vertices": 18.93
+      },
+      "tail_seam_gap_max_m": 0.004022414144547697,
+      "tail_prestep_min_separation_m": 0.0029436117722236787
+    },
+    "rest64": {
+      "checkpoint_sha256": "08fe914084263d1f306f7d431e3b458e503649362734e32072dd3ce42bec9e75",
+      "state_time_s": 89.44999999999621,
+      "physical_duration_s": 10.0,
+      "settings": {
+        "contact": {
+          "radius": 0.003,
+          "refresh_fraction": 0.01,
+          "relaxation": 0.45,
+          "stiffness": 100000.0
+        },
+        "damping": 1.5,
+        "dt": 0.016666666666666666,
+        "gravity": [
+          0.0,
+          -9.81,
+          0.0
+        ],
+        "iterations": 64
+      },
+      "classification": "Draped checkpoint with preserved velocities; equilibrium is not certified",
+      "restart": "Prediction, motion and contact caches are rebuilt; use identical warmup for comparisons",
+      "components": [
+        {
+          "panels": [
+            "back",
+            "front",
+            "panel_1",
+            "panel_2",
+            "panel_3"
+          ],
+          "vertices": 4878,
+          "final_speed_rms_m_s_unweighted": 0.010860491820035331,
+          "centroid_displacement_m": [
+            -0.00016048179942143497,
+            0.00021199215141643737,
+            0.006616352650859548
+          ]
+        },
+        {
+          "panels": [
+            "panel_4"
+          ],
+          "vertices": 248,
+          "final_speed_rms_m_s_unweighted": 0.20712903454336565,
+          "centroid_displacement_m": [
+            -0.03922245778060633,
+            -2.040267480322359,
+            -7.824152747915036e-08
+          ]
+        }
+      ],
+      "tail_seconds": 5.0,
+      "tail_step_ms": {
+        "mean": 19.25395333333333,
+        "p95": 22.0459,
+        "max": 23.794800000000002
+      },
+      "tail_ms_per_1_60s": 19.25395333333333,
+      "tail_motion": {
+        "speed_rms_m_s": 0.04740189724935157,
+        "highpass_rms_m": 2.252365978217791e-05,
+        "oscillating_vertices": 1.2066666666666668
+      },
+      "tail_seam_gap_max_m": 0.003853014031480803,
+      "tail_prestep_min_separation_m": 0.0029104922883962004
+    },
+    "substeps2": {
+      "checkpoint_sha256": "8658ed3ea6df11e4005fce1ca45946980f13aa89e5f7475b987e6a5fe4daeabb",
+      "state_time_s": 89.45000000000474,
+      "physical_duration_s": 10.0,
+      "settings": {
+        "contact": {
+          "radius": 0.003,
+          "refresh_fraction": 0.01,
+          "relaxation": 0.45,
+          "stiffness": 100000.0
+        },
+        "damping": 1.5,
+        "dt": 0.008333333333333333,
+        "gravity": [
+          0.0,
+          -9.81,
+          0.0
+        ],
+        "iterations": 8
+      },
+      "classification": "Draped checkpoint with preserved velocities; equilibrium is not certified",
+      "restart": "Prediction, motion and contact caches are rebuilt; use identical warmup for comparisons",
+      "components": [
+        {
+          "panels": [
+            "back",
+            "front",
+            "panel_1",
+            "panel_2",
+            "panel_3"
+          ],
+          "vertices": 4878,
+          "final_speed_rms_m_s_unweighted": 0.08958373147913451,
+          "centroid_displacement_m": [
+            0.00029588831034897483,
+            -0.010091784035334365,
+            -0.018577547505936976
+          ]
+        },
+        {
+          "panels": [
+            "panel_4"
+          ],
+          "vertices": 248,
+          "final_speed_rms_m_s_unweighted": 0.3491292832065826,
+          "centroid_displacement_m": [
+            -0.048794149839981586,
+            -3.4969101499722255,
+            -4.848613289909487e-05
+          ]
+        }
+      ],
+      "tail_seconds": 5.0,
+      "tail_step_ms": {
+        "mean": 7.909449333333333,
+        "p95": 9.0023,
+        "max": 10.728
+      },
+      "tail_ms_per_1_60s": 15.818898666666666,
+      "tail_motion": {
+        "speed_rms_m_s": 0.1079283219882111,
+        "highpass_rms_m": 6.807653461768143e-05,
+        "oscillating_vertices": 18.338333333333335
+      },
+      "tail_seam_gap_max_m": 0.003913431053930086,
+      "tail_prestep_min_separation_m": 0.002779712214833732
+    }
+  },
+  "restart_energy_audit": {
+    "cpu_workers": 2,
+    "gpu_used": false,
+    "max_accounting_error_j": 4.440892098500626e-16,
+    "mode": "cpu_replay_of_accepted_states",
+    "positive_change_steps": 31,
+    "settings": {
+      "contact": {
+        "radius": 0.003,
+        "refresh_fraction": 0.01,
+        "relaxation": 0.45,
+        "stiffness": 100000.0
+      },
+      "damping": 1.5,
+      "dt": 0.016666666666666666,
+      "gravity": [
+        0.0,
+        -9.81,
+        0.0
+      ],
+      "iterations": 16
+    },
+    "steps": 110,
+    "vertices": 5126,
+    "warning": "Diagnostic only. Fixed-feature accounting separates contact refresh and control changes; it is not a convergence or collision certificate. CPU replay does not reproduce GPU iterations."
+  },
+  "pull_release": {
+    "controls_from": null,
+    "cpu_workers": 2,
+    "directional_bounds": true,
+    "fresh_final_intersection_check": "passed",
+    "gpu_contact_oracle": false,
+    "gpu_used": true,
+    "grab_material_point_m": [
+      0.6139571223721791,
+      0.008079267740249621
+    ],
+    "grab_panel": "panel_3",
+    "limits": "Extra refinement work changes finite-iteration convergence, not the constitutive model. Contact endpoint energies are diagnostics; full performance includes refinement but excludes offline audits.",
+    "method": "single-solver replay",
+    "results": [
+      {
+        "autonomous_positive_energy_steps": 30,
+        "final_attachment_m": [
+          0.1880585290707516,
+          0.7968638233178518,
+          0.11111280337457696
+        ],
+        "final_motion": 2.450605643017202e-05,
+        "minimum_distance_m": 0.002672284512581004,
+        "mode": "baseline",
+        "refinement_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0
+        },
+        "step_ms": {
+          "max": 24.9708,
+          "mean": 17.711607,
+          "p95": 20.7854
+        }
+      }
+    ],
+    "settings": [
+      {
+        "contact": {
+          "radius": 0.003,
+          "refresh_fraction": 0.01,
+          "relaxation": 0.45,
+          "stiffness": 100000.0
+        },
+        "damping": 1.5,
+        "dt": 0.016666666666666666,
+        "gravity": [
+          0.0,
+          -9.81,
+          0.0
+        ],
+        "iterations": 16
+      }
+    ],
+    "shared_control": true,
+    "steps": 360,
+    "sweeps": 0,
+    "vertices": 5126
+  },
+  "contact_oracle_trajectory_identical": true,
+  "validation": {
+    "cpu_suite_passed": 164,
+    "additional_seam_range_test_passed": true,
+    "ui_cpu_tests_passed": 43,
+    "ui_cpu_tests_ignored": 1,
+    "native_panel_tools": {
+      "checks": {
+        "boundary_selects_owner_without_endpoint": true,
+        "drag_updates_both_pieces": true,
+        "internal_line_on_clicked_owner": true,
+        "linked_copy": true,
+        "ruler_200mm": true
+      },
+      "completed_pointer_actions": 16,
+      "expected_actions": 16,
+      "passed": true,
+      "scenario": "panel-tools",
+      "status": "Export: output/dress-settling-20261019/ui-panel-tools"
+    },
+    "checkpoint_script_one_step_cpu": "passed",
+    "desktop_all_targets_clippy_warnings_denied": "passed",
+    "original_document_hash_unchanged": true,
+    "native_sewing_selection_workflow": {
+      "checks": {
+        "box_selects_contour_points": true,
+        "canvas_click_commits_seam": true,
+        "cursor_deletes_seam": true,
+        "cursor_easing": true,
+        "cursor_flip": true,
+        "cursor_flip_restored": true,
+        "lasso_selects_contour_points": true,
+        "mixed_2d_3d_preview": true,
+        "undo_restores_seam": true,
+        "unequal_lengths_require_explicit_easing": true
+      },
+      "completed_pointer_actions": 21,
+      "expected_actions": 21,
+      "passed": true,
+      "scenario": "workflow",
+      "status": "4 contour points selected \u00b7 drag a selected point or use arrow keys"
+    }
+  }
+}

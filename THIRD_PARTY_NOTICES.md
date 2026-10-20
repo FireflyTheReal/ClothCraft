@@ -14,4 +14,13 @@ Research and public manual references are recorded in `docs/research.md`, `docs/
 
 ## ClothCraft source
 
-The owner has not selected a license for the project source in this initial snapshot. The MakeHuman CC0 notice does not apply to ClothCraft code. No project-wide license is declared by this file.
+ClothCraft source is distributed under the MIT license; see [LICENSE](LICENSE).
+The MakeHuman CC0 notice applies to the bundled assets, not the program source.
+
+## Optional Box3D research harness
+
+`experiments/box3d` contains ClothCraft's comparison harness. It requires a
+separate checkout of Box3D and does not vendor that project's source. Box3D
+retains its own MIT license; keep its notice when distributing a combined
+build. The pinned source and experimental limitations are recorded in
+[the solver laboratory](docs/solver-lab.md).

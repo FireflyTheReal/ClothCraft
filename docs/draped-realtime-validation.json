@@ -1,0 +1,378 @@
+{
+  "date": "2026-10-16",
+  "hardware": {
+    "gpu": "NVIDIA RTX 3090",
+    "cpu": "AMD Ryzen 7 2700X",
+    "cpu_workers": 2
+  },
+  "scene": {
+    "cloth_vertices": 6731,
+    "cloth_triangles": 12682,
+    "panels": 5,
+    "start_time_s": 30,
+    "dt_s": 0.016666666666666666,
+    "iterations": 16,
+    "geometry_included": false
+  },
+  "long_runs": {
+    "before-long": {
+      "steps": 1800,
+      "final_time_s": 59.999999999997875,
+      "step_ms": {
+        "mean": 18.873810444444445,
+        "p50": 17.922199999999997,
+        "p95": 27.433,
+        "max": 48.564
+      },
+      "detection_ms": {
+        "mean": 9.354495166666666,
+        "p50": 8.652000000000001,
+        "p95": 14.7859,
+        "max": 33.5976
+      },
+      "solve_ms": {
+        "mean": 9.519315277777778,
+        "p50": 9.127899999999997,
+        "p95": 13.712300000000003,
+        "max": 25.780700000000003
+      },
+      "gpu_compute_ms": {
+        "mean": 4.424801137777778,
+        "p50": 4.398384,
+        "p95": 5.804032,
+        "max": 9.49536
+      },
+      "precision_ms": {
+        "mean": 0.8856471666666667,
+        "p50": 0.8204,
+        "p95": 1.2381,
+        "max": 6.063899999999999
+      },
+      "contact_profile": {
+        "refit_ms": 0.1280975,
+        "candidates_ms": 0.0014008333333333334,
+        "narrow_ms": 5.419073222222222,
+        "filter_ms": 2.3635290555555555,
+        "filter_pairs": 34253.79944444444,
+        "gpu_filtered": 1,
+        "spatial_queries": 79653,
+        "spatial_retries": 0.0011111111111111111,
+        "filter_prepare_ms": 0.23149677777777777,
+        "filter_dispatch_ms": 1.8634227777777779,
+        "filter_decode_ms": 0.2014643888888889,
+        "candidate_pairs": 0,
+        "candidate_blocks": 0,
+        "aabb_rejections": 0
+      },
+      "cpu_cache_rebuilds": 0,
+      "capacity_retries": 2,
+      "quality": {
+        "minimum_distance_m": 1.0810135456877925e-07,
+        "max_seam_gap_m": 0.004105747817292237,
+        "extension_p95_percent": 5.447492835840828,
+        "extension_max_percent": 29.382867461478803
+      },
+      "cli_wall_ms": 36838.054
+    },
+    "final-long": {
+      "steps": 1800,
+      "final_time_s": 59.999999999997875,
+      "step_ms": {
+        "mean": 14.760065833333334,
+        "p50": 14.5443,
+        "p95": 17.6024,
+        "max": 32.216300000000004
+      },
+      "detection_ms": {
+        "mean": 6.503835666666666,
+        "p50": 6.34665,
+        "p95": 8.2554,
+        "max": 14.8761
+      },
+      "solve_ms": {
+        "mean": 8.256230166666667,
+        "p50": 8.170199999999998,
+        "p95": 9.780700000000001,
+        "max": 17.594899999999996
+      },
+      "gpu_compute_ms": {
+        "mean": 4.0740276444444445,
+        "p50": 4.001104,
+        "p95": 5.288224,
+        "max": 7.563744
+      },
+      "precision_ms": {
+        "mean": 0.8528913888888889,
+        "p50": 0.827,
+        "p95": 1.0595999999999999,
+        "max": 8.8507
+      },
+      "contact_profile": {
+        "refit_ms": 0.10417288888888888,
+        "candidates_ms": 0.0011,
+        "narrow_ms": 3.572679111111111,
+        "geometry_ms": 2.7060257777777776,
+        "canonical_ms": 0.7199246111111111,
+        "incidence_ms": 0.1463973888888889,
+        "filter_ms": 1.9105211111111111,
+        "filter_pairs": 34253.79944444444,
+        "gpu_filtered": 1,
+        "spatial_queries": 79653,
+        "spatial_retries": 0.0011111111111111111,
+        "filter_prepare_ms": 0.1543313888888889,
+        "filter_dispatch_ms": 1.5922016666666667,
+        "filter_decode_ms": 0.1595895,
+        "candidate_pairs": 0,
+        "candidate_blocks": 0,
+        "aabb_rejections": 0
+      },
+      "gpu_profile": {
+        "coloring_ms": 0.6219770555555556,
+        "colors": 12.795555555555556,
+        "packing_ms": 0.4269636666666667,
+        "upload_ms": 0.4505603888888889,
+        "encode_ms": 0.7090992222222222,
+        "submit_wait_ms": 4.6029875,
+        "post_ms": 1.8897348333333333,
+        "cleanup_ms": 0.17599516666666665
+      },
+      "cpu_cache_rebuilds": 0,
+      "capacity_retries": 2,
+      "quality": {
+        "minimum_distance_m": 1.0810135456877925e-07,
+        "max_seam_gap_m": 0.004105747817292237,
+        "extension_p95_percent": 5.447492835840828,
+        "extension_max_percent": 29.382867461478803
+      },
+      "cli_wall_ms": 26596.0331
+    }
+  },
+  "final_state_sha256_ieee754": {
+    "before-long": "198c27db9fcfe290d75991de06e77c3022d44e43c471aafe4d80a0e69d55514c",
+    "final-long": "198c27db9fcfe290d75991de06e77c3022d44e43c471aafe4d80a0e69d55514c"
+  },
+  "final_state_bitwise_equal": true,
+  "all_1800_contact_counts_and_quality_metrics_equal": true,
+  "native": {
+    "window-final-30": {
+      "last_delivered_step": {
+        "broad_phase_rebuilds": 0,
+        "contact_profile": {
+          "aabb_rejections": 0,
+          "candidate_blocks": 0,
+          "candidate_pairs": 0,
+          "candidates_ms": 0.0005,
+          "canonical_ms": 0.696,
+          "filter_decode_ms": 0.1214,
+          "filter_dispatch_ms": 1.2265,
+          "filter_ms": 1.4684,
+          "filter_pairs": 32076,
+          "filter_prepare_ms": 0.1159,
+          "geometry_ms": 2.5660000000000003,
+          "gpu_filtered": true,
+          "incidence_ms": 0.1038,
+          "narrow_ms": 3.3663,
+          "refit_ms": 0.0795,
+          "spatial_queries": 79653,
+          "spatial_retries": 0
+        },
+        "contact_terms": 10412,
+        "contacts": 373,
+        "detection_ms": 5.7059,
+        "detection_updates": 1,
+        "dt_s": 0.016666666666666666,
+        "extension_max_percent": 29.34712369159156,
+        "extension_p95_percent": 5.524560508873444,
+        "gpu_compute_ms": 3.188192,
+        "gpu_profile": {
+          "cleanup_ms": 0.01249999999999929,
+          "coloring_ms": 0.5580999999999999,
+          "colors": 13,
+          "encode_ms": 0.5548000000000001,
+          "packing_ms": 0.4682,
+          "post_ms": 1.5628,
+          "submit_wait_ms": 3.4531,
+          "upload_ms": 0.7041999999999999
+        },
+        "gpu_subgroups": true,
+        "iterations": 16,
+        "max_seam_gap_m": 0.004130083566955855,
+        "minimum_distance_m": 1.3486633786159854e-07,
+        "precision_ms": 0.704,
+        "precision_vertices": 8,
+        "residual_rms_n": null,
+        "solve_ms": 6.7562999999999995,
+        "step_ms": 12.4622,
+        "time_s": 35.69999999999926,
+        "truncated_vertices": 0
+      },
+      "passed": true,
+      "physics_steps_per_second": 60.589960243584244,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 5.0499999999997165,
+      "simulation_speed": 1.009832670726404,
+      "ui_frame_interval_p95_ms": 20.5037,
+      "ui_frames_per_second": 59.990059647116475,
+      "wall_seconds": 5.0008285
+    },
+    "window-final-60": {
+      "last_delivered_step": {
+        "broad_phase_rebuilds": 0,
+        "contact_profile": {
+          "aabb_rejections": 0,
+          "candidate_blocks": 0,
+          "candidate_pairs": 0,
+          "candidates_ms": 0.0015,
+          "canonical_ms": 1.0816000000000001,
+          "filter_decode_ms": 0.1425,
+          "filter_dispatch_ms": 2.3191,
+          "filter_ms": 2.5738,
+          "filter_pairs": 41838,
+          "filter_prepare_ms": 0.1056,
+          "geometry_ms": 2.6696,
+          "gpu_filtered": true,
+          "incidence_ms": 0.1467,
+          "narrow_ms": 3.8982,
+          "refit_ms": 0.20570000000000002,
+          "spatial_queries": 79653,
+          "spatial_retries": 0
+        },
+        "contact_terms": 12296,
+        "contacts": 360,
+        "detection_ms": 8.014800000000001,
+        "detection_updates": 1,
+        "dt_s": 0.016666666666666666,
+        "extension_max_percent": 29.307941550508374,
+        "extension_p95_percent": 5.5475234113273375,
+        "gpu_compute_ms": 4.056864,
+        "gpu_profile": {
+          "cleanup_ms": 0.01589999999999847,
+          "coloring_ms": 1.0572,
+          "colors": 13,
+          "encode_ms": 0.6367999999999999,
+          "packing_ms": 0.6144,
+          "post_ms": 1.7657,
+          "submit_wait_ms": 4.5108,
+          "upload_ms": 0.43150000000000005
+        },
+        "gpu_subgroups": true,
+        "iterations": 16,
+        "max_seam_gap_m": 0.0041272841132117,
+        "minimum_distance_m": 1.0353921171158177e-07,
+        "precision_ms": 0.7835,
+        "precision_vertices": 8,
+        "residual_rms_n": null,
+        "solve_ms": 7.976099999999997,
+        "step_ms": 15.990899999999998,
+        "time_s": 65.73333333333089,
+        "truncated_vertices": 0
+      },
+      "passed": true,
+      "physics_steps_per_second": 60.59390304147261,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 5.04999999999972,
+      "simulation_speed": 1.0098983840245435,
+      "ui_frame_interval_p95_ms": 20.668599999999998,
+      "ui_frames_per_second": 59.99396340740194,
+      "wall_seconds": 5.0005031
+    },
+    "window-repeat-60": {
+      "last_delivered_step": {
+        "broad_phase_rebuilds": 0,
+        "contact_profile": {
+          "aabb_rejections": 0,
+          "candidate_blocks": 0,
+          "candidate_pairs": 0,
+          "candidates_ms": 0.0018,
+          "canonical_ms": 0.5878,
+          "filter_decode_ms": 0.10959999999999999,
+          "filter_dispatch_ms": 1.6734,
+          "filter_ms": 1.9634,
+          "filter_pairs": 31608,
+          "filter_prepare_ms": 0.1749,
+          "geometry_ms": 2.8639,
+          "gpu_filtered": true,
+          "incidence_ms": 0.1316,
+          "narrow_ms": 3.5835,
+          "refit_ms": 0.12469999999999999,
+          "spatial_queries": 79653,
+          "spatial_retries": 0
+        },
+        "contact_terms": 10314,
+        "contacts": 368,
+        "detection_ms": 6.8497,
+        "detection_updates": 1,
+        "dt_s": 0.016666666666666666,
+        "extension_max_percent": 29.343413810713926,
+        "extension_p95_percent": 5.539278036624218,
+        "gpu_compute_ms": 3.106048,
+        "gpu_profile": {
+          "cleanup_ms": 0.013399999999998968,
+          "coloring_ms": 0.9266,
+          "colors": 12,
+          "encode_ms": 0.5296,
+          "packing_ms": 0.4545,
+          "post_ms": 1.6151,
+          "submit_wait_ms": 3.4286999999999996,
+          "upload_ms": 0.3921
+        },
+        "gpu_subgroups": true,
+        "iterations": 16,
+        "max_seam_gap_m": 0.004109492153927223,
+        "minimum_distance_m": 1.0351235848359124e-07,
+        "precision_ms": 0.6885,
+        "precision_vertices": 8,
+        "residual_rms_n": null,
+        "solve_ms": 6.434199999999999,
+        "step_ms": 13.2839,
+        "time_s": 65.76666666666422,
+        "truncated_vertices": 0
+      },
+      "passed": true,
+      "physics_steps_per_second": 60.85115442520331,
+      "scope": "Actual egui frame cadence and delivered simulated time; one second warmup, five seconds measured. Acceptance: >=0.95x simulation and >=55 UI frames/s.",
+      "simulated_seconds": 5.0833333333330515,
+      "simulation_speed": 1.0141859070867218,
+      "ui_frame_interval_p95_ms": 20.5076,
+      "ui_frames_per_second": 60.053106498318726,
+      "wall_seconds": 5.0122303
+    }
+  },
+  "native_all_at_least_60_steps_s": true,
+  "fresh_cpu_probe": {
+    "time_s": 59.999999999997875,
+    "contact_probe_error": null,
+    "minimum_distance_m": 1.0808943161525678e-07
+  },
+  "oracle": {
+    "at_30s_steps": 120,
+    "at_60s_steps": 120,
+    "complete_cpu_contact_equality": true
+  },
+  "gradient_check": {
+    "steps": 4,
+    "vertices": 2454,
+    "passed": true,
+    "max_error_N": 0.0005539
+  },
+  "tests": {
+    "gpu_opt_in_passed": 6,
+    "release_library_passed": 22,
+    "shader_cpu_passed": 3,
+    "cpu_no_default_features": 140,
+    "desktop_clippy_passed": true,
+    "cpu_clippy_and_six_templates_passed": true,
+    "note": "CPU, desktop and release library targets overlap; do not sum as unique tests."
+  },
+  "binaries_sha256": {
+    "cloth-fit-before.exe": "83ab88785bebfb7bb9c273a5f992055886e2864b9a1c9473775cb7453b76aa95",
+    "cloth-fit-final.exe": "cb3f5a727bfea714c3a6683c6a398ad6d07fc38374bd1613d351dbf52ff9b4dc"
+  },
+  "limits": [
+    "Desktop load and GPU clocks were uncontrolled. Early old/new short runs varied substantially.",
+    "Before step_ms excluded temporary destruction; final step_ms includes it. CLI wall also includes logging, newly buffered and flushed inside the timer.",
+    "Native windows measure five seconds after one second warmup. Rates above 60 include bounded catch-up; dt remains 1/60 s.",
+    "The long-run P95 exceeds 16.67 ms: this is measured realtime throughput, not a hard per-step deadline or a guarantee on every garment/device.",
+    "Initial-separation assumptions, local seam exclusions and floating-point collision limitations are unchanged."
+  ]
+}

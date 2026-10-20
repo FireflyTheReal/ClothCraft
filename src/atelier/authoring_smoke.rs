@@ -4,30 +4,29 @@ use std::{collections::BTreeMap, time::Instant};
 
 // The first element of each action is a smoke-target protocol key registered by
 // the authoring widgets (`smoke_target`). These keys are part of the test harness
-// contract and are deliberately left unchanged even where a key still spells a
-// former French button label; only the visible labels themselves were translated.
+// contract. Keep these English keys synchronized with the authoring toolbar.
 const ACTIONS: [(&str, Vec2); 55] = [
-    ("Plume", Vec2::ZERO),
+    ("Pen", Vec2::ZERO),
     ("replace", Vec2::ZERO),
     ("Rectangle", Vec2::ZERO),
     ("point0", Vec2::new(120., 160.)),
-    ("Plume", Vec2::ZERO),
+    ("Pen", Vec2::ZERO),
     ("replace", Vec2::ZERO),
     ("point0", Vec2::ZERO),
     ("point1", Vec2::new(28., 20.)),
     ("point2", Vec2::ZERO),
     ("point3", Vec2::ZERO),
     ("create", Vec2::ZERO),
-    ("Modifier", Vec2::ZERO),
+    ("Edit", Vec2::ZERO),
     ("panel_1", Vec2::ZERO),
     ("handle_1", Vec2::new(-12., -16.)),
     ("anchor_3", Vec2::new(-16., 0.)),
     ("body_panel_1", Vec2::new(36., 20.)),
     ("rotate_2d", Vec2::new(48., 20.)),
-    ("Déplacer 3D", Vec2::ZERO),
+    ("Move 3D", Vec2::ZERO),
     ("gizmo_x", Vec2::new(35., 0.)),
     ("duplicate", Vec2::ZERO),
-    ("Coudre", Vec2::ZERO),
+    ("Sew", Vec2::ZERO),
     ("panel_1", Vec2::ZERO),
     ("edge3d_panel_2", Vec2::ZERO),
     ("simulate", Vec2::ZERO),
@@ -35,11 +34,11 @@ const ACTIONS: [(&str, Vec2); 55] = [
     ("redo", Vec2::ZERO),
     ("remove_seam", Vec2::ZERO),
     ("undo", Vec2::ZERO),
-    ("Déplacer 3D", Vec2::ZERO),
+    ("Move 3D", Vec2::ZERO),
     ("focus", Vec2::ZERO),
     // Leave room for the following XYZ rotations without intersecting its neighbour.
     ("gizmo_x", Vec2::new(80., 0.)),
-    ("Tourner 3D", Vec2::ZERO),
+    ("Rotate 3D", Vec2::ZERO),
     ("ring_x", Vec2::new(0., 25.)),
     ("ring_y", Vec2::new(25., 0.)),
     ("ring_z", Vec2::new(25., 20.)),
@@ -48,7 +47,7 @@ const ACTIONS: [(&str, Vec2); 55] = [
     ("fabric_preset_denim", Vec2::ZERO),
     ("fabric_apply", Vec2::ZERO),
     ("export", Vec2::ZERO),
-    ("Coudre", Vec2::ZERO),
+    ("Sew", Vec2::ZERO),
     ("edit_seam", Vec2::ZERO),
     ("sew_to_0_0", Vec2::new(-40., 0.)),
     ("sew_to_1_0", Vec2::new(-40., 0.)),
@@ -64,7 +63,79 @@ const ACTIONS: [(&str, Vec2); 55] = [
     ("focus", Vec2::ZERO),
     ("simulate", Vec2::ZERO),
 ];
+const QUICK_ACTIONS: &[(&str, Vec2)] = &[
+    ("quick_open", Vec2::ZERO),
+    ("quick_Union", Vec2::ZERO),
+    ("undo", Vec2::ZERO),
+    ("quick_open", Vec2::ZERO),
+    ("quick_copy_x", Vec2::ZERO),
+    ("undo", Vec2::ZERO),
+    ("quick_open", Vec2::ZERO),
+    ("quick_Ellipse", Vec2::ZERO),
+    ("point0", Vec2::new(85., 100.)),
+    ("undo", Vec2::ZERO),
+    ("quick_open", Vec2::ZERO),
+    ("quick_Arc", Vec2::ZERO),
+    ("point0", Vec2::new(85., 100.)),
+    ("undo", Vec2::ZERO),
+    ("Sew", Vec2::ZERO),
+    ("panel_1", Vec2::ZERO),
+    ("edge3d_panel_2", Vec2::ZERO),
+    ("quick_flip", Vec2::ZERO),
+    ("quick_flip", Vec2::ZERO),
+    ("quick_ease", Vec2::ZERO),
+    ("issue_brush", Vec2::ZERO),
+    ("issue_face", Vec2::new(8., 5.)),
+    ("issue_export", Vec2::ZERO),
+];
+const PANEL_ACTIONS: &[(&str, Vec2)] = &[
+    ("Internal line", Vec2::ZERO),
+    ("panel_1", Vec2::ZERO),
+    ("inside_a", Vec2::ZERO),
+    ("inside_b", Vec2::ZERO),
+    ("create", Vec2::ZERO),
+    ("measure", Vec2::ZERO),
+    ("inside_a", Vec2::ZERO),
+    ("inside_b", Vec2::ZERO),
+    ("Edit", Vec2::ZERO),
+    ("panel_1", Vec2::ZERO),
+    ("linked_mirror_X", Vec2::ZERO),
+    ("Edit", Vec2::ZERO),
+    ("anchor_1", Vec2::new(-10., 15.)),
+    ("undo", Vec2::ZERO),
+    ("redo", Vec2::ZERO),
+    ("export", Vec2::ZERO),
+];
+const WORKFLOW_ACTIONS: &[(&str, Vec2)] = &[
+    ("Edit", Vec2::ZERO),
+    ("selection_points", Vec2::ZERO),
+    ("selection_lasso", Vec2::ZERO),
+    ("lasso_points", Vec2::ZERO),
+    ("selection_box", Vec2::ZERO),
+    ("box_points", Vec2::ZERO),
+    ("Sew", Vec2::ZERO),
+    ("panel_1", Vec2::ZERO),
+    ("edge3d_panel_2", Vec2::ZERO),
+    ("canvas_confirm", Vec2::ZERO),
+    ("cursor_ease", Vec2::ZERO),
+    ("cursor_flip", Vec2::ZERO),
+    ("cursor_flip", Vec2::ZERO),
+    ("canvas_confirm", Vec2::ZERO),
+    ("Edit", Vec2::ZERO),
+    ("panel_1", Vec2::ZERO),
+    ("cursor_delete_seam", Vec2::ZERO),
+    ("undo", Vec2::ZERO),
+    ("selection_points", Vec2::ZERO),
+    ("selection_lasso", Vec2::ZERO),
+    ("lasso_points", Vec2::ZERO),
+];
+
 pub(super) struct Smoke {
+    panel_tools: bool,
+    workflow: bool,
+    quick: bool,
+    prepared: bool,
+    checks: BTreeMap<String, bool>,
     targets: BTreeMap<String, egui::Pos2>,
     action: usize,
     tick: usize,
@@ -94,11 +165,28 @@ pub(super) struct Smoke {
     seam_removed: bool,
 }
 impl Smoke {
+    fn actions(&self) -> &'static [(&'static str, Vec2)] {
+        if self.panel_tools {
+            PANEL_ACTIONS
+        } else if self.workflow {
+            WORKFLOW_ACTIONS
+        } else if self.quick {
+            QUICK_ACTIONS
+        } else {
+            &ACTIONS
+        }
+    }
     pub(super) fn wants(&self, key: &str) -> bool {
-        ACTIONS.get(self.action).is_some_and(|a| a.0 == key)
+        self.actions().get(self.action).is_some_and(|a| a.0 == key)
     }
     pub fn new() -> Self {
         Self {
+            panel_tools: std::env::var("CLOTHCRAFT_AUTHORING_SCENARIO").as_deref()
+                == Ok("panel-tools"),
+            workflow: std::env::var("CLOTHCRAFT_AUTHORING_SCENARIO").as_deref() == Ok("workflow"),
+            quick: std::env::var("CLOTHCRAFT_AUTHORING_SCENARIO").as_deref() == Ok("quick"),
+            prepared: false,
+            checks: BTreeMap::new(),
             targets: BTreeMap::new(),
             action: 0,
             tick: 0,
@@ -129,15 +217,47 @@ impl Smoke {
         self.targets.insert(name.into(), p);
     }
     pub fn input(&mut self, input: &mut egui::RawInput) {
-        if self.action >= ACTIONS.len() {
+        // Synthetic pointer/keyboard input belongs to this test viewport, even
+        // when Windows leaves the owner's other application in the foreground.
+        input.focused = true;
+        if self.action >= self.actions().len() {
             return;
         }
-        let (key, delta) = ACTIONS[self.action];
+        let (key, delta) = self.actions()[self.action];
         self.tick += 1;
         if self.tick == 3 {
             self.origin = self.targets.get(key).copied();
         }
-        if (3..=6).contains(&self.tick)
+        if matches!(key, "lasso_points" | "box_points") {
+            if let (Some(origin), Some(end)) =
+                (self.origin, self.targets.get("selection_end").copied())
+            {
+                let path = [
+                    origin,
+                    egui::pos2(end.x, origin.y),
+                    end,
+                    egui::pos2(origin.x, end.y),
+                    origin,
+                    origin,
+                ];
+                if (3..=8).contains(&self.tick) {
+                    let pos = if key == "box_points" {
+                        if self.tick == 3 { origin } else { end }
+                    } else {
+                        path[self.tick - 3]
+                    };
+                    input.events.push(egui::Event::PointerMoved(pos));
+                    if self.tick == 3 || self.tick == 8 {
+                        input.events.push(egui::Event::PointerButton {
+                            pos,
+                            button: egui::PointerButton::Primary,
+                            pressed: self.tick == 3,
+                            modifiers: Default::default(),
+                        });
+                    }
+                }
+            }
+        } else if (3..=6).contains(&self.tick)
             && let Some(origin) = self.origin
         {
             let pos = origin + if self.tick >= 4 { delta } else { Vec2::ZERO };
@@ -155,7 +275,7 @@ impl Smoke {
             eprintln!(
                 "Authoring smoke: completed {}/{} ({key})",
                 self.action + 1,
-                ACTIONS.len()
+                self.actions().len()
             );
             self.action += 1;
             self.tick = 0;
@@ -166,6 +286,304 @@ impl Smoke {
     }
 }
 impl Atelier {
+    fn workflow_smoke_tick(&mut self) {
+        use marvelous_cloth::{authoring::Command, garment::shapes::Primitive};
+        let Some(mut smoke) = self.authoring_smoke.take() else {
+            return;
+        };
+        if !smoke.prepared {
+            for index in 0..2 {
+                assert!(self.edit(Command::Primitive {
+                    kind: Primitive::Rectangle,
+                    size: glam::DVec2::splat(if index == 0 { 0.4 } else { 0.3 }),
+                    sweep_degrees: 180.,
+                    origin: glam::DVec2::new(index as f64 * 0.6, 0.),
+                    meshing: Default::default(),
+                    fabric: self.project.template.fabrics[0].id.clone(),
+                    replace: index == 0
+                }));
+            }
+            self.authoring.selected = Some(self.project.template.panels[0].id.clone());
+            self.authoring.board.request_fit();
+            smoke.prepared = true;
+        }
+        if smoke.tick <= 2 {
+            let check = match smoke.action {
+                4 => Some((
+                    "lasso_selects_contour_points",
+                    self.authoring.board.selection.len() == 4,
+                )),
+                6 => Some((
+                    "box_selects_contour_points",
+                    self.authoring.board.selection.len() == 4,
+                )),
+                9 => Some((
+                    "mixed_2d_3d_preview",
+                    self.authoring.ends.len() == 2 && self.project.template.seams.is_empty(),
+                )),
+                10 => Some((
+                    "unequal_lengths_require_explicit_easing",
+                    self.authoring.ends.len() == 2
+                        && self.project.template.seams.is_empty()
+                        && self.authoring.error.is_some(),
+                )),
+                11 => Some(("cursor_easing", self.authoring.ease)),
+                12 => Some(("cursor_flip", self.authoring.reverse)),
+                13 => Some(("cursor_flip_restored", !self.authoring.reverse)),
+                14 => Some((
+                    "canvas_click_commits_seam",
+                    self.project.template.seams.len() == 1 && self.authoring.ends.is_empty(),
+                )),
+                17 => Some((
+                    "cursor_deletes_seam",
+                    self.project.template.seams.is_empty(),
+                )),
+                18 => Some(("undo_restores_seam", self.project.template.seams.len() == 1)),
+                _ => None,
+            };
+            if let Some((name, ok)) = check {
+                if smoke.tick == 0 {
+                    eprintln!(
+                        "Workflow check {name}: {ok}, selection={:?}, panel={:?}, status={}",
+                        self.authoring.board.selection, self.authoring.selected, self.status
+                    );
+                }
+                smoke.checks.insert(name.into(), ok);
+            }
+        }
+        if !smoke.finished
+            && (smoke.action == WORKFLOW_ACTIONS.len() || smoke.start.elapsed().as_secs() > 45)
+        {
+            let report = serde_json::json!({"passed":smoke.action==WORKFLOW_ACTIONS.len() && smoke.checks.len()==10 && smoke.checks.values().all(|v| *v),
+                "scenario":"workflow","checks":smoke.checks,"completed_pointer_actions":smoke.action,"expected_actions":WORKFLOW_ACTIONS.len(),"status":self.status});
+            std::fs::write(
+                self.output.join("authoring.json"),
+                serde_json::to_vec_pretty(&report).unwrap(),
+            )
+            .unwrap();
+            smoke.finished = true;
+        }
+        self.authoring_smoke = Some(smoke);
+    }
+    fn panel_smoke_tick(&mut self) {
+        use marvelous_cloth::{
+            authoring::Command,
+            garment::shapes::{MirrorAxis, Primitive},
+        };
+        let Some(mut smoke) = self.authoring_smoke.take() else {
+            return;
+        };
+        if !smoke.prepared {
+            for (i, origin) in [glam::DVec2::ZERO, glam::DVec2::new(0.55, 0.)]
+                .into_iter()
+                .enumerate()
+            {
+                assert!(self.edit(Command::Primitive {
+                    kind: Primitive::Rectangle,
+                    size: glam::DVec2::splat(0.4),
+                    sweep_degrees: 180.,
+                    origin,
+                    meshing: Default::default(),
+                    fabric: self.project.template.fabrics[0].id.clone(),
+                    replace: i == 0
+                }));
+            }
+            // Deliberately select the OTHER panel before clicking panel_1's edge.
+            self.authoring.selected = Some("panel_2".into());
+            self.authoring.board.request_fit();
+            smoke.prepared = true;
+        }
+        let first = &self.project.template.panels[0];
+        let checks = [
+            (
+                2,
+                "boundary_selects_owner_without_endpoint",
+                self.authoring.drafting.line_panel.as_deref() == Some("panel_1")
+                    && self.authoring.draft.is_empty(),
+            ),
+            (
+                5,
+                "internal_line_on_clicked_owner",
+                first.polygon.as_ref().unwrap().lines.len() == 1
+                    && self.project.template.panels[1]
+                        .polygon
+                        .as_ref()
+                        .unwrap()
+                        .lines
+                        .is_empty(),
+            ),
+            (
+                8,
+                "ruler_200mm",
+                self.authoring
+                    .measure
+                    .segment(None)
+                    .is_some_and(|[a, b]| (a.distance(b) - 0.2).abs() < 1e-6),
+            ),
+            (
+                11,
+                "linked_copy",
+                self.project.template.mirror_links.len() == 1
+                    && self.project.template.panels.len() == 3,
+            ),
+        ];
+        for (action, name, ok) in checks {
+            if smoke.action == action && smoke.tick <= 2 {
+                smoke.checks.insert(name.into(), ok);
+            }
+        }
+        if smoke.action == 13 && smoke.tick <= 2 {
+            let link = self.project.template.mirror_links.first();
+            let mirrored = link.is_some_and(|l| {
+                let a = self
+                    .project
+                    .template
+                    .panels
+                    .iter()
+                    .find(|p| p.id == l.a)
+                    .unwrap();
+                let b = self
+                    .project
+                    .template
+                    .panels
+                    .iter()
+                    .find(|p| p.id == l.b)
+                    .unwrap();
+                let mut poly = a.polygon.clone().unwrap();
+                marvelous_cloth::garment::shapes::mirror(
+                    &mut poly,
+                    MirrorAxis::X,
+                    glam::DVec2::new(a.pattern.width, a.pattern.height),
+                );
+                poly.points
+                    .iter()
+                    .zip(&b.polygon.as_ref().unwrap().points)
+                    .all(|(a, b)| a.distance(*b) < 1e-12)
+                    && a.polygon.as_ref().unwrap().points
+                        != marvelous_cloth::garment::shapes::primitive(
+                            Primitive::Rectangle,
+                            glam::DVec2::splat(0.4),
+                            180.,
+                            Default::default(),
+                        )
+                        .unwrap()
+                        .points
+            });
+            smoke
+                .checks
+                .insert("drag_updates_both_pieces".into(), mirrored);
+        }
+        if !smoke.finished
+            && (smoke.action == PANEL_ACTIONS.len() || smoke.start.elapsed().as_secs() > 45)
+        {
+            let report = serde_json::json!({"passed":smoke.action==PANEL_ACTIONS.len() && smoke.checks.len()==5 && smoke.checks.values().all(|v|*v),"scenario":"panel-tools","checks":smoke.checks,"completed_pointer_actions":smoke.action,"expected_actions":PANEL_ACTIONS.len(),"status":self.status});
+            std::fs::write(
+                self.output.join("authoring.json"),
+                serde_json::to_vec_pretty(&report).unwrap(),
+            )
+            .unwrap();
+            smoke.finished = true;
+        }
+        self.authoring_smoke = Some(smoke);
+    }
+    fn quick_smoke_tick(&mut self) {
+        use marvelous_cloth::{authoring::Command, garment::shapes::Primitive};
+        let Some(mut smoke) = self.authoring_smoke.take() else {
+            return;
+        };
+        if !smoke.prepared {
+            for (index, origin) in [glam::DVec2::ZERO, glam::DVec2::new(0.15, 0.1)]
+                .into_iter()
+                .enumerate()
+            {
+                assert!(self.edit(Command::Primitive {
+                    kind: Primitive::Rectangle,
+                    size: glam::DVec2::splat(0.4),
+                    sweep_degrees: 180.,
+                    origin,
+                    meshing: Default::default(),
+                    fabric: self.project.template.fabrics[0].id.clone(),
+                    replace: index == 0
+                }));
+            }
+            self.authoring.selection.panels = self
+                .project
+                .template
+                .panels
+                .iter()
+                .map(|p| p.id.clone())
+                .collect();
+            self.authoring.selected = Some(self.project.template.panels[0].id.clone());
+            self.authoring.board.request_fit();
+            smoke.prepared = true;
+        }
+        let count = self.project.template.panels.len();
+        for (action, name, ok) in
+            [
+                (2, "boolean_union", count == 1),
+                (5, "mirror_copy", count == 3),
+                (
+                    9,
+                    "ellipse_drag",
+                    count == 3
+                        && self.project.template.panels.last().is_some_and(|p| {
+                            p.polygon.as_ref().is_some_and(|p| p.curves.len() == 4)
+                        }),
+                ),
+                (
+                    13,
+                    "arc_drag",
+                    count == 3
+                        && self.project.template.panels.last().is_some_and(|p| {
+                            p.polygon.as_ref().is_some_and(|p| !p.curves.is_empty())
+                        }),
+                ),
+                (18, "flip_on", self.authoring.reverse),
+                (19, "flip_off", !self.authoring.reverse),
+                (20, "easing", self.authoring.ease),
+                (
+                    22,
+                    "painted_visible_faces",
+                    !self.issue.faces.is_empty() && !self.playing,
+                ),
+            ]
+        {
+            if smoke.action == action && smoke.tick <= 2 {
+                smoke.checks.insert(name.into(), ok);
+            }
+        }
+        if !smoke.finished
+            && (smoke.action == QUICK_ACTIONS.len() || smoke.start.elapsed().as_secs() > 40)
+        {
+            let export_ok = self.issue.last_export.as_ref().is_some_and(|folder| {
+                let report = std::fs::read(folder.join("report.json"))
+                    .ok()
+                    .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(&bytes).ok());
+                let replay = FittingProject::load(&folder.join("project.clothcraft.json"))
+                    .and_then(|p| p.compile());
+                report.is_some_and(|r| {
+                    r["analysis"]["marked_faces"]
+                        .as_array()
+                        .is_some_and(|f| f.len() == self.issue.faces.len() && !f.is_empty())
+                }) && replay.is_ok_and(|s| {
+                    s.state.x == self.scene.state.x
+                        && s.state.v == self.scene.state.v
+                        && s.state.time == self.scene.state.time
+                })
+            });
+            smoke
+                .checks
+                .insert("report_reopens_identical_state".into(), export_ok);
+            let report = serde_json::json!({ "passed": smoke.action == QUICK_ACTIONS.len() && smoke.checks.len() == 9 && smoke.checks.values().all(|v| *v), "scenario": "quick", "checks": smoke.checks, "completed_pointer_actions": smoke.action, "expected_actions": QUICK_ACTIONS.len(), "status": self.status });
+            std::fs::write(
+                self.output.join("authoring.json"),
+                serde_json::to_vec_pretty(&report).unwrap(),
+            )
+            .unwrap();
+            smoke.finished = true;
+        }
+        self.authoring_smoke = Some(smoke);
+    }
     pub(super) fn smoke_target_ui(&mut self, ui: &egui::Ui, name: &str, rect: egui::Rect) {
         if ui.clip_rect().contains(rect.center()) {
             self.smoke_target(name, rect.center());
@@ -188,6 +606,18 @@ impl Atelier {
         }
     }
     pub(super) fn authoring_smoke_tick(&mut self) {
+        if self.authoring_smoke.as_ref().is_some_and(|s| s.panel_tools) {
+            self.panel_smoke_tick();
+            return;
+        }
+        if self.authoring_smoke.as_ref().is_some_and(|s| s.workflow) {
+            self.workflow_smoke_tick();
+            return;
+        }
+        if self.authoring_smoke.as_ref().is_some_and(|s| s.quick) {
+            self.quick_smoke_tick();
+            return;
+        }
         let Some(smoke) = &mut self.authoring_smoke else {
             return;
         };
@@ -268,7 +698,7 @@ impl Atelier {
                     && x == &self.scene.state.x
             });
         }
-        if key == Some("Déplacer 3D") && !smoke.rotation_2d_preserved_physics {
+        if key == Some("Move 3D") && !smoke.rotation_2d_preserved_physics {
             smoke.rotation_2d_preserved_physics =
                 smoke.layout_before.as_ref().is_some_and(|(t, x)| {
                     panel.layout_rotation_degrees.abs() > 1.

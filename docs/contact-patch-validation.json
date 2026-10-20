@@ -1,0 +1,364 @@
+{
+  "date": "2026-10-20",
+  "scope": "Isolated CPU face/wire contact-patch kernels; no production or dress integration",
+  "gpu_used": false,
+  "production_law_changed": false,
+  "full_cpu_suite_before_final_cancellation": {
+    "log": "output/patch-contact-20261020/cpu-tests.log",
+    "passed": 187
+  },
+  "final_targeted_tests": {
+    "log": "output/patch-contact-20261020/final-kernel-tests.log",
+    "passed": 7
+  },
+  "clippy_cpu_all_targets": "passed",
+  "clippy_desktop_all_targets": "passed",
+  "format": "passed",
+  "diff_whitespace": "passed",
+  "measurements": {
+    "scope": "Isolated fixed two-face patch. Not a cloth or performance benchmark.",
+    "input_sha256": "4f0f3b371ca24d2f2016b2cfe6339b8bd606818a3817a4d3ccd9bcf39b98c9e5",
+    "runs": [
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": false,
+        "law": "Plane",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 0.0,
+        "max_residual_n": 1.1483869410966463E-15,
+        "minimum_gap_m": 0.001,
+        "normal_load_n": 225.0,
+        "release_step": 180,
+        "stopped_at_patch_boundary": false,
+        "truncations": 0,
+        "unconverged_steps": 0,
+        "steps": 480,
+        "max_reference_error_position_m": 0.0,
+        "max_reference_error_velocity_m_s": 0.0,
+        "release_velocity_m_s": [
+          0.003999999999999976,
+          0.0,
+          0.0
+        ],
+        "final_position_m": [
+          0.02399999999999988,
+          0.001,
+          0.0
+        ],
+        "final_velocity_m_s": [
+          0.003999999999999976,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": false,
+        "law": "PrimitiveSum",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 5.551115123125783E-17,
+        "max_residual_n": 0.0027601093783865224,
+        "minimum_gap_m": 0.000999983671972096,
+        "normal_load_n": 225.0,
+        "release_step": 180,
+        "stopped_at_patch_boundary": false,
+        "truncations": 0,
+        "unconverged_steps": 1,
+        "steps": 480,
+        "max_reference_error_position_m": 0.11878474238740731,
+        "max_reference_error_velocity_m_s": 0.022902829636386193,
+        "release_velocity_m_s": [
+          -0.013592787017577733,
+          -0.003065748268318959,
+          0.014339966452637824
+        ],
+        "final_position_m": [
+          -0.06773095853864955,
+          0.001,
+          0.07546685543749189
+        ],
+        "final_velocity_m_s": [
+          -0.013592787017577823,
+          0.0,
+          0.014339966452637798
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": false,
+        "law": "FacePair",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 0.0,
+        "max_residual_n": 1.1483869410966463E-15,
+        "minimum_gap_m": 0.001,
+        "normal_load_n": 225.0,
+        "release_step": 180,
+        "stopped_at_patch_boundary": false,
+        "truncations": 0,
+        "unconverged_steps": 0,
+        "steps": 480,
+        "max_reference_error_position_m": 0.0,
+        "max_reference_error_velocity_m_s": 0.0,
+        "release_velocity_m_s": [
+          0.003999999999999976,
+          0.0,
+          0.0
+        ],
+        "final_position_m": [
+          0.02399999999999988,
+          0.001,
+          0.0
+        ],
+        "final_velocity_m_s": [
+          0.003999999999999976,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": false,
+        "law": "WireSum",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 5.551115123125783E-17,
+        "max_residual_n": 4.6570775680265797E-07,
+        "minimum_gap_m": 0.0009999791649420323,
+        "normal_load_n": 225.0,
+        "release_step": 180,
+        "stopped_at_patch_boundary": true,
+        "truncations": 1,
+        "unconverged_steps": 0,
+        "steps": 398,
+        "max_reference_error_position_m": 0.10872296869793381,
+        "max_reference_error_velocity_m_s": 0.028425683060284392,
+        "release_velocity_m_s": [
+          -0.0241552704722783,
+          -0.003911547273981767,
+          0.0
+        ],
+        "final_position_m": [
+          -0.09018963536460056,
+          0.001,
+          0.0
+        ],
+        "final_velocity_m_s": [
+          -0.02415527047227861,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": false,
+        "law": "WirePair",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 0.0,
+        "max_residual_n": 3.0410786736045914E-15,
+        "minimum_gap_m": 0.001,
+        "normal_load_n": 225.0,
+        "release_step": 180,
+        "stopped_at_patch_boundary": false,
+        "truncations": 11,
+        "unconverged_steps": 0,
+        "steps": 480,
+        "max_reference_error_position_m": 1.3552527156068805E-20,
+        "max_reference_error_velocity_m_s": 8.673617379884035E-19,
+        "release_velocity_m_s": [
+          0.003999999999999976,
+          0.0,
+          0.0
+        ],
+        "final_position_m": [
+          0.02399999999999988,
+          0.001,
+          0.0
+        ],
+        "final_velocity_m_s": [
+          0.003999999999999976,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": true,
+        "law": "Plane",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 0.0,
+        "max_residual_n": 7.941809926706456E-07,
+        "minimum_gap_m": 0.001,
+        "normal_load_n": 225.0,
+        "release_step": 240,
+        "stopped_at_patch_boundary": false,
+        "truncations": 0,
+        "unconverged_steps": 0,
+        "steps": 480,
+        "max_reference_error_position_m": 0.0,
+        "max_reference_error_velocity_m_s": 0.0,
+        "release_velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position_m": [
+          0.004000000158836199,
+          0.001,
+          0.0
+        ],
+        "final_velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": true,
+        "law": "PrimitiveSum",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 0.0,
+        "max_residual_n": 9.972888534412308E-07,
+        "minimum_gap_m": 0.0009999836716495921,
+        "normal_load_n": 225.0,
+        "release_step": 240,
+        "stopped_at_patch_boundary": false,
+        "truncations": 0,
+        "unconverged_steps": 0,
+        "steps": 480,
+        "max_reference_error_position_m": 0.08433374004638779,
+        "max_reference_error_velocity_m_s": 0.01998810516981971,
+        "release_velocity_m_s": [
+          -0.013966484020052267,
+          -0.0030657782886273207,
+          0.01396648402005241
+        ],
+        "final_position_m": [
+          -0.05563295943184085,
+          0.001,
+          0.059632959348571574
+        ],
+        "final_velocity_m_s": [
+          -0.013966484020052072,
+          0.0,
+          0.013966484020052489
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": true,
+        "law": "FacePair",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 0.0,
+        "max_residual_n": 7.941809926706456E-07,
+        "minimum_gap_m": 0.001,
+        "normal_load_n": 225.0,
+        "release_step": 240,
+        "stopped_at_patch_boundary": false,
+        "truncations": 0,
+        "unconverged_steps": 0,
+        "steps": 480,
+        "max_reference_error_position_m": 0.0,
+        "max_reference_error_velocity_m_s": 0.0,
+        "release_velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position_m": [
+          0.004000000158836199,
+          0.001,
+          0.0
+        ],
+        "final_velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": true,
+        "law": "WireSum",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 5.551115123125783E-17,
+        "max_residual_n": 9.076089880572068E-07,
+        "minimum_gap_m": 0.0009999791644589007,
+        "normal_load_n": 225.0,
+        "release_step": 240,
+        "stopped_at_patch_boundary": true,
+        "truncations": 0,
+        "unconverged_steps": 0,
+        "steps": 458,
+        "max_reference_error_position_m": 0.09419044712778285,
+        "max_reference_error_velocity_m_s": 0.02447015409312045,
+        "release_velocity_m_s": [
+          -0.02415549385437266,
+          -0.003911592769246849,
+          0.0
+        ],
+        "final_position_m": [
+          -0.09019044696894665,
+          0.001,
+          0.0
+        ],
+        "final_velocity_m_s": [
+          -0.0241554938543731,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "dt_s": 0.016666666666666666,
+        "grab_stiffness_n_m": 5000.0,
+        "hold": true,
+        "law": "WirePair",
+        "line_search_failures": 0,
+        "mass_kg": 0.02,
+        "max_post_release_energy_rise_j": 0.0,
+        "max_residual_n": 7.941809926706456E-07,
+        "minimum_gap_m": 0.001,
+        "normal_load_n": 225.0,
+        "release_step": 240,
+        "stopped_at_patch_boundary": false,
+        "truncations": 11,
+        "unconverged_steps": 0,
+        "steps": 480,
+        "max_reference_error_position_m": 1.3552527156068805E-20,
+        "max_reference_error_velocity_m_s": 8.673617379884035E-19,
+        "release_velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "final_position_m": [
+          0.004000000158836199,
+          0.001,
+          0.0
+        ],
+        "final_velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ]
+  }
+}

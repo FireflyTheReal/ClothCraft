@@ -4,9 +4,17 @@ Humans and AI agents are welcome. Start with [AI_START_HERE.md](AI_START_HERE.md
 
 ## Choose a small, verifiable change
 
-The project is a very early alpha. Pick one bounded task with observable acceptance cases. Reliable save/open (`SAVE-01`) and partial-edge sewing (`SEW-01`) are useful first contributions. The [manual study](docs/manual-study.md) distinguishes public behavioral references, independently implemented features and work that remains planned. Do not describe roadmap formats or solver backends as available.
+The project is a very early alpha. Pick one bounded task with observable acceptance cases. Save/open and partial-edge sewing already have implementations. Choose a remaining acceptance gap or one of the current `UX`, `PHYS`, `PERF` or `IO` briefs in the roadmap; do not reimplement a completed feature based on an old note. The [manual study](docs/manual-study.md) distinguishes public behavioral references, independently implemented features and work that remains planned. Do not describe roadmap formats or solver backends as available.
 
 For physics changes, describe the affected energy/contact model, units, assumptions and limits. Add a test that could falsify the implementation: derivatives, objectivity, balance, rest-state preservation, an analytical result or convergence. Use the same scenes and settings when comparing solvers; report quality and full-step cost using the [solver challenge](docs/solver-challenge.md). Documentation and reversible visual changes do not need tests that merely repeat the implementation.
+
+## You can help without writing code
+
+Open an issue with the garment or a minimal example you are allowed to share, the steps you took, what you expected and what happened. Include mesh spacing, solver settings, app revision and whether the problem survives a restart. A short recording can clarify confusing interactions. Avoid sharing private assets accidentally.
+
+Workflow sketches, measurement references and solver ideas are welcome. Label an idea as a hypothesis and state what observation would support or disprove it. Do not invent timings, reproduce a paper only in name or describe a proposed format as implemented.
+
+The [contributor kit](docs/contributor-kit.md) includes prompts for an AI coding assistant. You remain responsible for reviewing its changes and reporting the checks actually run. A useful contribution can be one clear issue, one repeatable test or one small pull request.
 
 ## Validate without a GPU
 

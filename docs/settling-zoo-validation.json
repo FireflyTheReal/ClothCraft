@@ -1,0 +1,1991 @@
+{
+  "date": "2026-10-19",
+  "backend": "CPU f64 VBD/OGC",
+  "gpu_used": false,
+  "production_defaults_changed": false,
+  "threads": 2,
+  "final_checks_passed": 115,
+  "accepted_steps": 87600,
+  "default_final_states_identical_to_pre_probe_binary": 28,
+  "runs": [
+    {
+      "run": "zoo-final-baseline",
+      "binary_sha256": "ABD7CBB1585A9F72AB0168417D94CB177ACFF63E076440D65BE03332D9ED53CA",
+      "args": {
+        "backtracks": 10,
+        "cases": [],
+        "continuation_seconds": 10.0,
+        "controls_from": null,
+        "iterations": 16,
+        "output": "output/zoo-final-baseline",
+        "resolution": 3,
+        "seed": 0,
+        "settle_seconds": 20.0,
+        "unshifted_spd": false
+      },
+      "cases": {
+        "floor-diagonal": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-with-unbalanced-forces",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.1377177139380777e-07,
+              "tail_max_speed_m_s": 5.68862883997138e-08,
+              "tail_truncation_events": 1936,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 3.374097543963189e-08,
+              "tail_physical_force_rms_n": {
+                "max": 0.00020440079627007164,
+                "mean": 0.00020440079623089261,
+                "p95": 0.000204400796266293
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.374329632741108e-08,
+                "mean": 3.3743055686226066e-08,
+                "p95": 3.3743271627240024e-08
+              },
+              "tail_step_ms": {
+                "max": 3.0841000000000003,
+                "mean": 2.3569966942148755,
+                "p95": 2.9341
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 2.9341421241253375e-07,
+              "tail_max_speed_m_s": 5.252588819596134e-07,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.05586986573210123,
+              "tail_physical_force_rms_n": {
+                "max": 9.534377074139934e-11,
+                "mean": 9.534301218101967e-11,
+                "p95": 9.53436095045923e-11
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.537112158842703e-07,
+                "mean": 1.2659958801464686e-07,
+                "p95": 3.0604773030123873e-07
+              },
+              "tail_step_ms": {
+                "max": 2.2778,
+                "mean": 1.7808553719008269,
+                "p95": 2.0648
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-with-unbalanced-forces",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 4.808528815921354e-06,
+              "tail_max_speed_m_s": 7.6056864755174084e-06,
+              "tail_truncation_events": 1936,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.04405948980132509,
+              "tail_physical_force_rms_n": {
+                "max": 0.00020452908360652465,
+                "mean": 0.0002045290768784793,
+                "p95": 0.00020452908340119432
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 6.001279106936734e-06,
+                "mean": 1.954785611012045e-06,
+                "p95": 5.179585296909153e-06
+              },
+              "tail_step_ms": {
+                "max": 2.7905,
+                "mean": 2.1459165289256203,
+                "p95": 2.6421
+              }
+            }
+          }
+        },
+        "floor-face": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 8.326672684688674e-15,
+              "tail_max_speed_m_s": 4.163336342344337e-15,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 4.163336342344337e-15,
+              "tail_physical_force_rms_n": {
+                "max": 1.2162878247474094e-14,
+                "mean": 1.2162878247474132e-14,
+                "p95": 1.2162878247474094e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 4.163336342344337e-15,
+                "mean": 4.163336342344337e-15,
+                "p95": 4.163336342344337e-15
+              },
+              "tail_step_ms": {
+                "max": 2.1712,
+                "mean": 1.6031619834710749,
+                "p95": 1.9092
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 6.648975830778411e-10,
+              "tail_max_speed_m_s": 1.0516722838799285e-09,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.0001212843961406385,
+              "tail_physical_force_rms_n": {
+                "max": 1.2194144215778884e-14,
+                "mean": 1.2161042002763772e-14,
+                "p95": 1.2174309733209849e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 8.831652491927924e-10,
+                "mean": 2.841730844762541e-10,
+                "p95": 7.615507594683361e-10
+              },
+              "tail_step_ms": {
+                "max": 2.1488,
+                "mean": 1.7834305785123958,
+                "p95": 1.9999000000000002
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-with-unbalanced-forces",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 7.861915314537148e-08,
+              "tail_max_speed_m_s": 1.2435264807454705e-07,
+              "tail_truncation_events": 3872,
+              "tail_positive_fixed_energy_steps": 46,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.044799842612247724,
+              "tail_physical_force_rms_n": {
+                "max": 0.0029923499706248327,
+                "mean": 0.00299230675146692,
+                "p95": 0.002992348650666543
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 7.264650716953124e-08,
+                "mean": 2.3375160603728603e-08,
+                "p95": 6.264284270613051e-08
+              },
+              "tail_step_ms": {
+                "max": 3.1557,
+                "mean": 2.3828710743801653,
+                "p95": 2.8333999999999997
+              }
+            }
+          }
+        },
+        "free-fall": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.711221175386839,
+              "tail_max_speed_m_s": 0.35675520522279497,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.36550254826254536,
+              "tail_physical_force_rms_n": {
+                "max": 0.005941025502361783,
+                "mean": 0.005939569433521888,
+                "p95": 0.005940886798779262
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.3544947033435746,
+                "mean": 0.3534512730680203,
+                "p95": 0.354386582743201
+              },
+              "tail_step_ms": {
+                "max": 2.3448,
+                "mean": 1.8928504132231403,
+                "p95": 2.2019
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.7112584851888032,
+              "tail_max_speed_m_s": 0.35677497033420635,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.366883297214602,
+              "tail_physical_force_rms_n": {
+                "max": 0.005941002347065375,
+                "mean": 0.005939544389415097,
+                "p95": 0.005940863464271981
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.3545128727006824,
+                "mean": 0.3534684287148969,
+                "p95": 0.3544046467638702
+              },
+              "tail_step_ms": {
+                "max": 2.2977000000000003,
+                "mean": 1.971961983471074,
+                "p95": 2.195
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.6529876753559892,
+              "tail_max_speed_m_s": 0.32707770024556976,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.3179168489969815,
+              "tail_physical_force_rms_n": {
+                "max": 0.00505336405777323,
+                "mean": 0.005050391083019915,
+                "p95": 0.005053047850626619
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.3261454936430687,
+                "mean": 0.32561123737254455,
+                "p95": 0.3260858917624075
+              },
+              "tail_step_ms": {
+                "max": 2.4292,
+                "mean": 1.8933842975206614,
+                "p95": 2.199
+              }
+            }
+          }
+        },
+        "hanging": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.698470465834323e-17,
+              "tail_max_speed_m_s": 7.214687831533229e-16,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 1.6922561663438943e-16,
+              "tail_physical_force_rms_n": {
+                "max": 5.7429363543400856e-15,
+                "mean": 5.697421677077887e-15,
+                "p95": 5.718447233943815e-15
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.9000444854612101e-16,
+                "mean": 6.974182617554938e-17,
+                "p95": 1.4408395234959942e-16
+              },
+              "tail_step_ms": {
+                "max": 2.5128,
+                "mean": 1.9960388429752063,
+                "p95": 2.3714
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.6300302036961756e-17,
+              "tail_max_speed_m_s": 8.044102493484639e-16,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.044390351480269326,
+              "tail_physical_force_rms_n": {
+                "max": 6.7518048445688186e-15,
+                "mean": 6.674527859980056e-15,
+                "p95": 6.738516627411094e-15
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 2.475558822681319e-16,
+                "mean": 1.2509778624345051e-16,
+                "p95": 2.0319820664858435e-16
+              },
+              "tail_step_ms": {
+                "max": 2.604,
+                "mean": 2.001713223140496,
+                "p95": 2.3719
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.712201268730459e-05,
+              "tail_max_speed_m_s": 6.860787803844828e-05,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.07615779821924877,
+              "tail_physical_force_rms_n": {
+                "max": 1.2741341836779493e-07,
+                "mean": 4.0517987165698886e-08,
+                "p95": 1.2000793948146696e-07
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.5743138121384786e-05,
+                "mean": 1.1005037919446109e-05,
+                "p95": 2.857296798661255e-05
+              },
+              "tail_step_ms": {
+                "max": 2.6584,
+                "mean": 1.9646570247933892,
+                "p95": 2.3066
+              }
+            }
+          }
+        },
+        "seam-eased": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 7.572597497202827e-13,
+              "tail_max_speed_m_s": 2.247336443950816e-12,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 9.791689334898721e-10,
+              "tail_physical_force_rms_n": {
+                "max": 1.1352025373962937e-14,
+                "mean": 8.917929656252218e-15,
+                "p95": 1.0663282299583617e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 9.722126584160113e-13,
+                "mean": 3.220828366154387e-13,
+                "p95": 6.855890357971069e-13
+              },
+              "tail_step_ms": {
+                "max": 4.3118,
+                "mean": 3.3744826446280984,
+                "p95": 3.8615
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 3.8294956894183393e-05,
+              "tail_max_speed_m_s": 0.0001217799127998828,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 3,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.13042844999918213,
+              "tail_physical_force_rms_n": {
+                "max": 2.605261118153918e-07,
+                "mean": 1.0645382469566063e-07,
+                "p95": 2.52695108383747e-07
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.3643063627574166e-05,
+                "mean": 1.5618966046981503e-05,
+                "p95": 3.2648139964389406e-05
+              },
+              "tail_step_ms": {
+                "max": 4.5091,
+                "mean": 3.484423140495866,
+                "p95": 3.9769
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.0001558151745865739,
+              "tail_max_speed_m_s": 0.0006568993399296423,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 38,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.04069882470581988,
+              "tail_physical_force_rms_n": {
+                "max": 1.2672822709391357e-06,
+                "mean": 5.699036732905561e-07,
+                "p95": 1.2480689853583307e-06
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.00026556387914530936,
+                "mean": 8.934843176235903e-05,
+                "p95": 0.0002439909271589466
+              },
+              "tail_step_ms": {
+                "max": 3.7613999999999996,
+                "mean": 3.2347388429752093,
+                "p95": 3.6232
+              }
+            }
+          }
+        },
+        "seam-equal": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 6.430967560635715e-14,
+              "tail_max_speed_m_s": 1.3306955405960837e-13,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 6.328835245527801e-11,
+              "tail_physical_force_rms_n": {
+                "max": 7.982817334720738e-15,
+                "mean": 7.687498011342035e-15,
+                "p95": 7.848635410464575e-15
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 4.144480010916856e-14,
+                "mean": 1.6846713511530152e-14,
+                "p95": 4.0333269766858144e-14
+              },
+              "tail_step_ms": {
+                "max": 3.9344,
+                "mean": 2.9841644628099173,
+                "p95": 3.5393999999999997
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 5.072922585190595e-14,
+              "tail_max_speed_m_s": 1.0892976410431519e-13,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.09549403722556728,
+              "tail_physical_force_rms_n": {
+                "max": 1.116804604751486e-14,
+                "mean": 9.292254313729321e-15,
+                "p95": 1.0392143129980641e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.384667098240352e-14,
+                "mean": 1.4106018860147804e-14,
+                "p95": 3.27854771461726e-14
+              },
+              "tail_step_ms": {
+                "max": 3.5108,
+                "mean": 2.908752892561985,
+                "p95": 3.3046
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.0002109253107229205,
+              "tail_max_speed_m_s": 0.0007177797685023714,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 43,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.051680227619111174,
+              "tail_physical_force_rms_n": {
+                "max": 1.185323777192912e-06,
+                "mean": 4.92325861207114e-07,
+                "p95": 1.1538440460647563e-06
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.0002390712918941276,
+                "mean": 7.671720256025396e-05,
+                "p95": 0.00022610514167861767
+              },
+              "tail_step_ms": {
+                "max": 4.0914,
+                "mean": 3.0661826446280984,
+                "p95": 3.7617000000000003
+              }
+            }
+          }
+        },
+        "slope": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.001956701306623456,
+              "tail_max_speed_m_s": 0.000978422108903142,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.0009324313081245566,
+              "tail_physical_force_rms_n": {
+                "max": 0.00025536703305316534,
+                "mean": 0.0002541587091159377,
+                "p95": 0.0002552401580303888
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.0009324011833225868,
+                "mean": 0.0009305665361145949,
+                "p95": 0.0009322422317544518
+              },
+              "tail_step_ms": {
+                "max": 2.2641,
+                "mean": 1.7732950413223145,
+                "p95": 2.0577
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.001942418214708058,
+              "tail_max_speed_m_s": 0.0009732920185167443,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.009212988468488295,
+              "tail_physical_force_rms_n": {
+                "max": 0.00026267187998884684,
+                "mean": 0.0002610439705049029,
+                "p95": 0.0002625047768711227
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.0009197848432077985,
+                "mean": 0.0009161127134239985,
+                "p95": 0.0009194355828342443
+              },
+              "tail_step_ms": {
+                "max": 2.4034,
+                "mean": 1.780356198347108,
+                "p95": 2.1106
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.0018437087090587164,
+              "tail_max_speed_m_s": 0.0009466319902076311,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.0373723283891561,
+              "tail_physical_force_rms_n": {
+                "max": 0.0002687962381441643,
+                "mean": 0.00025942832106651763,
+                "p95": 0.0002616095559629612
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.0009060432129560324,
+                "mean": 0.0008921093780857467,
+                "p95": 0.00090531981940238
+              },
+              "tail_step_ms": {
+                "max": 2.3184,
+                "mean": 1.8961247933884304,
+                "p95": 2.1445000000000003
+              }
+            }
+          }
+        },
+        "zero-gravity": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 3.331085479845633e-15,
+              "tail_max_speed_m_s": 2.4980018054066022e-15,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 1.7474180012833505e-15,
+              "tail_physical_force_rms_n": {
+                "max": 3.288174919474896e-15,
+                "mean": 3.1332346873701817e-15,
+                "p95": 3.2539493662294248e-15
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.7749564409716126e-15,
+                "mean": 1.67164910729743e-15,
+                "p95": 1.748529875910106e-15
+              },
+              "tail_step_ms": {
+                "max": 3.3124000000000002,
+                "mean": 2.0503140495867767,
+                "p95": 2.5779
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 3.331085479845633e-15,
+              "tail_max_speed_m_s": 2.4980018054066022e-15,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 1.7474180012833505e-15,
+              "tail_physical_force_rms_n": {
+                "max": 3.288174919474896e-15,
+                "mean": 3.1332346873701817e-15,
+                "p95": 3.2539493662294248e-15
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.7749564409716126e-15,
+                "mean": 1.67164910729743e-15,
+                "p95": 1.748529875910106e-15
+              },
+              "tail_step_ms": {
+                "max": 2.4927,
+                "mean": 1.897723966942149,
+                "p95": 2.2288
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 3.0111566566729127e-05,
+              "tail_max_speed_m_s": 6.264490129051898e-05,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.03630543532130951,
+              "tail_physical_force_rms_n": {
+                "max": 1.264973825734401e-07,
+                "mean": 5.810695386235512e-08,
+                "p95": 1.2490006587910382e-07
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.6692415053826825e-05,
+                "mean": 1.3969360180990825e-05,
+                "p95": 2.5785692828910387e-05
+              },
+              "tail_step_ms": {
+                "max": 2.4428,
+                "mean": 1.8513677685950412,
+                "p95": 2.1582
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "run": "zoo-final-search",
+      "binary_sha256": "ABD7CBB1585A9F72AB0168417D94CB177ACFF63E076440D65BE03332D9ED53CA",
+      "args": {
+        "backtracks": 32,
+        "cases": [
+          "seam-eased",
+          "floor-face",
+          "floor-diagonal",
+          "slope"
+        ],
+        "continuation_seconds": 10.0,
+        "controls_from": "output/zoo-final-baseline",
+        "iterations": 16,
+        "output": "output/zoo-final-search",
+        "resolution": 3,
+        "seed": 0,
+        "settle_seconds": 20.0,
+        "unshifted_spd": false
+      },
+      "cases": {
+        "floor-diagonal": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 8.96745998481943e-08,
+              "tail_max_speed_m_s": 4.4837648696769634e-08,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 3.8544956199695466e-08,
+              "tail_physical_force_rms_n": {
+                "max": 1.0059625013208861e-10,
+                "mean": 1.0059515394852593e-10,
+                "p95": 1.0059601047646136e-10
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.854824783318006e-08,
+                "mean": 3.854790815442083e-08,
+                "p95": 3.854821364654105e-08
+              },
+              "tail_step_ms": {
+                "max": 2.5286000000000004,
+                "mean": 1.8512413223140494,
+                "p95": 2.1631
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 4.996443067562068e-07,
+              "tail_max_speed_m_s": 6.100270736799573e-07,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.04204254285565361,
+              "tail_physical_force_rms_n": {
+                "max": 1.2022962931127152e-10,
+                "mean": 1.2022827605726716e-10,
+                "p95": 1.2022938948067823e-10
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.5354899761256274e-07,
+                "mean": 1.4595044740010047e-07,
+                "p95": 3.113456874060659e-07
+              },
+              "tail_step_ms": {
+                "max": 2.3725,
+                "mean": 1.8283975206611573,
+                "p95": 2.1456
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 4.83485327091379e-06,
+              "tail_max_speed_m_s": 7.344129663205929e-06,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.3193392266084397,
+              "tail_physical_force_rms_n": {
+                "max": 2.555357540775696e-10,
+                "mean": 2.555201171806865e-10,
+                "p95": 2.55535026940758e-10
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 5.603300281281987e-06,
+                "mean": 1.8777229596835062e-06,
+                "p95": 4.8468826086963286e-06
+              },
+              "tail_step_ms": {
+                "max": 2.4562999999999997,
+                "mean": 1.728676859504132,
+                "p95": 1.9778
+              }
+            }
+          }
+        },
+        "floor-face": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 8.326672684688674e-15,
+              "tail_max_speed_m_s": 4.163336342344337e-15,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 4.163336342344337e-15,
+              "tail_physical_force_rms_n": {
+                "max": 1.2162878247474094e-14,
+                "mean": 1.2162878247474132e-14,
+                "p95": 1.2162878247474094e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 4.163336342344337e-15,
+                "mean": 4.163336342344337e-15,
+                "p95": 4.163336342344337e-15
+              },
+              "tail_step_ms": {
+                "max": 2.2033,
+                "mean": 1.615586776859505,
+                "p95": 1.8921000000000001
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 6.648975830778411e-10,
+              "tail_max_speed_m_s": 1.0516722838799285e-09,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.0001212843961406385,
+              "tail_physical_force_rms_n": {
+                "max": 1.2194144215778884e-14,
+                "mean": 1.2161042002763772e-14,
+                "p95": 1.2174309733209849e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 8.831652491927924e-10,
+                "mean": 2.841730844762541e-10,
+                "p95": 7.615507594683361e-10
+              },
+              "tail_step_ms": {
+                "max": 2.148,
+                "mean": 1.658879338842976,
+                "p95": 2.0515
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.2895968571173458e-07,
+              "tail_max_speed_m_s": 2.0397652638890719e-07,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.044799842612247724,
+              "tail_physical_force_rms_n": {
+                "max": 1.2208089237321798e-14,
+                "mean": 1.2167058304302277e-14,
+                "p95": 1.2186245484455004e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.1892770995003498e-07,
+                "mean": 3.826689388975397e-08,
+                "p95": 1.0255099077997436e-07
+              },
+              "tail_step_ms": {
+                "max": 2.0877,
+                "mean": 1.6246520661157027,
+                "p95": 1.931
+              }
+            }
+          }
+        },
+        "seam-eased": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 7.572597497202827e-13,
+              "tail_max_speed_m_s": 2.247336443950816e-12,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 9.791689334898721e-10,
+              "tail_physical_force_rms_n": {
+                "max": 1.1352025373962937e-14,
+                "mean": 8.917929656252218e-15,
+                "p95": 1.0663282299583617e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 9.722126584160113e-13,
+                "mean": 3.220828366154387e-13,
+                "p95": 6.855890357971069e-13
+              },
+              "tail_step_ms": {
+                "max": 4.457199999999999,
+                "mean": 3.4473471074380173,
+                "p95": 4.1985
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 3.8294956894183393e-05,
+              "tail_max_speed_m_s": 0.0001217799127998828,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 3,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.13042844999918213,
+              "tail_physical_force_rms_n": {
+                "max": 2.605261118153918e-07,
+                "mean": 1.0645382469566063e-07,
+                "p95": 2.52695108383747e-07
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.3643063627574166e-05,
+                "mean": 1.5618966046981503e-05,
+                "p95": 3.2648139964389406e-05
+              },
+              "tail_step_ms": {
+                "max": 4.8225999999999996,
+                "mean": 3.329328925619835,
+                "p95": 3.8244
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.0001558151745865739,
+              "tail_max_speed_m_s": 0.0006568993399296423,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 38,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.04069882470581988,
+              "tail_physical_force_rms_n": {
+                "max": 1.2672822709391357e-06,
+                "mean": 5.699036732905561e-07,
+                "p95": 1.2480689853583307e-06
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.00026556387914530936,
+                "mean": 8.934843176235903e-05,
+                "p95": 0.0002439909271589466
+              },
+              "tail_step_ms": {
+                "max": 4.3865,
+                "mean": 3.4828975206611563,
+                "p95": 4.1632
+              }
+            }
+          }
+        },
+        "slope": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.0019576467584816355,
+              "tail_max_speed_m_s": 0.0009789017856169804,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.0009332429083465288,
+              "tail_physical_force_rms_n": {
+                "max": 0.00025593077098337737,
+                "mean": 0.000254681050925164,
+                "p95": 0.00025579992596535574
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.0009317763714453325,
+                "mean": 0.0009297664899248887,
+                "p95": 0.0009315996077743926
+              },
+              "tail_step_ms": {
+                "max": 2.4279,
+                "mean": 1.7600280991735535,
+                "p95": 2.0082
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.0019421499136922456,
+              "tail_max_speed_m_s": 0.000973384888239769,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.009737491388114779,
+              "tail_physical_force_rms_n": {
+                "max": 0.00026424833547804624,
+                "mean": 0.00026256237334034576,
+                "p95": 0.000264075878689521
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.0009166909653737113,
+                "mean": 0.000912691253368491,
+                "p95": 0.0009163077037911567
+              },
+              "tail_step_ms": {
+                "max": 2.5191,
+                "mean": 1.8108628099173556,
+                "p95": 2.1376
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.0019044914538651695,
+              "tail_max_speed_m_s": 0.0009622318205210868,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.03844688691252824,
+              "tail_physical_force_rms_n": {
+                "max": 0.0002585872676142145,
+                "mean": 0.0002576779740727786,
+                "p95": 0.0002584680320595627
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.0009154577762385942,
+                "mean": 0.0009106989789807391,
+                "p95": 0.0009150511422853502
+              },
+              "tail_step_ms": {
+                "max": 2.4808,
+                "mean": 1.82587438016529,
+                "p95": 2.2748999999999997
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "run": "zoo-final-combined",
+      "binary_sha256": "ABD7CBB1585A9F72AB0168417D94CB177ACFF63E076440D65BE03332D9ED53CA",
+      "args": {
+        "backtracks": 32,
+        "cases": [
+          "seam-eased",
+          "floor-face",
+          "floor-diagonal",
+          "slope"
+        ],
+        "continuation_seconds": 10.0,
+        "controls_from": "output/zoo-final-baseline",
+        "iterations": 16,
+        "output": "output/zoo-final-combined",
+        "resolution": 3,
+        "seed": 0,
+        "settle_seconds": 20.0,
+        "unshifted_spd": true
+      },
+      "cases": {
+        "floor-diagonal": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.6228562712062903e-07,
+              "tail_max_speed_m_s": 8.114331289960661e-08,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 6.662506450330367e-08,
+              "tail_physical_force_rms_n": {
+                "max": 1.641786530365152e-10,
+                "mean": 1.6417759074981592e-10,
+                "p95": 1.6417837764677356e-10
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 6.662875369934746e-08,
+                "mean": 6.662837260871553e-08,
+                "p95": 6.662871572438641e-08
+              },
+              "tail_step_ms": {
+                "max": 2.4521,
+                "mean": 1.7234760330578511,
+                "p95": 1.9778
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 7.598855722515018e-07,
+              "tail_max_speed_m_s": 9.467283459338395e-07,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.1443971503162211,
+              "tail_physical_force_rms_n": {
+                "max": 3.3170678681325537e-10,
+                "mean": 3.3170457815804826e-10,
+                "p95": 3.317062901049033e-10
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 5.671652711894765e-07,
+                "mean": 2.516902983371253e-07,
+                "p95": 5.02047754754509e-07
+              },
+              "tail_step_ms": {
+                "max": 2.3651,
+                "mean": 1.8869528925619836,
+                "p95": 2.2521
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 4.18647012087458e-06,
+              "tail_max_speed_m_s": 6.418485381984333e-06,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.3665648165130674,
+              "tail_physical_force_rms_n": {
+                "max": 2.0602048464862036e-10,
+                "mean": 2.0599706253830465e-10,
+                "p95": 2.0601940043000965e-10
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 6.2242855615614874e-06,
+                "mean": 2.062389100795122e-06,
+                "p95": 5.379284618384735e-06
+              },
+              "tail_step_ms": {
+                "max": 2.2153,
+                "mean": 1.7141991735537188,
+                "p95": 2.1113999999999997
+              }
+            }
+          }
+        },
+        "floor-face": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 8.326672684688674e-15,
+              "tail_max_speed_m_s": 4.163336342344337e-15,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 4.163336342344337e-15,
+              "tail_physical_force_rms_n": {
+                "max": 1.2162878247474094e-14,
+                "mean": 1.2162878247474132e-14,
+                "p95": 1.2162878247474094e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 4.163336342344337e-15,
+                "mean": 4.163336342344337e-15,
+                "p95": 4.163336342344337e-15
+              },
+              "tail_step_ms": {
+                "max": 2.1614,
+                "mean": 1.6310636363636355,
+                "p95": 1.9314
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 6.648975830778411e-10,
+              "tail_max_speed_m_s": 1.0516722838799285e-09,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.0001212843961406385,
+              "tail_physical_force_rms_n": {
+                "max": 1.2194144215778884e-14,
+                "mean": 1.2161042002763772e-14,
+                "p95": 1.2174309733209849e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 8.831652491927924e-10,
+                "mean": 2.841730844762541e-10,
+                "p95": 7.615507594683361e-10
+              },
+              "tail_step_ms": {
+                "max": 2.1234,
+                "mean": 1.6232834710743798,
+                "p95": 1.9436
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 8.220223803527128e-07,
+              "tail_max_speed_m_s": 1.3001990428327346e-06,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.04467965957669452,
+              "tail_physical_force_rms_n": {
+                "max": 1.2198098861765128e-14,
+                "mean": 1.2169028547393578e-14,
+                "p95": 1.2187800618208118e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.0531132300106572e-06,
+                "mean": 3.388560397646293e-07,
+                "p95": 9.080962391809762e-07
+              },
+              "tail_step_ms": {
+                "max": 2.1783,
+                "mean": 1.7408752066115702,
+                "p95": 2.0212
+              }
+            }
+          }
+        },
+        "seam-eased": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 6.967418391282911e-14,
+              "tail_max_speed_m_s": 2.664301874361747e-13,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 1.6220763251559592e-10,
+              "tail_physical_force_rms_n": {
+                "max": 9.632932115070596e-15,
+                "mean": 7.715696104220609e-15,
+                "p95": 8.96205649507918e-15
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.2904558131282899e-13,
+                "mean": 4.5085029793775135e-14,
+                "p95": 1.2367067647243153e-13
+              },
+              "tail_step_ms": {
+                "max": 4.008900000000001,
+                "mean": 3.288845454545454,
+                "p95": 3.6967
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 2.1662057773078836e-05,
+              "tail_max_speed_m_s": 5.7110560750829e-05,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.12284292920326505,
+              "tail_physical_force_rms_n": {
+                "max": 2.6911839734088505e-07,
+                "mean": 7.901761938270707e-08,
+                "p95": 2.109635554979392e-07
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 2.5604625036924887e-05,
+                "mean": 1.0520099006486131e-05,
+                "p95": 2.4938859753161717e-05
+              },
+              "tail_step_ms": {
+                "max": 4.243399999999999,
+                "mean": 3.4332396694214866,
+                "p95": 4.0074000000000005
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 9.495734016745112e-05,
+              "tail_max_speed_m_s": 0.00031334207632674645,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 10,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.0416893406696886,
+              "tail_physical_force_rms_n": {
+                "max": 1.2191293763154162e-06,
+                "mean": 3.7542870829187595e-07,
+                "p95": 9.869522421127973e-07
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.00011395792939062488,
+                "mean": 5.153539184350018e-05,
+                "p95": 0.00011231959553877686
+              },
+              "tail_step_ms": {
+                "max": 4.0466,
+                "mean": 3.408542975206613,
+                "p95": 3.8219
+              }
+            }
+          }
+        },
+        "slope": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.1667686124736761,
+              "tail_max_speed_m_s": 0.08338531190920156,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.08323363074307909,
+              "tail_physical_force_rms_n": {
+                "max": 0.00030203060051660325,
+                "mean": 0.0003020138667128834,
+                "p95": 0.00030202892755792665
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.08322765903292295,
+                "mean": 0.08322695946562735,
+                "p95": 0.08322758842869901
+              },
+              "tail_step_ms": {
+                "max": 2.0731,
+                "mean": 1.648296694214876,
+                "p95": 1.9342000000000001
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.16674499021611103,
+              "tail_max_speed_m_s": 0.08337338002418042,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.06522697764006263,
+              "tail_physical_force_rms_n": {
+                "max": 0.00030181627196064037,
+                "mean": 0.0003017994723385784,
+                "p95": 0.00030181459223488214
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.08321948715801465,
+                "mean": 0.08321892291271696,
+                "p95": 0.08321943006984879
+              },
+              "tail_step_ms": {
+                "max": 2.0591,
+                "mean": 1.6280132231404953,
+                "p95": 1.9967000000000001
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.16673905489914337,
+              "tail_max_speed_m_s": 0.08337037845867322,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 1.4872172020365597,
+              "tail_physical_force_rms_n": {
+                "max": 0.000301757380043384,
+                "mean": 0.0003017405688622554,
+                "p95": 0.00030175569910404295
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.08321755033241644,
+                "mean": 0.08321702377096225,
+                "p95": 0.08321749700958758
+              },
+              "tail_step_ms": {
+                "max": 2.3394000000000004,
+                "mean": 1.7061942148760343,
+                "p95": 2.1528
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "run": "zoo-seed7-baseline",
+      "binary_sha256": "ABD7CBB1585A9F72AB0168417D94CB177ACFF63E076440D65BE03332D9ED53CA",
+      "args": {
+        "backtracks": 10,
+        "cases": [
+          "seam-eased",
+          "floor-face",
+          "floor-diagonal"
+        ],
+        "continuation_seconds": 10.0,
+        "controls_from": null,
+        "iterations": 16,
+        "output": "output/zoo-seed7-baseline",
+        "resolution": 3,
+        "seed": 7,
+        "settle_seconds": 20.0,
+        "unshifted_spd": false
+      },
+      "cases": {
+        "floor-diagonal": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-with-unbalanced-forces",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 9.767601086141832e-08,
+              "tail_max_speed_m_s": 4.88382006620202e-08,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 2.6374621949863655e-08,
+              "tail_physical_force_rms_n": {
+                "max": 0.0008134184657009139,
+                "mean": 0.0008134184654157123,
+                "p95": 0.000813418465673514
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 2.6375642758634014e-08,
+                "mean": 2.6375536747380307e-08,
+                "p95": 2.637563240780382e-08
+              },
+              "tail_step_ms": {
+                "max": 2.5454000000000003,
+                "mean": 1.8732975206611575,
+                "p95": 2.2051000000000003
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-with-unbalanced-forces",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 2.893762156978882e-07,
+              "tail_max_speed_m_s": 4.577085333209412e-07,
+              "tail_truncation_events": 5808,
+              "tail_positive_fixed_energy_steps": 121,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.03849448240186944,
+              "tail_physical_force_rms_n": {
+                "max": 0.16983008103211045,
+                "mean": 0.16982985371242101,
+                "p95": 0.16983007408951836
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 2.4757531318046173e-07,
+                "mean": 7.966133185271368e-08,
+                "p95": 2.1348342574127057e-07
+              },
+              "tail_step_ms": {
+                "max": 5.024,
+                "mean": 2.868952892561985,
+                "p95": 4.1961
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-with-unbalanced-forces",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 4.994219550609662e-06,
+              "tail_max_speed_m_s": 7.794919834345425e-06,
+              "tail_truncation_events": 1936,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.04844335089271175,
+              "tail_physical_force_rms_n": {
+                "max": 0.0008133198767304616,
+                "mean": 0.0008133198713032243,
+                "p95": 0.0008133198765647834
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 6.455109867210666e-06,
+                "mean": 2.0897056291761973e-06,
+                "p95": 5.568638673671496e-06
+              },
+              "tail_step_ms": {
+                "max": 3.5184,
+                "mean": 2.478341322314049,
+                "p95": 2.9547000000000003
+              }
+            }
+          }
+        },
+        "floor-face": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 8.968100940422725e-15,
+              "tail_max_speed_m_s": 4.677967399747455e-15,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 4.4847662576642755e-15,
+              "tail_physical_force_rms_n": {
+                "max": 1.3394928671854097e-14,
+                "mean": 1.3393611737058125e-14,
+                "p95": 1.3394928671854097e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 4.4847662576642755e-15,
+                "mean": 4.484766257664279e-15,
+                "p95": 4.4847662576642755e-15
+              },
+              "tail_step_ms": {
+                "max": 2.4996,
+                "mean": 1.8510619834710749,
+                "p95": 2.2199
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 6.675698260254244e-10,
+              "tail_max_speed_m_s": 1.0558981611937442e-09,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.00012178136221623878,
+              "tail_physical_force_rms_n": {
+                "max": 1.3421964791401538e-14,
+                "mean": 1.3396586468665284e-14,
+                "p95": 1.3406162049326218e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 8.867921627712696e-10,
+                "mean": 2.853399366403359e-10,
+                "p95": 7.646778829266012e-10
+              },
+              "tail_step_ms": {
+                "max": 2.5124,
+                "mean": 1.823161983471074,
+                "p95": 2.2678
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-with-unbalanced-forces",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.0884151674205827e-07,
+              "tail_max_speed_m_s": 1.7215544370021936e-07,
+              "tail_truncation_events": 3872,
+              "tail_positive_fixed_energy_steps": 43,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.044779288655784524,
+              "tail_physical_force_rms_n": {
+                "max": 0.0029510303239018956,
+                "mean": 0.002950988448133998,
+                "p95": 0.0029510290449741706
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.037625009777519e-07,
+                "mean": 3.338723457912585e-08,
+                "p95": 8.947407102501994e-08
+              },
+              "tail_step_ms": {
+                "max": 3.032,
+                "mean": 2.178425619834712,
+                "p95": 2.5995
+              }
+            }
+          }
+        },
+        "seam-eased": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 5.077909169246033e-12,
+              "tail_max_speed_m_s": 1.0366592456642375e-11,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 2.605466164383286e-09,
+              "tail_physical_force_rms_n": {
+                "max": 4.6782836718957395e-14,
+                "mean": 1.921244049538099e-14,
+                "p95": 3.389618286678326e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 5.2535545869174065e-12,
+                "mean": 2.1459229274389633e-12,
+                "p95": 5.180081961606844e-12
+              },
+              "tail_step_ms": {
+                "max": 4.112,
+                "mean": 3.3780057851239684,
+                "p95": 3.8314
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 5.628092202371024e-05,
+              "tail_max_speed_m_s": 0.00010512410274798072,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.13900575185345398,
+              "tail_physical_force_rms_n": {
+                "max": 4.642232422429283e-07,
+                "mean": 1.8417033199776209e-07,
+                "p95": 4.080420701344959e-07
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 4.0097273078803764e-05,
+                "mean": 2.0775319734905893e-05,
+                "p95": 3.932366365614477e-05
+              },
+              "tail_step_ms": {
+                "max": 4.5941,
+                "mean": 3.44290082644628,
+                "p95": 4.106
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.00023009055309698538,
+              "tail_max_speed_m_s": 0.0005742667386496277,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 30,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.024158951226741752,
+              "tail_physical_force_rms_n": {
+                "max": 2.3833084076519793e-06,
+                "mean": 7.705962305027576e-07,
+                "p95": 1.9501145736239986e-06
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.00020087699665851267,
+                "mean": 9.122313697857149e-05,
+                "p95": 0.00019648654886999625
+              },
+              "tail_step_ms": {
+                "max": 4.7571,
+                "mean": 3.2958504132231417,
+                "p95": 3.6897
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "run": "zoo-seed7-search",
+      "binary_sha256": "ABD7CBB1585A9F72AB0168417D94CB177ACFF63E076440D65BE03332D9ED53CA",
+      "args": {
+        "backtracks": 32,
+        "cases": [
+          "seam-eased",
+          "floor-face",
+          "floor-diagonal"
+        ],
+        "continuation_seconds": 10.0,
+        "controls_from": "output/zoo-seed7-baseline",
+        "iterations": 16,
+        "output": "output/zoo-seed7-search",
+        "resolution": 3,
+        "seed": 7,
+        "settle_seconds": 20.0,
+        "unshifted_spd": false
+      },
+      "cases": {
+        "floor-diagonal": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.0889855885776069e-07,
+              "tail_max_speed_m_s": 5.4449691609702374e-08,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 5.000501845856463e-08,
+              "tail_physical_force_rms_n": {
+                "max": 1.3711548124938713e-10,
+                "mean": 1.3711446223929165e-10,
+                "p95": 1.371152451511618e-10
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 5.00079546745872e-08,
+                "mean": 5.000765137158018e-08,
+                "p95": 5.0007924442035005e-08
+              },
+              "tail_step_ms": {
+                "max": 2.3397,
+                "mean": 1.8911247933884296,
+                "p95": 2.1310000000000002
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.626148707561036e-07,
+              "tail_max_speed_m_s": 3.4243642811568e-07,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.030457196057965385,
+              "tail_physical_force_rms_n": {
+                "max": 7.39559909551531e-11,
+                "mean": 7.39552902889125e-11,
+                "p95": 7.395564230798722e-11
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.9061151356084192e-07,
+                "mean": 5.154452706130904e-08,
+                "p95": 1.6041233617249796e-07
+              },
+              "tail_step_ms": {
+                "max": 2.2207,
+                "mean": 1.8007719008264464,
+                "p95": 2.089
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 2.0907648300037266e-06,
+              "tail_max_speed_m_s": 3.2103391034677393e-06,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.8310966872863146,
+              "tail_physical_force_rms_n": {
+                "max": 1.4006420431685484e-10,
+                "mean": 1.4005074155107554e-10,
+                "p95": 1.40063780860056e-10
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 3.020554650064905e-06,
+                "mean": 1.0113062648322192e-06,
+                "p95": 2.612580219982963e-06
+              },
+              "tail_step_ms": {
+                "max": 2.4175999999999997,
+                "mean": 1.9667206611570247,
+                "p95": 2.2813999999999997
+              }
+            }
+          }
+        },
+        "floor-face": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 8.968100940422725e-15,
+              "tail_max_speed_m_s": 4.677967399747455e-15,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 4.4847662576642755e-15,
+              "tail_physical_force_rms_n": {
+                "max": 1.3394928671854097e-14,
+                "mean": 1.3393611737058125e-14,
+                "p95": 1.3394928671854097e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 4.4847662576642755e-15,
+                "mean": 4.484766257664279e-15,
+                "p95": 4.4847662576642755e-15
+              },
+              "tail_step_ms": {
+                "max": 2.0354,
+                "mean": 1.6196504132231404,
+                "p95": 1.9748999999999999
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 6.675698260254244e-10,
+              "tail_max_speed_m_s": 1.0558981611937442e-09,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.00012178136221623878,
+              "tail_physical_force_rms_n": {
+                "max": 1.3421964791401538e-14,
+                "mean": 1.3396586468665284e-14,
+                "p95": 1.3406162049326218e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 8.867921627712696e-10,
+                "mean": 2.853399366403359e-10,
+                "p95": 7.646778829266012e-10
+              },
+              "tail_step_ms": {
+                "max": 2.7638,
+                "mean": 1.7006776859504136,
+                "p95": 2.1053
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 1.300927879661128e-07,
+              "tail_max_speed_m_s": 2.0576875365175842e-07,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.044779288655784524,
+              "tail_physical_force_rms_n": {
+                "max": 1.3452168862415754e-14,
+                "mean": 1.340489728271897e-14,
+                "p95": 1.3425431057173917e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 1.1919060324292785e-07,
+                "mean": 3.83514853063797e-08,
+                "p95": 1.0277768389124196e-07
+              },
+              "tail_step_ms": {
+                "max": 2.3930000000000002,
+                "mean": 1.9242338842975208,
+                "p95": 2.2066999999999997
+              }
+            }
+          }
+        },
+        "seam-eased": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 5.077909169246033e-12,
+              "tail_max_speed_m_s": 1.0366592456642375e-11,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 2.605466164383286e-09,
+              "tail_physical_force_rms_n": {
+                "max": 4.6782836718957395e-14,
+                "mean": 1.921244049538099e-14,
+                "p95": 3.389618286678326e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 5.2535545869174065e-12,
+                "mean": 2.1459229274389633e-12,
+                "p95": 5.180081961606844e-12
+              },
+              "tail_step_ms": {
+                "max": 4.3457,
+                "mean": 3.3885504132231428,
+                "p95": 3.8116
+              }
+            },
+            "cold-restart": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 5.628092202371024e-05,
+              "tail_max_speed_m_s": 0.00010512410274798072,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.13900575185345398,
+              "tail_physical_force_rms_n": {
+                "max": 4.642232422429283e-07,
+                "mean": 1.8417033199776209e-07,
+                "p95": 4.080420701344959e-07
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 4.0097273078803764e-05,
+                "mean": 2.0775319734905893e-05,
+                "p95": 3.932366365614477e-05
+              },
+              "tail_step_ms": {
+                "max": 4.009600000000001,
+                "mean": 3.5047041322314056,
+                "p95": 3.9490000000000003
+              }
+            },
+            "pull-release": {
+              "classification": "still-moving",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 0.00023009055309698538,
+              "tail_max_speed_m_s": 0.0005742667386496277,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 30,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.024158951226741752,
+              "tail_physical_force_rms_n": {
+                "max": 2.3833084076519793e-06,
+                "mean": 7.705962305027576e-07,
+                "p95": 1.9501145736239986e-06
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 0.00020087699665851267,
+                "mean": 9.122313697857149e-05,
+                "p95": 0.00019648654886999625
+              },
+              "tail_step_ms": {
+                "max": 4.224399999999999,
+                "mean": 3.422034710743802,
+                "p95": 3.9741000000000004
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "run": "zoo-long-seam",
+      "binary_sha256": "ABD7CBB1585A9F72AB0168417D94CB177ACFF63E076440D65BE03332D9ED53CA",
+      "args": {
+        "backtracks": 10,
+        "cases": [
+          "seam-eased"
+        ],
+        "continuation_seconds": 30.0,
+        "controls_from": "output/zoo-final-baseline",
+        "iterations": 16,
+        "output": "output/zoo-long-seam",
+        "resolution": 3,
+        "seed": 0,
+        "settle_seconds": 20.0,
+        "unshifted_spd": false
+      },
+      "cases": {
+        "seam-eased": {
+          "contact_rebuild_final_state_identical": true,
+          "modes": {
+            "continuous": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 6.571465907849085e-15,
+              "tail_max_speed_m_s": 2.2289407871879243e-14,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 9.791689334898721e-10,
+              "tail_physical_force_rms_n": {
+                "max": 7.77186995497377e-15,
+                "mean": 6.82348873902456e-15,
+                "p95": 7.290216243050552e-15
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 7.602197936014478e-15,
+                "mean": 4.618848021575532e-15,
+                "p95": 6.584104501947796e-15
+              },
+              "tail_step_ms": {
+                "max": 4.7434,
+                "mean": 3.3284132231404957,
+                "p95": 3.7253999999999996
+              }
+            },
+            "cold-restart": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 5.540175288206911e-13,
+              "tail_max_speed_m_s": 1.6515714297078296e-12,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.13042844999918213,
+              "tail_physical_force_rms_n": {
+                "max": 1.1302055648653727e-14,
+                "mean": 8.478498157888115e-15,
+                "p95": 9.98719345608348e-15
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 7.67641593984461e-13,
+                "mean": 2.7667945658855414e-13,
+                "p95": 7.473071956718148e-13
+              },
+              "tail_step_ms": {
+                "max": 4.1968,
+                "mean": 3.3571975206611566,
+                "p95": 3.932
+              }
+            },
+            "pull-release": {
+              "classification": "quiet-observed",
+              "completed": true,
+              "fresh_final_intersection_check": true,
+              "tail_max_vertex_aabb_diagonal_m": 7.657399696888892e-12,
+              "tail_max_speed_m_s": 2.2230420549263382e-11,
+              "tail_truncation_events": 0,
+              "tail_positive_fixed_energy_steps": 0,
+              "first_20_steps_peak_mass_rms_speed_m_s": 0.04069882470581988,
+              "tail_physical_force_rms_n": {
+                "max": 4.794104137377571e-14,
+                "mean": 2.3695017988665154e-14,
+                "p95": 4.729044977626624e-14
+              },
+              "tail_mass_rms_speed_m_s": {
+                "max": 9.684951076003826e-12,
+                "mean": 3.4448809086744216e-12,
+                "p95": 9.514262089621975e-12
+              },
+              "tail_step_ms": {
+                "max": 4.008900000000001,
+                "mean": 3.259469421487604,
+                "p95": 3.6863
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "validation": {
+    "cpu_script": "scripts/check-cpu.ps1",
+    "cpu_script_exit_code": 0,
+    "cpu_tests_passed": 167,
+    "example_tests_passed": 2,
+    "cpu_all_target_clippy": "passed with warnings denied",
+    "template_validations_passed": 6,
+    "format": "passed",
+    "default_state_comparison": "28 final states byte-identical to pre-probe binary",
+    "note": "Final intersection checks are not continuous trajectory collision certificates."
+  }
+}

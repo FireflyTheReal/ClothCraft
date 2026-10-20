@@ -146,6 +146,7 @@ impl Atelier {
                 self.pending = false;
                 self.playing = false;
                 self.metrics = None;
+                self.simulation_error = None;
                 self.grab = None;
                 self.drag_plane = None;
                 self.document.path = (!recovered).then_some(path);

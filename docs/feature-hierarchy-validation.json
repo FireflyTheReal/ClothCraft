@@ -1,0 +1,275 @@
+{
+  "date": "2026-10-20",
+  "scope": "Four-family snapshot hierarchy and geometric handoff coverage",
+  "production_changed": false,
+  "gpu_used": false,
+  "new_cloth_trajectory": false,
+  "full_gcp_implemented": false,
+  "checks": {
+    "targeted_cpu_tests": 31,
+    "clippy_cpu_all_targets": "passed",
+    "clippy_desktop_all_targets": "passed",
+    "fmt": "passed",
+    "diff_check": "passed"
+  },
+  "compiler": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "base_commit": "78b359cb2cbf8367e3615a5679d30184a14f851b",
+  "dirty_tree": true,
+  "cpu_threads": 2,
+  "source_files_archived": 171,
+  "inputs": [
+    {
+      "path": "output/solver-consistency-final-20261019/single-xpbd-4/source.json",
+      "sha256": "c3d03ce2664015efe628e3aaa1a35c8efd855936af69bfb7467b48065e5aa26a"
+    },
+    {
+      "path": "output/primitive-contact-20261020/control-pull/final-state.json",
+      "sha256": "d8a79d2c55e3b8051e6ab919a839c0ce3db7ec81a0e0f1f4b828e237d7ef78d6"
+    }
+  ],
+  "snapshots": [
+    {
+      "cloth_vertices": 5126,
+      "family_order": [
+        "vertex_face",
+        "edge_edge",
+        "vertex_edge",
+        "vertex_vertex"
+      ],
+      "production_contacts_and_bounds_unchanged": true,
+      "project": "output/solver-consistency-final-20261019/single-xpbd-4/source.json",
+      "results": [
+        {
+          "activation_radius_m": 0.003,
+          "build_wall_s": 0.1599327,
+          "candidate_counts_vf_ee_ve_vv": [
+            6777,
+            20850,
+            4877,
+            220
+          ],
+          "coverage": {
+            "active_by_kind": [
+              233,
+              492,
+              8,
+              0
+            ],
+            "factor_errors": [],
+            "missing_active_lower_pairs": [],
+            "static_lower_witnesses": 0,
+            "uncovered_zero_weight_pairs": [],
+            "zero_weight_by_kind": [
+              8,
+              25,
+              0,
+              0
+            ]
+          },
+          "coverage_wall_s": 0.0054435,
+          "duplicate_visits": 0,
+          "query_radius_m": 0.006
+        },
+        {
+          "activation_radius_m": 0.006,
+          "build_wall_s": 0.2153515,
+          "candidate_counts_vf_ee_ve_vv": [
+            23696,
+            66892,
+            23714,
+            1678
+          ],
+          "coverage": {
+            "active_by_kind": [
+              6777,
+              20850,
+              4877,
+              220
+            ],
+            "factor_errors": [],
+            "missing_active_lower_pairs": [],
+            "static_lower_witnesses": 0,
+            "uncovered_zero_weight_pairs": [],
+            "zero_weight_by_kind": [
+              4415,
+              12572,
+              1293,
+              0
+            ]
+          },
+          "coverage_wall_s": 0.0381982,
+          "duplicate_visits": 0,
+          "query_radius_m": 0.012
+        },
+        {
+          "activation_radius_m": 0.012,
+          "build_wall_s": 0.5118955,
+          "candidate_counts_vf_ee_ve_vv": [
+            142208,
+            367035,
+            178904,
+            20119
+          ],
+          "coverage": {
+            "active_by_kind": [
+              23696,
+              66892,
+              23714,
+              1678
+            ],
+            "factor_errors": [],
+            "missing_active_lower_pairs": [],
+            "static_lower_witnesses": 0,
+            "uncovered_zero_weight_pairs": [],
+            "zero_weight_by_kind": [
+              20194,
+              54536,
+              9640,
+              0
+            ]
+          },
+          "coverage_wall_s": 0.1609543,
+          "duplicate_visits": 0,
+          "query_radius_m": 0.024
+        }
+      ],
+      "scope": "Four-family snapshot coverage only; no directional weights, forces or stepping",
+      "state": null,
+      "state_time_s": 49.449999999998475,
+      "total_vertices": 18506
+    },
+    {
+      "cloth_vertices": 5126,
+      "family_order": [
+        "vertex_face",
+        "edge_edge",
+        "vertex_edge",
+        "vertex_vertex"
+      ],
+      "production_contacts_and_bounds_unchanged": true,
+      "project": "output/solver-consistency-final-20261019/single-xpbd-4/source.json",
+      "results": [
+        {
+          "activation_radius_m": 0.003,
+          "build_wall_s": 0.1608161,
+          "candidate_counts_vf_ee_ve_vv": [
+            6450,
+            19795,
+            4605,
+            203
+          ],
+          "coverage": {
+            "active_by_kind": [
+              228,
+              437,
+              4,
+              0
+            ],
+            "factor_errors": [],
+            "missing_active_lower_pairs": [],
+            "static_lower_witnesses": 0,
+            "uncovered_zero_weight_pairs": [],
+            "zero_weight_by_kind": [
+              2,
+              19,
+              0,
+              0
+            ]
+          },
+          "coverage_wall_s": 0.0028742,
+          "duplicate_visits": 0,
+          "query_radius_m": 0.006
+        },
+        {
+          "activation_radius_m": 0.006,
+          "build_wall_s": 0.2167333,
+          "candidate_counts_vf_ee_ve_vv": [
+            22229,
+            62635,
+            22119,
+            1557
+          ],
+          "coverage": {
+            "active_by_kind": [
+              6450,
+              19795,
+              4605,
+              203
+            ],
+            "factor_errors": [],
+            "missing_active_lower_pairs": [],
+            "static_lower_witnesses": 0,
+            "uncovered_zero_weight_pairs": [],
+            "zero_weight_by_kind": [
+              4152,
+              11915,
+              1196,
+              0
+            ]
+          },
+          "coverage_wall_s": 0.0380542,
+          "duplicate_visits": 0,
+          "query_radius_m": 0.012
+        },
+        {
+          "activation_radius_m": 0.012,
+          "build_wall_s": 0.492565,
+          "candidate_counts_vf_ee_ve_vv": [
+            139248,
+            358998,
+            175305,
+            19764
+          ],
+          "coverage": {
+            "active_by_kind": [
+              22229,
+              62635,
+              22119,
+              1557
+            ],
+            "factor_errors": [],
+            "missing_active_lower_pairs": [],
+            "static_lower_witnesses": 0,
+            "uncovered_zero_weight_pairs": [],
+            "zero_weight_by_kind": [
+              18869,
+              50919,
+              8985,
+              0
+            ]
+          },
+          "coverage_wall_s": 0.1779684,
+          "duplicate_visits": 0,
+          "query_radius_m": 0.024
+        }
+      ],
+      "scope": "Four-family snapshot coverage only; no directional weights, forces or stepping",
+      "state": "output/primitive-contact-20261020/control-pull/final-state.json",
+      "state_time_s": 50.116666666665104,
+      "total_vertices": 18506
+    }
+  ],
+  "evidence_directory": "output/feature-hierarchy-20261020",
+  "evidence_sha256": {
+    "build.log": "45ae38563424832238533bd188a1eceae8d65e35f30312703a289b88280b6205",
+    "clippy-cpu.log": "b4e61e14c89e34e7feba7d613d63bd0156fb7287d090fafdfcc0b614e4927a72",
+    "clippy-desktop.log": "90a3b5e9e23fc334b6e9eb58dc875a4dc2536be077898e304581d4cfa6f05c0e",
+    "dress.json": "d0d86003145349320443c86689bbab9aadb78ba0af5a0165a9a671de74835e59",
+    "probe.exe": "b3e63d45b1d75ded699f109d13342d641ecc58a0f0dcea115457ddeb7fab05e1",
+    "release.json": "a94854aa38e1b0bb5c7c18391270e4111e18221ea303e75617b405ed6916433a",
+    "source-manifest.json": "a8eca97300e36d3766a7300138ae74cf0241b51e158f57bbceb061277e6cee28",
+    "tests.log": "969b970933a6e1237529c330fa77132d3783257a87c43a7a649d03c55cadd55c"
+  },
+  "user_document_sha256": "e542e066f4bf662149f8603bab47913a60498915689386f0bd51503e4d7aaccb",
+  "primary_sources_read": [
+    "https://arxiv.org/html/2402.00719v3"
+  ],
+  "open_gates": [
+    "directional factors and high-arity derivatives",
+    "open two-sided cloth",
+    "quadrature and reference geometry",
+    "conservative temporal force envelope",
+    "full dress collisions, convergence and pull/release",
+    "whole-step cost"
+  ]
+}

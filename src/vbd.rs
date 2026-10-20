@@ -12,8 +12,13 @@ use glam::{DMat3, DVec3};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, sync::Arc, time::Instant};
+pub mod audit;
 mod coloring;
+pub mod grab;
+mod local_step;
 mod prediction;
+mod seam_blocks;
+pub use seam_blocks::SeamBlockMetrics;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VbdSettings {
@@ -57,9 +62,28 @@ pub struct Grab {
     pub weights: [f64; 3],
     pub target: DVec3,
     pub stiffness: f64,
+    /// Independent surface attachments, sorted by vertex. Empty retains the
+    /// historical barycentric point grab exactly.
+    pub patch: Vec<grab::PatchAttachment>,
+}
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct GpuStepProfile {
+    pub coloring_ms: f64,
+    pub colors: usize,
+    pub packing_ms: f64,
+    pub upload_ms: f64,
+    pub encode_ms: f64,
+    /// Submission, fence wait and mapping, including compute (not additional to it).
+    pub submit_wait_ms: f64,
+    /// Readback processing, precision refinement, state update and diagnostics.
+    pub post_ms: f64,
+    /// Scope cleanup after the internal step timer, included in full step_ms.
+    pub cleanup_ms: f64,
 }
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct VbdMetrics {
+    pub seam_blocks: SeamBlockMetrics,
+    pub motion: Option<crate::motion::MotionMetrics>,
     pub time_s: f64,
     pub dt_s: f64,
     pub step_ms: f64,
@@ -68,6 +92,13 @@ pub struct VbdMetrics {
     pub solve_ms: f64,
     /// Hardware timestamps; absent for CPU or unsupported timestamp queries.
     pub gpu_compute_ms: Option<f64>,
+    pub gpu_profile: Option<GpuStepProfile>,
+    /// Native 32-lane subgroup reduction; portable workgroup fallback otherwise.
+    pub gpu_subgroups: bool,
+    /// Vertices advanced in f64 for roundoff or sparse directional restrictions.
+    pub precision_vertices: usize,
+    pub precision_ms: f64,
+    pub directional_vertices: usize,
     pub iterations: usize,
     pub contacts: usize,
     /// Retained nearby interactions, including currently inactive potentials.
@@ -88,6 +119,16 @@ struct Stitch {
 }
 #[derive(Clone)]
 pub struct VbdSolver {
+    /// Optional CPU diagnostic: energy changes at identical geometry when the
+    /// contact set refreshes inside the most recent step. Disabled by default.
+    pub contact_refresh_audit: Option<Vec<f64>>,
+    /// Highest signed refresh delta in the latest CPU step, when audit is on.
+    /// Capture only; never read by the numerical algorithm.
+    pub contact_refresh_capture: Option<crate::ogc::diagnostics::RefreshEvent>,
+    local_probe: local_step::LocalSolveProbe,
+    pub(crate) seam_block_sweeps: usize,
+    seam_components: Vec<seam_blocks::Block>,
+    pub(crate) motion: crate::motion::MotionMonitor,
     pub(crate) prediction: prediction::Prediction,
     pub garment: Arc<CompiledGarment>,
     pub world: OgcWorld,
@@ -144,6 +185,7 @@ impl VbdSolver {
         }
         let mut world = OgcWorld::new(&x, faces, n, excluded)?;
         world.validate_start(&x)?;
+        world.directional_bounds = true;
         let mut triangles = vec![vec![]; n];
         let mut hinges = vec![vec![]; n];
         let mut vertex_stitches = vec![vec![]; n];
@@ -176,7 +218,13 @@ impl VbdSolver {
             }
             connect(&ids);
         }
-        Ok(Self {
+        let solver = Self {
+            contact_refresh_audit: None,
+            contact_refresh_capture: None,
+            local_probe: Default::default(),
+            seam_block_sweeps: 0,
+            seam_components: Vec::new(),
+            motion: Default::default(),
             prediction: Default::default(),
             garment,
             world,
@@ -188,7 +236,8 @@ impl VbdSolver {
                 .into_iter()
                 .map(|neighbors| neighbors.into_iter().collect())
                 .collect(),
-        })
+        };
+        Ok(solver)
     }
     pub(crate) fn colors(&self, contact: &ContactSet, grab: Option<&Grab>) -> Vec<Vec<usize>> {
         coloring::colors(&self.graph, contact, grab)
@@ -242,7 +291,14 @@ impl VbdSolver {
                     d[k] = d[k] + S::c(w) * q[k];
                 }
             }
-            value = value + S::c(0.5 * g.stiffness) * crate::math::dot(d, d);
+            value = value + S::c(0.5 * g.point_stiffness()) * crate::math::dot(d, d);
+        }
+        if let Some(g) = grab
+            && let Some(a) = g.attachment(v)
+        {
+            let target = g.target + a.offset;
+            let d = crate::math::sub(get(v), target.to_array().map(S::c));
+            value = value + S::c(0.5 * g.patch_stiffness() * a.weight) * crate::math::dot(d, d);
         }
         value
     }
@@ -268,7 +324,8 @@ impl VbdSolver {
                 || !g.stiffness.is_finite()
                 || g.stiffness <= 0.0
                 || g.weights.iter().any(|w| !w.is_finite() || *w < 0.0)
-                || (g.weights.iter().sum::<f64>() - 1.0).abs() > 1e-8)
+                || (g.weights.iter().sum::<f64>() - 1.0).abs() > 1e-8
+                || !g.valid_patch(n))
         {
             return Err("Invalid mouse attachment".into());
         }
@@ -303,6 +360,10 @@ impl VbdSolver {
         let rq = (settings.contact.radius + predicted_motion)
             .clamp(2.0 * settings.contact.radius, 4.0 * settings.contact.radius);
         let mut x = self.world.positions(&state.x);
+        self.contact_refresh_capture = None;
+        if let Some(audit) = &mut self.contact_refresh_audit {
+            audit.clear();
+        }
         let detect = Instant::now();
         let mut contacts = self.world.detect(&x, rq, &settings.contact)?;
         if contacts.minimum_distance <= 1e-12 {
@@ -322,10 +383,37 @@ impl VbdSolver {
                 clipped += usize::from(b);
             }
         }
-        for _ in 0..settings.iterations {
+        for sweep in 0..settings.iterations {
             if clipped > 0 && clipped as f64 >= settings.contact.refresh_fraction * n as f64 {
                 let detect = Instant::now();
-                contacts = self.world.detect(&x, rq, &settings.contact)?;
+                let previous_energy = self
+                    .contact_refresh_audit
+                    .as_ref()
+                    .map(|_| contacts.value(&x, &settings.contact));
+                let refreshed = self.world.detect(&x, rq, &settings.contact)?;
+                if let (Some(audit), Some(previous)) =
+                    (&mut self.contact_refresh_audit, previous_energy)
+                {
+                    let delta = refreshed.value(&x, &settings.contact) - previous;
+                    audit.push(delta);
+                    if self
+                        .contact_refresh_capture
+                        .as_ref()
+                        .is_none_or(|e| delta > e.delta_j)
+                    {
+                        self.contact_refresh_capture =
+                            Some(crate::ogc::diagnostics::refresh_event(
+                                &contacts,
+                                &refreshed,
+                                &x,
+                                n,
+                                &settings.contact,
+                                sweep + 1,
+                                delta,
+                            ));
+                    }
+                }
+                contacts = refreshed;
                 colors = self.colors(&contacts, grab);
                 metrics.detection_ms += detect.elapsed().as_secs_f64() * 1000.0;
                 metrics.detection_updates += 1;
@@ -342,49 +430,15 @@ impl VbdSolver {
                         if self.garment.mesh.pins[v].is_some() {
                             return (v, x[v], false, 0.0);
                         }
-                        let jet = self.local(
+                        let (accepted, truncated, residual) = self.local_step(
                             v,
-                            std::array::from_fn(|k| Jet::<3>::variable(x[v][k], k)),
                             &x,
                             &contacts,
                             settings,
                             grab,
+                            (target[v], inertia[v]),
                         );
-                        let g = DVec3::from_array(jet.g) + (x[v] - target[v]) * inertia[v];
-                        let mut h = DMat3::from_cols_array(&std::array::from_fn::<_, 9, _>(|i| {
-                            jet.h[i % 3][i / 3]
-                        })) + DMat3::IDENTITY * inertia[v];
-                        let diag = h.to_cols_array_2d();
-                        let lower = (0..3)
-                            .map(|i| {
-                                diag[i][i]
-                                    - (0..3)
-                                        .filter(|j| *j != i)
-                                        .map(|j| diag[i][j].abs())
-                                        .sum::<f64>()
-                            })
-                            .fold(f64::INFINITY, f64::min);
-                        // Gershgorin SPD shift is local, never changes the energy law.
-                        if lower < 1e-8 {
-                            h += DMat3::IDENTITY * (1e-8 - lower + 0.01 * inertia[v]);
-                        }
-                        let delta = -(h.inverse() * g);
-                        let old = jet.v + 0.5 * inertia[v] * (x[v] - target[v]).length_squared();
-                        let mut accepted = x[v];
-                        let mut truncated = false;
-                        for attempt in 0..10 {
-                            let candidate = x[v] + delta * 0.5_f64.powi(attempt);
-                            let (candidate, bound) = contacts.truncate(v, candidate);
-                            truncated |= bound;
-                            let e =
-                                self.local(v, candidate.to_array(), &x, &contacts, settings, grab)
-                                    + 0.5 * inertia[v] * (candidate - target[v]).length_squared();
-                            if candidate.is_finite() && e.is_finite() && e <= old + 1e-14 {
-                                accepted = candidate;
-                                break;
-                            }
-                        }
-                        (v, accepted, truncated, g.length_squared())
+                        (v, accepted, truncated, residual)
                     })
                     .collect();
                 for (v, p, c, r) in updates {
@@ -396,11 +450,12 @@ impl VbdSolver {
             metrics.truncated_vertices += clipped;
             metrics.residual_rms_n = Some((residual / (3 * n) as f64).sqrt());
         }
+        metrics.seam_blocks = self.refine_seams(&mut x, state, &contacts, settings, grab);
         if x.iter().any(|v| !v.is_finite()) {
             return Err("Non-finite VBD result; state unchanged".into());
         }
         // Final bound feasibility is an invariant, not a post-Newton correction.
-        if (0..n).any(|i| x[i].distance(contacts.centers[i]) > contacts.radii[i] + 1e-10) {
+        if (0..n).any(|i| !contacts.contains(i, x[i], 1e-10)) {
             return Err("OGC trust-region invariant failed".into());
         }
         for (i, position) in x.iter().take(n).enumerate() {
@@ -409,10 +464,12 @@ impl VbdSolver {
         }
         state.time += dt;
         self.prediction.record(&old_velocity, state, settings);
+        metrics.motion = Some(self.motion.record(&old_velocity, state, dt, &self.garment));
         metrics.time_s = state.time;
         metrics.contacts = contacts.active_contacts;
         metrics.contact_terms = contacts.contacts.len();
         metrics.minimum_distance_m = contacts.minimum_distance;
+        metrics.directional_vertices = contacts.directional.vertex_count();
         metrics.max_seam_gap_m = self.garment.max_seam_gap(&state.x);
         [metrics.extension_p95_percent, metrics.extension_max_percent] =
             crate::garment::diagnostics::extension_percent(&self.garment, state);

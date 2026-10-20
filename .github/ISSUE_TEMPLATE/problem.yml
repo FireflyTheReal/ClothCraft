@@ -1,0 +1,39 @@
+name: Bug, confusing workflow or slow simulation
+description: Show what happened and help us reproduce it. No coding knowledge needed.
+title: "[Report] "
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What went wrong?
+      options:
+        - Something behaves incorrectly
+        - The workflow is confusing or missing a basic action
+        - The simulation is too slow
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: What did you do?
+      description: List the actions from opening the app. Mention whether you edited, grabbed or reloaded the garment first.
+      placeholder: "1. Open…\n2. Select…\n3. Click…"
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: What happened, and what did you expect?
+      description: A screenshot or short recording can help explain the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Version, machine and settings
+      description: If known, include app revision, operating system, CPU/GPU, mesh spacing and solver settings. It is fine to write “unknown”. For slow simulation, include physical steps/s and dt if visible; rendering FPS alone does not measure simulation speed.
+  - type: textarea
+    id: example
+    attributes:
+      label: Example garment or diagnostic report
+      description: Attach a small reproduction you may share publicly. For a saved project, include its adjacent assets folder if needed. Remove private assets first. For persistent motion, say how long it ran before saving and whether the garment was still assembling.

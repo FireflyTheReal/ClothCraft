@@ -30,7 +30,9 @@ impl InternalLine {
                 .chain(&self.tangents)
                 .any(|p| !p.is_finite())
         {
-            return Err("Ligne intérieure : 2..64 points et tangentes finies requis".into());
+            return Err(
+                "Internal line requires 2..64 finite points and matching finite tangents".into(),
+            );
         }
         let mut out = vec![self.points[0]];
         for i in 0..self.points.len() - 1 {
@@ -45,7 +47,7 @@ impl InternalLine {
             )?;
             out.extend_from_slice(&samples[1..]);
             if out.len() > 4096 {
-                return Err("Ligne trop détaillée".into());
+                return Err("Internal line exceeds the sampling budget".into());
             }
         }
         Ok(out)
@@ -88,17 +90,17 @@ fn segments(points: &[DVec2], closed: bool) -> Vec<[DVec2; 2]> {
 }
 fn simple(points: &[DVec2], closed: bool) -> Result<(), String> {
     if points.iter().any(|p| !p.is_finite()) {
-        return Err("Coordonnée non finie".into());
+        return Err("Coordinate must be finite".into());
     }
     let seg = segments(points, closed);
     for (i, [a, b]) in seg.iter().copied().enumerate() {
         if a.distance(b) < 1e-6 {
-            return Err("Segment nul ou inférieur à 1 µm".into());
+            return Err("Segment is zero-length or shorter than 1 µm".into());
         }
         if closed || i + 1 < seg.len() {
             let d = seg[(i + 1) % seg.len()][1];
             if (b - a).perp_dot(d - b).abs() < 1e-12 && (b - a).dot(d - b) < 0. {
-                return Err("Une ligne ne peut pas revenir sur son propre segment".into());
+                return Err("A line cannot double back over its own segment".into());
             }
         }
         for (j, [c, d]) in seg.iter().copied().enumerate().skip(i + 1) {
@@ -106,7 +108,7 @@ fn simple(points: &[DVec2], closed: bool) -> Result<(), String> {
                 continue;
             }
             if intersects(a, b, c, d) {
-                return Err("Contour ou ligne auto-intersecté".into());
+                return Err("Outline or line intersects itself".into());
             }
         }
     }
@@ -121,7 +123,7 @@ fn name_ok(name: &str) -> bool {
 }
 pub fn validate(poly: &PolygonPattern, outer: &[DVec2]) -> Result<(), String> {
     if poly.holes.len() > 32 || poly.lines.len() > 64 {
-        return Err("Maximum 32 trous et 64 lignes par panneau".into());
+        return Err("At most 32 holes and 64 internal lines are supported per panel".into());
     }
     let mut names: BTreeSet<_> = poly.edges.iter().map(String::as_str).collect();
     let mut contours = vec![outer];
@@ -129,22 +131,22 @@ pub fn validate(poly: &PolygonPattern, outer: &[DVec2]) -> Result<(), String> {
     for hole in &poly.holes {
         budget += hole.points.len();
         if budget > 8192 {
-            return Err("Budget de contours et lignes dépassé".into());
+            return Err("Outline and internal-line sampling budget exceeded".into());
         }
         if !(3..=4096).contains(&hole.points.len())
             || hole.edges.len() != hole.points.len()
             || area(&hole.points) >= -1e-8
         {
-            return Err("Trou invalide : contour horaire et bords nommés requis".into());
+            return Err("Invalid hole: a clockwise outline and named edges are required".into());
         }
         for name in &hole.edges {
             if !name_ok(name) || !names.insert(name) {
-                return Err("Nom de bord dupliqué/invalide".into());
+                return Err("Duplicate or invalid boundary name".into());
             }
         }
         simple(&hole.points, true)?;
         if !inside(hole.points[0], outer) {
-            return Err("Trou hors du panneau".into());
+            return Err("Hole lies outside the panel".into());
         }
         for previous in &contours {
             if segments(&hole.points, true).iter().any(|[a, b]| {
@@ -152,12 +154,12 @@ pub fn validate(poly: &PolygonPattern, outer: &[DVec2]) -> Result<(), String> {
                     .iter()
                     .any(|[c, d]| intersects(*a, *b, *c, *d))
             }) {
-                return Err("Les trous ne doivent ni toucher ni croiser un contour".into());
+                return Err("Holes must not touch or cross another outline".into());
             }
         }
         for previous in contours.iter().skip(1) {
             if inside(hole.points[0], previous) || inside(previous[0], &hole.points) {
-                return Err("Trous imbriqués ou superposés".into());
+                return Err("Holes must not nest or overlap".into());
             }
         }
         contours.push(&hole.points);
@@ -165,19 +167,19 @@ pub fn validate(poly: &PolygonPattern, outer: &[DVec2]) -> Result<(), String> {
     let mut paths: Vec<Vec<DVec2>> = vec![];
     for line in &poly.lines {
         if !name_ok(&line.id) || !names.insert(&line.id) {
-            return Err("Nom de ligne dupliqué/invalide".into());
+            return Err("Duplicate or invalid internal-line name".into());
         }
         let points = line.samples()?;
         budget += points.len();
         if budget > 8192 {
-            return Err("Budget de contours et lignes dépassé".into());
+            return Err("Outline and internal-line sampling budget exceeded".into());
         }
         simple(&points, false)?;
         if points
             .iter()
             .any(|p| !inside(*p, outer) || poly.holes.iter().any(|h| inside(*p, &h.points)))
         {
-            return Err("La ligne doit rester à l'intérieur du tissu".into());
+            return Err("The internal line must stay inside the fabric".into());
         }
         for [a, b] in segments(&points, false) {
             if contours.iter().any(|c| {
@@ -190,14 +192,14 @@ pub fn validate(poly: &PolygonPattern, outer: &[DVec2]) -> Result<(), String> {
                     .any(|[c, d]| intersects(a, b, *c, *d))
             }) {
                 return Err(
-                    "Une ligne ne doit ni toucher ni croiser un contour ou une autre ligne".into(),
+                    "An internal line must not touch or cross an outline or another line".into(),
                 );
             }
         }
         paths.push(points);
     }
     if budget > 8192 {
-        return Err("Budget de contours et lignes dépassé".into());
+        return Err("Outline and internal-line sampling budget exceeded".into());
     }
     Ok(())
 }

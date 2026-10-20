@@ -1,0 +1,1132 @@
+{
+  "runs": [
+    {
+      "run": "avbd-target-pull",
+      "backend": "AvbdTarget",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "physical_seconds": 2.0,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 72.07210390745128,
+      "stretch_p95_percent": 62.510450127899645,
+      "fresh_target_residual_rms_n": 2.7122989479764072,
+      "minimum_distance_m": 0.00016319998663391676,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.11979266637276904
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.12408092272545103
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.11508893906624947
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.11362342141464833
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.12184643468292779
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.2788105139583365
+        }
+      ],
+      "final_full_stiffness_fraction": null,
+      "max_contact_refresh_jump_j": null
+    },
+    {
+      "run": "avbd-target-quiet",
+      "backend": "AvbdTarget",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "physical_seconds": 2.0,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 67.38481098214996,
+      "stretch_p95_percent": 62.119315865259075,
+      "fresh_target_residual_rms_n": 2.4820216714110934,
+      "minimum_distance_m": 2.6739060198137097e-05,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.11842815158111097
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.12588699062457245
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.11851950590886134
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.12609127597779143
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.13396271610702667
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.28190477260402635
+        }
+      ],
+      "final_full_stiffness_fraction": null,
+      "max_contact_refresh_jump_j": null
+    },
+    {
+      "run": "single-avbd-finite-16",
+      "backend": "AvbdFinite",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 16,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 82.57961136672596,
+      "stretch_p95_percent": 26.092349558761295,
+      "fresh_target_residual_rms_n": 0.5184808158280946,
+      "minimum_distance_m": 0.0006773328485005463,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.1277885167092424
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.11236787429081241
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.11707809016244879
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.10120903950044191
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.11345838528209402
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.25160209144990675
+        }
+      ],
+      "final_full_stiffness_fraction": 0.6936239114261958,
+      "max_contact_refresh_jump_j": 2.2175741858088127e-07
+    },
+    {
+      "run": "single-avbd-finite-4",
+      "backend": "AvbdFinite",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 85.7915060622322,
+      "stretch_p95_percent": 25.810953880159083,
+      "fresh_target_residual_rms_n": 0.6541537506253469,
+      "minimum_distance_m": 0.0006062132766101368,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.13741909085263712
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.12078233244961128
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.13182224801696477
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.1115708968199138
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.1286378743991329
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.24337611359750477
+        }
+      ],
+      "final_full_stiffness_fraction": 0.48316266246553763,
+      "max_contact_refresh_jump_j": 2.2175741858088127e-07
+    },
+    {
+      "run": "single-avbd-finite-64",
+      "backend": "AvbdFinite",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 64,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 71.2381365568304,
+      "stretch_p95_percent": 27.492156802678423,
+      "fresh_target_residual_rms_n": 0.3832570660756725,
+      "minimum_distance_m": 0.0005558056490088033,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.19796028581984024
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.20487111539580333
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.0996753371690497
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.09214349699746673
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.1975870130534083
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.2678867977337633
+        }
+      ],
+      "final_full_stiffness_fraction": 0.8632007351975843,
+      "max_contact_refresh_jump_j": 7.885998887968877e-07
+    },
+    {
+      "run": "single-avbd-target-16",
+      "backend": "AvbdTarget",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 16,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 82.7616235304885,
+      "stretch_p95_percent": 26.25550657498412,
+      "fresh_target_residual_rms_n": 0.5037710948244755,
+      "minimum_distance_m": 0.0006635872485327305,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.1307234858874422
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.11685646409797566
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.1301423187106123
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.10978852957600861
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.12004438250017622
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.24352912546944916
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 2.488125336500653e-07
+    },
+    {
+      "run": "single-avbd-target-200",
+      "backend": "AvbdTarget",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 200,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 31.88355988919947,
+      "stretch_p95_percent": 26.352868142101315,
+      "fresh_target_residual_rms_n": 0.5222118128255636,
+      "minimum_distance_m": 0.002908084596473906,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.4602365635334724
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.4628230729815952
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.16769219805319138
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.2748632980270848
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.9869994173610356
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.3089637888862401
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 0.0002893500075701466
+    },
+    {
+      "run": "single-avbd-target-4",
+      "backend": "AvbdTarget",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 85.21728088230924,
+      "stretch_p95_percent": 26.197658033918046,
+      "fresh_target_residual_rms_n": 0.5398718592420669,
+      "minimum_distance_m": 0.0006097108543837515,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.1370451676992488
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.12238102680976735
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.13677239122328874
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.11516015926401678
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.12386334248654894
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.23893455843365188
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 0.0
+    },
+    {
+      "run": "single-avbd-target-64",
+      "backend": "AvbdTarget",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 64,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 71.47619917747512,
+      "stretch_p95_percent": 27.224152187638673,
+      "fresh_target_residual_rms_n": 0.4149621520380158,
+      "minimum_distance_m": 0.0005538202252396675,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.1976693017117033
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.19877165591485466
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.10927571682638368
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.10037862410515996
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.21566796640397456
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.26123803730428397
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 7.221422292737092e-06
+    },
+    {
+      "run": "single-xpbd-16",
+      "backend": "Xpbd",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 16,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 122.67117067001583,
+      "stretch_p95_percent": 62.731146535795524,
+      "fresh_target_residual_rms_n": 22.030012404041845,
+      "minimum_distance_m": 0.0002078116491002878,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.37782296723589043
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.333404325395384
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.21943685872481405
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.20910081721199658
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.30531284615313287
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.23787746287727787
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 0.3119030347416939
+    },
+    {
+      "run": "single-xpbd-4",
+      "backend": "Xpbd",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 98.32033541590702,
+      "stretch_p95_percent": 49.145322946794835,
+      "fresh_target_residual_rms_n": 6.287831218847892,
+      "minimum_distance_m": 0.00024757061477540643,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.2258146054551567
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.20205118399576502
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.18124709618996948
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.1560538983417194
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.18187557052428605
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.23757359201406797
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 0.21161696241305594
+    },
+    {
+      "run": "single-xpbd-64",
+      "backend": "Xpbd",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 64,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 79.96271104321264,
+      "stretch_p95_percent": 69.51175975770396,
+      "fresh_target_residual_rms_n": 18.90749279477933,
+      "minimum_distance_m": 0.00015769752718791853,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.7258260259093485
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.5492885198295321
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.3385055610668115
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.30406569314582627
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.7081439136206715
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.23923147262708805
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 2.1344693860822876
+    },
+    {
+      "run": "single-xpbd-primal-16",
+      "backend": "XpbdPrimal",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 16,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 86.19456830136087,
+      "stretch_p95_percent": 26.125917271267628,
+      "fresh_target_residual_rms_n": 4.014943882421483,
+      "minimum_distance_m": 0.0008199460292886092,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.04114441201445182
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.026712569213293468
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.03508557946247597
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.025531322245377543
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.04347847940226085
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.04150404349786445
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 0.6190526384441482
+    },
+    {
+      "run": "single-xpbd-primal-200",
+      "backend": "XpbdPrimal",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 200,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 79.37023254753353,
+      "stretch_p95_percent": 26.858250301064214,
+      "fresh_target_residual_rms_n": 1.4418947571558975,
+      "minimum_distance_m": 0.0018875515857820315,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.3157106613228911
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.22841101917556095
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.29365643197016666
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.20988675160923598
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.3914590626303172
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.2540625801214046
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 0.6190526384441482
+    },
+    {
+      "run": "single-xpbd-primal-4",
+      "backend": "XpbdPrimal",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 86.49103511929187,
+      "stretch_p95_percent": 26.29023561471906,
+      "fresh_target_residual_rms_n": 14.559311228641112,
+      "minimum_distance_m": 7.288931473105633e-05,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.01546225913051319
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.009504658000550488
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.013803633984365049
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.009377196043640632
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.015566836755365925
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.018437280940909295
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 0.0
+    },
+    {
+      "run": "single-xpbd-primal-64",
+      "backend": "XpbdPrimal",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 64,
+      "accepted_steps": 1,
+      "requested_steps": 1,
+      "physical_seconds": 0.016666666666666666,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 86.8554760972938,
+      "stretch_p95_percent": 26.48560115428542,
+      "fresh_target_residual_rms_n": 3.2456330672886065,
+      "minimum_distance_m": 0.001002328539139844,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.19701692878597696
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.1440105194062845
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.18248808561645447
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.11861278207360623
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.21346859245035318
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.16388672103797
+        }
+      ],
+      "final_full_stiffness_fraction": 1.0,
+      "max_contact_refresh_jump_j": 0.6190526384441482
+    },
+    {
+      "run": "vbd-pull",
+      "backend": "Vbd",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "physical_seconds": 2.0,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 13.457938405261357,
+      "stretch_p95_percent": 19.085163494904013,
+      "fresh_target_residual_rms_n": null,
+      "minimum_distance_m": 0.0006943619879319884,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.05834484451377728
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.06661967723158049
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.07186344424538263
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.08381193740674989
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.09097862300061002
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.22486144757144713
+        }
+      ],
+      "final_full_stiffness_fraction": null,
+      "max_contact_refresh_jump_j": null
+    },
+    {
+      "run": "vbd-quiet",
+      "backend": "Vbd",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "physical_seconds": 2.0,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 13.567373805289542,
+      "stretch_p95_percent": 18.964602839267066,
+      "fresh_target_residual_rms_n": null,
+      "minimum_distance_m": 0.0006943619879319884,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.0567733171553168
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.05864611371324974
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.06727142536169176
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.0768091044937911
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.08517178631953803
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.22486144757144713
+        }
+      ],
+      "final_full_stiffness_fraction": null,
+      "max_contact_refresh_jump_j": null
+    },
+    {
+      "run": "xpbd-primal-pull",
+      "backend": "XpbdPrimal",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "physical_seconds": 2.0,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 72.00473170808567,
+      "stretch_p95_percent": 25.72180656223253,
+      "fresh_target_residual_rms_n": 0.4214585364161254,
+      "minimum_distance_m": 7.288931473105633e-05,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.015340650619297763
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.004480044770937244
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.008281003117710052
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.00960607446789351
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.021133854054613672
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.003798626017584859
+        }
+      ],
+      "final_full_stiffness_fraction": null,
+      "max_contact_refresh_jump_j": null
+    },
+    {
+      "run": "xpbd-primal-quiet",
+      "backend": "XpbdPrimal",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.016666666666666666,
+      "iterations": 4,
+      "accepted_steps": 120,
+      "requested_steps": 120,
+      "physical_seconds": 2.0,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 66.65733776359541,
+      "stretch_p95_percent": 25.793775320634804,
+      "fresh_target_residual_rms_n": 2.6365712055131594,
+      "minimum_distance_m": 7.288931473105633e-05,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.03415432270267422
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.024326182973665917
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.03233360543143335
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.022402278605096294
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.04152312618285295
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.035009119485731294
+        }
+      ],
+      "final_full_stiffness_fraction": null,
+      "max_contact_refresh_jump_j": null
+    },
+    {
+      "run": "xpbd-small-pull",
+      "backend": "Xpbd",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.004166666666666667,
+      "iterations": 1,
+      "accepted_steps": 480,
+      "requested_steps": 480,
+      "physical_seconds": 2.0,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 692.7961127294266,
+      "stretch_p95_percent": 849.07681483263,
+      "fresh_target_residual_rms_n": 52104.65431445507,
+      "minimum_distance_m": 3.4889808399234993e-10,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.2871815733894424
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.3323522983193792
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.15337244373269152
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.2106694377489704
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.25042369236568096
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.9088176495155693
+        }
+      ],
+      "final_full_stiffness_fraction": null,
+      "max_contact_refresh_jump_j": null
+    },
+    {
+      "run": "xpbd-small-quiet",
+      "backend": "Xpbd",
+      "initial_state_sha256": "18174fe9d1afdab39b95bd9dde0826b5e02874319f51776a1bbce179976f87df",
+      "dt_s": 0.004166666666666667,
+      "iterations": 1,
+      "accepted_steps": 480,
+      "requested_steps": 480,
+      "physical_seconds": 2.0,
+      "failure": null,
+      "final_intersection_check": {
+        "Ok": null
+      },
+      "audit_every_step": true,
+      "seam_gap_mm": 742.462335688693,
+      "stretch_p95_percent": 855.0555747543442,
+      "fresh_target_residual_rms_n": 7931.18072454218,
+      "minimum_distance_m": 5.8150529544280874e-08,
+      "last_panel_speed": [
+        {
+          "id": "front",
+          "mass_rms_speed_m_s": 0.31824036208014406
+        },
+        {
+          "id": "back",
+          "mass_rms_speed_m_s": 0.32314322616543056
+        },
+        {
+          "id": "panel_1",
+          "mass_rms_speed_m_s": 0.13810557659832112
+        },
+        {
+          "id": "panel_2",
+          "mass_rms_speed_m_s": 0.25402374821188123
+        },
+        {
+          "id": "panel_3",
+          "mass_rms_speed_m_s": 0.32250169365299874
+        },
+        {
+          "id": "panel_4",
+          "mass_rms_speed_m_s": 0.9587057989789615
+        }
+      ],
+      "final_full_stiffness_fraction": null,
+      "max_contact_refresh_jump_j": null
+    }
+  ],
+  "interactions": [
+    {
+      "run": "avbd-target-pull",
+      "peak_response_vs_quiet_mm": 9.593522876887265,
+      "response_at_release_mm": 2.7376251022015405,
+      "final_response_vs_quiet_mm": 1.3501170728885308
+    },
+    {
+      "run": "vbd-pull",
+      "peak_response_vs_quiet_mm": 31.511430094058323,
+      "response_at_release_mm": 30.369653239263112,
+      "final_response_vs_quiet_mm": 1.2656929992847257
+    },
+    {
+      "run": "xpbd-primal-pull",
+      "peak_response_vs_quiet_mm": 19.42738329815044,
+      "response_at_release_mm": 17.938825220760073,
+      "final_response_vs_quiet_mm": 5.3435856055172986
+    },
+    {
+      "run": "xpbd-small-pull",
+      "peak_response_vs_quiet_mm": 202.69208076757695,
+      "response_at_release_mm": 202.67274035856997,
+      "final_response_vs_quiet_mm": 179.67541435596212
+    }
+  ],
+  "note": "No settling or performance winner inferred. Each pull uses the same world-space target. One disconnected panel falls; speeds are per panel.",
+  "accepted_steps": 1694,
+  "runs_count": 22,
+  "cpu_tests_passed": 173,
+  "cpu_clippy": "passed, all targets, warnings denied",
+  "rustfmt": "passed",
+  "template_validations": 6,
+  "production_controls": {
+    "quiet": {
+      "matches_previous_bytes": true,
+      "sha256": "d96d891af30948874942cb81649c38ff3eebcd2eb19d8b7c9e63c44c94351683"
+    },
+    "pull": {
+      "matches_previous_bytes": true,
+      "sha256": "170613f87ee92d8af4c3b65f59cb3a501e2c2737e22fd45aedfe3e63b303d39f"
+    }
+  },
+  "gpu_used": false,
+  "original_dress_sha256": "e542e066f4bf662149f8603bab47913a60498915689386f0bd51503e4d7aaccb",
+  "largest_primal_refresh": {
+    "sweep": 5,
+    "delta_j": 0.6190526384441482,
+    "dominant_kind": "EdgeEdge"
+  },
+  "source_hashes": [
+    {
+      "path": "src/solver_lab/mod.rs",
+      "sha256": "14c42f1fd0fd3a226cb2d0c193af9c899401e47174006896acec888b64e3441c"
+    },
+    {
+      "path": "src/solver_lab/primal.rs",
+      "sha256": "7608a14e415894e16fe5756690cdba1f6823d12d49db421f5b1fcdf3edd2fd64"
+    },
+    {
+      "path": "src/solver_lab/constraints.rs",
+      "sha256": "2ac85bde019ddf9f22e7e24b0c2ceb2954a18fb55c9c3cec2281dbe5ad66ffaf"
+    },
+    {
+      "path": "src/solver_lab/dual.rs",
+      "sha256": "ed3b652b116b88483f97b521dc7a35df719c3b518c8780995b80d89d43ac713f"
+    },
+    {
+      "path": "tests/solver_lab.rs",
+      "sha256": "e82e87e23ad258d8620b1de4dc2689841b9b048c439ae1d29f29e53f28d7a2cf"
+    },
+    {
+      "path": "examples/solver_compare.rs",
+      "sha256": "e2764d09e66352ef55d88e60b036c7003b1a8724d0adc06ae167f3668a56e56e"
+    },
+    {
+      "path": "scripts/solver-consistency.ps1",
+      "sha256": "6ea09323c72de7d84339ebf1bebb09b3febf5a93437ffcc3870783c173f0b6b3"
+    },
+    {
+      "path": "scripts/summarize-solver-consistency.py",
+      "sha256": "74ad0a5e025f9647531226446d175a0e7338cc90ac3e251be240bde8d46d4436"
+    }
+  ],
+  "final_executable_sha256": "b347c3852897777cf754fe8f32f27008ea90d667f6135394e0a958ebeb72e4cf",
+  "evidence_root": "output\\solver-consistency-final-20261019",
+  "compiler": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "cpu": {
+    "Name": "AMD Ryzen 7 2700X Eight-Core Processor         ",
+    "NumberOfCores": 8,
+    "NumberOfLogicalProcessors": 16
+  },
+  "threads": 2,
+  "build_profile": "release; no-default-features"
+}

@@ -15,7 +15,11 @@ pub(super) enum Tool {
     Draw,
     Rectangle,
     InternalLine,
+    Measure,
     Sew,
+    Inspect,
+    Ellipse,
+    Sector,
 }
 #[derive(Default)]
 pub(super) struct AuthoringUi {
@@ -28,6 +32,7 @@ pub(super) struct AuthoringUi {
     pub draft: Vec<DVec2>,
     pub tangents: Vec<DVec2>,
     pub board: super::board::Board,
+    pub measure: super::measure::Tape,
     pub edge: Option<BoundaryRef>,
     pub hover_edge: Option<BoundaryRef>,
     pub replace: bool,
@@ -75,9 +80,11 @@ pub(super) fn millimetre_field(ui: &mut egui::Ui, value_mm: &mut f64) -> bool {
 
 impl Atelier {
     pub(super) fn install_edit(&mut self, edit: Edit) {
+        self.simulation_error = None;
         self.document.dirty = true;
         self.authoring.sewing = Default::default();
         if edit.reset_simulation {
+            self.issue.invalidate();
             self.scene.state = edit.state_after(&self.scene.garment, &self.scene.state);
         }
         let point_order_unchanged = |id: &str| {
@@ -96,6 +103,13 @@ impl Atelier {
                 .and_then(|p| p.polygon.as_ref());
             matches!((old, new), (Some(a), Some(b)) if a.edges == b.edges && a.points.len() == b.points.len())
         };
+        let point_groups = self
+            .authoring
+            .board
+            .point_selections()
+            .into_iter()
+            .filter(|(id, _)| point_order_unchanged(id))
+            .collect();
         let point_selection = self
             .authoring
             .board
@@ -123,6 +137,7 @@ impl Atelier {
             self.scene.garment = std::sync::Arc::new(edit.garment);
         }
         self.authoring.board.clear_preview();
+        self.authoring.board.point_groups = point_groups;
         if let Some((id, indices)) = point_selection {
             self.authoring.board.selection_panel = Some(id);
             self.authoring.board.selection = indices;
@@ -256,19 +271,19 @@ impl Atelier {
                         .unwrap_or(ui.max_rect().center()),
                 );
             }
-            // `key` is the smoke-target protocol name and must not change; `label`
-            // is the translated text shown on the button.
+            // Keep smoke-target keys synchronized with authoring_smoke.rs.
+            // `label` is the text shown on the button.
             for (tool, key, label, rotate, help) in [
                 (
                     Tool::Edit,
-                    "Modifier",
+                    "Edit",
                     "Edit",
                     false,
                     "Select, points and Bézier handles · 2D rotation with the round handle",
                 ),
                 (
                     Tool::Draw,
-                    "Plume",
+                    "Pen",
                     "Pen",
                     false,
                     "Click for a corner, click and drag for a curve",
@@ -282,38 +297,52 @@ impl Atelier {
                 ),
                 (
                     Tool::Sew,
-                    "Coudre",
+                    "Sew",
                     "Sew",
                     false,
                     "Choose two boundaries in the 2D or 3D views",
                 ),
                 (
                     Tool::InternalLine,
-                    "Ligne intérieure",
+                    "Internal line",
                     "Internal line",
                     false,
-                    "Draw a sewing path inside the selected panel; Enter to finish",
+                    "Click a boundary to choose its panel, then draw inside; Enter to finish",
+                ),
+                (
+                    Tool::Measure,
+                    "measure",
+                    "Measure",
+                    false,
+                    "M · click two points on the 2D board · Esc: clear",
                 ),
                 (
                     Tool::Place,
-                    "Déplacer 3D",
+                    "Move 3D",
                     "Move 3D",
                     false,
                     "G · move the selected panel's flat arrangement",
                 ),
                 (
                     Tool::Place,
-                    "Tourner 3D",
+                    "Rotate 3D",
                     "Rotate 3D",
                     true,
                     "R · X/Y/Z rings · Shift for 15°",
                 ),
                 (
                     Tool::Grab,
-                    "Saisir",
+                    "Grab",
                     "Grab",
                     false,
                     "Drag the simulated cloth with the mouse",
+                ),
+                (
+                    Tool::Inspect,
+                    "issue_brush",
+                    "Mark issue",
+                    false,
+                    "D · pause and paint problem faces; export a diagnostic report",
                 ),
             ] {
                 if tool == Tool::Sew || (tool == Tool::Place && !rotate) || tool == Tool::Grab {
@@ -325,10 +354,14 @@ impl Atelier {
                     Tool::Edit => super::icons::Icon::Select,
                     Tool::Draw | Tool::InternalLine => super::icons::Icon::Pen,
                     Tool::Rectangle => super::icons::Icon::Rectangle,
+                    Tool::Ellipse => super::icons::Icon::Ellipse,
+                    Tool::Sector => super::icons::Icon::Arc,
                     Tool::Sew => super::icons::Icon::Sew,
                     Tool::Place if rotate => super::icons::Icon::Rotate3d,
                     Tool::Place => super::icons::Icon::Move3d,
                     Tool::Grab => super::icons::Icon::Grab,
+                    Tool::Inspect => super::icons::Icon::Warning,
+                    Tool::Measure => super::icons::Icon::Measure,
                 };
                 let button =
                     super::icons::icon_only(ui, icon, 36., active, &format!("{label}\n{help}"));
@@ -376,18 +409,32 @@ impl Atelier {
         }
         self.cancel_preview();
         let replacing = self.authoring.replace
-            && matches!(self.authoring.tool, Tool::Draw | Tool::Rectangle)
-            && matches!(tool, Tool::Draw | Tool::Rectangle);
+            && matches!(
+                self.authoring.tool,
+                Tool::Draw | Tool::Rectangle | Tool::Ellipse | Tool::Sector
+            )
+            && matches!(
+                tool,
+                Tool::Draw | Tool::Rectangle | Tool::Ellipse | Tool::Sector
+            );
         self.authoring.board.clear_preview();
         self.authoring.draft.clear();
         self.authoring.tangents.clear();
         self.authoring.replace = replacing;
         self.authoring.drafting.line_panel = if tool == Tool::InternalLine {
-            self.authoring.selected.clone()
+            self.authoring
+                .edge
+                .as_ref()
+                .map(|e| e.panel.clone())
+                .or_else(|| self.authoring.selected.clone())
         } else {
             None
         };
         self.authoring.tool = tool;
+        self.authoring.measure = Default::default();
+        if tool == Tool::Inspect && self.prefs.workspace.mode == super::layout::ViewMode::Patterns {
+            self.prefs.workspace.mode = super::layout::ViewMode::Split;
+        }
         self.inspector_tab = super::chrome::InspectorTab::Piece;
         self.authoring.rotate = rotate;
         self.grab = None;
@@ -396,8 +443,12 @@ impl Atelier {
             self.playing = false;
             self.pending = false;
             self.generation += 1;
-            self.metrics = None;
-            self.status = if tool == Tool::Place {
+            if tool != Tool::Inspect {
+                self.metrics = None;
+            }
+            self.status = if tool == Tool::Inspect {
+                "Simulation paused · paint problem faces, then Export report"
+            } else if tool == Tool::Place {
                 "Selected panel laid flat · other panels retained"
             } else {
                 "Edit mode · simulation paused"
@@ -406,10 +457,11 @@ impl Atelier {
         }
     }
     fn history_shortcuts(&mut self, ctx: &egui::Context) {
-        if ctx.egui_wants_keyboard_input() || self.authoring.radial.blocked {
+        if ctx.egui_wants_keyboard_input() || self.authoring.radial.blocked || self.quick.blocked {
             return;
         }
         if self.authoring.tool == Tool::Sew {
+            self.sewing_shortcuts(ctx);
             if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
                 self.authoring.ends.clear();
                 self.authoring.sewing = Default::default();
@@ -419,6 +471,12 @@ impl Atelier {
             {
                 self.authoring.sewing.active = 1 - self.authoring.sewing.active;
             }
+        }
+        if ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::D)) {
+            self.set_authoring_tool(Tool::Inspect, false);
+        }
+        if ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::M)) {
+            self.set_authoring_tool(Tool::Measure, false);
         }
         if ctx.input(|i| !i.modifiers.command && !i.modifiers.alt && i.key_pressed(egui::Key::R)) {
             self.set_authoring_tool(Tool::Place, true);
@@ -430,7 +488,15 @@ impl Atelier {
             && ctx.input(|i| i.key_pressed(egui::Key::Delete))
         {
             let seams = self.edge_seams();
-            if seams.len() == 1 {
+            if let Some(id) = self
+                .authoring
+                .selection
+                .seam
+                .clone()
+                .filter(|id| seams.contains(id))
+            {
+                self.remove_seam(id);
+            } else if seams.len() == 1 {
                 self.remove_seam(seams[0].clone());
             }
         }
@@ -537,6 +603,37 @@ impl Atelier {
             return;
         };
         ui.label(&panel.name);
+        if let Some(fabric) = self
+            .project
+            .template
+            .fabrics
+            .iter()
+            .find(|f| f.id == panel.fabric)
+        {
+            let label = format!(
+                "{} · {:.0} g/m²",
+                fabric.name,
+                fabric.properties.density * 1000.
+            );
+            if ui
+                .button(label)
+                .on_hover_text("Open material, weight and stretch for this piece")
+                .clicked()
+            {
+                self.inspector_tab = super::chrome::InspectorTab::Fabric;
+            }
+        }
+        if let Some(range) = self.scene.garment.panels.iter().find(|p| p.id == panel.id) {
+            let area: f64 = self.scene.garment.mesh.triangles[range.triangles.clone()]
+                .iter()
+                .map(|t| t.area)
+                .sum();
+            ui.small(format!(
+                "Rest area {:.3} m² · {} triangles",
+                area,
+                range.triangles.len()
+            ));
+        }
         ui.small(format!(
             "{:.0} × {:.0} mm",
             panel.pattern.width * 1000.,
@@ -745,6 +842,36 @@ impl Atelier {
         ui.separator();
     }
     pub(super) fn create_polygon(&mut self) {
+        if matches!(self.authoring.tool, Tool::Ellipse | Tool::Sector)
+            && self.authoring.draft.len() == 4
+        {
+            use marvelous_cloth::garment::shapes::Primitive;
+            let command = Command::Primitive {
+                kind: if self.authoring.tool == Tool::Ellipse {
+                    Primitive::Ellipse
+                } else {
+                    Primitive::Sector
+                },
+                size: self.authoring.draft[2] - self.authoring.draft[0],
+                origin: self.authoring.draft[0],
+                sweep_degrees: self.authoring.drafting.sweep,
+                meshing: MeshingSettings {
+                    target_edge_m: self.mesh_mm * 0.001,
+                    anisotropy: self.anisotropy,
+                    axis_degrees: self.mesh_axis,
+                    ..Default::default()
+                },
+                fabric: self.project.template.fabrics[0].id.clone(),
+                replace: self.authoring.replace,
+            };
+            if self.edit(command) {
+                self.authoring.draft.clear();
+                self.authoring.tangents.clear();
+                self.authoring.replace = false;
+                self.authoring.tool = Tool::Place;
+            }
+            return;
+        }
         let command = Command::Polygon {
             tangents: self.authoring.tangents.clone(),
             points: self.authoring.draft.clone(),

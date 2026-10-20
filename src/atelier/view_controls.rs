@@ -44,6 +44,9 @@ fn center_radius(bounds: Option<(Vec3, Vec3)>) -> Option<(Vec3, f32)> {
 /// them in every tool.
 pub(super) fn hint_3d(tool: Tool) -> &'static str {
     match tool {
+        Tool::Inspect => {
+            "Paint visible faces · Shift: erase · right drag: orbit · middle drag: pan · wheel: zoom"
+        }
         Tool::Place => {
             "G: move · R: rotate · X/Y/Z rings · Shift: 15° · Esc: cancel · right drag: orbit · middle drag: pan · wheel: zoom toward the cursor"
         }
@@ -53,7 +56,13 @@ pub(super) fn hint_3d(tool: Tool) -> &'static str {
         Tool::Grab => {
             "Left: grab the fabric · right drag: orbit · middle drag: pan · wheel: zoom toward the cursor"
         }
-        Tool::Edit | Tool::Draw | Tool::Rectangle | Tool::InternalLine => {
+        Tool::Edit
+        | Tool::Draw
+        | Tool::Rectangle
+        | Tool::Ellipse
+        | Tool::Sector
+        | Tool::Measure
+        | Tool::InternalLine => {
             "Select a boundary · right drag: orbit · middle drag: pan · wheel: zoom toward the cursor"
         }
     }

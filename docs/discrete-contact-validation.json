@@ -1,0 +1,196 @@
+{
+  "scope": "Offline reaction audit on two captured synthetic steps, not an integrated solver",
+  "production_changed": false,
+  "gpu_used": false,
+  "corrected_trajectory_simulated": false,
+  "positions_and_multipliers_held_fixed": true,
+  "cases": [
+    {
+      "name": "matching",
+      "capture_reproduces_saved_positions_and_velocities_exactly": true,
+      "audit": {
+        "frames": [
+          {
+            "contacts": [
+              {
+                "chain_error_m": -6.193504910323444e-17,
+                "discrete_work_j": -6.298575025080008e-08,
+                "distance_after_m": 0.0010000000000000054,
+                "distance_before_m": 0.0010837643915104205,
+                "endpoint_work_j": 2.1510059679660245e-06,
+                "frozen_witness_work_j": -8.711863762145971e-07,
+                "indices": [
+                  4,
+                  8
+                ],
+                "kind": "vf",
+                "multiplier_n": 0.0007519394472402035,
+                "near_invariant_coincidence": false
+              },
+              {
+                "chain_error_m": -6.514699803922275e-17,
+                "discrete_work_j": -4.876071956267112e-24,
+                "distance_after_m": 0.0010000000000000054,
+                "distance_before_m": 0.0010270809774809875,
+                "endpoint_work_j": 5.150679375997254e-22,
+                "frozen_witness_work_j": -2.0860944913422874e-22,
+                "indices": [
+                  5,
+                  19
+                ],
+                "kind": "ee",
+                "multiplier_n": 1.8005524208569124e-19,
+                "near_invariant_coincidence": false
+              },
+              {
+                "chain_error_m": -6.381546224613899e-17,
+                "discrete_work_j": 4.3418073734699196e-44,
+                "distance_after_m": 0.0010000000000000054,
+                "distance_before_m": 0.0009999999999996654,
+                "endpoint_work_j": 4.496978541367047e-31,
+                "frozen_witness_work_j": -1.8213368524834534e-31,
+                "indices": [
+                  8,
+                  19
+                ],
+                "kind": "ee",
+                "multiplier_n": 1.5720344847969316e-28,
+                "near_invariant_coincidence": false
+              }
+            ],
+            "discrete_contact_work_at_input_multipliers_j": -5.845104051891479e-07,
+            "endpoint_contact_work_j": 1.6294813130276771e-06,
+            "floor_work_j": -5.215246549383478e-07,
+            "frozen_witness_work_at_input_multipliers_j": -1.3927110311529453e-06,
+            "input_energy_balance": {
+              "change_j": 1.085355543234679e-06,
+              "closure_error_j": -4.235164736271502e-22,
+              "contact_work_j": 1.6294813130276775e-06,
+              "grab_work_j": 0.0,
+              "implicit_dissipation_j": 2.862327985847037e-07,
+              "material_remainder_j": -2.578930627754966e-07,
+              "residual_work_j": 9.156720231005363e-14
+            },
+            "step": 176
+          }
+        ],
+        "gpu_used": false,
+        "input": "output/discrete-contact-20261020/matching-capture.json",
+        "maximum_chain_error_m": 6.514699803922275e-17,
+        "maximum_unit_reaction_midpoint_torque_m": 5.2761121355030555e-18,
+        "maximum_unit_reaction_resultant": 9.935226443051352e-16,
+        "production_changed": false,
+        "scope": "Offline force-row audit; unchanged input positions/multipliers, no trajectory prediction"
+      }
+    },
+    {
+      "name": "eased",
+      "capture_reproduces_saved_positions_and_velocities_exactly": true,
+      "audit": {
+        "frames": [
+          {
+            "contacts": [
+              {
+                "chain_error_m": -7.399679827213568e-18,
+                "discrete_work_j": 3.712092512159037e-20,
+                "distance_after_m": 0.0010000000000000536,
+                "distance_before_m": 0.001000000000000007,
+                "endpoint_work_j": 1.8928772211812606e-08,
+                "frozen_witness_work_j": -6.735651003898821e-07,
+                "indices": [
+                  13,
+                  1
+                ],
+                "kind": "vf",
+                "multiplier_n": 0.0009464550179644964,
+                "near_invariant_coincidence": false
+              },
+              {
+                "chain_error_m": -4.62402697444411e-17,
+                "discrete_work_j": -7.142711960768745e-21,
+                "distance_after_m": 0.001000000000000035,
+                "distance_before_m": 0.0010000000000000018,
+                "endpoint_work_j": 1.0731839893801241e-08,
+                "frozen_witness_work_j": -3.7796344736367115e-07,
+                "indices": [
+                  3,
+                  19
+                ],
+                "kind": "ee",
+                "multiplier_n": 0.0005467609567011087,
+                "near_invariant_coincidence": false
+              },
+              {
+                "chain_error_m": 6.811092514034315e-17,
+                "discrete_work_j": 1.4873338655920796e-19,
+                "distance_after_m": 0.0010000000000000289,
+                "distance_before_m": 0.0010000000000000022,
+                "endpoint_work_j": 3.0595737956606046e-08,
+                "frozen_witness_work_j": -1.0735804405292585e-06,
+                "indices": [
+                  5,
+                  19
+                ],
+                "kind": "ee",
+                "multiplier_n": 0.0015692105887071303,
+                "near_invariant_coincidence": false
+              },
+              {
+                "chain_error_m": -1.3836558479106854e-16,
+                "discrete_work_j": -2.7017435297172243e-20,
+                "distance_after_m": 0.0010000000000000007,
+                "distance_before_m": 0.0009999999999999992,
+                "endpoint_work_j": -4.961674908779529e-10,
+                "frozen_witness_work_j": -1.3364389584197258e-07,
+                "indices": [
+                  14,
+                  19
+                ],
+                "kind": "ee",
+                "multiplier_n": 0.00019742702984234384,
+                "near_invariant_coincidence": false
+              },
+              {
+                "chain_error_m": -1.41448996477311e-16,
+                "discrete_work_j": -1.0477012077722962e-19,
+                "distance_after_m": 0.0010000000000000005,
+                "distance_before_m": 0.0009999999999999994,
+                "endpoint_work_j": -1.8584751209671941e-09,
+                "frozen_witness_work_j": -4.980438348034524e-07,
+                "indices": [
+                  17,
+                  19
+                ],
+                "kind": "ee",
+                "multiplier_n": 0.0007464130966466126,
+                "near_invariant_coincidence": false
+              }
+            ],
+            "discrete_contact_work_at_input_multipliers_j": 3.7719844438959286e-20,
+            "endpoint_contact_work_j": 5.790170745036554e-08,
+            "floor_work_j": -9.204199206668451e-21,
+            "frozen_witness_work_at_input_multipliers_j": -2.7567967189282462e-06,
+            "input_energy_balance": {
+              "change_j": 1.425353139168509e-08,
+              "closure_error_j": -3.226004388956808e-21,
+              "contact_work_j": 5.7901707450347335e-08,
+              "grab_work_j": 0.0,
+              "implicit_dissipation_j": 9.478833682661464e-09,
+              "material_remainder_j": -3.416904666436297e-08,
+              "residual_work_j": -2.957116345852337e-13
+            },
+            "step": 163
+          }
+        ],
+        "gpu_used": false,
+        "input": "output/discrete-contact-20261020/eased-capture.json",
+        "maximum_chain_error_m": 1.41448996477311e-16,
+        "maximum_unit_reaction_midpoint_torque_m": 4.623127565230183e-17,
+        "maximum_unit_reaction_resultant": 1.7772239894833365e-15,
+        "production_changed": false,
+        "scope": "Offline force-row audit; unchanged input positions/multipliers, no trajectory prediction"
+      }
+    }
+  ],
+  "offline_work_gates_passed": true
+}

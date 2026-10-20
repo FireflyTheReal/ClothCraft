@@ -6,6 +6,30 @@ Status: research prototype, October 2026. **Most of the product is still missing
 
 The [15 October essential-tool review](docs/essential-authoring-tools.md) compares the current code with official CLO/Marvelous workflows. It proposes user-visible slices and acceptance examples: reliable documents, partial and multi-edge sewing, pins/freeze, arrangement, measurements and visibility, offsets/cuts, linked symmetry and grain. Manufacturing-specific release gates are separate. This is research and planning, not an implementation update.
 
+## Current contribution queue
+
+Updated 21 October 2026. The first goal is a coherent editing workflow around the existing solver. The physics work needs reproducible evidence, not a new default engine selected on reputation. Contributors may work independently on these tracks; announce a narrow scope before changing shared schemas. [Task prompts and reporting templates](docs/contributor-kit.md) are available for people using coding assistants.
+
+| ID | Remaining task | Starting point / dependencies | Acceptance |
+|---|---|---|---|
+| UX-01 | Validate and refine the first-time sewing workflow | `atelier/sewing_ui.rs`, `board.rs`, `edges_3d.rs`; existing partial/chain model | An unfamiliar user selects two intended boundaries, sees direction and unequal-length policy, confirms once, then selects/deletes/undoes the seam in either view |
+| UX-02 | Consistent selection and editing across pieces | `atelier/selection.rs`, `authoring.rs` | Box/lasso, point/piece selection, group edits and Delete have explicit scope; text fields retain keyboard ownership; one edit is one undo entry; linked mirrors do not update twice |
+| UX-03 | Clear inspection and viewport controls | `atelier/view_controls.rs`, `chrome.rs` | A clean mesh view is reachable in one action; selection and sewing overlays have predictable visibility; Grab radius/strength are discoverable and do not change materials |
+| UX-04 | Arrangement and measurements for real drafting | ARR-01, SIM-01, `atelier/gizmo.rs` | Body-aware placement, pin editing and useful measurements preserve material coordinates and report unsupported operations |
+| PHYS-01 | Diagnose persistent motion on a settled benchmark | `vbd/audit.rs`, `motion.rs`; owner-provided final benchmark pending | Distinguish assembly motion, cold-restart history, contact-refresh discontinuity and final force residual; preserve velocities and record identical pull/hold/release controls |
+| PHYS-02 | Continuous contact response without artificial sticking | `ogc/`, existing rejected contact trials | Preserve separation checks and force coverage; pass rest, frictionless sliding and release; report energy/force continuity and full-step cost; keep unproven variants opt-in |
+| PHYS-03 | Evaluate real alternative solver adapters | `solver_lab/`, solver challenge | Same rest mesh/materials/seams/controls; report quality before speed; do not expose failed lab candidates as editor modes |
+| PERF-01 | Reduce complete-step cost on dense garments | `gpu_vbd/`, `ogc/`; baseline before optimization | Same mesh, dt, iterations and collision scope; P50/P95, simulated/wall time, GPU waits and CPU costs; independent collision and deformation checks |
+| MAT-01 | Replace estimates with measured material fits | `fabrics.rs`, `energy.rs`; reusable source data | Units, directional measurements, fit errors, derivatives/objectivity and a stated calibration range |
+| IO-01 | OBJ + MTL static asset round trip | `avatar.rs`, `garment/export.rs` | Units/axes, groups, UVs, normals and material assignments checked in independent tools; explicit losses |
+| IO-02 | Static glTF/GLB import and export | Canonical mesh/material model; separate direction-specific adapters | Document supported PBR/texture subset, transforms and units; independent reader/writer fixtures |
+| IO-03 | DXF-AAMA and DXF-ASTM pattern exchange | Stable pattern entities, grain and notch semantics | Separate dialect fixtures; correct physical dimensions; distinguish cut/sew lines and unsupported entities |
+| IO-04 | Scale-correct SVG/PDF pattern printing | Current preview exporter | Physical page size, 100 mm calibration ruler, tiling and labels; measured print tolerance |
+| IO-05 | Animated cache and production exchange | Animation/time-sample model first | Alembic/USD, then FBX scope tested separately; stable topology policy, timestamps and external playback |
+| QA-01 | Portable public benchmark pack | Small original garments and synthetic fixtures with provenance | Fresh checkout reproduces edit/save/reload and matched solver runs; large private captures are not required |
+
+The owner reports useful collision robustness but residual wiggles and slow physical progress on finer meshes, including an 8 mm editing trial. This is user feedback, not a measured benchmark or a universal safety/performance claim. The next agreed dress benchmark has not yet been finalized. Keep historical captures labelled with their revision and settings.
+
 ## Next milestones, in order
 
 16 October update: Open/Save/Save As, portable avatar assets and local recovery are implemented, followed by partial ranges and ordered 1:N/M:N sewing. See [document and sewing contracts](docs/documents-and-sewing.md). Multi-document tabs, asset cleanup, dedicated notch editing and manufacturing sewing semantics remain open. The rows below retain the broader acceptance goals.
@@ -24,7 +48,7 @@ Each row is a contribution-sized track, not a promised release date. Finish one 
 | P2.2 | Truly replaceable solvers | `fitting.rs`, `solver.rs`, `vbd.rs` | One lifecycle/capability contract, two real adapters, shared scene suite; no fake backend selector |
 | P3 | Manufacturing and richer appearance | pattern/gradation and material adapters | Named grading dialect, size rules and reversible grades; USDZ packaging; optional legacy caches and SBSAR baking |
 
-The format priorities below remain product priorities: a **critical** animation format is still blocked by an animation/data-model milestone. Format names alone are not deliverables. Friction, layered cloth, calibrated materials and linked symmetry remain substantial tasks. Basic independent mirrors, holes and internal sewing now exist; see [their limits](docs/drafting-tools.md).
+The format priorities below remain product priorities: a **critical** animation format is still blocked by an animation/data-model milestone. Format names alone are not deliverables. Paired linked mirrors and a read-only 2D ruler now exist ([scope](docs/panel-tools.md)). Friction, layered cloth, calibrated materials, same-panel symmetry and 3D surface measurements remain substantial tasks. Basic independent mirrors, holes and internal sewing now exist; see [their limits](docs/drafting-tools.md).
 
 ## 1. Draw → sew → arrange → simulate
 
@@ -40,7 +64,7 @@ The format priorities below remain product priorities: a **critical** animation 
 - [x] Numeric point movement, rectangle resizing, multi-point selection, unsewn contour splits and target lengths (CPU validation; native interaction pending).
 - [x] Camera presets/orthographic views, board view rotation, English UI and light/dark preferences, adapted from FireflyTheReal; see [integration notes](docs/firefly-integration.md).
 - [x] Radial tools, 2D panel/point marquee, group board movement and Ctrl+C/V with internal seams (CPU/headless checks; native acceptance pending).
-- [ ] Linked symmetry, group rotation/3D transforms, 3D marquee, line offsets and dedicated hole point editing.
+- [ ] Same-panel symmetry, group rotation/3D transforms, 3D marquee, line offsets and dedicated hole point editing. Paired linked copies already exist.
 - [ ] Import verified reusable patterns: FreeSewing Teagan/Titan/Jett are linked from the Web menu; SVG geometry and semantic sewing adapters remain planned ([investigation](docs/drafting-tools.md#web-pattern-library-investigation)).
 - [x] Partial ranges in both views, numeric range editing, direction handles, ordered 1:N / M:N sewing and seam editing/deletion.
 - [ ] Dedicated notch editing, automatic correspondence and manufacturing sewing semantics.
@@ -57,10 +81,12 @@ Acceptance: an unfamiliar user can draft a simple top, join its intended boundar
 - [x] CPU Newton reference; CPU VBD; hybrid GPU VBD/OGC; real window timing and force checks.
 - [ ] Common backend lifecycle/capability contract, exercised by two real adapters before exposing a new selector.
 - [ ] Standard scene suite and machine-readable quality/cost comparisons for alternative solvers.
-- [ ] Resident GPU contact, fewer transfers, dense scenes and animated avatars.
+- [x] First headless dress screening with VBD control, XPBD/OGC, finite-stiffness AVBD and a native Box3D lattice. [Results and failed gates](docs/solver-lab-results.md); no new editor backend promoted.
+- [x] Conservative GPU BVH candidate search, explicit overflow retries and resident fixed geometry; exact contact geometry/bounds remain on CPU ([scope](docs/gpu-contact-search.md)).
+- [ ] Fully resident GPU contact, fewer transfers, dense scenes and animated avatars.
 - [ ] Friction, layered garments, better seam closure and calibrated material response.
 
-The [15 October research pass](docs/research-2026-10-15.md) reviews ten primary sources and separates current VBD/OGC optimizations from proposed AVBD, IPC/PPF and B-spline work. Next convergence experiment: a CPU seam-only augmented prototype with analytic fixtures, explicit finite/hard semantics and reset rules. AVBD is not an available backend. The custom-scene jitter report still needs its scene and equal-time trajectory measurements.
+The [18 October solver review](docs/solver-landscape-2026-10.md) proposes matched-model VBD/XPBD/compliant-ALM comparisons and separate external Newton/PPF evaluations, with a ruffled dress, small fixtures and matched pull/release controls. The saved Garment now has diagnostic and trajectory evidence; the [coupled seam experiment](docs/seam-block-refinement.md) failed its combined quality/performance gate and stays disabled. Next: complete-material-patch diagnosis and a reusable benchmark before another production correction. XPBD/OGC and finite-stiffness AVBD now have CPU research adapters; a separate native Box3D lattice is also tested. They are not selectable editor backends. DAT and the other external candidates remain unimplemented. The [15 October review](docs/research-2026-10-15.md) remains historical background.
 
 The challenge is **more accurate AND faster**, with disclosed tradeoffs. Keep authoring, import/export and benchmarks useful even if a future solver replaces today's engine. See [solver challenge](docs/solver-challenge.md).
 
