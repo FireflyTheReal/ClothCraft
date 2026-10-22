@@ -9,22 +9,22 @@
       "id": "EXO-COORD-001",
       "title": "Verify live task claim, heartbeat and release coordination",
       "area": "coordination",
-      "status": "ready",
+      "status": "done",
       "depends_on": [],
       "scope": [
         "scripts/coordination/",
         "docs/agent-coordination-protocol.md"
       ],
       "acceptance": [
-        "Pass offline reducer tests for ownership, leases, scope overlap and malformed requests.",
+        "Pass offline reducer tests for ownership, stale reservations, scope overlap and malformed requests.",
         "Exercise one authorized live claim, heartbeat and release on the canonical GitHub issue, verifying the public state after every command.",
-        "Reject competing or stale claims; never execute code or shell text supplied in issue comments."
+        "Reject competing takeover of active or stale reservations; never execute code or shell text supplied in issue comments."
       ],
       "evidence": [
         "https://github.com/erythrofr/ClothCraft/blob/main/COORDINATION.md"
       ],
       "related_prs": [],
-      "notes": "Verification of the actual central coordinator, not a promise that posting a link wakes remote agents. Current root team owns implementation and smoke validation."
+      "notes": "Completed 22 October: 30 offline coordinator tests and 5 catalog tests pass. Live registration, claim, duplicate rejection, heartbeat, review and explicit release succeeded; hub observed with zero active claims. See docs/rewrite-hub-validation.md and issue #9. The coordinator does not wake remote agents."
     },
     {
       "id": "EXO-CORE-001",

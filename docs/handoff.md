@@ -8,8 +8,10 @@ the [pinned EXO feature audit](exo-feature-audit.md) and
 linked from hub issue #8. The coordinator uses authenticated comment authors,
 exclusive file/directory scopes, explicit release and a durable bot ledger;
 it does not start agents, merge PRs or copy EXO's GPL source/assets. Thirty
-coordination tests and five catalog tests pass locally; live activation is
-being verified before this workstream is closed. The first original Rust
+coordination tests and five catalog tests pass locally. Live registration,
+claim, duplicate rejection, heartbeat, review and release all passed, leaving
+zero active claims. The CPU suite passes 288 tests and CPU all-target Clippy
+is warning-free. See [validation](rewrite-hub-validation.md). The first original Rust
 slice, [net material metrics](production-metrics.md), has five passing CPU
 tests and a working `cloth-template metrics` CLI (public T-shirt: 0.7976 m2,
 0.15952 kg). Production physics and the user's saved garment are unchanged.

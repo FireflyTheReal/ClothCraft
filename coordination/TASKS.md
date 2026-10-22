@@ -10,7 +10,7 @@ Reference: [mikristian/exo-sample-3d@352c6086b622](https://github.com/mikristian
 
 | Task | Area | Status | Dependencies | Discussion |
 |---|---|---|---|---|
-| [EXO-COORD-001](#exo-coord-001) — Verify live task claim, heartbeat and release coordination | coordination | ready | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/9) |
+| [EXO-COORD-001](#exo-coord-001) — Verify live task claim, heartbeat and release coordination | coordination | done | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/9) |
 | [EXO-CORE-001](#exo-core-001) — Agree editor, document and solver ownership contract | architecture | ready | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/10) |
 | [EXO-CORE-002](#exo-core-002) — Record provenance and licensing for candidate contributions | provenance | ready | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/11) |
 | [EXO-REV-001](#exo-rev-001) — Reconcile the two notch and allowance contributions | review | review_existing | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/12) |
@@ -82,7 +82,7 @@ Reference: [mikristian/exo-sample-3d@352c6086b622](https://github.com/mikristian
 
 **Verify live task claim, heartbeat and release coordination**
 
-Status: ready. Dependencies: none.
+Status: done. Dependencies: none.
 
 **Files / directories**
 
@@ -91,15 +91,15 @@ Status: ready. Dependencies: none.
 
 **Acceptance**
 
-- Pass offline reducer tests for ownership, leases, scope overlap and malformed requests.
+- Pass offline reducer tests for ownership, stale reservations, scope overlap and malformed requests.
 - Exercise one authorized live claim, heartbeat and release on the canonical GitHub issue, verifying the public state after every command.
-- Reject competing or stale claims; never execute code or shell text supplied in issue comments.
+- Reject competing takeover of active or stale reservations; never execute code or shell text supplied in issue comments.
 
 **Evidence and related contributions**
 
 - https://github.com/erythrofr/ClothCraft/blob/main/COORDINATION.md
 
-Verification of the actual central coordinator, not a promise that posting a link wakes remote agents. Current root team owns implementation and smoke validation.
+Completed 22 October: 30 offline coordinator tests and 5 catalog tests pass. Live registration, claim, duplicate rejection, heartbeat, review and explicit release succeeded; hub observed with zero active claims. See docs/rewrite-hub-validation.md and issue #9. The coordinator does not wake remote agents.
 
 ## EXO-CORE-001
 
