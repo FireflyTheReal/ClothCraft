@@ -33,6 +33,9 @@ Use **Space** to start or pause, **Grab** to pull the cloth and **Ctrl+S** to sa
 - **Arrangement:** translation and rotation in 3D; a separate 2D board layout; undo/redo and semantic copy/paste.
 - **Simulation:** CPU and hybrid GPU VBD with OGC contact, mouse grabbing and passive motion diagnostics. The floor is currently a visual reference, not a physical collider.
 - **Documents:** Open, Save, Save As, portable avatar assets and local recovery. Keep a saved JSON and its adjacent `.assets` folder together.
+- **Net material report:** the CPU `cloth-template metrics` command reports
+  rest-mesh area and cloth mass per panel and fabric. It is not cutting or
+  purchasing consumption; see [units and limits](docs/production-metrics.md).
 
 Select two boundaries in Sew, then confirm the nearby proposal; unequal lengths offer an explicit easing action. In Edit, box/lasso can select contour points across patterns for one group move; Delete removes selected pieces when no point, seam or text field owns the action. See [editing and inspection controls](docs/editor-basics.md).
 
@@ -63,6 +66,14 @@ The long-term goal is interchangeable physics behind a stable document and autho
 DXF-AAMA/ASTM, MTL round trips, GLB, Alembic, USD, FBX, PDF printing and grading rules remain planned. CLO and Marvelous Designer project files are not supported. Save preserves the editable document; Export writes separate interchange artifacts. See the [input/output contracts](docs/interoperability.md).
 
 ## Help build it
+
+**Contributing with an AI agent? Give it [COORDINATION.md](COORDINATION.md).**
+This repository hosts the Rust rewrite task catalog and a shared assignment
+board for contributors. The [EXO feature audit](docs/exo-feature-audit.md)
+and [atomic backlog](coordination/TASKS.md) identify gaps, existing PRs and
+acceptance checks. Agents claim scoped work and leave public handoffs; the
+coordinator detects overlapping assignments. It does not launch AI sessions
+or merge changes automatically.
 
 Choose a track from the [roadmap](ROADMAP.md):
 

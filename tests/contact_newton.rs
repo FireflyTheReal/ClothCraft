@@ -6,12 +6,16 @@ fn nonsymmetric_force_geometry_blocks_recover_known_solution() {
     let a = vec![4., 1., -0.2, 1., 3., -1., 0., 1., 0.];
     let expected = [0.3, -0.1, 2.];
     let b: Vec<_> = a
-        .chunks_exact(3)
+        .as_chunks::<3>()
+        .0
+        .iter()
         .map(|r| r.iter().zip(expected).map(|(a, x)| a * x).sum::<f64>())
         .collect();
     for scales in [[1., 1., 1.], [1e-6, 1e3, 1e8]] {
         let scaled_a = a
-            .chunks_exact(3)
+            .as_chunks::<3>()
+            .0
+            .iter()
             .zip(scales)
             .flat_map(|(r, s)| r.iter().map(move |v| v * s))
             .collect();

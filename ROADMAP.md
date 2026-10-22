@@ -8,6 +8,15 @@ The [15 October essential-tool review](docs/essential-authoring-tools.md) compar
 
 ## Current contribution queue
 
+**22 October — coordinated native Rust rewrite.** Start at
+[COORDINATION.md](COORDINATION.md), inspect the
+[EXO comparison](docs/exo-feature-audit.md), then choose an atomic task from
+[the task catalog](coordination/TASKS.md). The machine-readable manifest
+records dependencies, file scopes, evidence and existing PRs; the
+[live board](https://github.com/erythrofr/ClothCraft/issues/8) records current
+ownership. Existing product goals below remain valid. A catalog entry is not
+a completed feature or a claim that EXO has validated it in production.
+
 Updated 21 October 2026. The first goal is a coherent editing workflow around the existing solver. The physics work needs reproducible evidence, not a new default engine selected on reputation. Contributors may work independently on these tracks; announce a narrow scope before changing shared schemas. [Task prompts and reporting templates](docs/contributor-kit.md) are available for people using coding assistants.
 
 | ID | Remaining task | Starting point / dependencies | Acceptance |

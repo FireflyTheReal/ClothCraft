@@ -42,7 +42,7 @@ fn finite_motion_changes_force_basis_without_changing_endpoint_feasibility() {
     let work: f64 = new
         .iter()
         .zip(&old)
-        .zip(discrete.force.chunks_exact(3))
+        .zip(discrete.force.as_chunks::<3>().0.iter())
         .map(|((a, b), f)| (*a - *b).dot(DVec3::from_slice(f)))
         .sum();
     assert!(

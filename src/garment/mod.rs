@@ -8,6 +8,7 @@ pub mod export;
 pub mod meshing;
 pub mod polygon;
 pub mod presets;
+pub mod production_metrics;
 pub mod seam;
 pub mod shapes;
 pub mod template;

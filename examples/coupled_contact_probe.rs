@@ -156,8 +156,10 @@ fn run(
             let guards = reference.world.detect(&x, 2. * cfg.radius, &cfg)?;
             let directions: Vec<_> = q
                 .displacement
-                .chunks_exact(3)
-                .map(DVec3::from_slice)
+                .as_chunks::<3>()
+                .0
+                .iter()
+                .map(|p| DVec3::from_array(*p))
                 .collect();
             let mut alpha: f64 = 1.;
             for (i, d) in directions.iter().enumerate() {

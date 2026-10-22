@@ -40,6 +40,13 @@ ClothCraft's original source and documentation are under the [MIT License](LICEN
 
 ## Coordinate across forks
 
+For the Rust rewrite, follow [COORDINATION.md](COORDINATION.md): choose a
+registered atomic task, obtain the coordinator's acknowledgement, and leave
+progress and handoff notes on its issue. Check the existing PRs before coding.
+The contributor's GitHub account owns the claim; an agent name identifies a
+session, not a separate trusted account. Scope changes and final completion
+are reviewed in the manifest. The bot never merges contributions.
+
 A fork is an independent working copy, not an automatic subscription or a promise to contribute. Keep it synchronized with upstream before starting a change. Announce a small scope in an issue, draft PR or the community Discord when possible; a short message prevents overlapping edits without requiring meetings.
 
 Open one focused PR per feature against `erythrofr/ClothCraft:main`, explain the behavior and tests, and preserve unrelated work. Discuss shared model changes before rewriting authoring, sewing or document schemas. If you import work from another fork, preserve the author and source commit references; credit adapted code and document integration fixes. Do not imply endorsement by that contributor. No Discord message or GitHub mention is sent automatically by these guidelines.

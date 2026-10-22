@@ -29,8 +29,10 @@ fn all_moving_contact_gradients_match_finite_differences_and_internal_balance() 
         let row = deforming_contact::linearize(pair, &top, x, 0.01).unwrap();
         let gradient: Vec<_> = row
             .jacobian
-            .chunks_exact(3)
-            .map(DVec3::from_slice)
+            .as_chunks::<3>()
+            .0
+            .iter()
+            .map(|p| DVec3::from_array(*p))
             .collect();
         assert!(gradient.iter().copied().sum::<DVec3>().length() < 1e-12);
         assert!(
@@ -48,7 +50,10 @@ fn all_moving_contact_gradients_match_finite_differences_and_internal_balance() 
             .collect();
         let rotated = deforming_contact::linearize(pair, &top, &transformed, 0.01).unwrap();
         assert!((rotated.offset - row.offset).abs() < 1e-12);
-        for (before, after) in gradient.iter().zip(rotated.jacobian.chunks_exact(3)) {
+        for (before, after) in gradient
+            .iter()
+            .zip(rotated.jacobian.as_chunks::<3>().0.iter())
+        {
             assert!((rotation * *before - DVec3::from_slice(after)).length() < 1e-10);
         }
         for k in 0..x.len() * 3 {

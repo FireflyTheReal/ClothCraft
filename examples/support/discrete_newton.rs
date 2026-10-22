@@ -132,8 +132,10 @@ pub fn direction_with_search_rows(
     }
     Ok((
         delta[..dofs]
-            .chunks_exact(3)
-            .map(DVec3::from_slice)
+            .as_chunks::<3>()
+            .0
+            .iter()
+            .map(|p| DVec3::from_array(*p))
             .collect(),
         lambda,
     ))
@@ -226,7 +228,14 @@ fn unilateral_direction(
         for ((id, _), l) in rows.iter().zip(reactions) {
             lambda[*id] = l;
         }
-        return Ok((dx.chunks_exact(3).map(DVec3::from_slice).collect(), lambda));
+        return Ok((
+            dx.as_chunks::<3>()
+                .0
+                .iter()
+                .map(|p| DVec3::from_array(*p))
+                .collect(),
+            lambda,
+        ));
     }
     let initial: Vec<_> = rows.iter().map(|(id, _)| target[*id] > 0.).collect();
     let report = solve(
@@ -259,8 +268,10 @@ fn unilateral_direction(
     Ok((
         report
             .displacement
-            .chunks_exact(3)
-            .map(DVec3::from_slice)
+            .as_chunks::<3>()
+            .0
+            .iter()
+            .map(|p| DVec3::from_array(*p))
             .collect(),
         lambda,
     ))

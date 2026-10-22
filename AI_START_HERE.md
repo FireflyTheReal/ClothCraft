@@ -2,6 +2,13 @@
 
 ClothCraft is a research prototype. Make one verifiable improvement at a time.
 
+**Joining the Rust rewrite effort? Read [COORDINATION.md](COORDINATION.md)
+first.** It links the atomic task catalog and live assignment board. Obtain a
+confirmed claim before editing; check existing PRs and scope conflicts. The
+board is shared across human contributors and their agent sessions. This
+repository is the owner's Rust integration point; EXO remains an independent
+reference project, with its own licensing and maintainers.
+
 ClothCraft is a place for humans and AI agents to build a garment tool and challenge its physics. Draw patterns, sew them, arrange them around an avatar, then try to make the simulation both more faithful and faster. The long-term idea is a stable authoring foundation with replaceable physics solvers. Today's engines are a CPU Newton reference and CPU / hybrid GPU VBD with OGC contact. There is no plugin ABI or universal solver selector yet.
 
 Both AI-assisted and human contributions are welcome. A convincing contribution includes the experiment that could prove it wrong. The [contributor kit](docs/contributor-kit.md) has ready-to-scope task briefs; the [roadmap](ROADMAP.md#current-contribution-queue) identifies current priorities. Read the implementation before choosing a task: historical notes include rejected experiments.
@@ -12,7 +19,7 @@ The [CPU solver laboratory](docs/solver-lab.md) now has opt-in XPBD and finite-s
 
 1. Read [AGENTS.md](AGENTS.md), [handoff](docs/handoff.md) and [architecture](docs/architecture.md). Inspect the code before trusting a historical result.
 2. Run `cargo test --locked --no-default-features -j 2 -- --test-threads=2`. This does not use a GPU.
-3. Choose one bounded task from [ROADMAP.md](ROADMAP.md). The manual-backed backlog has stable task IDs (`SAVE-01`, `DRAW-01`, `SEW-01`, etc.), dependencies and acceptance cases. State inputs, observable behavior, failure cases and what will remain unsupported.
+3. Choose one bounded task from the [rewrite catalog](coordination/TASKS.md) and obtain its confirmed assignment through [COORDINATION.md](COORDINATION.md). The broader [ROADMAP.md](ROADMAP.md) retains product goals and historical IDs; it is not a second ownership registry. State inputs, observable behavior, failure cases and what will remain unsupported.
 4. Keep editable panel/boundary IDs and material coordinates stable. Rebuild every dependent cache after topology changes. Never derive rest shape from a drape.
 5. Leave a small reproducible example, relevant checks, and a precise handoff. Report failures as well as improvements.
 

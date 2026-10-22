@@ -35,6 +35,14 @@ The second command only compiles. The authorized GPU pass is reproduced with `sc
 
 ## Contributions
 
+For coordinated Rust rewrite work, read `COORDINATION.md` and the live board
+linked there before editing. Use `coordination/tasks.json` for reviewed task
+scope and dependencies; do not confuse static eligibility with current
+ownership. Wait for an accepted claim, check overlapping open PRs, and leave
+evidence and a handoff on the task issue. An unacknowledged comment is not a
+lock. Do not copy incompatible upstream implementations or assets; document
+provenance and license compatibility for reused contributions.
+
 Preserve user files and existing changes. Do not publish, push or choose a distribution license without an explicit request from the owner. Test physics changes through falsifiable properties: finite differences, objectivity, balances, convergence and limiting behavior. Update the handoff and limitations when a capability changes. Avoid empty modules, fake solver menus and abstractions for implementations that do not exist.
 
 Write code comments, UI text and documentation in English; localization is future work. Preserve serialized identifiers, existing document compatibility, source quotations and attribution. Report observed results rather than claiming a test passed because it was intended to pass.

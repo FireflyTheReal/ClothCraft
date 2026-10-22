@@ -1,5 +1,25 @@
 # Repository handoff
 
+**22 October — shared Rust rewrite hub.** The owner selected this repository
+as the native Rust coordination/integration point and explicitly requested
+parallel agents and a task mailbox. Read [COORDINATION.md](../COORDINATION.md),
+the [pinned EXO feature audit](exo-feature-audit.md) and
+[67 atomic tasks](../coordination/TASKS.md). The first 16 task discussions are
+linked from hub issue #8. The coordinator uses authenticated comment authors,
+exclusive file/directory scopes, explicit release and a durable bot ledger;
+it does not start agents, merge PRs or copy EXO's GPL source/assets. Thirty
+coordination tests and five catalog tests pass locally; live activation is
+being verified before this workstream is closed. The first original Rust
+slice, [net material metrics](production-metrics.md), has five passing CPU
+tests and a working `cloth-template metrics` CLI (public T-shirt: 0.7976 m2,
+0.15952 kg). Production physics and the user's saved garment are unchanged.
+The previous GitHub CPU run passed its tests but failed a new Clippy 1.99
+lint. Constant-size chunk iteration in tests/examples now uses `as_chunks`;
+the `drafting_tools.rs` correction matches FireflyTheReal's
+[PR #4](https://github.com/erythrofr/ClothCraft/pull/4), head
+`43018fc959b311a6029bb0ffc586619786938e50`, with attribution preserved.
+The PR itself and the remaining PRs are not merged by this workstream.
+
 **21 October — collaboration snapshot and basic editing.** The owner requested committing and publishing the accumulated prototype, practical editor fixes and an English contribution kit. Read [editor basics](editor-basics.md) and [contributor task briefs](contributor-kit.md). Two boundary clicks now expose a primary seam action near the pointer, including explicit easing consent. Clean view suppresses all 3D editing overlays without changing seams. Grab adds a connected-surface radius and strength: the old point grab is unchanged at radius zero; a brush divides the same stiffness budget 25% point / 75% mass-weighted radial attachments. These are implicit unary springs on CPU/hybrid GPU, with unchanged collision restrictions. Multi-panel contour selections move transactionally in board space; Delete removes panel groups with seam cleanup and undo. No new jitter correction, solver default, material law or collision law is promoted. Research adapters remain separate from the editor. The owner's open garment is not a benchmark input for this pass; the future benchmark will be prepared by the owner. Validation: 283 CPU tests, 44 desktop UI tests (one optional test ignored), warning-free CPU/desktop Clippy, 55 native authoring actions and a successful native Grab gesture. The opt-in GPU brush pull/hold/release passes force, contact-coverage, separation and motion checks over 36 steps. CPU/GPU trajectories are not equivalent; see the measured limits and reproduction commands in [editor release validation](editor-release-validation.md). The release executable is rebuilt. This snapshot includes the accumulated solver laboratory and the editing changes; private garment files and local run artifacts are excluded.
 
 **20 October — five-column dress video delivered.** The owner requested a bounded 350-step visual comparison, not renewed autonomous solver development. See the recorded comparison section in [solver-lab](solver-lab.md). `solver_compare --record-states` exports render geometry and positions outside step timings; the Python recorder, CPU renderer and validator are reusable. Four CPU adapters complete 350 steps; XPBD fails positive-separation checking at its 289th diagnostic state (288 preceding checked states). The failure is clearly labelled in playback. All five 120-step positions match their respective historical captures exactly; the existing VBD control is preserved. Video: `output/solver-video-20261020/comparison-350steps.mp4`, 2560x1440 H.264, half-speed, 350 physical slots plus initial/final holds. `comparison.html` provides frame stepping and physical-time playback; hashes, raw traces and validation are alongside it. The new small contact oracle is not a dress column. Original garment, production physics and GPU kernels unchanged. Build, targeted CPU Clippy, rustfmt, recording checks, full video decode and visual checks pass. No GPU use, commit or push. Broad solver research remains paused pending discussion.

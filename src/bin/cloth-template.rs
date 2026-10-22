@@ -1,7 +1,7 @@
 //! A CPU-only frontend; never imports eframe/wgpu or opens a window.
 use clap::{Parser, Subcommand};
 use marvelous_cloth::{
-    garment::{GarmentTemplate, export},
+    garment::{GarmentTemplate, export, production_metrics},
     solver::{ReferenceSolver, SolverSettings},
 };
 use std::{
@@ -26,6 +26,10 @@ enum Command {
         output: PathBuf,
     },
     Validate {
+        template: PathBuf,
+    },
+    /// Report net rest-mesh area and mass per panel and fabric (not nesting consumption).
+    Metrics {
         template: PathBuf,
     },
     /// Produce rest OBJ, annotated 2D SVG and continuum fiber frames.
@@ -63,6 +67,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "name":t.name,"panels":g.panels.len(),"vertices":g.mesh.uv.len(),"triangles":g.mesh.triangles.len(),
                 "seams":g.seams.len(),"initial_gap_m":g.max_seam_gap(&g.initial_state.x),"warnings":g.warnings}))?
             );
+        }
+        Command::Metrics { template } => {
+            let template = GarmentTemplate::load(&template)?;
+            let report = production_metrics::report(&template)?;
+            println!("{}", serde_json::to_string_pretty(&report)?);
         }
         Command::Bake { template, output } => {
             let t = GarmentTemplate::load(&template)?;

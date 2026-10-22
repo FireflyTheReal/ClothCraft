@@ -1,0 +1,1692 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "mikristian/exo-sample-3d",
+    "commit": "352c6086b622caeda95f16d9bd923624b95e05d9"
+  },
+  "tasks": [
+    {
+      "id": "EXO-COORD-001",
+      "title": "Verify live task claim, heartbeat and release coordination",
+      "area": "coordination",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "scripts/coordination/",
+        "docs/agent-coordination-protocol.md"
+      ],
+      "acceptance": [
+        "Pass offline reducer tests for ownership, leases, scope overlap and malformed requests.",
+        "Exercise one authorized live claim, heartbeat and release on the canonical GitHub issue, verifying the public state after every command.",
+        "Reject competing or stale claims; never execute code or shell text supplied in issue comments."
+      ],
+      "evidence": [
+        "https://github.com/erythrofr/ClothCraft/blob/main/COORDINATION.md"
+      ],
+      "related_prs": [],
+      "notes": "Verification of the actual central coordinator, not a promise that posting a link wakes remote agents. Current root team owns implementation and smoke validation."
+    },
+    {
+      "id": "EXO-CORE-001",
+      "title": "Agree editor, document and solver ownership contract",
+      "area": "architecture",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "docs/exo-contract.md"
+      ],
+      "acceptance": [
+        "Document metres, stable panel/boundary IDs, rest/state separation and unsupported EXO fields.",
+        "Specify which data is authoritative, revision preconditions, cache invalidation and version negotiation; include one synthetic interchange example.",
+        "Maintain current Project v1 / GarmentTemplate v2 compatibility; no new backend selector."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_DATA_MODEL.md",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_RUST_CONVERSION_STATUS_2026-10-18.md"
+      ],
+      "related_prs": [],
+      "notes": "A bounded design decision with maintainer approval, not a request to rewrite all schemas."
+    },
+    {
+      "id": "EXO-CORE-002",
+      "title": "Record provenance and licensing for candidate contributions",
+      "area": "provenance",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "docs/exo-provenance.md"
+      ],
+      "acceptance": [
+        "Inventory exact upstream commits and licenses for each proposed code or asset transfer.",
+        "Separate behavior-inspired original Rust work from copied/adapted EXO code; obtain owner decisions for any incompatible transfer.",
+        "Do not import EXO assets, implementation or binaries merely because a task cites them."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/LICENSE",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/README.md"
+      ],
+      "related_prs": [],
+      "notes": "EXO declares GPL-3.0-only; ClothCraft is MIT. No license change is authorized by this backlog."
+    },
+    {
+      "id": "EXO-REV-001",
+      "title": "Reconcile the two notch and allowance contributions",
+      "area": "review",
+      "status": "review_existing",
+      "depends_on": [],
+      "scope": [
+        "src/garment/polygon.rs",
+        "src/garment/markings.rs",
+        "src/authoring.rs",
+        "src/authoring/geometry.rs",
+        "src/atelier/board.rs",
+        "src/atelier/authoring_ui.rs",
+        "src/garment/export.rs",
+        "tests/pattern_markings.rs",
+        "src/garment/mod.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Compare PR1 and PR6 schema/semantics before choosing or reconciling them; avoid duplicate representations.",
+        "Verify curved boundaries, round trips, mirror/split/delete behavior and metadata-only state preservation.",
+        "Report provenance and rebase/test on current main; merge only after review."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/patternSewingNotches.js"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/1",
+        "https://github.com/erythrofr/ClothCraft/pull/6"
+      ],
+      "notes": "Existing proposals are not merged or independently validated by the inventory. Shared model edits need exclusive ownership."
+    },
+    {
+      "id": "EXO-REV-002",
+      "title": "Split and review darts, persistent POM and cutline proposal",
+      "area": "review",
+      "status": "review_existing",
+      "depends_on": [],
+      "scope": [
+        "src/garment/cutline.rs",
+        "src/garment/curves.rs",
+        "src/garment/domain.rs",
+        "src/garment/seam.rs",
+        "src/garment/polygon.rs",
+        "src/authoring.rs",
+        "src/authoring/geometry.rs",
+        "tests/cutline_production.rs",
+        "tests/persistent_pom_references.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Separate authoring, document migration, adapter and physics changes in PR7 before integration.",
+        "Check cut-and-sew dart topology, boundary identity, POM migration and actual cutline units against original fixtures.",
+        "Explicitly review src/vbd.rs and src/gpu_vbd.rs changes separately; no solver modification may enter via an authoring review unnoticed."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/nativePatternExportPreparation.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/measurements.js"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/7"
+      ],
+      "notes": "PR7 touches physics as well as CAD. This task reviews authoring slices; it does not authorize promoting its solver changes."
+    },
+    {
+      "id": "EXO-REV-003",
+      "title": "Review physical SVG output contribution",
+      "area": "review",
+      "status": "review_existing",
+      "depends_on": [],
+      "scope": [
+        "src/garment/export.rs",
+        "src/bin/cloth-template.rs",
+        "tests/pattern_print_svg.rs",
+        "docs/interoperability.md",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Inspect PR3 physical dimensions, viewBox, layout and curve fidelity.",
+        "Check a known 100 mm fixture in an independent SVG consumer.",
+        "Retain preview export separately and document print/allowance limits."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/markerArtifacts.js"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/3"
+      ],
+      "notes": "Review an existing contribution instead of reimplementing it in parallel."
+    },
+    {
+      "id": "EXO-REV-004",
+      "title": "Reconcile feature map and current stable lint contributions",
+      "area": "review",
+      "status": "review_existing",
+      "depends_on": [],
+      "scope": [
+        "docs/feature-map.md",
+        "docs/manual-study.md",
+        "tests/drafting_tools.rs"
+      ],
+      "acceptance": [
+        "Check PR4 against the current supported compiler and avoid duplicating an already fixed lint.",
+        "Merge useful PR5 source references into one roadmap without claiming listed methods are implemented.",
+        "Reconcile references with this task ledger, retaining contributor attribution."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_FEATURE_ATLAS.md"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/4",
+        "https://github.com/erythrofr/ClothCraft/pull/5"
+      ],
+      "notes": "The 22 October bootstrap incorporates the PR4-equivalent chunks_exact-to-as_chunks test fix, credits FireflyTheReal commit 43018fc959b311a6029bb0ffc586619786938e50, and extends it across research tests/examples for Clippy 1.99. PR4 is not merged; PR5 feature-map review remains open. Do not replace the canonical task registry with a second assignment board."
+    },
+    {
+      "id": "EXO-REV-005",
+      "title": "Extract reviewable boundaries from the EXO Studio and session proposal",
+      "area": "review",
+      "status": "review_existing",
+      "depends_on": [],
+      "scope": [
+        "docs/exo-integration-review.md"
+      ],
+      "acceptance": [
+        "Inventory PR2 components and separate web application, assets, native bridge and Rust candidates.",
+        "Compare the exo-session portion of PR7 with the proposed versioned editor contract.",
+        "Produce small follow-up slices; do not merge the 1868-file application snapshot as a Rust rewrite."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_RUST_CONVERSION_STATUS_2026-10-18.md"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/2",
+        "https://github.com/erythrofr/ClothCraft/pull/7"
+      ],
+      "notes": "At audit time PR2 had 2212998 additions. Counts are review scope, not functional completeness."
+    },
+    {
+      "id": "EXO-CAD-001",
+      "title": "Implement exact numeric construction operations",
+      "area": "cad",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "src/authoring/constructions.rs",
+        "tests/constructions.rs",
+        "src/authoring.rs"
+      ],
+      "acceptance": [
+        "Provide finite, unit-aware point projection, distance-along-line and line intersection operations.",
+        "Reject degenerate/parallel inputs explicitly; test rotated and translated cases.",
+        "Keep a pure CPU API independent of editor/model mutation."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/draftingConstructions.js"
+      ],
+      "related_prs": [],
+      "notes": "Original Rust implementation from geometric requirements; no source translation."
+    },
+    {
+      "id": "EXO-CAD-002",
+      "title": "Add numeric construction inspector actions",
+      "area": "cad",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CAD-001"
+      ],
+      "scope": [
+        "src/authoring.rs",
+        "src/atelier/authoring_ui.rs",
+        "tests/drawing_commands.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Expose projection, perpendicular and distance actions on stable selected points.",
+        "One validated edit creates one undo record; invalid edits leave the document unchanged.",
+        "Verify text focus and visible units with headless UI events."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/draftingPrecision.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-CAD-003",
+      "title": "Define topology reference migration for pattern edits",
+      "area": "cad",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001",
+        "EXO-REV-001",
+        "EXO-REV-002"
+      ],
+      "scope": [
+        "src/authoring/topology_refs.rs",
+        "tests/topology_refs.rs",
+        "src/authoring.rs"
+      ],
+      "acceptance": [
+        "Specify mapping of stable boundaries, partial seams, markings, POM and linked mirrors through split/merge.",
+        "Reject ambiguous migrations rather than dropping references.",
+        "Round-trip a curved sewn fixture and verify identity and material coordinates."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/draftingTopology.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_RUST_CUTLINE_REFERENCE_PRESERVATION_20261018.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-CAD-004",
+      "title": "Unfold one half-pattern across a straight fold edge",
+      "area": "cad",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CAD-003"
+      ],
+      "scope": [
+        "src/authoring/unfold.rs",
+        "src/authoring.rs",
+        "tests/unfold.rs"
+      ],
+      "acceptance": [
+        "Produce one valid full contour with reflected curves and material metadata.",
+        "Handle/reject seams, marks and holes on the fold with explicit rules.",
+        "Preserve original document on overlap/degeneracy; undo restores exact prior template."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/draftingUnfold.js"
+      ],
+      "related_prs": [],
+      "notes": "A one-time unfold is distinct from linked symmetry between two separate panels."
+    },
+    {
+      "id": "EXO-CAD-005",
+      "title": "Add bounded-error freehand-to-Bezier fitting",
+      "area": "cad",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "src/garment/freehand.rs",
+        "tests/freehand.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Fit finite 2D samples with cubic segments and a stated maximum error.",
+        "Handle duplicates, corners, tiny strokes and input/output limits deterministically.",
+        "Keep sampling in material metres; fitting alone must not create a panel."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/vectorFreehandFit.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/vectorPatternBezier.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-CAD-006",
+      "title": "Connect freehand drawing to transactional contour editing",
+      "area": "cad",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CAD-005",
+        "EXO-CAD-003"
+      ],
+      "scope": [
+        "src/atelier/board.rs",
+        "src/authoring.rs",
+        "tests/freehand_authoring.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Preview a stroke then commit only valid closed geometry.",
+        "Preserve curve/boundary identity policy and explicit cancellation.",
+        "Undo/save/reload reproduce the fitted contour."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/vectorFreehandFit.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-CAD-007",
+      "title": "Edit hole contours with the existing point tools",
+      "area": "cad",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CAD-003"
+      ],
+      "scope": [
+        "src/atelier/board.rs",
+        "src/authoring.rs",
+        "src/authoring/geometry.rs",
+        "tests/hole_editing.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Select and edit hole anchors/curves with unambiguous contour scope.",
+        "Reject hole/outside-boundary or hole/hole intersections atomically.",
+        "Preserve outer sewing references and verify remeshing cache invalidation."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/draftingTopology.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-CAD-008",
+      "title": "Implement offset paths and cutline corner policy",
+      "area": "cad",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-REV-001",
+        "EXO-REV-002"
+      ],
+      "scope": [
+        "src/garment/offsets.rs",
+        "tests/offsets.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Offset straight and sampled curved paths with explicit join/cap/tolerance policy.",
+        "Handle concave corners, narrow radii, holes and self-intersections with diagnostics.",
+        "Keep sewing/rest contours separate from manufacturing cutlines."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/patternAllowancePreview.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/nativePatternExportPreparation.js"
+      ],
+      "related_prs": [],
+      "notes": "Coordinate with reviewed cutline implementation; extend it instead of adding a competing offset engine."
+    },
+    {
+      "id": "EXO-SEW-001",
+      "title": "Add a read-only sewing construction audit",
+      "area": "sewing",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "src/garment/sewing_audit.rs",
+        "tests/sewing_audit.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Report lengths, easing intervals, dangling references and seam junction degree using stable IDs.",
+        "Reuse compiler correspondence including partial/chained/reversed intervals.",
+        "Distinguish authored mismatch from measured simulated seam gap; never alter the solver."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/sewingConstruction.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/sewingLengthDiagnostics.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-SEW-002",
+      "title": "Define authored trims and construction annotations",
+      "area": "sewing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/garment/trims.rs",
+        "tests/trim_model.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Represent buttons, buttonholes, zipper paths and topstitch rows by material-space attachments.",
+        "Validate units, IDs and supported geometry; preserve old document loads.",
+        "Mark each object as visual/manufacturing metadata unless a real physical adapter exists."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/trims.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/hardwareStyleProperties.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-SEW-003",
+      "title": "Add trim editing, picking and previews",
+      "area": "sewing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-SEW-002"
+      ],
+      "scope": [
+        "src/atelier/trims_ui.rs",
+        "src/atelier/board.rs",
+        "src/render.rs",
+        "tests/trim_authoring.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Create/select/move/delete trims in an inspector with clear attachment scope.",
+        "Preview placements in 2D/3D without changing rest geometry or simulation.",
+        "Save/reload and undo retain trim identity and parameters."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/proceduralHardwarePreview.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/clo7NativeHardwareActions.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-SEW-004",
+      "title": "Specify and validate physical zipper or button closure",
+      "area": "physics",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-SEW-002",
+        "EXO-PHY-001"
+      ],
+      "scope": [
+        "docs/physical-closures.md",
+        "examples/closure_probe.rs",
+        "tests/physical_closures.rs"
+      ],
+      "acceptance": [
+        "Define units, contact exclusions and closure state transitions before implementation.",
+        "Test partial opening, reopening and pull/release with original collision coverage.",
+        "Do not claim physical closure because a zipper mesh is visible."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/backends/protocol.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/sewingConstruction.js"
+      ],
+      "related_prs": [],
+      "notes": "Research/acceptance task; production integration requires a separate reviewed result."
+    },
+    {
+      "id": "EXO-SEW-005",
+      "title": "Define elastic seam and gathering mechanics",
+      "area": "physics",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-SEW-001",
+        "EXO-PHY-001"
+      ],
+      "scope": [
+        "docs/elastic-seams.md",
+        "examples/elastic_seam_probe.rs"
+      ],
+      "acceptance": [
+        "Distinguish geometric easing from a measured elastic seam law.",
+        "Use units and compare force/energy derivatives and unequal-length release.",
+        "Retain current easing semantics and document unsupported combinations."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/backends/protocol.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/sewingConstruction.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-001",
+      "title": "Report net material area and mass from rest geometry",
+      "area": "manufacturing",
+      "status": "done",
+      "depends_on": [],
+      "scope": [
+        "src/garment/production_metrics.rs",
+        "tests/production_metrics.rs",
+        "src/bin/cloth-template.rs",
+        "docs/production-metrics.md",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Report per-panel and per-fabric net area, mass and counts from the compiled rest mesh.",
+        "Check holes, multiple fabrics, rigid placements and unchanged input state.",
+        "Expose a CPU CLI report; label it net cloth only, not cut allowance, nesting or purchasing."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/productionCost.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/measurements.js"
+      ],
+      "related_prs": [],
+      "notes": "Original Rust slice implemented in src/garment/production_metrics.rs; five targeted CPU property tests passed. The CPU cloth-template metrics command was exercised on the public T-shirt: net area 0.7976 m2 and mass 0.15952 kg. See docs/production-metrics.md. This does not implement cut quantities, allowances, nesting or persistent POM."
+    },
+    {
+      "id": "EXO-MFG-002",
+      "title": "Add cut quantities and manufacturing metadata",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001",
+        "EXO-REV-001"
+      ],
+      "scope": [
+        "src/garment/manufacturing.rs",
+        "tests/manufacturing_metadata.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Store cut quantity, fold/face/nap policy and fabric-roll assumptions with explicit defaults.",
+        "Validate integer/range/units and preserve existing documents.",
+        "Metadata-only edits do not reset drape or alter material mass."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/project.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/marker.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-003",
+      "title": "Define sizes and point grading rules",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001",
+        "EXO-CAD-003"
+      ],
+      "scope": [
+        "src/garment/grading.rs",
+        "tests/grading_model.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Represent base size, ordered size names and stable-point displacement rules in metres.",
+        "Reject duplicate sizes, broken references and nonfinite rules.",
+        "Separate size variation from mesh resolution and board layout."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/grading.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/rust/exo_grading_kernel/src/lib.rs"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-004",
+      "title": "Generate and validate a graded size run",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-003"
+      ],
+      "scope": [
+        "src/garment/grading.rs",
+        "tests/grading_run.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Transform contours, curves, internal paths and dependent manufacturing references coherently.",
+        "Preserve source garment and validate every generated size including sewn intervals.",
+        "Report rejected sizes and geometric/seam discrepancies; no hidden fixture-specific curve repair."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/grading.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-005",
+      "title": "Add grading table and size preview UI",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-004"
+      ],
+      "scope": [
+        "src/atelier/grading_ui.rs",
+        "tests/grading_ui.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Edit rules and preview sizes with clear base/derived ownership.",
+        "Switching preview does not overwrite the base pattern or stale simulation.",
+        "Undo/save/reload preserves rules and selected preview policy."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/grading.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_FEATURE_ATLAS.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-006",
+      "title": "Expose persistent POM measurements and size reports",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-REV-002",
+        "EXO-MFG-004"
+      ],
+      "scope": [
+        "src/atelier/measurements_ui.rs",
+        "src/garment/measurement_reports.rs",
+        "tests/measurement_reports.rs",
+        "src/garment/mod.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Reuse reviewed stable measurement references; distinguish rest, draped and target dimensions.",
+        "Export an explicit size/tolerance/unit table with missing values reported.",
+        "Test reference migration, curve arclength and measurement updates after grading."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/measurements.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/rust/exo_measurement_kernel/src/lib.rs"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/7"
+      ],
+      "notes": "Persistent POM schema is already proposed in PR7; do not invent a second representation."
+    },
+    {
+      "id": "EXO-MFG-007",
+      "title": "Define cutting-marker inputs and validity checks",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-002",
+        "EXO-CAD-008"
+      ],
+      "scope": [
+        "src/garment/marker.rs",
+        "tests/marker_inputs.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Group pieces by fabric and expand cut quantities without modifying authored panels.",
+        "Apply grain, nap, allowed rotations, roll width and clearance in metres.",
+        "Reject unplaceable pieces and distinguish missing from placed quantities."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/marker.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-008",
+      "title": "Implement a deterministic baseline cutting layout",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-007"
+      ],
+      "scope": [
+        "src/garment/marker.rs",
+        "tests/marker_layout.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Generate repeatable placements with independent overlap/roll-boundary checks.",
+        "Report consumed roll length and net/cut utilization separately.",
+        "Preserve grain/nap restrictions; document packing quality rather than claiming optimal nesting."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/marker.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/rust/exo_marker_kernel/src/lib.rs"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-009",
+      "title": "Add marker inspection and physical SVG export",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-008",
+        "EXO-REV-003"
+      ],
+      "scope": [
+        "src/atelier/marker_ui.rs",
+        "src/garment/marker_export.rs",
+        "tests/marker_export.rs",
+        "src/garment/mod.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Inspect placed/unplaced pieces with dimensions and material grouping.",
+        "Export physical-scale marker coordinates and a calibration ruler.",
+        "Show constraints and failed placement reasons; rendering is not cut approval."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/markerArtifacts.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-010",
+      "title": "Compute transparent fabric cost estimates",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-008"
+      ],
+      "scope": [
+        "src/garment/costing.rs",
+        "tests/costing.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Use explicit currency and price per roll metre; never substitute zero for missing prices.",
+        "Report incomplete markers and quantities instead of a false complete total.",
+        "Export quoted CSV safely and list excluded labor/trims/shipping/taxes."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/productionCost.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/rust/exo_fabric_cost_kernel/src/lib.rs"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-011",
+      "title": "Export a bill of materials",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-002",
+        "EXO-SEW-002"
+      ],
+      "scope": [
+        "src/garment/bom.rs",
+        "tests/bom.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "List fabric, piece and trim requirements with units and stable identifiers.",
+        "Escape XML/CSV and retain missing supplier/price information explicitly.",
+        "Cross-check quantities against the document; no guessed manufacturing certification."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/bomXml.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/factoryPackage.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-012",
+      "title": "Export a revision-stamped HTML technical pack",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-006",
+        "EXO-MFG-011"
+      ],
+      "scope": [
+        "src/garment/tech_pack.rs",
+        "tests/tech_pack.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Render piece specifications, construction notes, material/BOM and measurements from one document revision.",
+        "Escape all user text and use deterministic local assets only.",
+        "Flag unsupported/incomplete sections; validate dimensions against the source report."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/techPackHtmlExport.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/digitalTechPack.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-013",
+      "title": "Add manufacturing preflight diagnostics",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-004",
+        "EXO-MFG-008",
+        "EXO-MFG-011"
+      ],
+      "scope": [
+        "src/garment/preflight.rs",
+        "tests/preflight.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Report geometry, identifiers, quantities, references, grading and marker blockers with stable codes.",
+        "A failed or missing check cannot become a success by omission.",
+        "Keep document validity, physical fit and manufacturing approval as separate statuses."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/productionPreflight.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-MFG-014",
+      "title": "Package consistent manufacturing artifacts",
+      "area": "manufacturing",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-MFG-010",
+        "EXO-MFG-012",
+        "EXO-MFG-013",
+        "EXO-IO-003"
+      ],
+      "scope": [
+        "src/garment/factory_package.rs",
+        "tests/factory_package.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Build a versioned manifest containing one document revision, units, file hashes and preflight results.",
+        "Prevent path traversal/duplicate archive entries and keep output deterministic.",
+        "Missing required outputs fail explicitly; a ZIP is not factory certification."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/factoryPackage.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-IO-001",
+      "title": "Import a documented SVG pattern subset",
+      "area": "interchange",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/garment/svg_import.rs",
+        "tests/svg_import.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Parse explicit physical units/transforms and closed contours with a stated curve tolerance.",
+        "Reject external/script content and unsupported ambiguity; bound input resources.",
+        "Produce unsewn editable pieces and a loss report; never infer seams from nearby paths."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/svgPatternImport.js"
+      ],
+      "related_prs": [],
+      "notes": "Original parser/adapter or license-compatible dependency; do not transplant browser SVG code."
+    },
+    {
+      "id": "EXO-IO-002",
+      "title": "Import generic 2D DXF pattern entities",
+      "area": "interchange",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/garment/dxf_import.rs",
+        "tests/dxf_import.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Document entity subset, units, layer treatment and closure tolerance.",
+        "Use independent line/polyline/curve fixtures and explicit unsupported-entity reports.",
+        "Preserve separate cut/sew lines; do not advertise AAMA/ASTM compliance."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/dxf.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-IO-003",
+      "title": "Export generic DXF cut and sewing geometry",
+      "area": "interchange",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-REV-002",
+        "EXO-MFG-002"
+      ],
+      "scope": [
+        "src/garment/dxf_export.rs",
+        "tests/dxf_export.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Reuse reviewed cutline output and write explicit units/layers/entities.",
+        "Validate known dimensions in an independent DXF consumer.",
+        "Distinguish generic DXF from the industrial AAMA/ASTM dialects."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/dxf.js"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/7"
+      ],
+      "notes": "PR7 contains cutline/DXF work; review and extend that slice before writing another exporter."
+    },
+    {
+      "id": "EXO-IO-004",
+      "title": "Add one industrial DXF dialect with independent fixtures",
+      "area": "interchange",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-IO-002",
+        "EXO-IO-003",
+        "EXO-MFG-003"
+      ],
+      "scope": [
+        "src/garment/dxf_industrial.rs",
+        "tests/dxf_industrial.rs",
+        "docs/dxf-industrial.md",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Choose and name AAMA or ASTM scope first, including grade rules, grain and notch encoding.",
+        "Verify import and export separately against independent redistributable fixtures.",
+        "Publish losses and supported entities; leave the other dialect explicitly unsupported."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_PRODUCTION_PIPELINE.md"
+      ],
+      "related_prs": [],
+      "notes": "EXO generic DXF output is not evidence of industrial dialect completeness."
+    },
+    {
+      "id": "EXO-IO-005",
+      "title": "Support OBJ and MTL material-aware round trips",
+      "area": "interchange",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-LOOK-001"
+      ],
+      "scope": [
+        "src/avatar.rs",
+        "src/garment/obj_materials.rs",
+        "tests/obj_materials.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Preserve groups, UVs, normals, material assignments and supported textures with explicit units.",
+        "Bound and normalize referenced paths; do not fetch external resources silently.",
+        "Check in Blender and an independent parser; retain geometry-only compatibility."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_FEATURE_ATLAS.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-IO-006",
+      "title": "Export static glTF/GLB garment assets",
+      "area": "interchange",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-LOOK-001"
+      ],
+      "scope": [
+        "src/garment/gltf_export.rs",
+        "tests/gltf_export.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Export world transforms, mesh attributes, units and a documented PBR subset.",
+        "Validate indices/material assignments and open in an independent viewer.",
+        "Do not claim rigging, animation or editable sewing round trips."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_FEATURE_ATLAS.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-IO-007",
+      "title": "Import static glTF/GLB avatars",
+      "area": "interchange",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/gltf_avatar.rs",
+        "tests/gltf_avatar.rs",
+        "src/lib.rs"
+      ],
+      "acceptance": [
+        "Apply scene transforms and units coherently to visual and collision geometry.",
+        "Validate triangulated finite meshes and report unsupported skinning/animation.",
+        "Use bounded asset loading and independently generated transform fixtures."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_UI_RENDERING_AND_AVATARS.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-IO-008",
+      "title": "Produce tiled physical PDF pattern sheets",
+      "area": "interchange",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-REV-003",
+        "EXO-MFG-002"
+      ],
+      "scope": [
+        "src/garment/pdf_export.rs",
+        "tests/pdf_export.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Set physical page dimensions, overlap, registration marks and a 100 mm ruler.",
+        "Preserve cut/sew distinction, labels and printer scaling instructions.",
+        "Render/measure multipage fixtures; document tolerance and unsupported fonts/curves."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/markerArtifacts.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-LOOK-001",
+      "title": "Separate visual fabric properties from mechanics",
+      "area": "appearance",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/garment/appearance.rs",
+        "tests/appearance.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Define color, roughness, normal/texture references and scale/orientation with explicit conventions.",
+        "Appearance-only edits preserve positions, velocities and solver caches.",
+        "Old documents load with current visual defaults; absent optics do not invent physical calibration."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/fabricSurfaceModel.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/fabricPbrAppearance.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-LOOK-002",
+      "title": "Render the basic fabric appearance model",
+      "area": "appearance",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-LOOK-001"
+      ],
+      "scope": [
+        "src/render.rs",
+        "src/render/materials.rs",
+        "tests/material_render_data.rs"
+      ],
+      "acceptance": [
+        "Map color/roughness/normal inputs consistently with color-space declarations.",
+        "Keep texture scale tied to material coordinates and grain, not screen or drape dimensions.",
+        "Provide opt-in visual fixtures; default CPU tests validate render data without GPU workloads."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/fabricSurfaceModel.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-LOOK-003",
+      "title": "Generate deterministic procedural textile maps",
+      "area": "appearance",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-LOOK-001"
+      ],
+      "scope": [
+        "src/appearance/textiles.rs",
+        "tests/textile_maps.rs",
+        "src/lib.rs"
+      ],
+      "acceptance": [
+        "Use declared seeds, dimensions and units for a small weave/knit subset.",
+        "Check tiling, finite values, channel meaning and bounded memory.",
+        "Label generated optics as visual appearance, not yarn-level simulation."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/textileProcedurals.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/fabricPbrGenerator.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-LOOK-004",
+      "title": "Import and manage fabric texture assets",
+      "area": "appearance",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-LOOK-001"
+      ],
+      "scope": [
+        "src/appearance/assets.rs",
+        "src/atelier/fabrics_ui.rs",
+        "tests/appearance_assets.rs",
+        "src/atelier.rs",
+        "src/lib.rs"
+      ],
+      "acceptance": [
+        "Import/relink supported local maps into portable project assets with size limits.",
+        "Distinguish sRGB albedo and linear data channels; preserve original file provenance.",
+        "A missing map produces a visible fallback and never changes physical fabric parameters."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/fabricAssetRegistry.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/fabricPbrFileNaming.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-LOOK-005",
+      "title": "Define material-space garment graphic placements",
+      "area": "appearance",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/garment/graphics.rs",
+        "tests/graphic_placements.rs",
+        "src/garment/mod.rs"
+      ],
+      "acceptance": [
+        "Store stable panel IDs, physical placement transform and asset references.",
+        "Validate bounds, units, sidedness and deletion/remeshing behavior.",
+        "Graphic edits preserve drape and rest geometry; no third-party brand artwork fixtures."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/nativeGarmentGraphics.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-LOOK-006",
+      "title": "Render and edit garment graphics",
+      "area": "appearance",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-LOOK-005",
+        "EXO-LOOK-002"
+      ],
+      "scope": [
+        "src/render/graphics.rs",
+        "src/atelier/graphics_ui.rs",
+        "tests/graphics_ui.rs",
+        "src/atelier.rs",
+        "src/render.rs"
+      ],
+      "acceptance": [
+        "Place/rotate/scale graphics in material space with correct draped mapping.",
+        "Support pick/delete/undo and portable save/reload.",
+        "Bound/sanitize supported vector/image inputs; do not execute embedded SVG content."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/nativeGarmentGraphics.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/nativeGraphicStorage.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-LOOK-007",
+      "title": "Define reproducible stage, lighting and camera settings",
+      "area": "appearance",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/atelier/stage_settings.rs",
+        "tests/stage_settings.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Persist camera/environment/light settings separately from solver inputs.",
+        "Preserve current background/floor controls and existing preferences.",
+        "Validate values and asset references; decorative geometry is not a physical collider."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/createStageEnvironment.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/sceneCameraViewport.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-LOOK-008",
+      "title": "Render stages and export still images",
+      "area": "appearance",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-LOOK-007"
+      ],
+      "scope": [
+        "src/render/stages.rs",
+        "src/atelier/stage_ui.rs",
+        "tests/stage_render_data.rs",
+        "src/atelier.rs",
+        "src/render.rs"
+      ],
+      "acceptance": [
+        "Provide original or redistributable stage fixtures with provenance.",
+        "Render/export selected resolution with optional overlays and declared color space.",
+        "Record camera/environment state for repeatability; no claimed path tracing or garment-fit certification."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/createStageEnvironment.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-AV-001",
+      "title": "Define avatar landmarks and body measurements",
+      "area": "avatar",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/avatar_measurements.rs",
+        "tests/avatar_measurements.rs",
+        "src/lib.rs"
+      ],
+      "acceptance": [
+        "Separate visible mesh, collision mesh and named body landmarks.",
+        "Store stable units and explicit user-confirmed measurement conventions.",
+        "Test synthetic bodies and missing/ambiguous landmarks without guessing a size."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/seamlyMeasurements.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_UI_RENDERING_AND_AVATARS.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-AV-002",
+      "title": "Add body-aware panel arrangement assistance",
+      "area": "avatar",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-AV-001"
+      ],
+      "scope": [
+        "src/garment/arrangement.rs",
+        "src/atelier/arrangement_ui.rs",
+        "tests/arrangement.rs",
+        "src/garment/mod.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Offer placement previews from named landmarks with reversible commit.",
+        "Preserve rest shape/grain and expose overlap/initial-separation diagnostics.",
+        "Reject invalid initialization rather than silently teleporting simulated cloth."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/patternBodyArrangement.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/autoFitPlacement.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-AV-003",
+      "title": "Expose pin editing and an explicit freeze policy",
+      "area": "avatar",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/atelier/pins_ui.rs",
+        "src/authoring.rs",
+        "tests/pin_authoring.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Reuse material-space pin_points instead of persisting mesh indices.",
+        "Define pin versus freeze semantics and preserve undo/reload/remeshing behavior.",
+        "Test release motion and stale-worker invalidation on CPU; GPU validation remains opt-in."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/backends/protocol.js"
+      ],
+      "related_prs": [],
+      "notes": "Core pin data already exists; dedicated editing and freeze semantics do not."
+    },
+    {
+      "id": "EXO-AV-004",
+      "title": "Show avatar collision coverage and initialization problems",
+      "area": "avatar",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "src/atelier/avatar_diagnostics.rs",
+        "tests/avatar_diagnostics.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Report actual collider geometry identity, bounds and supported static-mesh assumptions.",
+        "Show diagnostics separately from cosmetic avatar appearance.",
+        "No collision approximations may be silently substituted to improve appearance/performance."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/meshAvatarContact.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-UX-001",
+      "title": "Publish a typed command capability registry",
+      "area": "workspace",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "src/atelier/commands.rs",
+        "tests/command_registry.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "List only implemented commands with context, shortcuts, undo behavior and backend requirements.",
+        "Unavailable commands show explicit reasons and cannot dispatch fake actions.",
+        "Keep the registry usable by toolbar and future automation adapters."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/workspaceCommandIndex.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/clo7NativeToolCapabilities.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-UX-002",
+      "title": "Add a searchable command palette",
+      "area": "workspace",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-UX-001"
+      ],
+      "scope": [
+        "src/atelier/command_palette.rs",
+        "tests/command_palette.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Search aliases and invoke the same validated commands as current UI.",
+        "Respect text focus, Escape, keyboard navigation and disabled contexts.",
+        "Keep radial menu intact; palette dispatch does not duplicate authoring logic."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/workspaceCommandIndex.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-UX-003",
+      "title": "Persist workspace layouts and tool visibility",
+      "area": "workspace",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-UX-001"
+      ],
+      "scope": [
+        "src/atelier/workspace_profiles.rs",
+        "tests/workspace_profiles.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Save/restore panel split, visible tool groups and view preferences with schema defaults.",
+        "Invalid/offscreen dimensions recover to a usable layout.",
+        "Workspace changes never modify garment document or solver settings implicitly."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/workspaceProfiles.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/studioCustomization.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-UX-004",
+      "title": "Add group 3D transforms and marquee selection",
+      "area": "workspace",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "src/atelier/selection.rs",
+        "src/atelier/gizmo.rs",
+        "src/authoring.rs",
+        "tests/group_placement.rs",
+        "src/atelier.rs"
+      ],
+      "acceptance": [
+        "Define visible-only versus through selection and the group transform pivot.",
+        "Commit one transaction, preserving each panel rest shape and explicit drape reset policy.",
+        "Test cancel/undo, linked pairs, hidden geometry and generation invalidation."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/meshSelection.js"
+      ],
+      "related_prs": [],
+      "notes": "Current 2D group point/panel selection already exists; avoid replacing it."
+    },
+    {
+      "id": "EXO-UX-005",
+      "title": "Create a provenance-aware garment template browser",
+      "area": "workspace",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "src/template_catalog.rs",
+        "src/atelier/template_browser.rs",
+        "tests/template_catalog.rs",
+        "src/atelier.rs",
+        "src/lib.rs"
+      ],
+      "acceptance": [
+        "Index bundled original templates with preview, metadata, units and source/license.",
+        "Validate templates before opening; loading replaces a document only after user-visible confirmation.",
+        "External patterns are explicit imports, not automatically downloaded or declared redistributable."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/openSourcePatternToolCatalog.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/projectFileLibrary.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-UX-006",
+      "title": "Expose a versioned headless authoring session adapter",
+      "area": "automation",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001",
+        "EXO-REV-005",
+        "EXO-UX-001"
+      ],
+      "scope": [
+        "src/bin/cloth-session.rs",
+        "src/session_protocol.rs",
+        "tests/session_protocol.rs",
+        "src/lib.rs"
+      ],
+      "acceptance": [
+        "Route supported requests through existing transactional commands with expected revision.",
+        "Report capability/version, invalid input, stale revisions, cancellation and undo coherently.",
+        "Keep transport local and do not execute arbitrary code or shell fields from requests."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_RUST_CONVERSION_STATUS_2026-10-18.md",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/clothcraftApiClient.js"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/7"
+      ],
+      "notes": "Evaluate existing exo-session proposal first; use one canonical adapter rather than competing protocols."
+    },
+    {
+      "id": "EXO-QA-001",
+      "title": "Build public cross-editor behavioral fixtures",
+      "area": "validation",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "tests/fixtures/rewrite/",
+        "docs/rewrite-fixtures.md"
+      ],
+      "acceptance": [
+        "Create original small garments covering curves, holes, partial seams, trims and invalid inputs as supported.",
+        "Pin each source model/revision and record losses when converting between representations.",
+        "Do not redistribute private garments, upstream proprietary references or unreviewed EXO assets."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_VALIDATION_TEST_PLAN.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-QA-002",
+      "title": "Package a clean-machine Windows test release",
+      "area": "release",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        "scripts/package-windows.ps1",
+        ".github/workflows/release-windows.yml",
+        "docs/install.md"
+      ],
+      "acceptance": [
+        "Package executable and required redistributable assets/notices with version/hash metadata.",
+        "Verify launching/opening/saving from a clean directory with spaces in its path.",
+        "Provide clear prototype/unsupported-hardware notes; do not require an AI subscription to install."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_RELEASE_STATUS.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-QA-003",
+      "title": "Verify native macOS and Linux build paths",
+      "area": "release",
+      "status": "ready",
+      "depends_on": [],
+      "scope": [
+        ".github/workflows/build.yml",
+        "docs/platform-validation.md"
+      ],
+      "acceptance": [
+        "Build the CPU core and desktop targets on named platform/toolchain versions.",
+        "Document platform-specific dialogs, paths, clipboard and GPU backend limitations.",
+        "A successful compile is distinct from native interaction/GPU acceptance."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_RELEASE_STATUS.md"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-PHY-001",
+      "title": "Define capabilities for real interchangeable solver adapters",
+      "area": "physics",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-CORE-001"
+      ],
+      "scope": [
+        "docs/solver-adapter-contract.md",
+        "src/solver_lab/mod.rs"
+      ],
+      "acceptance": [
+        "Specify lifecycle, rest/state ownership, collision/material/seam capabilities and error semantics.",
+        "Map existing real adapters to declared capabilities without exposing failed experiments as editor modes.",
+        "Retain current VBD/OGC production behavior and explicit physical-time reporting."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/backends/registry.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/backends/protocol.js"
+      ],
+      "related_prs": [],
+      "notes": ""
+    },
+    {
+      "id": "EXO-PHY-002",
+      "title": "Compare candidate engines on shared quality gates",
+      "area": "physics",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-PHY-001",
+        "EXO-QA-001"
+      ],
+      "scope": [
+        "docs/solver-comparison-protocol.md",
+        "examples/solver_compare.rs"
+      ],
+      "acceptance": [
+        "Pin exact rest mesh/material/seams/x/v/time/control protocol and collision scope.",
+        "Report pull/hold/release, separation, convergence and full-step cost before performance rankings.",
+        "Do not interpret a PPF connector or visible preview as validated garment physics."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_SIMULATION_RESEARCH.md"
+      ],
+      "related_prs": [],
+      "notes": "GPU work needs fresh owner authorization. No solver promotion is implied by this task."
+    },
+    {
+      "id": "EXO-PHY-003",
+      "title": "Evaluate foam and padding as a separate material experiment",
+      "area": "physics",
+      "status": "blocked",
+      "depends_on": [
+        "EXO-PHY-001"
+      ],
+      "scope": [
+        "docs/padding-experiment.md",
+        "examples/padding_probe.rs"
+      ],
+      "acceptance": [
+        "Define dimensional material and contact assumptions distinct from thin cloth.",
+        "Check compression/release energy and geometry against analytic or measured references.",
+        "Do not add UI claims or replace cloth mechanics until a real model passes its gates."
+      ],
+      "evidence": [
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/foamCompressionModel.js",
+        "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/foamPaddingGeometry.js"
+      ],
+      "related_prs": [],
+      "notes": "EXO has a separate compression prototype; its presence does not establish general solid mechanics."
+    }
+  ]
+}

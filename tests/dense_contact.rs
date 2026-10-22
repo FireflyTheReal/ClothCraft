@@ -472,7 +472,9 @@ fn patch_assembly_matches_production_energy_and_finite_difference_forces() {
     assert!((s.energy - expected).abs() < 1e-10 * expected.max(1.));
     let internal: Vec<_> = s
         .gradient
-        .chunks_exact(3)
+        .as_chunks::<3>()
+        .0
+        .iter()
         .enumerate()
         .map(|(i, v)| DVec3::from_slice(v) - inertia[i] * (x[i] - target[i]))
         .collect();

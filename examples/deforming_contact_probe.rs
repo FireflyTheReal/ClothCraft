@@ -407,7 +407,10 @@ fn main() -> Result<(), String> {
                     }
                 }
                 let mut proposed = x.clone();
-                for (p, d) in proposed[..n].iter_mut().zip(q.displacement.chunks_exact(3)) {
+                for (p, d) in proposed[..n]
+                    .iter_mut()
+                    .zip(q.displacement.as_chunks::<3>().0.iter())
+                {
                     *p += DVec3::from_slice(d);
                 }
                 let mut missing = vec![];
@@ -531,8 +534,10 @@ fn main() -> Result<(), String> {
             }
             let mut directions: Vec<_> = q
                 .displacement
-                .chunks_exact(3)
-                .map(DVec3::from_slice)
+                .as_chunks::<3>()
+                .0
+                .iter()
+                .map(|p| DVec3::from_array(*p))
                 .collect();
             // The physical KKT test above uses CURRENT geometry. Extra rows
             // below constrain the SEARCH PATH, not the physical force model.
@@ -565,7 +570,9 @@ fn main() -> Result<(), String> {
                             r.jacobian.truncate(dofs);
                             let projection: f64 = r
                                 .jacobian
-                                .chunks_exact(3)
+                                .as_chunks::<3>()
+                                .0
+                                .iter()
                                 .zip(&directions)
                                 .map(|(j, d)| DVec3::from_slice(j).dot(*d))
                                 .sum();
@@ -621,8 +628,10 @@ fn main() -> Result<(), String> {
                     }
                     directions = repaired
                         .displacement
-                        .chunks_exact(3)
-                        .map(DVec3::from_slice)
+                        .as_chunks::<3>()
+                        .0
+                        .iter()
+                        .map(|p| DVec3::from_array(*p))
                         .collect();
                 }
             }
@@ -746,7 +755,9 @@ fn main() -> Result<(), String> {
                                             row.jacobian.truncate(dofs);
                                             let projection: f64 = row
                                                 .jacobian
-                                                .chunks_exact(3)
+                                                .as_chunks::<3>()
+                                                .0
+                                                .iter()
                                                 .zip(&candidate)
                                                 .map(|(j, d)| DVec3::from_slice(j).dot(*d))
                                                 .sum();
@@ -853,7 +864,7 @@ fn main() -> Result<(), String> {
                 let start_alpha = alpha;
                 let slope: f64 = directions
                     .iter()
-                    .zip(s.gradient.chunks_exact(3))
+                    .zip(s.gradient.as_chunks::<3>().0.iter())
                     .map(|(d, g)| d.dot(DVec3::from_slice(g)))
                     .sum();
                 for backtrack in 0..32 {
@@ -1000,7 +1011,9 @@ fn main() -> Result<(), String> {
         let energy_balance = final_forces.map(|forces: ForceAudit| {
             let work = |force: &[f64]| -> f64 {
                 force
-                    .chunks_exact(3)
+                    .as_chunks::<3>()
+                    .0
+                    .iter()
                     .zip(state.x.iter().zip(&old))
                     .map(|(f, (x, old))| DVec3::from_slice(f).dot(*x - *old))
                     .sum()

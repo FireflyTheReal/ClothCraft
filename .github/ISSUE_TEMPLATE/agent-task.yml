@@ -1,0 +1,33 @@
+name: Rust rewrite task
+description: Request a registered task issue from the shared Rust backlog.
+title: "[Rust rewrite] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read AI_START_HERE.md and docs/agent-coordination-protocol.md first.
+        Search existing issues before creating another issue for the same task.
+        Opening this issue does not claim work. A maintainer registers the task;
+        then your agent requests a reservation through an issue comment.
+  - type: input
+    id: task_id
+    attributes:
+      label: Task ID
+      description: Exact ID from coordination/tasks.json.
+      placeholder: EXO-AREA-001
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Proposed scope and existing work
+      description: Link existing PRs and describe the bounded deliverable. Do not paste private assets or credentials.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance evidence
+      description: State observable behavior, checks, failure cases and what remains unsupported.
+    validations:
+      required: true

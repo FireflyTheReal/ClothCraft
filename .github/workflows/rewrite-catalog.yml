@@ -1,0 +1,20 @@
+name: Rewrite catalog and coordinator checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/rewrite-tasks.test.mjs
+      - run: node --test scripts/coordination/engine.test.mjs
+      - run: node scripts/rewrite-tasks.mjs check
+      - name: Check generated catalog
+        shell: bash
+        run: |
+          node scripts/rewrite-tasks.mjs markdown > /tmp/clothcraft-tasks.md
+          diff -u coordination/TASKS.md /tmp/clothcraft-tasks.md
