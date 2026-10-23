@@ -1,5 +1,50 @@
 # Repository handoff
 
+## Construction preview follow-up — 23 October 2026
+
+PR #38 now includes an auto-scaled, read-only board-space diagram in the
+numeric inspector. A directed reference edge, current corner and proposed
+corner make the operation visible before Apply. The diagram uses stable
+boundary references and the same flat layout transforms as construction;
+it neither remeshes nor reads simulation state. It is not a whole-contour
+validity check. The normal transaction still validates geometry and seams.
+
+CPU validation: all 49 desktop unit tests passed, one optional preview ignored;
+this includes the three construction UI tests (labels, explicit Apply,
+keyboard focus, rotated geometry and stale references). Desktop binary Clippy
+passed with warnings denied. No native window or GPU was used. The earlier
+revision of #38 had 12 green CI checks; the follow-up requires fresh CI.
+
+## Numeric point construction — 23 October 2026
+
+Task EXO-CAD-002 / issue #36 adds Project, Distance and Perpendicular actions
+to the selected point's Piece inspector. It reuses the original Rust line API
+from #26. `ConstructionRef` identifies a corner by panel ID and outgoing
+boundary name; `Command::ConstructPoint` resolves both pieces in board space,
+converts the result to target material coordinates and uses ordinary anchor
+movement, compilation and history. No persisted schema or solver changes.
+
+Signed fields are in millimetres. Projection and distance use an infinite line;
+curved reference edges are rejected. Perpendicular offset starts at the
+orthogonal projection and follows +90 degrees in numerical board coordinates.
+The inspector previews coordinates; only Apply mutates the document. Other
+pieces retain their board positions even when legacy layouts were implicit.
+This is a one-time construction, not a live dimensional constraint. See
+`docs/authoring.md` for the workflow.
+
+The previous Freehand UI PR #35 was merged as `3bac583` after all 12 CI checks
+passed. Catalog PR #37 records its completion and enables this narrower UI
+task without touching the `src/atelier.rs` scope reserved by EXO-UX-001.
+
+Validation: the baseline full CPU suite passed 305 tests including its doctest.
+After this change, 37 targeted CPU tests pass (authoring, constructions and
+drawing_commands, including six new construction cases); 48 desktop unit
+tests pass with one optional preview ignored. The two new headless UI tests
+check visible millimetres, explicit Apply, invalid input and text-field focus.
+Targeted desktop Clippy with warnings denied, rustfmt and the release
+`cloth-fit` build pass. This pass did not launch a native window or use the GPU;
+native visual acceptance remains separate from these CPU checks.
+
 ## Freehand panel integration — 23 October 2026
 
 PR #27's CPU fitter is merged at `8b69e5c`; its six CI checks passed before
