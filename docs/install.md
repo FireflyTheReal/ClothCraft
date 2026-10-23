@@ -13,7 +13,8 @@ revision before trying its artifact. GitHub may require sign-in to retrieve
 workflow artifacts. The repository's general cross-platform build bundles
 are separate development artifacts.
 
-1. Download the ZIP and adjacent `.zip.sha256` checksum file.
+1. Download the workflow artifact and extract its outer GitHub ZIP to obtain
+   `ClothCraft Portable Preview.zip` and the adjacent `.zip.sha256` file.
 2. Verify the ZIP SHA256 against the hash in the checksum file (PowerShell:
    `Get-FileHash -Algorithm SHA256 -LiteralPath '.\ClothCraft Package With Spaces.zip'`).
 3. Extract the entire ZIP into a writable folder, for example
@@ -93,10 +94,16 @@ Microsoft C++ build toolchain. From the repository root:
 ```powershell
 cargo test --locked --no-default-features -j 2 -- --test-threads=2
 cargo build --locked --release -j 2 --features desktop --bin cloth-fit --bin marvelous-cloth --bin cloth-template
-.\scripts\package-windows.ps1 -Destination "$env:TEMP\ClothCraft Package With Spaces" -BinariesDirectory '.\target\release'
+.\scripts\package-windows.ps1 -Destination "$env:TEMP\ClothCraft Package With Spaces" -BinariesDirectory '.\target\release' -Verify
 ```
 
 The packaging script never overwrites an existing staging folder or archive.
+With `-Verify`, it also refuses an existing `.verify` directory, verifies every
+extracted payload hash, and runs the CPU write/reopen check there. Verification
+files stay beside the archive for inspection. Destinations inside recursively
+copied asset/template folders are rejected. Package from freshly built binaries:
+the recorded source revision identifies the intended checkout, not a signed
+attestation of an arbitrary externally supplied executable.
 Use a new destination for each release. See
 [native platform validation](platform-validation.md) for the separate macOS,
 Linux and Windows CPU compile matrix and its remaining UI acceptance gaps.

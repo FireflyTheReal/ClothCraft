@@ -4,7 +4,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$Destination,
     [string]$BinariesDirectory = '',
-    [string]$Revision = ''
+    [string]$Revision = '',
+    [switch]$Verify
 )
 
 Set-StrictMode -Version Latest
@@ -12,13 +13,26 @@ $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 if (-not $BinariesDirectory) { $BinariesDirectory = Join-Path $repo 'target/release' }
 $binDir = [System.IO.Path]::GetFullPath($BinariesDirectory)
-$stage = [System.IO.Path]::GetFullPath($Destination)
+$stage = [System.IO.Path]::GetFullPath($Destination).TrimEnd([char[]]'\/')
 $zip = "$stage.zip"
 $zipHash = "$zip.sha256"
+$verifyRoot = "$stage.verify"
+
+# A destination inside a recursively copied source would copy itself forever.
+foreach ($source in @('assets/makehuman', 'examples/templates')) {
+    $sourceRoot = [System.IO.Path]::GetFullPath((Join-Path $repo $source))
+    if ($stage.Equals($sourceRoot, [StringComparison]::OrdinalIgnoreCase) -or
+        $stage.StartsWith($sourceRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Destination must not be inside a packaged source: $sourceRoot"
+    }
+}
 
 # Never overwrite an existing installation or an earlier package artifact.
 foreach ($path in @($stage, $zip, $zipHash)) {
     if (Test-Path -LiteralPath $path) { throw "Refusing to overwrite existing path: $path" }
+}
+if ($Verify -and (Test-Path -LiteralPath $verifyRoot)) {
+    throw "Refusing to overwrite verification directory: $verifyRoot"
 }
 foreach ($binary in @('cloth-fit.exe', 'marvelous-cloth.exe', 'cloth-template.exe')) {
     if (-not (Test-Path -LiteralPath (Join-Path $binDir $binary) -PathType Leaf)) {
@@ -83,9 +97,48 @@ $records = foreach ($file in (Get-ChildItem -LiteralPath $stage -Recurse -File |
 [System.IO.File]::WriteAllText((Join-Path $stage 'SHA256SUMS.txt'), (($records -join "`n") + "`n"), $utf8)
 
 # Use a flat archive root so the assets are adjacent to the binaries after extraction.
-Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip -CompressionLevel Optimal
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory($stage, $zip)
 $archiveDigest = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
 [System.IO.File]::WriteAllText($zipHash, "$archiveDigest  $([System.IO.Path]::GetFileName($zip))`n", $utf8)
+
+if ($Verify) {
+    $expected = (Get-Content -LiteralPath $zipHash -Raw).Substring(0, 64)
+    if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) {
+        throw 'Archive checksum mismatch'
+    }
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $verifyRoot)
+    $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($line in Get-Content -LiteralPath (Join-Path $verifyRoot 'SHA256SUMS.txt')) {
+        if ($line -notmatch '^([0-9a-f]{64})  (.+)$') { throw "Invalid manifest record: $line" }
+        $expectedHash = $Matches[1]
+        $relative = $Matches[2]
+        $payload = [IO.Path]::GetFullPath((Join-Path $verifyRoot $relative))
+        if (-not $payload.StartsWith($verifyRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Manifest path escapes package: $relative"
+        }
+        if (-not $seen.Add($relative)) { throw "Duplicate manifest path: $relative" }
+        if ((Get-FileHash -LiteralPath $payload -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expectedHash) {
+            throw "Payload checksum mismatch: $relative"
+        }
+    }
+    $payloadCount = @(Get-ChildItem -LiteralPath $verifyRoot -File -Recurse |
+        Where-Object { $_.FullName -ne (Join-Path $verifyRoot 'SHA256SUMS.txt') }).Count
+    if ($payloadCount -ne $seen.Count) { throw 'Manifest does not cover exactly the package payload' }
+    Push-Location -LiteralPath $verifyRoot
+    try {
+        $exe = Join-Path $verifyRoot 'cloth-template.exe'
+        & $exe validate 'examples/templates/two-panel.json'
+        if ($LASTEXITCODE -ne 0) { throw 'Extracted binary failed to validate the bundled template' }
+        & $exe example 'Verification Pattern.json'
+        if ($LASTEXITCODE -ne 0) { throw 'Extracted binary failed to write a new template' }
+        & $exe validate 'Verification Pattern.json'
+        if ($LASTEXITCODE -ne 0) { throw 'Extracted binary failed to reopen its template' }
+    } finally {
+        Pop-Location
+    }
+    Write-Host "Verified $($seen.Count) payload hashes and extracted CPU example write/reopen. No GUI/GPU test."
+}
 Write-Host "Portable staging directory: $stage"
 Write-Host "Archive: $zip"
 Write-Host "Archive SHA256: $archiveDigest"
