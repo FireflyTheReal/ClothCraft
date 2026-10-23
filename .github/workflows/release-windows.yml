@@ -1,0 +1,50 @@
+name: Windows portable preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  portable-windows:
+    runs-on: windows-2025
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      RAYON_NUM_THREADS: 2
+      CARGO_INCREMENTAL: 0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Test the CPU core
+        run: cargo test --locked --no-default-features -j 2 -- --test-threads=2
+      - name: Build portable executables
+        run: >-
+          cargo build --locked --release -j 2 --features desktop
+          --bin cloth-fit --bin marvelous-cloth --bin cloth-template
+      - name: Package, verify hashes and reopen from a directory with spaces
+        run: |
+          $destination = Join-Path $env:RUNNER_TEMP 'ClothCraft Portable Preview'
+          ./scripts/package-windows.ps1 -Destination $destination -Revision $env:GITHUB_SHA -Verify
+          $refused = $false
+          try {
+            ./scripts/package-windows.ps1 -Destination $destination -Revision $env:GITHUB_SHA
+          } catch {
+            if ($_.Exception.Message -notlike 'Refusing to overwrite existing path:*') { throw }
+            $refused = $true
+          }
+          if (-not $refused) { throw 'Packaging unexpectedly overwrote an existing destination' }
+      - name: Upload portable preview and archive checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: clothcraft-windows-x64-portable-preview
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/ClothCraft Portable Preview.zip
+            ${{ runner.temp }}/ClothCraft Portable Preview.zip.sha256
