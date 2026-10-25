@@ -6,10 +6,14 @@ use marvelous_cloth::{
     fitting::FittingScene,
     gpu_vbd::GpuVbd,
     model::State,
-    vbd::{Grab, VbdMetrics, VbdSettings, VbdSolver},
+    vbd::{FinalDiagnostics, FinalDiagnosticsBackend, Grab, VbdMetrics, VbdSettings, VbdSolver},
 };
 use std::{
-    sync::{Arc, Mutex, mpsc},
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
+        mpsc,
+    },
     time::{Duration, Instant},
 };
 
@@ -30,6 +34,49 @@ pub(super) struct Done {
 }
 pub(super) type Latest = Arc<Mutex<Option<Done>>>;
 
+/// One-shot request from the Simulation inspector. The worker owns the
+/// accepted state and solver cache, so the UI only asks for the next accepted
+/// step to be sampled instead of constructing a second solver or reading the
+/// worker's private state.
+static FINAL_DIAGNOSTICS_REQUEST: AtomicBool = AtomicBool::new(false);
+
+/// One-shot result slot. It is separate from `Latest` so a slow frame cannot
+/// overwrite a completed sample with a later ordinary step before the UI reads
+/// it. The application has one physical worker.
+static FINAL_DIAGNOSTICS: Mutex<Option<FinalDiagnostics>> = Mutex::new(None);
+static FINAL_DIAGNOSTICS_ERROR: Mutex<Option<String>> = Mutex::new(None);
+
+pub(super) fn request_final_diagnostics() {
+    FINAL_DIAGNOSTICS_REQUEST.store(true, Ordering::Release);
+}
+
+pub(super) fn final_diagnostics() -> Option<FinalDiagnostics> {
+    FINAL_DIAGNOSTICS
+        .lock()
+        .ok()
+        .and_then(|sample| sample.clone())
+}
+
+pub(super) fn final_diagnostics_error() -> Option<String> {
+    FINAL_DIAGNOSTICS_ERROR
+        .lock()
+        .ok()
+        .and_then(|error| error.clone())
+}
+
+fn take_final_diagnostics_request() -> bool {
+    FINAL_DIAGNOSTICS_REQUEST.swap(false, Ordering::AcqRel)
+}
+
+fn clear_final_diagnostics() {
+    if let Ok(mut sample) = FINAL_DIAGNOSTICS.lock() {
+        *sample = None;
+    }
+    if let Ok(mut error) = FINAL_DIAGNOSTICS_ERROR.lock() {
+        *error = None;
+    }
+}
+
 fn accept(active: &mut Option<Work>, mut new: Work, deadline: &mut Instant) {
     if let Some(old) = active {
         if old.generation == new.generation {
@@ -40,6 +87,7 @@ fn accept(active: &mut Option<Work>, mut new: Work, deadline: &mut Instant) {
                 *deadline = Instant::now();
             }
         } else {
+            clear_final_diagnostics();
             *deadline = Instant::now();
         }
     }
@@ -91,6 +139,13 @@ pub(super) fn start(
                 if !w.once && (!w.playing || Instant::now() < deadline) {
                     continue;
                 }
+                let sample_final = take_final_diagnostics_request();
+                if sample_final {
+                    // A new request supersedes the previous result; never let
+                    // an old sample look like the answer to this request.
+                    clear_final_diagnostics();
+                }
+                let previous = sample_final.then(|| w.scene.state.clone());
                 w.once = false;
                 let result = (|| {
                     if cache.as_ref().is_none_or(|(g, _)| *g != w.generation) {
@@ -102,6 +157,8 @@ pub(super) fn start(
                                 &w.scene.state,
                             )?,
                         ));
+                        // A sample belongs to the solver generation that made it.
+                        clear_final_diagnostics();
                     }
                     let solver = &mut cache.as_mut().unwrap().1;
                     let metrics = if w.gpu {
@@ -109,6 +166,34 @@ pub(super) fn start(
                     } else {
                         solver.step(&mut w.scene.state, &w.settings, w.grab.as_ref())
                     }?;
+                    if let Some(previous) = previous {
+                        let backend = if w.gpu {
+                            FinalDiagnosticsBackend::CpuAuditOfGpuState
+                        } else {
+                            FinalDiagnosticsBackend::Cpu
+                        };
+                        match solver.sample_final_diagnostics(
+                            &previous,
+                            &w.scene.state,
+                            &w.settings,
+                            w.grab.as_ref(),
+                            backend,
+                        ) {
+                            Ok(sample) => {
+                                if let Ok(mut slot) = FINAL_DIAGNOSTICS.lock() {
+                                    *slot = Some(sample);
+                                }
+                                if let Ok(mut error) = FINAL_DIAGNOSTICS_ERROR.lock() {
+                                    *error = None;
+                                }
+                            }
+                            Err(error) => {
+                                if let Ok(mut slot) = FINAL_DIAGNOSTICS_ERROR.lock() {
+                                    *slot = Some(error);
+                                }
+                            }
+                        }
+                    }
                     Ok((w.scene.state.clone(), metrics))
                 })();
                 if result.is_err() {

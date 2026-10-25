@@ -2,6 +2,7 @@
 use super::*;
 use crate::render::appearance::{AntiAliasing, Appearance};
 use layout::ViewMode;
+use marvelous_cloth::vbd::{FinalDiagnostics, FinalDiagnosticsBackend};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum InspectorTab {
@@ -255,6 +256,50 @@ impl Atelier {
                                 m.extension_p95_percent, m.extension_max_percent
                             ));
                         }
+                        ui.separator();
+                        ui.strong("Final accepted state");
+                        let pending_id = egui::Id::new("clothcraft.final-diagnostics-pending");
+                        let sample = worker::final_diagnostics();
+                        let error = worker::final_diagnostics_error();
+                        let requested =
+                            ui.ctx().data(|d| d.get_temp::<(u64, f64)>(pending_id));
+                        let stale_generation =
+                            requested.is_some_and(|(generation, _)| generation != self.generation);
+                        let mut pending = requested.is_some_and(|(generation, at)| {
+                            generation == self.generation
+                                && sample
+                                    .as_ref()
+                                    .is_none_or(|s| s.state_time_s <= at + 1e-12)
+                        });
+                        if error.is_some() || self.simulation_error.is_some() {
+                            pending = false;
+                        }
+                        if requested.is_some() && (stale_generation || !pending) {
+                            ui.ctx().data_mut(|d| d.remove::<(u64, f64)>(pending_id));
+                        }
+                        let requested_now = final_diagnostics_controls(
+                            ui,
+                            FinalDiagnosticsView {
+                                sample: sample.as_ref(),
+                                error: error.as_deref(),
+                                current_time_s: self.scene.state.time,
+                                playing: self.playing,
+                                pending,
+                            },
+                        );
+                        if requested_now {
+                            ui.ctx().data_mut(|d| {
+                                d.insert_temp(
+                                    pending_id,
+                                    (self.generation, self.scene.state.time),
+                                )
+                            });
+                            worker::request_final_diagnostics();
+                            if !self.playing {
+                                self.step(ui.ctx());
+                            }
+                            ui.ctx().request_repaint();
+                        }
                     });
                     ui.collapsing("Motion / jitter", |ui| {
                         let mut inspect = false;
@@ -418,5 +463,207 @@ impl Atelier {
                     .circle_stroke(p, 8., Stroke::new(2., Color32::from_rgb(255, 194, 64)));
             }
         }
+    }
+}
+
+struct FinalDiagnosticsView<'a> {
+    sample: Option<&'a FinalDiagnostics>,
+    error: Option<&'a str>,
+    current_time_s: f64,
+    playing: bool,
+    pending: bool,
+}
+
+struct FinalDiagnosticsText {
+    timing: String,
+    contacts: String,
+    residual: String,
+    backend: String,
+    freshness: &'static str,
+    semantics: &'static str,
+}
+
+fn backend_label(backend: FinalDiagnosticsBackend) -> &'static str {
+    match backend {
+        FinalDiagnosticsBackend::Cpu => "CPU step / CPU audit",
+        FinalDiagnosticsBackend::CpuAuditOfGpuState => {
+            "GPU-accepted state / CPU audit (GPU timings unavailable)"
+        }
+    }
+}
+
+fn format_final_diagnostics(
+    sample: &FinalDiagnostics,
+    current_time_s: f64,
+    playing: bool,
+) -> FinalDiagnosticsText {
+    let age_s = current_time_s - sample.state_time_s;
+    let freshness = if age_s.abs() <= 1e-6 {
+        if playing {
+            "fresh at the sampled step"
+        } else {
+            "fresh (paused at the sampled state)"
+        }
+    } else if age_s < 0.0 {
+        "stale (simulation state reset or reloaded)"
+    } else {
+        "stale; pause and sample again to inspect the current state"
+    };
+    FinalDiagnosticsText {
+        timing: format!(
+            "Accepted state t = {:.3} s · dt = {:.3} ms · sample {:.2} ms (detect {:.2} ms + residual {:.2} ms)",
+            sample.state_time_s,
+            1000.0 * sample.step_dt_s,
+            sample.sample_ms,
+            sample.detection_ms,
+            sample.residual_ms
+        ),
+        contacts: {
+            let separation = match sample.minimum_distance_m {
+                Some(distance) => format!("minimum separation {:.3} mm", 1000.0 * distance),
+                None => "no contact term".into(),
+            };
+            format!(
+                "Contacts: {} active / {} retained · {separation}",
+                sample.contacts, sample.contact_terms
+            )
+        },
+        residual: match sample.residual_rms_n {
+            Some(rms) => format!(
+                "Free-DOF RMS residual: {:.4e} N over {} free vertices",
+                rms, sample.free_vertices
+            ),
+            None => "Free-DOF RMS residual unavailable: no free vertices".into(),
+        },
+        backend: format!("Backend: {}", backend_label(sample.backend)),
+        freshness,
+        semantics: "Accepted post-step state with fresh final OGC contacts. Unconstrained free-DOF backward-Euler gradient, not a KKT/constrained-equilibrium or per-color mixed-gradient certificate. The in-step detection metric is an earlier query.",
+    }
+}
+
+fn final_diagnostics_controls(ui: &mut egui::Ui, view: FinalDiagnosticsView<'_>) -> bool {
+    let mut requested = false;
+    ui.horizontal(|ui| {
+        let response = ui
+            .button("Sample final state")
+            .on_hover_text(
+                "Run a one-shot CPU audit after the next accepted step. If paused, this advances one step. It does not change contact coverage, the predictor or the rejection policy.",
+            );
+        #[cfg(test)]
+        super::authoring_smoke::widget_harness::named(
+            ui,
+            &response,
+            "simulation.sample_final_diagnostics",
+        );
+        if response.clicked() {
+            requested = true;
+        }
+        if view.pending {
+            ui.small("Sampling after the next accepted step…");
+        }
+    });
+    if let Some(error) = view.error {
+        ui.colored_label(
+            Color32::from_rgb(225, 120, 75),
+            format!("Final sample failed: {error}"),
+        );
+    }
+    if let Some(sample) = view.sample {
+        let text = format_final_diagnostics(sample, view.current_time_s, view.playing);
+        ui.small(text.timing);
+        ui.small(text.contacts);
+        ui.small(text.residual);
+        ui.small(format!("{} · {}", text.backend, text.freshness));
+        ui.small(text.semantics);
+    } else if view.pending {
+        ui.small("Sampling is opt-in; no final-state sample has been accepted yet.");
+    } else {
+        ui.small(
+            "No final-state sample yet. Sampling is opt-in and runs after the next accepted step.",
+        );
+    }
+    requested
+}
+
+#[cfg(test)]
+mod final_diagnostics_tests {
+    use super::super::authoring_smoke::widget_harness::Harness;
+    use super::*;
+
+    fn sample() -> FinalDiagnostics {
+        FinalDiagnostics {
+            state_time_s: 1.25,
+            step_dt_s: 1.0 / 60.0,
+            sample_ms: 4.5,
+            detection_ms: 2.0,
+            residual_ms: 2.5,
+            backend: FinalDiagnosticsBackend::Cpu,
+            contacts: 12,
+            contact_terms: 20,
+            minimum_distance_m: Some(0.001_25),
+            free_vertices: 96,
+            residual_rms_n: Some(0.125),
+            residual_kind: "free_dof_backward_euler_accepted_state_final_contacts",
+        }
+    }
+
+    #[test]
+    fn named_control_requests_a_sample_and_presentation_keeps_units() {
+        let sample = sample();
+        let mut clicked = false;
+        let mut draw = |ui: &mut egui::Ui, clicked: &mut bool| {
+            *clicked |= final_diagnostics_controls(
+                ui,
+                FinalDiagnosticsView {
+                    sample: Some(&sample),
+                    error: None,
+                    current_time_s: sample.state_time_s,
+                    playing: false,
+                    pending: false,
+                },
+            );
+        };
+        let mut harness = Harness::new(egui::vec2(560., 520.));
+        harness.frame(&mut clicked, &mut draw);
+        harness
+            .click(
+                "simulation.sample_final_diagnostics",
+                &mut clicked,
+                &mut draw,
+            )
+            .unwrap();
+        assert!(clicked);
+
+        let text = format_final_diagnostics(&sample, sample.state_time_s, false);
+        assert!(text.timing.contains("sample"));
+        assert!(text.contacts.contains("12 active / 20 retained"));
+        assert!(text.contacts.contains("1.250 mm"));
+        assert!(text.residual.contains("N"));
+        assert!(text.backend.contains("CPU"));
+        assert!(text.semantics.contains("not a KKT"));
+        assert!(text.freshness.contains("fresh"));
+    }
+
+    #[test]
+    fn unavailable_residual_is_unavailable_not_zero() {
+        let mut sample = sample();
+        sample.free_vertices = 0;
+        sample.residual_rms_n = None;
+        sample.contact_terms = 0;
+        sample.minimum_distance_m = None;
+        let text = format_final_diagnostics(&sample, sample.state_time_s, true);
+        assert!(text.residual.contains("unavailable"));
+        assert!(!text.residual.contains("0.0000e0 N"));
+        assert!(text.contacts.contains("no contact term"));
+    }
+
+    #[test]
+    fn gpu_audit_is_labelled_and_stale_samples_are_not_fresh() {
+        let mut sample = sample();
+        sample.backend = FinalDiagnosticsBackend::CpuAuditOfGpuState;
+        let text = format_final_diagnostics(&sample, sample.state_time_s + 0.5, true);
+        assert!(text.backend.contains("GPU"));
+        assert!(text.backend.contains("unavailable"));
+        assert!(text.freshness.contains("stale"));
     }
 }

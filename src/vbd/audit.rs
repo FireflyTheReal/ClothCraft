@@ -272,4 +272,113 @@ impl VbdSolver {
             balance_error_j: delta + drag + implicit - remainder - residual_work,
         })
     }
+
+    /// One-shot accepted-state diagnostic for the Simulation inspector.
+    ///
+    /// Reads `previous` and `accepted` without changing either one and clones
+    /// the collision world before the fresh detection, so the next accepted
+    /// step cannot inherit a diagnostic cache. The residual is the
+    /// backward-Euler stationarity expression for free vertices, using the
+    /// accepted velocity and physical forces at the accepted positions with
+    /// **final** OGC contacts:
+    ///
+    /// `r_i = m_i (v_i^n - v_i^{n-1}) / dt + damping m_i v_i^n - F_i`
+    ///
+    /// The reported value is `sqrt(sum |r_i|^2 / (3 * free))` in newtons.
+    /// It includes inertia, damping, gravity, membrane, bending, sewing,
+    /// contact and grab terms, but it is not a KKT certificate: movement
+    /// bounds, contact activation and the final detection are not solved as a
+    /// constrained equilibrium. A `CpuAuditOfGpuState` sample audits the
+    /// accepted GPU state on the CPU; it does not claim a GPU residual.
+    pub fn sample_final_diagnostics(
+        &self,
+        previous: &State,
+        accepted: &State,
+        settings: &VbdSettings,
+        grab: Option<&Grab>,
+        backend: FinalDiagnosticsBackend,
+    ) -> Result<FinalDiagnostics, String> {
+        settings.validate()?;
+        let n = self.garment.mesh.masses.len();
+        if previous.x.len() != n
+            || previous.v.len() != n
+            || accepted.x.len() != n
+            || accepted.v.len() != n
+        {
+            return Err("Final diagnostics state dimensions do not match the garment".into());
+        }
+        if !previous.time.is_finite()
+            || !accepted.time.is_finite()
+            || previous
+                .x
+                .iter()
+                .chain(&previous.v)
+                .chain(&accepted.x)
+                .chain(&accepted.v)
+                .any(|p| !p.is_finite())
+        {
+            return Err("Final diagnostics requires finite states".into());
+        }
+        let dt = accepted.time - previous.time;
+        if !dt.is_finite() || dt <= 0.0 || (dt - settings.dt).abs() > settings.dt.abs() * 1e-6 {
+            return Err(
+                "Final diagnostics requires exactly one accepted step at the configured dt".into(),
+            );
+        }
+        // The accepted velocity must be the backward-Euler velocity of this
+        // step; otherwise `previous` is not the state that produced `accepted`.
+        if (0..n).any(|i| ((accepted.x[i] - previous.x[i]) - accepted.v[i] * dt).length() > 1e-9) {
+            return Err("Final diagnostics requires x_new - x_old = dt * v_new".into());
+        }
+
+        let start = std::time::Instant::now();
+        let accepted_positions = self.world.positions(&accepted.x);
+        let mut verifier = self.world.clone();
+        let contacts = verifier.detect(
+            &accepted_positions,
+            2.0 * settings.contact.radius,
+            &settings.contact,
+        )?;
+        let detection_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+        let free: Vec<usize> = (0..n)
+            .filter(|&i| self.garment.mesh.pins[i].is_none())
+            .collect();
+        let forces = self.audit_vertex_forces(accepted, settings, &contacts, grab, &free)?;
+        let mut residual2 = 0.0;
+        for (i, force) in free.iter().zip(&forces) {
+            let mass = self.garment.mesh.masses[*i];
+            let residual = mass * (accepted.v[*i] - previous.v[*i]) / dt
+                + settings.damping * mass * accepted.v[*i]
+                - *force;
+            residual2 += residual.length_squared();
+        }
+        let sample_ms = start.elapsed().as_secs_f64() * 1000.0;
+        let minimum_distance_m = if contacts.contacts.is_empty() {
+            None
+        } else {
+            Some(contacts.minimum_distance)
+        };
+        if !residual2.is_finite() || minimum_distance_m.is_some_and(|d| !d.is_finite()) {
+            return Err("Final diagnostics produced a non-finite measurement".into());
+        }
+        Ok(FinalDiagnostics {
+            state_time_s: accepted.time,
+            step_dt_s: dt,
+            sample_ms,
+            detection_ms,
+            residual_ms: (sample_ms - detection_ms).max(0.0),
+            backend,
+            contacts: contacts.active_contacts,
+            contact_terms: contacts.contacts.len(),
+            minimum_distance_m,
+            free_vertices: free.len(),
+            residual_rms_n: if free.is_empty() {
+                None
+            } else {
+                Some((residual2 / (3 * free.len()) as f64).sqrt())
+            },
+            residual_kind: "free_dof_backward_euler_accepted_state_final_contacts",
+        })
+    }
 }
