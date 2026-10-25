@@ -1066,7 +1066,7 @@
       "id": "EXO-IO-007",
       "title": "Import static glTF/GLB avatars",
       "area": "interchange",
-      "status": "ready",
+      "status": "done",
       "depends_on": [
         "EXO-CORE-001"
       ],
@@ -1083,8 +1083,10 @@
       "evidence": [
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_UI_RENDERING_AND_AVATARS.md"
       ],
-      "related_prs": [],
-      "notes": ""
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/62"
+      ],
+      "notes": "Merged PR #62 implements the bounded static geometry library importer; all four CI workflows passed at b3dcc521. Native file-picker, confirmation and portable project integration are EXO-IO-009, not claimed by this completed library slice."
     },
     {
       "id": "EXO-IO-008",
@@ -1519,7 +1521,7 @@
       "id": "EXO-UX-005",
       "title": "Create a provenance-aware garment template browser",
       "area": "workspace",
-      "status": "ready",
+      "status": "done",
       "depends_on": [],
       "scope": [
         "src/template_catalog.rs",
@@ -1541,8 +1543,10 @@
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/openSourcePatternToolCatalog.js",
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/projectFileLibrary.js"
       ],
-      "related_prs": [],
-      "notes": "Owner-approved scope amendment: integrate through authoring_ui.rs and documents_ui.rs while atelier.rs remains reserved by EXO-UX-001. No solver changes."
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/63"
+      ],
+      "notes": "Owner-approved scope amendment: integrate through authoring_ui.rs and documents_ui.rs while atelier.rs remains reserved by EXO-UX-001. No solver changes. Completed in merged PR #63 at 92127e54 after all CI checks passed. Six original embedded templates, flat previews, native template JSON import and explicit safe document replacement; CPU named-widget tests cover cancel, confirmation, invalid avatar, keyboard focus and a small window. Native dialogs and GPU visual acceptance remain untested; examples are ungraded engineering fixtures."
     },
     {
       "id": "EXO-UX-006",
@@ -1649,7 +1653,7 @@
       "id": "EXO-PHY-001",
       "title": "Define capabilities for real interchangeable solver adapters",
       "area": "physics",
-      "status": "ready",
+      "status": "done",
       "depends_on": [
         "EXO-CORE-001"
       ],
@@ -1666,8 +1670,10 @@
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/backends/registry.js",
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/backends/protocol.js"
       ],
-      "related_prs": [],
-      "notes": ""
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/59"
+      ],
+      "notes": "Merged PR #59 documents and validates real adapter capabilities. Research backends remain opt-in; no production solver selector was added."
     },
     {
       "id": "EXO-PHY-002",
@@ -2027,6 +2033,37 @@
         "https://github.com/erythrofr/ClothCraft/pull/66"
       ],
       "notes": "Owner-requested native ClothCraft UI slice after reviewing PR #66. Work on a feature branch in NicTanghe/Hamerons_ClothCraft and submit a separate PR to erythrofr/ClothCraft:main. Exclude exo-session, the EXO application, print/hardware adapter fields and unrelated solver changes. Review existing contributions and preserve attribution; no permission to copy incompatible EXO source is implied. This issue is a proposed task until the catalog change is merged, a maintainer registers it, and the coordinator accepts a claim. Use the existing CPU named-widget harness; GPU/native-window acceptance remains opt-in. GPU runtime validation requires separate current-session authorization. Existing passive motion diagnostics and offline energy audit must be reused where possible."
+    },
+    {
+      "id": "EXO-IO-009",
+      "title": "Integrate static avatar import into the workspace",
+      "area": "interchange",
+      "status": "ready",
+      "depends_on": [
+        "EXO-IO-007",
+        "EXO-UX-005"
+      ],
+      "scope": [
+        "src/avatar_import.rs",
+        "src/lib.rs",
+        "src/atelier/avatar_import_ui.rs",
+        "src/atelier/documents_ui.rs",
+        "tests/avatar_import.rs",
+        "docs/avatar-import.md"
+      ],
+      "acceptance": [
+        "Expose explicit local OBJ/glTF/GLB import with source, counts, bounds, metre units and loss warnings before confirmation; reject ambiguous scene selection without silent fallback.",
+        "Prepare validated canonical OBJ geometry with an owned staging lifetime; preserve v1 project compatibility and portable save/recovery. Never overwrite the source asset.",
+        "Explain and apply drape reset on avatar replacement, preserving authored rest geometry, seams and live simulation settings. Cancel and preparation failure leave the active project and worker generation unchanged.",
+        "Invalidate old worker responses on successful commit, clear transient interactions and mark the document dirty. Saved assets survive staging cleanup.",
+        "Test actual named controls and shared production transactions on CPU: cancel, invalid input, transforms, save/reload after staging cleanup and old OBJ compatibility."
+      ],
+      "evidence": [
+        "https://github.com/erythrofr/ClothCraft/pull/62",
+        "https://github.com/erythrofr/ClothCraft/issues/64"
+      ],
+      "related_prs": [],
+      "notes": "Template-browser dependency completed in PR #63. Obtain a confirmed claim before editing. Use documents_ui.rs instead of foreign-reserved atelier.rs. Geometry only: no rigging, animation, textures, guessed scale or collision repair."
     }
   ]
 }
