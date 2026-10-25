@@ -89,7 +89,8 @@ reports that force without regularizing or hiding it. Use final contacts
 strictly inside the support for gradient comparisons; a boundary sample is not
 a convergence measurement.
 
-Branch: `FireflyTheReal:agent/exo-phy-004-final-diagnostics`.
+Branch: `FireflyTheReal:agent/exo-phy-004-final-diagnostics`
+PR: https://github.com/erythrofr/ClothCraft/pull/76
 
 ## Construction preview follow-up — 23 October 2026
 
