@@ -15,7 +15,7 @@ Reference: [mikristian/exo-sample-3d@352c6086b622](https://github.com/mikristian
 | [EXO-CORE-002](#exo-core-002) — Record provenance and licensing for candidate contributions | provenance | ready | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/11) |
 | [EXO-REV-001](#exo-rev-001) — Reconcile the two notch and allowance contributions | review | review_existing | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/12) |
 | [EXO-REV-002](#exo-rev-002) — Split and review darts, persistent POM and cutline proposal | review | review_existing | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/13) |
-| [EXO-REV-003](#exo-rev-003) — Review physical SVG output contribution | review | review_existing | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/14) |
+| [EXO-REV-003](#exo-rev-003) — Review physical SVG output contribution | review | done | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/14) |
 | [EXO-REV-004](#exo-rev-004) — Reconcile feature map and current stable lint contributions | review | done | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/15) |
 | [EXO-REV-005](#exo-rev-005) — Extract reviewable boundaries from the EXO Studio and session proposal | review | done | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/16) |
 | [EXO-CAD-001](#exo-cad-001) — Implement exact numeric construction operations | cad | done | — | [Issue](https://github.com/erythrofr/ClothCraft/issues/17) |
@@ -168,19 +168,25 @@ Status: review_existing. Dependencies: none.
 
 - `src/garment/polygon.rs`
 - `src/garment/markings.rs`
+- `src/garment/shapes.rs`
+- `src/garment/presets.rs`
 - `src/authoring.rs`
 - `src/authoring/geometry.rs`
+- `src/fitting.rs`
 - `src/atelier/board.rs`
 - `src/atelier/authoring_ui.rs`
 - `src/garment/export.rs`
 - `tests/pattern_markings.rs`
 - `src/garment/mod.rs`
-- `src/atelier.rs`
+- `docs/markings.md`
+- `docs/interoperability.md`
 
 **Acceptance**
 
 - Compare PR1 and PR6 schema/semantics before choosing or reconciling them; avoid duplicate representations.
 - Verify curved boundaries, round trips, mirror/split/delete behavior and metadata-only state preservation.
+- Keep complete cutting contours and exported notch markers inside physical sheet bounds; cover unchanged holes and exact/near-notch splits with explicit preservation or refusal.
+- Exercise native controls through the CPU named-widget harness, keeping UI draft state in authoring_ui.rs and leaving the reserved src/atelier.rs entrypoint untouched.
 - Report provenance and rebase/test on current main; merge only after review.
 
 **Evidence and related contributions**
@@ -189,7 +195,7 @@ Status: review_existing. Dependencies: none.
 - https://github.com/erythrofr/ClothCraft/pull/1
 - https://github.com/erythrofr/ClothCraft/pull/6
 
-Existing proposals are not merged or independently validated by the inventory. Shared model edits need exclusive ownership. Existing PR #6 already proposes native notch/allowance controls, cutting-line display and SVG output; preserve that review instead of opening a duplicate implementation. Native text-label editing is separately scoped under EXO-CAD-012 after reconciliation.
+Review #6 as the broader candidate, not a bulk merge. Source review at 7cf7639 confirms it does not change src/atelier.rs: drafts and controls live in authoring_ui.rs. That entrypoint is excluded to preserve EXO-UX-001's reservation; no task owner is displaced. Shapes/presets and fitting.rs are included for schema construction, mirror migration and nonphysical cache exclusion. Preserve the current named-widget harness instead of importing historical smoke changes. Nine existing #6 tests pass, but a valid 50 mm left-edge notch prints at x=-35 mm outside the sheet; issue #12 and the PR review contain reproduction evidence. Resolve incompatible #1/#6 notch schemas explicitly, preserve #77's physical SVG exporter, and do not claim ready-to-cut output until geometry gates pass. Native text-label editing remains EXO-CAD-012 after reconciliation.
 
 ## EXO-REV-002
 
@@ -229,7 +235,7 @@ PR7 touches physics as well as CAD. This task reviews authoring slices; it does 
 
 **Review physical SVG output contribution**
 
-Status: review_existing. Dependencies: none.
+Status: done. Dependencies: none.
 
 **Files / directories**
 
@@ -249,8 +255,9 @@ Status: review_existing. Dependencies: none.
 
 - https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/markerArtifacts.js
 - https://github.com/erythrofr/ClothCraft/pull/3
+- https://github.com/erythrofr/ClothCraft/pull/77
 
-Review an existing contribution instead of reimplementing it in parallel.
+PR #77 integrates Mikyle Couto's PR #3 on current main with author attribution, early artifact validation and bounds for outward curves. Six targeted CPU tests pass; Edge 156 headless measurements on four actual CLI exports put the 100 mm ruler within 0.001 mm, with every sewing contour contained. Existing preview remains separate. Physical printing, seam allowances, nesting, tiling and PDF remain unimplemented/unverified; this completes the reviewed SVG subset, not production pattern printing. Preserve this exporter when reconciling PR #6. See docs/interoperability.md and issue #14 for evidence.
 
 ## EXO-REV-004
 
