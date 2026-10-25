@@ -50,11 +50,14 @@ are unchanged.
 
 Implementation: `FinalDiagnostics` plus the one-shot solver method are in
 `src/vbd.rs`/`src/vbd/audit.rs`; the worker owns a one-shot request/result slot
-and clears it when the solver generation changes; `src/atelier/chrome.rs`
-provides the named control and presentation. The worker slot is deliberately
-outside the per-step `Latest` snapshot so a slow frame cannot lose a completed
-sample. A proper worker command channel would need `src/atelier.rs`, which is
-outside this task's scope.
+keyed by solver generation and a monotonic request id, and clears it when the
+generation changes; `src/atelier/chrome.rs` provides the named control,
+identity filtering and presentation. The worker slot is deliberately outside
+the per-step `Latest` snapshot so a slow frame cannot lose a completed sample.
+A request for a newer generation is kept queued until the worker accepts that
+generation; results from older generations or older requests are ignored even
+when physical timestamps match. A proper worker command channel would need
+`src/atelier.rs`, which is outside this task's scope.
 
 Validation (CPU only; no GPU or native window):
 
@@ -63,6 +66,7 @@ Validation (CPU only; no GPU or native window):
 - `cargo clippy --locked --no-default-features --all-targets -j 2 -- -D warnings`
 - `cargo clippy --locked --features desktop --bin cloth-fit --tests -j 2 -- -D warnings`
 - `cargo test --locked --features desktop -j 2 --bin cloth-fit final_diagnostics_tests -- --test-threads=2` (3 named-widget/presentation tests)
+- `cargo test --locked --features desktop -j 2 --bin cloth-fit final_diagnostics -- --test-threads=2` (7 diagnostics transport/presentation tests)
 - template validation for `two-panel`, `local-ease`, `tshirt`, `dress`,
   `curved-panels` and `partial-chain`.
 

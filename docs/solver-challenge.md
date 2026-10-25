@@ -31,6 +31,12 @@ The sample reports:
 - RMS over free translational degrees of freedom of the backward-Euler residual (N);
 - backend and freshness relative to the displayed state.
 
+Each request carries a monotonic request id and the solver generation. The
+result or failure carries the same identity, and the inspector only accepts the
+latest request for the current generation. A reload or reset invalidates old
+samples even when the physical timestamp matches, and a late result from an
+earlier request cannot satisfy a newer one.
+
 For a free vertex `i`, with previous state `(x-, v-)`, accepted state `(x+, v+)`, accepted `dt`, and physical force `F` at `x+` with final contacts:
 
 ```text

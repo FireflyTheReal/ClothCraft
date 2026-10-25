@@ -259,42 +259,37 @@ impl Atelier {
                         ui.separator();
                         ui.strong("Final accepted state");
                         let pending_id = egui::Id::new("clothcraft.final-diagnostics-pending");
+                        let requested = ui
+                            .ctx()
+                            .data(|d| d.get_temp::<worker::FinalDiagnosticsRequest>(pending_id));
                         let sample = worker::final_diagnostics();
                         let error = worker::final_diagnostics_error();
-                        let requested =
-                            ui.ctx().data(|d| d.get_temp::<(u64, f64)>(pending_id));
-                        let stale_generation =
-                            requested.is_some_and(|(generation, _)| generation != self.generation);
-                        let mut pending = requested.is_some_and(|(generation, at)| {
-                            generation == self.generation
-                                && sample
-                                    .as_ref()
-                                    .is_none_or(|s| s.state_time_s <= at + 1e-12)
-                        });
-                        if error.is_some() || self.simulation_error.is_some() {
-                            pending = false;
-                        }
-                        if requested.is_some() && (stale_generation || !pending) {
-                            ui.ctx().data_mut(|d| d.remove::<(u64, f64)>(pending_id));
+                        let selection = select_final_diagnostics(
+                            requested,
+                            sample.as_ref(),
+                            error.as_ref(),
+                            self.generation,
+                            self.simulation_error.is_some(),
+                        );
+                        if selection.requested != requested {
+                            ui.ctx().data_mut(|d| {
+                                d.remove::<worker::FinalDiagnosticsRequest>(pending_id)
+                            });
                         }
                         let requested_now = final_diagnostics_controls(
                             ui,
                             FinalDiagnosticsView {
-                                sample: sample.as_ref(),
-                                error: error.as_deref(),
+                                sample: selection.sample,
+                                error: selection.error,
                                 current_time_s: self.scene.state.time,
                                 playing: self.playing,
-                                pending,
+                                pending: selection.pending,
                             },
                         );
                         if requested_now {
-                            ui.ctx().data_mut(|d| {
-                                d.insert_temp(
-                                    pending_id,
-                                    (self.generation, self.scene.state.time),
-                                )
-                            });
-                            worker::request_final_diagnostics();
+                            let request = worker::request_final_diagnostics(self.generation);
+                            ui.ctx()
+                                .data_mut(|d| d.insert_temp(pending_id, request));
                             if !self.playing {
                                 self.step(ui.ctx());
                             }
@@ -463,6 +458,38 @@ impl Atelier {
                     .circle_stroke(p, 8., Stroke::new(2., Color32::from_rgb(255, 194, 64)));
             }
         }
+    }
+}
+
+struct FinalDiagnosticsSelection<'a> {
+    requested: Option<worker::FinalDiagnosticsRequest>,
+    sample: Option<&'a FinalDiagnostics>,
+    error: Option<&'a str>,
+    pending: bool,
+}
+
+/// Select only a result produced for the current generation and the latest
+/// request. Equal physical timestamps after a reload or reset must not make an
+/// older sample look current.
+fn select_final_diagnostics<'a>(
+    requested: Option<worker::FinalDiagnosticsRequest>,
+    result: Option<&'a worker::FinalDiagnosticsResult>,
+    failure: Option<&'a worker::FinalDiagnosticsFailure>,
+    current_generation: u64,
+    simulation_error: bool,
+) -> FinalDiagnosticsSelection<'a> {
+    let requested = requested.filter(|request| request.generation == current_generation);
+    let sample = result
+        .filter(|result| requested.is_some_and(|request| request == result.request))
+        .map(|result| &result.sample);
+    let error = failure
+        .filter(|failure| requested.is_some_and(|request| request == failure.request))
+        .map(|failure| failure.message.as_str());
+    FinalDiagnosticsSelection {
+        requested,
+        pending: requested.is_some() && sample.is_none() && error.is_none() && !simulation_error,
+        sample,
+        error,
     }
 }
 
@@ -665,5 +692,89 @@ mod final_diagnostics_tests {
         assert!(text.backend.contains("GPU"));
         assert!(text.backend.contains("unavailable"));
         assert!(text.freshness.contains("stale"));
+    }
+
+    fn request(generation: u64, request_id: u64) -> worker::FinalDiagnosticsRequest {
+        worker::FinalDiagnosticsRequest {
+            generation,
+            request_id,
+        }
+    }
+
+    fn result(
+        request: worker::FinalDiagnosticsRequest,
+        state_time_s: f64,
+    ) -> worker::FinalDiagnosticsResult {
+        let mut sample = sample();
+        sample.state_time_s = state_time_s;
+        worker::FinalDiagnosticsResult { request, sample }
+    }
+
+    fn failure(
+        request: worker::FinalDiagnosticsRequest,
+        message: &str,
+    ) -> worker::FinalDiagnosticsFailure {
+        worker::FinalDiagnosticsFailure {
+            request,
+            message: message.into(),
+        }
+    }
+
+    #[test]
+    fn reload_with_equal_physical_time_rejects_the_old_generation() {
+        let old = request(1, 1);
+        let old_result = result(old, 0.0);
+        let selection = select_final_diagnostics(Some(old), Some(&old_result), None, 2, false);
+        assert_eq!(selection.requested, None);
+        assert!(selection.sample.is_none());
+        assert!(!selection.pending);
+
+        let current = request(2, 2);
+        let current_result = result(current, 0.0);
+        let selection = select_final_diagnostics(Some(current), Some(&old_result), None, 2, false);
+        assert!(selection.sample.is_none());
+        assert!(selection.pending);
+
+        let selection =
+            select_final_diagnostics(Some(current), Some(&current_result), None, 2, false);
+        assert_eq!(
+            selection.sample.map(|sample| sample.state_time_s),
+            Some(0.0)
+        );
+        assert!(!selection.pending);
+    }
+
+    #[test]
+    fn late_previous_request_does_not_satisfy_a_newer_request() {
+        let first = request(1, 1);
+        let second = request(1, 2);
+        let first_result = result(first, 0.5);
+        let second_result = result(second, 0.5);
+
+        let selection = select_final_diagnostics(Some(second), Some(&first_result), None, 1, false);
+        assert_eq!(selection.requested, Some(second));
+        assert!(selection.sample.is_none());
+        assert!(selection.pending);
+
+        let first_failure = failure(first, "late failure");
+        let selection =
+            select_final_diagnostics(Some(second), None, Some(&first_failure), 1, false);
+        assert!(selection.error.is_none());
+        assert!(selection.pending);
+
+        let selection =
+            select_final_diagnostics(Some(second), Some(&second_result), None, 1, false);
+        assert!(selection.sample.is_some());
+        assert!(!selection.pending);
+    }
+
+    #[test]
+    fn current_request_error_is_shown_and_stops_pending() {
+        let current = request(1, 3);
+        let failure = failure(current, "sample failed");
+        let selection = select_final_diagnostics(Some(current), None, Some(&failure), 1, false);
+        assert_eq!(selection.error, Some("sample failed"));
+        assert!(selection.sample.is_none());
+        assert!(!selection.pending);
     }
 }
