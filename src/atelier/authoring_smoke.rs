@@ -135,6 +135,7 @@ const WORKFLOW_ACTIONS: &[(&str, Vec2)] = &[
 ];
 
 pub(super) struct Smoke {
+    appearance: Option<AppearanceProbe>,
     panel_tools: bool,
     workflow: bool,
     quick: bool,
@@ -180,11 +181,48 @@ impl Smoke {
             &ACTIONS
         }
     }
+    pub(super) fn tests_documents(&self) -> bool {
+        self.appearance
+            .as_ref()
+            .is_some_and(|probe| probe.documents)
+    }
     pub(super) fn wants(&self, key: &str) -> bool {
+        if let Some(probe) = &self.appearance {
+            return probe.phase < probe.action_count() && probe.action() == key;
+        }
         self.actions().get(self.action).is_some_and(|a| a.0 == key)
     }
     pub fn new() -> Self {
         Self {
+            appearance: match std::env::var("CLOTHCRAFT_AUTHORING_SCENARIO").as_deref() {
+                Ok("appearance") => Some(AppearanceProbe::default()),
+                Ok("appearance-color") => Some(AppearanceProbe {
+                    capture: Some(AppearanceCapture::Color),
+                    ..Default::default()
+                }),
+                Ok("appearance-matte") => Some(AppearanceProbe {
+                    capture: Some(AppearanceCapture::Matte),
+                    ..Default::default()
+                }),
+                Ok("appearance-glossy") => Some(AppearanceProbe {
+                    capture: Some(AppearanceCapture::Glossy),
+                    ..Default::default()
+                }),
+                Ok("appearance-documents") => Some(AppearanceProbe {
+                    documents: true,
+                    ..Default::default()
+                }),
+                Ok("appearance-worker") => Some(AppearanceProbe {
+                    running: true,
+                    ..Default::default()
+                }),
+                _ => None,
+            }
+            .map(|mut probe| {
+                probe.heatmap =
+                    std::env::var("CLOTHCRAFT_APPEARANCE_HEATMAP").as_deref() == Ok("1");
+                probe
+            }),
             panel_tools: std::env::var("CLOTHCRAFT_AUTHORING_SCENARIO").as_deref()
                 == Ok("panel-tools"),
             workflow: std::env::var("CLOTHCRAFT_AUTHORING_SCENARIO").as_deref() == Ok("workflow"),
@@ -217,10 +255,34 @@ impl Smoke {
             seam_removed: false,
         }
     }
+    pub(super) fn target_rect(&mut self, ui: &egui::Ui, name: &str, rect: egui::Rect) {
+        if ui.clip_rect().contains_rect(rect) && ui.is_rect_visible(rect) {
+            self.target(name, rect.center());
+        } else {
+            self.targets.remove(name);
+            if self.wants(name) {
+                ui.scroll_to_rect_animation(
+                    rect,
+                    Some(egui::Align::Center),
+                    egui::style::ScrollAnimation::none(),
+                );
+            }
+        }
+    }
+    pub(super) fn appearance_text_target(&mut self, ui: &egui::Ui, response: &egui::Response) {
+        self.target_rect(ui, "appearance.name", response.rect);
+        if let Some(probe) = &mut self.appearance {
+            probe.text_focused = response.has_focus();
+        }
+    }
     pub fn target(&mut self, name: &str, p: egui::Pos2) {
         self.targets.insert(name.into(), p);
     }
     pub fn input(&mut self, input: &mut egui::RawInput) {
+        if let Some(probe) = &mut self.appearance {
+            probe.input(input, &self.targets);
+            return;
+        }
         // Synthetic pointer/keyboard input belongs to this test viewport, even
         // when Windows leaves the owner's other application in the foreground.
         input.focused = true;
@@ -610,6 +672,14 @@ impl Atelier {
         }
     }
     pub(super) fn authoring_smoke_tick(&mut self) {
+        if self
+            .authoring_smoke
+            .as_ref()
+            .is_some_and(|s| s.appearance.is_some())
+        {
+            self.appearance_smoke_tick();
+            return;
+        }
         if self.authoring_smoke.as_ref().is_some_and(|s| s.panel_tools) {
             self.panel_smoke_tick();
             return;
@@ -791,6 +861,567 @@ impl Atelier {
             serde_json::to_string_pretty(&report).unwrap(),
         ) {
             eprintln!("Authoring smoke: {e}");
+        }
+    }
+}
+
+// This scenario advances only after observing the expected document transition.
+// Sending a click is not evidence that the application accepted it.
+const APPEARANCE_ACTIONS: [&str; 20] = [
+    "appearance.enabled",
+    "appearance.apply",
+    "undo",
+    "redo",
+    "appearance.roughness.low",
+    "appearance.apply",
+    "undo",
+    "redo",
+    "keyboard.undo",
+    "keyboard.redo",
+    "appearance.name",
+    "keyboard.text_undo",
+    "appearance.enabled",
+    "appearance.apply",
+    "simulate",
+    "appearance.enabled",
+    "appearance.apply",
+    "undo",
+    "redo",
+    "simulate",
+];
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum AppearanceCapture {
+    Color,
+    Matte,
+    Glossy,
+}
+
+// Capture fixture only: the public flat panel has a +Z normal. Put the
+// orthographic eye on the fixed key light's reflected direction so roughness
+// changes are visible instead of rounding to the same 8-bit front-view color.
+fn appearance_capture_camera(camera: &mut marvelous_cloth::render::Camera) {
+    let direction = glam::Vec3::new(-0.4, -0.8, 0.6).normalize();
+    camera.yaw = direction.x.atan2(direction.z);
+    camera.pitch = direction.y.asin();
+    camera.orthographic = true;
+    camera.pending_frame = None;
+}
+
+#[derive(Default)]
+struct AppearanceProbe {
+    phase: usize,
+    tick: usize,
+    running: bool,
+    documents: bool,
+    capture: Option<AppearanceCapture>,
+    heatmap: bool,
+    latest_pending: bool,
+    latest_time: f64,
+    dispatched: Option<(bool, f64)>,
+    ready: bool,
+    text_focused: bool,
+    origin: Option<egui::Pos2>,
+    baseline: Option<(Vec<glam::DVec3>, Vec<glam::DVec3>, f64, u64)>,
+    garment: Option<std::sync::Arc<marvelous_cloth::garment::CompiledGarment>>,
+    fabric: String,
+    original: Option<marvelous_cloth::garment::appearance::FabricAppearance>,
+    changed: Option<marvelous_cloth::garment::appearance::FabricAppearance>,
+    observations: Vec<serde_json::Value>,
+}
+impl AppearanceProbe {
+    fn action(&self) -> &'static str {
+        if self.capture == Some(AppearanceCapture::Color) {
+            [
+                "appearance.enabled",
+                "appearance.apply",
+                "appearance.color.red",
+                "appearance.apply",
+            ][self.phase]
+        } else if self.documents && self.phase >= 14 {
+            [
+                "appearance.enabled",
+                "appearance.apply",
+                "keyboard.save",
+                "appearance.enabled",
+                "appearance.apply",
+                "keyboard.open",
+            ][self.phase - 14]
+        } else {
+            APPEARANCE_ACTIONS[self.phase]
+        }
+    }
+    fn action_count(&self) -> usize {
+        if let Some(capture) = self.capture {
+            // End only after Apply has passed its ordinary document/physics gate.
+            return match capture {
+                AppearanceCapture::Color => 4,
+                AppearanceCapture::Matte => 2,
+                AppearanceCapture::Glossy => 6,
+            };
+        }
+        if self.running || self.documents {
+            APPEARANCE_ACTIONS.len()
+        } else {
+            14
+        }
+    }
+    fn input(&mut self, input: &mut egui::RawInput, targets: &BTreeMap<String, egui::Pos2>) {
+        input.focused = true;
+        if !self.ready || self.phase >= self.action_count() {
+            return;
+        }
+        self.tick += 1;
+        if self.tick == 3 {
+            self.dispatched = Some((self.latest_pending, self.latest_time));
+        }
+        let action = self.action();
+        if action.starts_with("keyboard.") {
+            let modifiers = egui::Modifiers {
+                ctrl: true,
+                command: true,
+                shift: action == "keyboard.redo",
+                ..Default::default()
+            };
+            if self.tick == 7 {
+                input
+                    .events
+                    .push(egui::Event::ModifiersChanged(egui::Modifiers::NONE));
+            }
+            if self.tick == 3 || self.tick == 6 {
+                input.events.push(egui::Event::ModifiersChanged(modifiers));
+                input.events.push(egui::Event::Key {
+                    key: match action {
+                        "keyboard.save" => egui::Key::S,
+                        "keyboard.open" => egui::Key::O,
+                        _ => egui::Key::Z,
+                    },
+                    physical_key: None,
+                    pressed: self.tick == 3,
+                    repeat: false,
+                    modifiers,
+                });
+            }
+        } else {
+            if self.tick == 3 {
+                self.origin = targets.get(action).copied();
+            }
+            if let Some(pos) = self.origin
+                && (3..=6).contains(&self.tick)
+            {
+                let pos = if action == "appearance.color.red" && self.tick >= 4 {
+                    pos + egui::vec2(-40.0 * (self.tick - 3) as f32, 0.0)
+                } else {
+                    pos
+                };
+                input.events.push(egui::Event::PointerMoved(pos));
+                if self.tick == 3 || self.tick == 6 {
+                    input.events.push(egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: self.tick == 3,
+                        modifiers: Default::default(),
+                    });
+                }
+            }
+        }
+    }
+}
+impl Atelier {
+    fn appearance_smoke_tick(&mut self) {
+        let Some(mut smoke) = self.authoring_smoke.take() else {
+            return;
+        };
+        let probe = smoke.appearance.as_mut().unwrap();
+        let mut failure = None;
+        if !probe.ready {
+            self.playing = false;
+            if !self.pending {
+                if !self.project.template.fabric_appearance.is_empty() {
+                    failure = Some("Use a public fixture with default appearance".to_owned());
+                } else {
+                    let panel = &self.project.template.panels[0];
+                    probe.fabric = panel.fabric.clone();
+                    self.authoring.selected = Some(panel.id.clone());
+                    self.inspector_tab = chrome::InspectorTab::Fabric;
+                    self.tools_visible = true;
+                    probe.garment = Some(self.scene.garment.clone());
+                    probe.baseline = Some((
+                        self.scene.state.x.clone(),
+                        self.scene.state.v.clone(),
+                        self.scene.state.time,
+                        self.generation,
+                    ));
+                    if matches!(
+                        probe.capture,
+                        Some(AppearanceCapture::Matte | AppearanceCapture::Glossy)
+                    ) {
+                        appearance_capture_camera(&mut self.camera);
+                        // The reflected-light eye is below the floor plane.
+                        // Hide presentation-only occluders, not physical contacts.
+                        self.prefs.viewport.floor = false;
+                        self.prefs.viewport.grid = false;
+                        self.prefs.viewport.shadow = false;
+                    }
+                    if probe.heatmap {
+                        self.heat = true;
+                    }
+                    probe.ready = true;
+                }
+            }
+        } else if probe.tick >= 9 && probe.phase < probe.action_count() {
+            let current = self
+                .project
+                .template
+                .fabric_appearance
+                .get(&probe.fabric)
+                .cloned();
+            let (x, v, time, generation) = probe.baseline.as_ref().unwrap();
+            let live = probe.running && probe.phase >= 14;
+            let document_replacement = probe.documents && matches!(probe.phase, 16 | 19);
+            let advanced = probe
+                .dispatched
+                .is_some_and(|(_, before)| self.scene.state.time > before);
+            let model_preserved = probe
+                .garment
+                .as_ref()
+                .is_some_and(|before| std::sync::Arc::ptr_eq(before, &self.scene.garment));
+            let preserved = self.generation == *generation + u64::from(document_replacement)
+                && (model_preserved || (probe.documents && probe.phase == 19))
+                && if live {
+                    self.scene.state.time >= *time
+                        && self
+                            .scene
+                            .state
+                            .x
+                            .iter()
+                            .chain(&self.scene.state.v)
+                            .all(|p| p.is_finite())
+                        && self.simulation_error.is_none()
+                        && self.playing == (probe.phase != 19)
+                } else {
+                    self.scene.state.x == *x
+                        && self.scene.state.v == *v
+                        && self.scene.state.time == *time
+                        && !self.playing
+                        && !self.pending
+                };
+            let transition = if probe.capture == Some(AppearanceCapture::Color) && probe.phase >= 2
+            {
+                if probe.phase == 2 {
+                    current == probe.original
+                } else {
+                    current
+                        .as_ref()
+                        .zip(probe.original.as_ref())
+                        .is_some_and(|(now, before)| {
+                            now.color_srgb[0] < before.color_srgb[0]
+                                && now.color_srgb[1..] == before.color_srgb[1..]
+                                && now.roughness == before.roughness
+                        })
+                }
+            } else if probe.documents && probe.phase >= 14 {
+                match probe.phase {
+                    14 => current.is_none(),
+                    15 | 17 => current == probe.original && current.is_some(),
+                    16 => {
+                        current == probe.original
+                            && !self.document.dirty
+                            && FittingProject::load(
+                                &self.output.join("appearance-acceptance.clothcraft.json"),
+                            )
+                            .is_ok_and(|saved| {
+                                saved.template.fabric_appearance
+                                    == self.project.template.fabric_appearance
+                                    && saved.state.is_some_and(|state| {
+                                        state.x == *x && state.v == *v && state.time == *time
+                                    })
+                            })
+                    }
+                    18 => current.is_none(),
+                    19 => {
+                        current == probe.original
+                            && current.is_some()
+                            && !self.document.dirty
+                            && !self.authoring.history.can_undo()
+                    }
+                    _ => false,
+                }
+            } else {
+                match probe.phase {
+                    0 => {
+                        current.is_none() && smoke.targets.contains_key("appearance.roughness.low")
+                    }
+                    1 => {
+                        probe.original = current.clone();
+                        current.is_some()
+                    }
+                    2 => current.is_none() && self.authoring.history.can_redo(),
+                    3 | 4 | 6 | 8 => current == probe.original,
+                    5 => {
+                        let changed =
+                            current
+                                .as_ref()
+                                .zip(probe.original.as_ref())
+                                .is_some_and(|(a, b)| {
+                                    a.roughness < b.roughness && a.color_srgb == b.color_srgb
+                                });
+                        if changed {
+                            probe.changed = current.clone();
+                        }
+                        changed
+                    }
+                    7 | 9 | 12 => current == probe.changed && current.is_some(),
+                    10 | 11 => current == probe.changed && current.is_some() && probe.text_focused,
+                    13 => current.is_none(),
+                    14 => current.is_none() && advanced,
+                    15 => current.is_none(),
+                    16 | 18 => {
+                        current == probe.original
+                            && current.is_some()
+                            && advanced
+                            && probe.dispatched.is_some_and(|(pending, _)| pending)
+                    }
+                    17 => {
+                        current.is_none()
+                            && advanced
+                            && probe.dispatched.is_some_and(|(pending, _)| pending)
+                    }
+                    19 => current == probe.original && current.is_some(),
+                    _ => false,
+                }
+            };
+            // Wait for an actual worker response, not a fixed number of rendered frames.
+            if live
+                && matches!(probe.phase, 14 | 16 | 17 | 18)
+                && preserved
+                && !advanced
+                && smoke.start.elapsed().as_secs() <= 30
+            {
+                probe.latest_pending = self.pending;
+                probe.latest_time = self.scene.state.time;
+                self.authoring_smoke = Some(smoke);
+                return;
+            }
+            probe.observations.push(serde_json::json!({
+                "phase":probe.phase,"action":probe.action(),
+                "appearance":current,"expected_transition":transition,"physics_preserved":preserved,"compiled_model_identity_preserved":model_preserved,
+                "can_undo":self.authoring.history.can_undo(),"can_redo":self.authoring.history.can_redo(),
+                "playing":self.playing,"pending":self.pending,"generation":self.generation,
+                "time":self.scene.state.time,"status":self.status,"error":self.authoring.error,
+                "pointer_target_found":probe.origin.is_some(),"text_field_focused":probe.text_focused,
+                "worker_pending_at_dispatch":probe.dispatched.map(|d| d.0),
+                "worker_time_at_dispatch":probe.dispatched.map(|d| d.1),"later_worker_state_observed":advanced
+            }));
+            if transition && preserved {
+                if document_replacement {
+                    probe.baseline.as_mut().unwrap().3 = self.generation;
+                }
+                probe.phase += 1;
+                probe.tick = 0;
+                probe.origin = None;
+            } else {
+                failure = Some(format!(
+                    "Appearance phase {} failed its state gate",
+                    probe.phase
+                ));
+            }
+        }
+        if smoke.start.elapsed().as_secs() > 30 {
+            failure = Some("Appearance scenario timed out".into());
+        }
+        probe.latest_pending = self.pending;
+        probe.latest_time = self.scene.state.time;
+        let complete = probe.phase == probe.action_count();
+        if !smoke.finished && (complete || failure.is_some()) {
+            let report = serde_json::json!({"passed":complete && failure.is_none(),
+                "scenario":"appearance","heatmap":probe.heatmap,"capture_variant":probe.capture.map(|c| format!("{c:?}")),"document_scenario":probe.documents,"scope":if probe.capture.is_some() { "paused appearance capture fixture; visual inspection required" } else if probe.documents { "paused history plus isolated native Save/Open" } else if probe.running { "paused history plus live worker continuity" } else { "paused pointer history, keyboard history and text ownership" },
+                "completed_verified_actions":probe.phase,"expected_actions":probe.action_count(),"worker_scenario":probe.running,
+                "observations":probe.observations,"failure":failure,
+                "remaining_acceptance":if probe.capture.is_some() { vec!["visual comparison", "full history", "in-flight worker", "save/reopen"] } else if probe.documents { vec!["in-flight worker", "visual shading"] } else if probe.running { vec!["save/reopen", "visual shading"] } else { vec!["in-flight worker", "save/reopen", "visual shading"] }});
+            match std::fs::write(
+                self.output.join("authoring.json"),
+                serde_json::to_vec_pretty(&report).unwrap(),
+            ) {
+                Ok(()) => smoke.finished = true,
+                Err(error) => {
+                    eprintln!("Cannot write appearance report: {error}");
+                    smoke.finished = true;
+                }
+            }
+        }
+        self.authoring_smoke = Some(smoke);
+    }
+}
+
+#[cfg(test)]
+mod appearance_probe_tests {
+    use super::*;
+    #[test]
+    fn pointer_delivery_does_not_advance_an_unverified_phase() {
+        let mut probe = AppearanceProbe {
+            ready: true,
+            ..Default::default()
+        };
+        let targets = BTreeMap::from([("appearance.enabled".into(), egui::pos2(20., 30.))]);
+        let mut presses = 0;
+        let mut releases = 0;
+        for _ in 0..12 {
+            let mut input = egui::RawInput::default();
+            probe.input(&mut input, &targets);
+            for event in input.events {
+                if let egui::Event::PointerButton { pressed, .. } = event {
+                    if pressed {
+                        presses += 1;
+                    } else {
+                        releases += 1;
+                    }
+                }
+            }
+        }
+        assert_eq!((presses, releases), (1, 1));
+        assert_eq!(probe.phase, 0, "sending a click must not count as success");
+    }
+    #[test]
+    fn color_capture_drags_a_named_channel_without_claiming_success() {
+        let mut probe = AppearanceProbe {
+            capture: Some(AppearanceCapture::Color),
+            ready: true,
+            phase: 2,
+            ..Default::default()
+        };
+        let targets = BTreeMap::from([("appearance.color.red".into(), egui::pos2(200., 30.))]);
+        let mut positions = Vec::new();
+        for _ in 0..8 {
+            let mut input = egui::RawInput::default();
+            probe.input(&mut input, &targets);
+            for event in input.events {
+                if let egui::Event::PointerMoved(pos) = event {
+                    positions.push(pos);
+                }
+            }
+        }
+        assert_eq!(probe.action_count(), 4);
+        assert_eq!(positions.first(), Some(&egui::pos2(200., 30.)));
+        assert_eq!(positions.last(), Some(&egui::pos2(80., 30.)));
+        assert_eq!(probe.phase, 2);
+    }
+    #[test]
+    fn appearance_capture_camera_exposes_the_fixed_light_reflection() {
+        let mut camera = marvelous_cloth::render::Camera::default();
+        let target = camera.target;
+        let distance = camera.distance;
+        appearance_capture_camera(&mut camera);
+        let light = glam::Vec3::new(0.4, 0.8, 0.6).normalize();
+        let half = (light + camera.direction()).normalize();
+        assert!(half.distance(glam::Vec3::Z) < 1e-6);
+        assert!(camera.orthographic);
+        assert_eq!(camera.target, target);
+        assert_eq!(camera.distance, distance);
+        assert!(camera.pending_frame.is_none());
+    }
+    #[test]
+    fn appearance_capture_stops_after_apply_without_later_input() {
+        for (capture, count) in [
+            (AppearanceCapture::Matte, 2),
+            (AppearanceCapture::Glossy, 6),
+        ] {
+            let mut probe = AppearanceProbe {
+                capture: Some(capture),
+                ready: true,
+                phase: count - 1,
+                ..Default::default()
+            };
+            assert_eq!(probe.action_count(), count);
+            assert_eq!(probe.action(), "appearance.apply");
+            let targets = BTreeMap::from([("appearance.apply".into(), egui::pos2(20., 30.))]);
+            for _ in 0..10 {
+                probe.input(&mut egui::RawInput::default(), &targets);
+            }
+            assert_eq!(probe.phase, count - 1, "input cannot certify Apply");
+            probe.phase = count;
+            let mut input = egui::RawInput::default();
+            probe.input(&mut input, &targets);
+            assert!(
+                input.events.is_empty(),
+                "capture must not dispatch later Undo or simulation"
+            );
+        }
+    }
+    #[test]
+    fn worker_actions_are_opt_in_and_capture_dispatch_state() {
+        let mut paused = AppearanceProbe {
+            ready: true,
+            phase: 14,
+            ..Default::default()
+        };
+        let mut input = egui::RawInput::default();
+        paused.input(&mut input, &BTreeMap::new());
+        assert!(input.events.is_empty());
+        assert_eq!(paused.action_count(), 14);
+        let mut running = AppearanceProbe {
+            ready: true,
+            running: true,
+            phase: 16,
+            latest_pending: true,
+            latest_time: 0.25,
+            ..Default::default()
+        };
+        let targets = BTreeMap::from([("appearance.apply".into(), egui::pos2(20., 30.))]);
+        for _ in 0..3 {
+            running.input(&mut egui::RawInput::default(), &targets);
+        }
+        assert_eq!(running.action_count(), 20);
+        assert_eq!(running.dispatched, Some((true, 0.25)));
+        assert_eq!(running.phase, 16, "dispatch is not a worker response");
+    }
+    #[test]
+    fn missing_target_never_injects_a_click_or_claims_progress() {
+        let mut probe = AppearanceProbe {
+            ready: true,
+            ..Default::default()
+        };
+        for _ in 0..12 {
+            let mut input = egui::RawInput::default();
+            probe.input(&mut input, &BTreeMap::new());
+            assert!(input.events.is_empty());
+        }
+        assert!(probe.origin.is_none());
+        assert_eq!(probe.phase, 0);
+    }
+    #[test]
+    fn keyboard_history_and_documents_send_and_release_global_modifiers() {
+        for (phase, key, documents) in [
+            (8, egui::Key::Z, false),
+            (9, egui::Key::Z, false),
+            (16, egui::Key::S, true),
+            (19, egui::Key::O, true),
+        ] {
+            let mut probe = AppearanceProbe {
+                ready: true,
+                phase,
+                documents,
+                ..Default::default()
+            };
+            let ctx = egui::Context::default();
+            let mut observed = false;
+            for tick in 1..=7 {
+                let mut input = egui::RawInput::default();
+                probe.input(&mut input, &BTreeMap::new());
+                let mut output = ctx.run_ui(input, |ui| {
+                    if tick == 3 {
+                        assert!(ui.input(|i| i.key_pressed(key) && i.modifiers.command));
+                        assert_eq!(ui.input(|i| i.modifiers.shift), phase == 9);
+                        observed = true;
+                    }
+                    if tick == 7 {
+                        assert!(!ui.input(|i| i.modifiers.command));
+                    }
+                });
+                output.textures_delta.clear();
+            }
+            assert!(observed);
+            assert_eq!(probe.phase, phase);
         }
     }
 }
