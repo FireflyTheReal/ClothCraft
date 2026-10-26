@@ -1351,8 +1351,10 @@
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/createStageEnvironment.js",
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/sceneCameraViewport.js"
       ],
-      "related_prs": [],
-      "notes": ""
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/121"
+      ],
+      "notes": "Camera and viewport presentation snapshots merged in #121 as 1f56c2d after seven successful checks at 6d7168a. Workspace > Presentation saves/restores bounded validated JSON independently of garment and solver state; three named-control/persistence fixtures passed within 113 desktop CPU tests. Native parent-menu interaction remains unverified. Lighting only identifies the fixed rig: editable lights, HDRI assets and decorative geometry are not implemented. Task remains incomplete; do not duplicate the existing snapshot implementation. See issue #120 and the merged PR for acceptance boundaries."
     },
     {
       "id": "EXO-LOOK-008",
@@ -1714,8 +1716,10 @@
       "evidence": [
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/docs/EXO_RELEASE_STATUS.md"
       ],
-      "related_prs": [],
-      "notes": ""
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/82"
+      ],
+      "notes": " Follow-up #82 merged as 8d57f745 after all seven checks passed at 8a6014b. The extracted-package native launch/capture step completed on hosted Windows (job 121735456975); exact-head PowerShell syntax was also checked locally. This proves CLI project write/load and native launch/capture, not native Save, Export, editing, dialogs, clipboard or physical GPU certification. EXO-QA-002 remains incomplete. Check the live board: merging this increment did not release the contributor reservation."
     },
     {
       "id": "EXO-QA-003",
@@ -2220,6 +2224,34 @@
         "https://github.com/erythrofr/ClothCraft/pull/107"
       ],
       "notes": "Native SVG adapter merged in #107 as 260646b after seven green checks at 3771fa9. Bounded source review, dimensions, outline selection, material/mesh choice and atomic preparation use the existing reader/installer. Four adapter fixtures cover controls, rollback, drape, history and portable reopen; 93 desktop CPU tests passed (one optional preview ignored). docs/svg-import.md records supported behavior. Full native interaction/installer acceptance remains separate; do not duplicate the merged dialog. Reservation released on #103."
+    },
+    {
+      "id": "EXO-QA-005",
+      "title": "Trace native appearance history through actual UI controls",
+      "area": "validation",
+      "status": "ready",
+      "depends_on": [
+        "EXO-QA-004"
+      ],
+      "scope": [
+        "src/atelier/authoring_smoke.rs",
+        "src/atelier/fabrics_ui.rs",
+        "docs/native-appearance-acceptance.md"
+      ],
+      "acceptance": [
+        "Reuse the opt-in native authoring smoke entrypoint and actual control responses for appearance Apply, pointer Undo/Redo and keyboard history. Missing candidate support or controls must fail explicitly, never skip to success.",
+        "Emit structured observations of authored optics, history availability, playing state, worker generation and x/v/time. Check paused state equality and preservation of an in-flight worker response; do not bypass the normal edit/history installer.",
+        "Exercise text keyboard ownership, restoration of default optics and isolated public-fixture save/reopen. Distinguish a dispatched event from a verified state change and fail on timeout, no-op or rejected history.",
+        "Keep GPU execution opt-in and outside default CPU tests/CI. Document exact candidate revision, commands, partial failures and unverified visual appearance. Production fixes outside this scope require a separate coordinated handoff."
+      ],
+      "evidence": [
+        "https://github.com/erythrofr/ClothCraft/issues/135",
+        "https://github.com/erythrofr/ClothCraft/pull/128#issuecomment-6424222657"
+      ],
+      "related_prs": [
+        "https://github.com/erythrofr/ClothCraft/pull/128"
+      ],
+      "notes": "QA implementation may be developed against the explicitly identified candidate branch without marking EXO-LOOK-001 complete or merging its feature. No authoring_ui.rs, authoring.rs, schema, renderer or solver edits; this scope avoids the active markings reservation. Register after this manifest amendment merges and wait for an accepted claim. Existing broad quick smoke failed at 17/23 actions and cannot establish optical history acceptance."
     }
   ]
 }
