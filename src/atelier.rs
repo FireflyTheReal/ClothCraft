@@ -88,76 +88,6 @@ fn queue_work(sender: &mpsc::Sender<Work>, work: Work) -> Result<(), String> {
         .map_err(|_| "The simulation worker is unavailable".to_owned())
 }
 
-#[cfg(test)]
-mod command_action_tests {
-    use super::*;
-
-    #[test]
-    fn simulation_submission_reports_disconnection_without_running_a_solver() {
-        let dir = tempfile::tempdir().unwrap();
-        let avatar = dir.path().join("avatar.obj");
-        std::fs::write(&avatar, "v 0 0 -10\nv 1 0 -10\nv 0 1 -10\nf 1 2 3\n").unwrap();
-        let project = FittingProject::basic(GarmentKind::Dress, 1, avatar);
-        let scene = project.compile().unwrap();
-        let initial = serde_json::to_vec(&scene.state).unwrap();
-        let work = Work {
-            generation: 42,
-            scene,
-            settings: VbdSettings::default(),
-            grab: None,
-            gpu: false,
-            ctx: egui::Context::default(),
-            playing: false,
-            once: true,
-        };
-        let (send, receive) = mpsc::channel();
-        queue_work(&send, work).unwrap();
-        let received = receive.try_recv().unwrap();
-        assert!(received.once);
-        assert!(!received.playing);
-        assert_eq!(received.generation, 42);
-        assert_eq!(serde_json::to_vec(&received.scene.state).unwrap(), initial);
-        drop(receive);
-        assert_eq!(
-            queue_work(&send, received),
-            Err("The simulation worker is unavailable".into())
-        );
-    }
-
-    #[test]
-    fn export_reports_early_and_late_io_failures_and_preserves_live_state() {
-        let dir = tempfile::tempdir().unwrap();
-        let avatar = dir.path().join("avatar.obj");
-        std::fs::write(&avatar, "v 0 0 -10\nv 1 0 -10\nv 0 1 -10\nf 1 2 3\n").unwrap();
-        let project = FittingProject::basic(GarmentKind::Dress, 1, avatar);
-        let mut scene = project.compile().unwrap();
-        scene.state.time = 1.25;
-        scene.state.v[0] = glam::DVec3::new(0.1, 0.2, 0.3);
-        let state_before = serde_json::to_vec(&scene.state).unwrap();
-        let project_before = serde_json::to_vec(&project).unwrap();
-        let settings = VbdSettings::default();
-
-        let blocked = dir.path().join("not-a-directory");
-        std::fs::write(&blocked, "keep").unwrap();
-        assert!(export_session(&project, &scene, &settings, &blocked).is_err());
-        assert_eq!(std::fs::read_to_string(&blocked).unwrap(), "keep");
-
-        let late = dir.path().join("late-failure");
-        std::fs::create_dir_all(late.join("fitting-project.json")).unwrap();
-        assert!(export_session(&project, &scene, &settings, &late).is_err());
-
-        let valid = dir.path().join("valid");
-        export_session(&project, &scene, &settings, &valid).unwrap();
-        let restored = FittingProject::load(&valid.join("fitting-project.json")).unwrap();
-        assert_eq!(
-            serde_json::to_vec(restored.state.as_ref().unwrap()).unwrap(),
-            state_before
-        );
-        assert_eq!(serde_json::to_vec(&scene.state).unwrap(), state_before);
-        assert_eq!(serde_json::to_vec(&project).unwrap(), project_before);
-    }
-}
-
 fn camera() -> Camera {
     Camera {
         yaw: 0.10,
@@ -981,5 +911,75 @@ impl eframe::App for Atelier {
             }
             ctx.request_repaint_after(Duration::from_millis(30));
         }
+    }
+}
+
+#[cfg(test)]
+mod command_action_tests {
+    use super::*;
+
+    #[test]
+    fn simulation_submission_reports_disconnection_without_running_a_solver() {
+        let dir = tempfile::tempdir().unwrap();
+        let avatar = dir.path().join("avatar.obj");
+        std::fs::write(&avatar, "v 0 0 -10\nv 1 0 -10\nv 0 1 -10\nf 1 2 3\n").unwrap();
+        let project = FittingProject::basic(GarmentKind::Dress, 1, avatar);
+        let scene = project.compile().unwrap();
+        let initial = serde_json::to_vec(&scene.state).unwrap();
+        let work = Work {
+            generation: 42,
+            scene,
+            settings: VbdSettings::default(),
+            grab: None,
+            gpu: false,
+            ctx: egui::Context::default(),
+            playing: false,
+            once: true,
+        };
+        let (send, receive) = mpsc::channel();
+        queue_work(&send, work).unwrap();
+        let received = receive.try_recv().unwrap();
+        assert!(received.once);
+        assert!(!received.playing);
+        assert_eq!(received.generation, 42);
+        assert_eq!(serde_json::to_vec(&received.scene.state).unwrap(), initial);
+        drop(receive);
+        assert_eq!(
+            queue_work(&send, received),
+            Err("The simulation worker is unavailable".into())
+        );
+    }
+
+    #[test]
+    fn export_reports_early_and_late_io_failures_and_preserves_live_state() {
+        let dir = tempfile::tempdir().unwrap();
+        let avatar = dir.path().join("avatar.obj");
+        std::fs::write(&avatar, "v 0 0 -10\nv 1 0 -10\nv 0 1 -10\nf 1 2 3\n").unwrap();
+        let project = FittingProject::basic(GarmentKind::Dress, 1, avatar);
+        let mut scene = project.compile().unwrap();
+        scene.state.time = 1.25;
+        scene.state.v[0] = glam::DVec3::new(0.1, 0.2, 0.3);
+        let state_before = serde_json::to_vec(&scene.state).unwrap();
+        let project_before = serde_json::to_vec(&project).unwrap();
+        let settings = VbdSettings::default();
+
+        let blocked = dir.path().join("not-a-directory");
+        std::fs::write(&blocked, "keep").unwrap();
+        assert!(export_session(&project, &scene, &settings, &blocked).is_err());
+        assert_eq!(std::fs::read_to_string(&blocked).unwrap(), "keep");
+
+        let late = dir.path().join("late-failure");
+        std::fs::create_dir_all(late.join("fitting-project.json")).unwrap();
+        assert!(export_session(&project, &scene, &settings, &late).is_err());
+
+        let valid = dir.path().join("valid");
+        export_session(&project, &scene, &settings, &valid).unwrap();
+        let restored = FittingProject::load(&valid.join("fitting-project.json")).unwrap();
+        assert_eq!(
+            serde_json::to_vec(restored.state.as_ref().unwrap()).unwrap(),
+            state_before
+        );
+        assert_eq!(serde_json::to_vec(&scene.state).unwrap(), state_before);
+        assert_eq!(serde_json::to_vec(&project).unwrap(), project_before);
     }
 }
