@@ -2441,6 +2441,12 @@ impl Atelier {
         true
     }
     fn paint_board(&mut self, ui: &egui::Ui, rect: egui::Rect, response: &egui::Response) {
+        // Selection can change while the Piece inspector is hidden.
+        if self.authoring.dart.as_ref().is_some_and(|d| {
+            self.authoring.tool != Tool::Edit || !d.matches_boundary(self.authoring.edge.as_ref())
+        }) {
+            self.authoring.dart = None;
+        }
         let mut smoke_targets: Vec<(String, egui::Pos2)> = vec![];
         let painter = ui.painter().with_clip_rect(rect);
         // The pattern board is a white drafting sheet; the 3D window has its own
@@ -2729,6 +2735,53 @@ impl Atelier {
                     paint_panel_dimensions(&painter, &point, panel);
                 }
             }
+        }
+        if self.authoring.tool == Tool::Edit
+            && let Some(draft) = &self.authoring.dart
+            && let Some(i) = self
+                .project
+                .template
+                .panels
+                .iter()
+                .position(|p| p.id == draft.panel())
+            && let Ok(points) = draft.preview(&self.project.template)
+        {
+            let origin = self.board_origin(i);
+            let angle = self.board_angle(i);
+            let [left, apex, right] =
+                points.map(|p| board.screen(rect, origin + authoring::rotate_2d(p, angle)));
+            let color = Color32::from_rgb(190, 60, 130);
+            if let Some(start) = draft.boundary_start(&self.project.template) {
+                let start = board.screen(rect, origin + authoring::rotate_2d(start, angle));
+                painter.circle_stroke(start, 5., Stroke::new(1.5, color));
+                painter.arrow(
+                    start,
+                    ((left - start) + (right - start)) * 0.5,
+                    Stroke::new(1., color),
+                );
+                painter.text(
+                    start + Vec2::new(8., 8.),
+                    egui::Align2::LEFT_TOP,
+                    "Edge start · 0 mm",
+                    egui::FontId::proportional(11.),
+                    color,
+                );
+            }
+            painter.add(egui::Shape::convex_polygon(
+                vec![left, apex, right],
+                color.gamma_multiply(0.15),
+                Stroke::new(1., color),
+            ));
+            painter.line_segment([left, apex], Stroke::new(2.5, color));
+            painter.line_segment([apex, right], Stroke::new(2.5, color));
+            painter.circle_filled(apex, 4., color);
+            painter.text(
+                apex + Vec2::new(8., -8.),
+                egui::Align2::LEFT_BOTTOM,
+                "Dart preview",
+                egui::FontId::proportional(12.),
+                color,
+            );
         }
         self.paint_seam_links(&painter, rect, false);
         let point = |uv| board.screen(rect, uv);
