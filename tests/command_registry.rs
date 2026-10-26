@@ -28,13 +28,11 @@ fn every_command_has_a_unique_stable_key_and_a_real_descriptor() {
         assert!(desc.key.contains('.'), "{:?}", desc.id);
         assert!(keys.insert(desc.key));
         assert!(ids.insert(desc.id));
-        assert_eq!(CommandId::parse(desc.key), Some(desc.id));
         assert_eq!(desc.id.descriptor(), desc);
         assert_eq!(availability(desc.id, ready()), Ok(()));
     }
-    assert_eq!(CommandId::parse("future.magic_auto_fit"), None);
-    assert_eq!(CommandId::parse("simulation.gpu_xpbd"), None);
-    assert_eq!(CommandId::parse(""), None);
+    assert!(!keys.contains("future.magic_auto_fit"));
+    assert!(!keys.contains("simulation.gpu_xpbd"));
 }
 
 #[test]
@@ -53,7 +51,14 @@ fn unavailable_commands_cannot_pass_the_dispatch_gate() {
     for descriptor in REGISTRY {
         assert_eq!(
             availability(descriptor.id, context),
-            Err(UnavailableReason::NoDocument)
+            if matches!(
+                descriptor.context,
+                CommandContext::Simulation | CommandContext::File
+            ) {
+                Err(UnavailableReason::NoDocument)
+            } else {
+                Ok(())
+            }
         );
     }
     context = ready();
@@ -102,7 +107,11 @@ fn metadata_matches_actual_workspace_side_effects() {
 
     assert_eq!(
         CommandId::LoadTshirt.descriptor().undo,
-        UndoPolicy::AuthoringSnapshot
+        UndoPolicy::TemplateHistory
+    );
+    assert_eq!(
+        CommandId::ResetSimulation.descriptor().undo,
+        UndoPolicy::NotUndoable
     );
     assert_eq!(
         CommandId::ResetLayout.descriptor().undo,

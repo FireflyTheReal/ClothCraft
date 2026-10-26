@@ -35,8 +35,9 @@ pub enum UndoPolicy {
     NotUndoable,
     /// Saved as a user preference, outside the garment authoring history.
     Preference,
-    /// Loading a garment records the previous garment in authoring history.
-    AuthoringSnapshot,
+    /// Restores only the previous template through authoring history, not
+    /// simulated positions, velocities, solver caches or files on disk.
+    TemplateHistory,
     /// Writes files; undo does not remove or restore files on disk.
     ExternalSideEffect,
 }
@@ -99,7 +100,7 @@ pub const REGISTRY: &[CommandDescriptor] = &[
         "Reset flat arrangement",
         Simulation,
         None,
-        AuthoringSnapshot,
+        NotUndoable,
         NativeWorkspace
     ),
     entry!(
@@ -171,7 +172,7 @@ pub const REGISTRY: &[CommandDescriptor] = &[
         "Load T-shirt example",
         Example,
         None,
-        AuthoringSnapshot,
+        TemplateHistory,
         NativeWorkspace
     ),
     entry!(
@@ -180,7 +181,7 @@ pub const REGISTRY: &[CommandDescriptor] = &[
         "Load dress example",
         Example,
         None,
-        AuthoringSnapshot,
+        TemplateHistory,
         NativeWorkspace
     ),
 ];
@@ -191,10 +192,6 @@ impl CommandId {
             .iter()
             .find(|d| d.id == self)
             .expect("registry must cover every command")
-    }
-
-    pub fn parse(key: &str) -> Option<Self> {
-        REGISTRY.iter().find(|d| d.key == key).map(|d| d.id)
     }
 }
 
@@ -232,7 +229,12 @@ impl UnavailableReason {
 
 pub fn availability(id: CommandId, ctx: CapabilityContext) -> Result<(), UnavailableReason> {
     let descriptor = id.descriptor();
-    if !ctx.document_loaded {
+    if !ctx.document_loaded
+        && matches!(
+            descriptor.context,
+            CommandContext::Simulation | CommandContext::File
+        )
+    {
         return Err(UnavailableReason::NoDocument);
     }
     match descriptor.backend {
