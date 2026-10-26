@@ -25,19 +25,29 @@ jobs:
     env:
       RAYON_NUM_THREADS: 2
       CARGO_INCREMENTAL: 0
+      WGPU_BACKEND: dx12
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - name: Use a supported desktop resolution
+        shell: powershell
+        run: Set-DisplayResolution -Width 1920 -Height 1080 -Force
+      - name: Record the hosted Windows graphics adapter
+        run: |
+          $video = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue |
+            Select-Object Name, DriverVersion, Status
+          $video | Format-Table -AutoSize | Out-String | Write-Host
       - name: Test the CPU core
         run: cargo test --locked --no-default-features -j 2 -- --test-threads=2
       - name: Build portable executables
         run: >-
           cargo build --locked --release -j 2 --features desktop
           --bin cloth-fit --bin marvelous-cloth --bin cloth-template
-      - name: Package, verify hashes and reopen from a directory with spaces
+      - name: Package, verify hashes and run native editor launch/capture from a path with spaces
+        timeout-minutes: 10
         run: |
           $destination = Join-Path $env:RUNNER_TEMP 'ClothCraft Portable Preview'
-          ./scripts/package-windows.ps1 -Destination $destination -Revision $env:GITHUB_SHA -Verify
+          ./scripts/package-windows.ps1 -Destination $destination -Revision $env:GITHUB_SHA -Verify -UiSmoke
           $refused = $false
           try {
             ./scripts/package-windows.ps1 -Destination $destination -Revision $env:GITHUB_SHA
@@ -46,6 +56,19 @@ jobs:
             $refused = $true
           }
           if (-not $refused) { throw 'Packaging unexpectedly overwrote an existing destination' }
+      - name: Upload native smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clothcraft-windows-native-smoke-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/ClothCraft Portable Preview.verify/ui-smoke
+            ${{ runner.temp }}/ClothCraft Portable Preview.verify/ui-project-seed
+            ${{ runner.temp }}/ClothCraft Portable Preview.verify/ui-smoke.out.log
+            ${{ runner.temp }}/ClothCraft Portable Preview.verify/ui-smoke.err.log
+            ${{ runner.temp }}/ClothCraft Portable Preview.verify/ui-project-seed.out.log
+            ${{ runner.temp }}/ClothCraft Portable Preview.verify/ui-project-seed.err.log
       - name: Upload portable preview and archive checksum
         uses: actions/upload-artifact@v4
         with:
