@@ -261,8 +261,9 @@ impl Edit {
             let a = old.vertices.clone();
             let b = new.vertices.clone();
             if previous.mesh.uv[a.clone()] != self.garment.mesh.uv[b.clone()]
-                || previous.initial_state.x[a.clone()] != self.garment.initial_state.x[b.clone()]
-                || previous.mesh.pins[a.clone()] != self.garment.mesh.pins[b.clone()]
+                || previous.arrangement_positions[a.clone()]
+                    != self.garment.arrangement_positions[b.clone()]
+                || previous.legacy_pins[a.clone()] != self.garment.legacy_pins[b.clone()]
                 || !previous.mesh.triangles[old.triangles.clone()]
                     .iter()
                     .map(|t| t.vertices.map(|i| i - a.start))
@@ -273,10 +274,204 @@ impl Edit {
                 continue;
             }
             next.x[b.clone()].copy_from_slice(&state.x[a.clone()]);
-            next.v[b].copy_from_slice(&state.v[a]);
+            next.v[b.clone()].copy_from_slice(&state.v[a.clone()]);
+            for (old_i, new_i) in a.zip(b) {
+                if self.garment.authored_holds[new_i] {
+                    let target = self.garment.mesh.pins[new_i].expect("compiled authored target");
+                    next.x[new_i] = target;
+                    next.v[new_i] = DVec3::ZERO;
+                } else if previous.authored_holds[old_i] {
+                    // A released hold never resurrects momentum from before pinning.
+                    next.v[new_i] = DVec3::ZERO;
+                }
+            }
         }
         next
     }
+}
+
+/// Prepare a pin/release transaction and continuous candidate state. The caller
+/// must run its physical initialization gate before recording or installing it.
+pub fn prepare_pin_edit(
+    source: &GarmentTemplate,
+    compiled: &CompiledGarment,
+    state: &State,
+    panel: &str,
+    selection: &[DVec2],
+    hold: bool,
+) -> Result<(Edit, State), String> {
+    use crate::garment::pins::MaterialPinTarget;
+    if source.frozen_panels.iter().any(|p| p.panel == panel) {
+        return Err("Release the frozen panel before editing individual pins".into());
+    }
+    let captured = capture_pin_targets(source, compiled, state, panel, Some(selection))?;
+    if compiled
+        .mesh
+        .pins
+        .iter()
+        .zip(&state.x)
+        .any(|(pin, x)| pin.is_some_and(|target| target.distance(*x) > 1e-10))
+    {
+        return Err("Current state disagrees with existing pin targets".into());
+    }
+    let mut template = source.clone();
+    template
+        .pin_targets
+        .retain(|target| target.panel != panel || !selection.contains(&target.uv));
+    if hold {
+        template
+            .pin_targets
+            .extend(captured.into_iter().map(|(uv, world)| MaterialPinTarget {
+                panel: panel.to_owned(),
+                uv,
+                world,
+            }));
+        template.version = 2;
+    }
+    let garment = template.compile()?;
+    let edit = Edit {
+        reset_simulation: !same_physics(source, &template),
+        template,
+        garment,
+        selected: Some(panel.to_owned()),
+        new_point: None,
+    };
+    let next = edit.state_after(compiled, state);
+    Ok((edit, next))
+}
+
+/// Freeze/release a complete sampled panel without consuming history or
+/// installing it. Existing individual/legacy pins survive panel release.
+pub fn prepare_freeze_edit(
+    source: &GarmentTemplate,
+    compiled: &CompiledGarment,
+    state: &State,
+    panel: &str,
+    freeze: bool,
+) -> Result<(Edit, State), String> {
+    use crate::garment::pins::{FrozenPanel, MaterialPinTarget, topology_fingerprint};
+    let captured = capture_pin_targets(source, compiled, state, panel, None)?;
+    if compiled
+        .mesh
+        .pins
+        .iter()
+        .zip(&state.x)
+        .any(|(pin, x)| pin.is_some_and(|target| target.distance(*x) > 1e-10))
+    {
+        return Err("Current state disagrees with existing pin targets".into());
+    }
+    let mut template = source.clone();
+    template.frozen_panels.retain(|p| p.panel != panel);
+    if freeze {
+        template.frozen_panels.push(FrozenPanel {
+            panel: panel.to_owned(),
+            topology: topology_fingerprint(compiled, panel)?,
+            targets: captured
+                .into_iter()
+                .map(|(uv, world)| MaterialPinTarget {
+                    panel: panel.to_owned(),
+                    uv,
+                    world,
+                })
+                .collect(),
+        });
+        template.version = 2;
+    }
+    let garment = template.compile()?;
+    let edit = Edit {
+        reset_simulation: !same_physics(source, &template),
+        template,
+        garment,
+        selected: Some(panel.to_owned()),
+        new_point: None,
+    };
+    let next = edit.state_after(compiled, state);
+    Ok((edit, next))
+}
+
+/// Capture world targets without editing a document or applying constraints.
+/// `None` captures the complete panel; a selection contains exact material UVs
+/// obtained from its compiled mesh (not arbitrary coordinates or mesh indices).
+/// Call only on an explicit action: validation recompiles the source once.
+pub fn capture_pin_targets(
+    source: &GarmentTemplate,
+    compiled: &CompiledGarment,
+    state: &State,
+    panel: &str,
+    selected_uvs: Option<&[DVec2]>,
+) -> Result<Vec<(DVec2, DVec3)>, String> {
+    const MAX_TARGETS: usize = 65_536;
+    let n = compiled.mesh.uv.len();
+    if state.x.len() != n
+        || state.v.len() != n
+        || !state.time.is_finite()
+        || state.x.iter().chain(&state.v).any(|v| !v.is_finite())
+    {
+        return Err("Pin capture requires a finite state matching the compiled garment".into());
+    }
+    let fresh = source.compile()?;
+    if fresh.mesh.uv != compiled.mesh.uv
+        || fresh.initial_state.x != compiled.initial_state.x
+        || fresh.mesh.pins != compiled.mesh.pins
+        || fresh.arrangement_positions != compiled.arrangement_positions
+        || fresh.legacy_pins != compiled.legacy_pins
+        || fresh.authored_holds != compiled.authored_holds
+        || !fresh.mesh.triangles.iter().map(|t| t.vertices).eq(compiled
+            .mesh
+            .triangles
+            .iter()
+            .map(|t| t.vertices))
+        || !fresh
+            .panels
+            .iter()
+            .map(|p| (&p.id, &p.vertices))
+            .eq(compiled.panels.iter().map(|p| (&p.id, &p.vertices)))
+    {
+        return Err("Pin capture source is stale; rebuild the garment before capturing".into());
+    }
+    let range = compiled
+        .panels
+        .iter()
+        .find(|p| p.id == panel)
+        .ok_or("Select an existing panel for pin capture")?
+        .vertices
+        .clone();
+    let count = selected_uvs.map_or(range.len(), <[DVec2]>::len);
+    if count == 0 || count > MAX_TARGETS {
+        return Err("Capture between 1 and 65536 material targets at a time".into());
+    }
+    // Canonicalize signed zero. Other values are exact compiled coordinates;
+    // no nearest-vertex fallback may silently move a requested attachment.
+    let key = |uv: DVec2| [uv.x, uv.y].map(|v| if v == 0. { 0 } else { v.to_bits() });
+    let mut vertices = std::collections::BTreeMap::new();
+    for i in range.clone() {
+        let uv = compiled.mesh.uv[i];
+        if !uv.is_finite() || vertices.insert(key(uv), i).is_some() {
+            return Err("Panel contains ambiguous material vertices".into());
+        }
+    }
+    let mut used = std::collections::BTreeSet::new();
+    let ids = if let Some(points) = selected_uvs {
+        points
+            .iter()
+            .map(|uv| {
+                if !uv.is_finite() || !used.insert(key(*uv)) {
+                    return Err(
+                        "Pin selection contains non-finite or duplicate coordinates".to_string()
+                    );
+                }
+                vertices.get(&key(*uv)).copied().ok_or_else(|| {
+                    "Pin selection must identify exact compiled material vertices".into()
+                })
+            })
+            .collect::<Result<Vec<_>, String>>()?
+    } else {
+        range.collect()
+    };
+    Ok(ids
+        .into_iter()
+        .map(|i| (compiled.mesh.uv[i], state.x[i]))
+        .collect())
 }
 
 pub fn layout(template: &GarmentTemplate, index: usize) -> DVec2 {
@@ -704,6 +899,38 @@ pub fn constructed_point(
 }
 
 pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String> {
+    let held = |id: &str| {
+        source.pin_targets.iter().any(|p| p.panel == id)
+            || source.frozen_panels.iter().any(|p| p.panel == id)
+    };
+    let unsupported_hold_copy = match &command {
+        Command::Duplicate { panel }
+        | Command::LinkedMirror { panel, .. }
+        | Command::Mirror { panel, .. }
+        | Command::Place { panel, .. } => held(panel),
+        Command::PlaceGroup { panels, .. } => panels.iter().any(|p| held(p)),
+        Command::Primitive { replace: true, .. } | Command::Polygon { replace: true, .. } => {
+            !source.pin_targets.is_empty() || !source.frozen_panels.is_empty()
+        }
+        Command::Paste { clipboard, .. } => {
+            // Clipboard target remapping is not implemented. Reject explicitly
+            // instead of allowing the existing panel-only paste to drop holds.
+            let value = serde_json::to_value(clipboard).map_err(|e| e.to_string())?;
+            value["template"]["pin_targets"]
+                .as_array()
+                .is_some_and(|p| !p.is_empty())
+                || value["template"]["frozen_panels"]
+                    .as_array()
+                    .is_some_and(|p| !p.is_empty())
+        }
+        _ => false,
+    };
+    if unsupported_hold_copy {
+        return Err(
+            "Release authored pins before copying, mirroring, replacing or arranging held panels"
+                .into(),
+        );
+    }
     linked::check_command(source, &command)?;
     let mut template = source.clone();
     let mut selected = None;
@@ -1693,6 +1920,12 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
         }
     }
     linked::synchronize(source, &mut template)?;
+    template
+        .pin_targets
+        .retain(|target| template.panels.iter().any(|p| p.id == target.panel));
+    template
+        .frozen_panels
+        .retain(|target| template.panels.iter().any(|p| p.id == target.panel));
     let garment = template.compile()?;
     Ok(Edit {
         reset_simulation: !same_physics(source, &template),
@@ -1777,6 +2010,16 @@ impl History {
         !self.redo.is_empty()
     }
     pub fn restore(&mut self, current: &GarmentTemplate, redo: bool) -> Result<Edit, String> {
+        self.restore_checked(current, redo, |_| Ok(()))
+    }
+    /// Validate the complete candidate before consuming either history stack.
+    /// Native callers can reject physically invalid restored targets atomically.
+    pub fn restore_checked(
+        &mut self,
+        current: &GarmentTemplate,
+        redo: bool,
+        validate: impl FnOnce(&Edit) -> Result<(), String>,
+    ) -> Result<Edit, String> {
         let (from, to) = if redo {
             (&mut self.redo, &mut self.undo)
         } else {
@@ -1784,14 +2027,16 @@ impl History {
         };
         let template = from.last().ok_or("History is empty")?;
         let garment = template.compile()?;
-        let template = from.pop().unwrap();
-        to.push(current.clone());
-        Ok(Edit {
-            reset_simulation: !same_physics(current, &template),
-            template,
+        let edit = Edit {
+            reset_simulation: !same_physics(current, template),
+            template: template.clone(),
             garment,
             selected: None,
             new_point: None,
-        })
+        };
+        validate(&edit)?;
+        from.pop();
+        to.push(current.clone());
+        Ok(edit)
     }
 }

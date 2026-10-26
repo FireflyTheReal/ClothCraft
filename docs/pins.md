@@ -1,16 +1,61 @@
 # Pin and freeze implementation contract
 
-Status: design and scope for EXO-AV-003, issue #116. The native pin/freeze
-tool described here is not implemented yet. Do not advertise these controls
-until their production paths and acceptance tests exist.
+Status: implementation branch `codex/pin-acceptance`, EXO-AV-003, issue #116.
+Native inspector integration is implemented; a real-window acceptance run is
+still pending. Do not mark the task
+complete based on the CPU prerequisites alone.
+
+## Inspector controls
+
+Pause simulation, select a panel and open its Piece inspector. **Freeze panel**
+holds its current shape; **Unfreeze panel** releases the freeze while retaining
+individual pins. On polygon panels, selected contour points in the active panel
+can be pinned/unpinned. **Release panel pins** removes all authored individual
+pins on that panel. These controls leave legacy template pins unchanged.
+Cross-panel contour selection applies only to the active panel in this first UI.
+
+Controls are disabled while simulation/worker work or placement previews are
+active. Applying a hold and restoring holds through Undo/Redo runs the existing
+CPU VBD initialization check before consuming history or installing the edit.
+This is an explicit-action cost, never a per-repaint check. Initialization checks
+the candidate endpoint; it does not certify a continuous path for Undo moves.
+
+The `codex/pin-acceptance` implementation branch contains CPU prerequisites:
+current-state target capture and `garment::pins::resolve_targets`. The latter
+validates finite material/world coordinates, bounded target counts, exact
+unambiguous panel/UV identity, duplicate requests and existing pin conflicts
+without mutating the compiled mesh. Its record can round-trip through serde,
+and `GarmentTemplate.pin_targets` now carries these optional version-2 records.
+Empty records are omitted, preserving legacy serialized fields. Compilation
+resolves targets and initializes held vertices at their world targets, while
+retaining the original arrangement and legacy constraints separately.
+`prepare_pin_edit` prepares a pin/release candidate without committing history;
+its caller must still run the physical initialization gate. `restore_checked`
+allows that gate to reject an undo/redo before consuming history. The native
+inspector and held-document undo/redo paths now use this validation.
+
+This initial branch rejects copying/pasting authored holds, mirroring or
+arranging held panels, and replacing a held garment. Clipboard capture can
+still include unrelated hold metadata; paste refuses it explicitly rather
+than dropping constraints. Filtering/remapping clipboard holds requires a
+separate scope amendment. Deleting a panel removes only that panel's targets.
+An individual pin survives a remesh only when its exact material vertex remains.
+`frozen_panels` stores complete sampled target sets and a versioned FNV-1a
+material-topology fingerprint. Compilation rejects missing/duplicate points,
+conflicting holds and changed topology; the fingerprint detects changes and is
+not a cryptographic authenticity check. `prepare_freeze_edit` captures the
+current shape or removes the freeze without removing independent pins. These
+transactions remain uncommitted candidates until the native initialization gate
+accepts them. Empty freeze records are omitted from legacy serialization.
 
 ## Current behavior
 
 `Panel.pin_points` identifies rest-mesh vertices by material coordinates.
 Compilation binds them to the panel's initial placement. Legacy rectangular
-corner pins behave similarly. `Edit::state_after` currently resets a panel
-when its compiled pins change. Exposing that behavior as “pin here” would
-return draped cloth to its arrangement, including on release.
+corner pins behave similarly. `Edit::state_after` still resets a panel when
+legacy pins, rest topology or arrangement change. Authored target changes
+instead preserve the compatible drape, set held targets/velocities and release
+from zero held velocity. Rest coordinates never come from the drape.
 
 The inspected EXO protocol at `352c6086b622` serializes pins and a locked flag;
 it does not establish a physical freeze algorithm. This design is independent
@@ -76,3 +121,18 @@ the edit. Add named-widget tests for the actual controls.
 
 CPU evidence does not replace a native-window check. GPU use remains opt-in.
 Keep solver, energy, contact kernels and worker algorithms unchanged.
+
+The branch passes 113 desktop CPU tests (one optional preview ignored), eleven
+pin/freeze CPU fixtures and strict desktop Clippy. Fixtures include full fitting
+project save/reopen with cached x/v/time, hold-sensitive cache invalidation,
+empty-field serialization compatibility, physical freeze/release, named
+controls and avatar-initialization rejection. The widget fixture exercises the
+production controls and preparation gate; it does not instantiate a native
+window. The production installer/generation fixture also covers freeze, rejected
+avatar initialization during Undo, successful release and stale worker results.
+
+CI caught a compatibility regression in the first PR revision: state restoration
+reapplied unchanged legacy pins during copying. Explicit compiled authored-hold
+membership now limits restoration to the new constraints, including authored
+targets which coincide with legacy pins. The existing clipboard test remains
+unchanged and is part of the regression gate.
