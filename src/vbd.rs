@@ -80,6 +80,45 @@ pub struct GpuStepProfile {
     /// Scope cleanup after the internal step timer, included in full step_ms.
     pub cleanup_ms: f64,
 }
+
+/// One-shot, read-only measurement of an accepted VBD step. The sample is
+/// produced after the step and never changes the accepted trajectory.
+#[derive(Clone, Debug, Serialize)]
+pub struct FinalDiagnostics {
+    /// Physical time of the accepted state.
+    pub state_time_s: f64,
+    /// The accepted step duration used by the implicit-Euler residual.
+    pub step_dt_s: f64,
+    /// Total wall time of the sample, including detection and force audit.
+    pub sample_ms: f64,
+    /// Final accepted-position OGC detection time inside `sample_ms`.
+    pub detection_ms: f64,
+    /// Free-degree force-audit time inside `sample_ms`.
+    pub residual_ms: f64,
+    pub backend: FinalDiagnosticsBackend,
+    pub contacts: usize,
+    /// Retained nearby interactions, including currently inactive potentials.
+    pub contact_terms: usize,
+    /// Minimum signed feature separation when at least one retained term
+    /// exists; `None` means no contact term, never a fabricated distance.
+    pub minimum_distance_m: Option<f64>,
+    pub free_vertices: usize,
+    /// RMS over free translational degrees of freedom. `None` when every
+    /// vertex is pinned; an unavailable value is never reported as zero.
+    pub residual_rms_n: Option<f64>,
+    pub residual_kind: &'static str,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FinalDiagnosticsBackend {
+    /// The accepted step and the final-state audit both used the CPU solver.
+    Cpu,
+    /// The accepted state came from the GPU backend; the audit itself is the
+    /// CPU force path, so no GPU timing or GPU residual is claimed.
+    CpuAuditOfGpuState,
+}
+
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct VbdMetrics {
     pub seam_blocks: SeamBlockMetrics,

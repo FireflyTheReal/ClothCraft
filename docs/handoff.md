@@ -22,6 +22,80 @@ command registry remains a separate contribution: review found a failing
 `cloth-fit` Clippy check and error propagation that needs correction before
 integration. Preserve its accepted ownership and consult issue #21.
 
+## Final-state diagnostics — 25 October 2026
+
+Task EXO-PHY-004 / issue #72 adds an opt-in **Sample final state** action to
+the native Simulation inspector. It follows one accepted step and reports
+final OGC contact count/separation when present, the free-DOF backward-Euler
+residual in newtons, sample and detection cost, backend and freshness. The
+sample is read-only: it clones the collision world before the fresh detection,
+so it cannot warm the next step's cache or change the accepted trajectory.
+Pinned vertices are excluded; no free vertices yields `None`, never a fake
+zero; no contact term also yields an unavailable separation.
+
+Residual definition: for free vertex `i`, `r_i = m_i (v_i+ - v_i-) / dt +
+damping * m_i * v_i+ - F_i`, where `F` is the existing physical force at the
+accepted positions with **final** contacts (gravity, membrane, bending, sewing,
+contact and grab). The UI reports `sqrt(sum |r_i|^2 / (3 * N_free))`. It is an
+unconstrained gradient, not a KKT/constrained-equilibrium or per-color
+mixed-gradient certificate. The in-step `detection_ms` contact set is an
+earlier query and is labelled separately.
+
+Review of PR #66: its accepted-position detection and free-DOF residual
+semantics are the useful precedent. This slice does not import its removal of
+`src/vbd/audit.rs`, its large GPU-path rewrite, its authoring changes or its
+final-separation rejection gate. The current audit, directional bounds, sparse
+precision, predictor, collision coverage, contact refresh and rejection policy
+are unchanged.
+
+Implementation: `FinalDiagnostics` plus the one-shot solver method are in
+`src/vbd.rs`/`src/vbd/audit.rs`; the worker owns a one-shot request/result slot
+keyed by solver generation and a monotonic request id, and clears it when the
+generation changes; `src/atelier/chrome.rs` provides the named control,
+identity filtering and presentation. The worker slot is deliberately outside
+the per-step `Latest` snapshot so a slow frame cannot lose a completed sample.
+A request for a newer generation is kept queued until the worker accepts that
+generation; results from older generations or older requests are ignored even
+when physical timestamps match. A proper worker command channel would need
+`src/atelier.rs`, which is outside this task's scope.
+
+Validation (CPU only; no GPU or native window):
+
+- `cargo fmt --all -- --check`
+- `RAYON_NUM_THREADS=2 cargo test --locked --no-default-features -j 2 -- --test-threads=2`
+- `cargo clippy --locked --no-default-features --all-targets -j 2 -- -D warnings`
+- `cargo clippy --locked --features desktop --bin cloth-fit --tests -j 2 -- -D warnings`
+- `cargo test --locked --features desktop -j 2 --bin cloth-fit final_diagnostics_tests -- --test-threads=2` (3 named-widget/presentation tests)
+- `cargo test --locked --features desktop -j 2 --bin cloth-fit final_diagnostics -- --test-threads=2` (7 diagnostics transport/presentation tests)
+- template validation for `two-panel`, `local-ease`, `tshirt`, `dress`,
+  `curved-panels` and `partial-chain`.
+
+The new `tests/vbd_final_diagnostics.rs` checks accepted contacts against a
+fresh detection, the residual against a finite-difference objective with
+contact, seam, inertia and grab terms, pinned normalization, state preservation,
+the one-accepted-step contract and that sampling does not change the next
+accepted trajectory.
+
+Indicative medians of five steps on this machine (CPU test profile,
+`RAYON_NUM_THREADS=2`): 16 vertices, step 3.93 ms / sample 0.30 ms; 60 vertices,
+7.99 / 0.66 ms; 2,454 vertices, 155.68 / 26.61 ms. The sample is outside
+`step_ms`, and the default step pays only one atomic request poll. These are
+small local fixtures, not a portable performance gate; keep sampling opt-in.
+A GPU-accepted state is audited on the CPU and labelled "GPU-accepted state /
+CPU audit (GPU timings unavailable)"; no GPU residual or timing is claimed.
+Sampling while paused advances one step, as stated in the button tooltip.
+While playing, a sample becomes stale on later states; pause to inspect it.
+
+At the compact contact barrier's activation radius the potential is only
+piecewise smooth: a tiny penetration can carry a large accepted-side force
+that a finite-difference step outside the support does not see. The sample
+reports that force without regularizing or hiding it. Use final contacts
+strictly inside the support for gradient comparisons; a boundary sample is not
+a convergence measurement.
+
+Branch: `FireflyTheReal:agent/exo-phy-004-final-diagnostics`
+PR: https://github.com/erythrofr/ClothCraft/pull/76
+
 ## Construction preview follow-up — 23 October 2026
 
 PR #38 now includes an auto-scaled, read-only board-space diagram in the
