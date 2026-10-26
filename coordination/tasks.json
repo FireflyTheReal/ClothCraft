@@ -1528,6 +1528,7 @@
       "scope": [
         "src/atelier/selection.rs",
         "src/atelier/gizmo.rs",
+          "src/atelier/authoring_ui.rs",
         "src/authoring.rs",
         "tests/group_placement.rs",
         "src/atelier.rs"
@@ -1535,13 +1536,14 @@
       "acceptance": [
         "Define visible-only versus through selection and the group transform pivot.",
         "Commit one transaction, preserving each panel rest shape and explicit drape reset policy.",
-        "Test cancel/undo, linked pairs, hidden geometry and generation invalidation."
+          "Test cancel/undo, linked pairs, hidden geometry and generation invalidation.",
+          "For remaining headless acceptance, extract the existing CPU install/cancel transitions behind thin Atelier wrappers and test those production functions. Preserve reset/selection/history semantics; do not create a test-only replacement installer or change physics."
       ],
       "evidence": [
         "https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/meshSelection.js"
       ],
       "related_prs": [],
-      "notes": "Current 2D group point/panel selection already exists; avoid replacing it."
+        "notes": "Implementation merged in #105 as 2f9f9c5 after seven green checks at 4a4340a: shared-pivot group placement and bounded visible/Alt-through marquee. Four backend fixtures and 95 desktop CPU tests passed (one optional preview ignored). docs/group-placement.md records usage, pivot, drape-reset and sampling limits. Keep this task open for complete Atelier preview cancellation/worker-generation acceptance: current tests execute backend/helpers/named input, not the full GPU-dependent app. Source reservation is released. Claim the remaining validation slice rather than duplicating the implemented feature; scope expansion for a headless installer requires review."
     },
     {
       "id": "EXO-UX-005",
