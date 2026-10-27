@@ -90,7 +90,7 @@ Reference: [mikristian/exo-sample-3d@352c6086b622](https://github.com/mikristian
 | [EXO-IO-009](#exo-io-009) — Integrate static avatar import into the workspace | interchange | done | EXO-IO-007, EXO-UX-005 | [Issue](https://github.com/erythrofr/ClothCraft/issues/64) |
 | [EXO-IO-010](#exo-io-010) — Import reviewed DXF contours as editable native panels | interchange | done | EXO-IO-002 | Not registered |
 | [EXO-IO-011](#exo-io-011) — Import reviewed SVG patterns in the native workspace | interchange | ready | EXO-IO-001 | [Issue](https://github.com/erythrofr/ClothCraft/issues/103) |
-| [EXO-QA-005](#exo-qa-005) — Trace native appearance history through actual UI controls | validation | ready | EXO-QA-004 | [Issue](https://github.com/erythrofr/ClothCraft/issues/135) |
+| [EXO-QA-005](#exo-qa-005) — Trace native appearance history through actual UI controls | validation | done | EXO-QA-004 | [Issue](https://github.com/erythrofr/ClothCraft/issues/135) |
 
 ## EXO-COORD-001
 
@@ -1271,7 +1271,7 @@ Status: ready. Dependencies: EXO-CORE-001.
 - https://github.com/erythrofr/ClothCraft/issues/126
 - https://github.com/erythrofr/ClothCraft/pull/128
 
-Draft #128 at 654fd9d implements shared solid color/roughness controls and actual shader binding, with CPU tests of live drape/worker preservation for optical edits and undo/redo. Full local CPU gate and all seven hosted checks passed. A short authorized native test confirmed staged color application during simulation without a drape reset, but Undo did not respond in that interaction path; native undo/redo and conclusive roughness acceptance remain unresolved (PR comment 6423958356). CPU installer tests alone do not validate those interactions. Texture/normal assets and material-space texture transforms remain unsupported. Task stays incomplete. Review the open PR and docs/fabric-appearance.md before claiming follow-up work; the claim on #126 is released. Independent Rust/WGSL implementation, no upstream code or assets imported.
+Solid color and roughness merged in #128 as ff5053b after seven successful checks at 654fd9d. Shared Fabric inspector edits bind to actual rendering and preserve drape, worker state and physical cache identity. Acceptance harness #137 merged as 0b38329 after seven green checks at 647128e: native paused history, in-flight Apply/Undo/Redo, isolated Save/Open, visible roughness, exact RGB editing, independent-fabric isolation and flat strain-overlay precedence have recorded evidence at explicit revisions. The earlier manual Undo observation was not reproduced by instrumented native history checks; do not claim its root cause was established. Texture/normal assets and material-space transforms remain unsupported, so LOOK-001 stays incomplete. See docs/fabric-appearance.md and #137; no upstream code/assets imported.
 
 ## EXO-LOOK-002
 
@@ -1620,7 +1620,7 @@ Status: ready. Dependencies: EXO-UX-001.
 - https://github.com/mikristian/exo-sample-3d/blob/352c6086b622caeda95f16d9bd923624b95e05d9/src/core/workspaceCommandIndex.js
 - https://github.com/erythrofr/ClothCraft/pull/110
 
-Native palette merged in #110 as 742b4ef after seven green checks at d38e3d0. Commands button and Ctrl/Cmd+Shift+P search the existing registry; five CPU widget fixtures and 104 desktop tests passed (one optional preview ignored). docs/command-registry.md documents usage and limits. Keep the remaining native input-isolation/dispatch acceptance explicit; do not duplicate the implemented palette. Reservation released on #109.
+Palette merged in #110 as 742b4ef; backdrop dismissal/no-click-through regression merged in #142 as 2fb90fd. Commands or Ctrl/Cmd+Shift+P use the shared registry and dispatcher. Follow-up #143 at 1c516f3 tests the production launch boundary with actual egui text focus, modal, pointer and keyboard events; eight focused tests, 121 full desktop CPU tests (one optional preview ignored) and strict Clippy pass. #143 CI/review remain pending. Native platform input-isolation acceptance is still distinct; task remains incomplete. See docs/command-registry.md and #109. Source reservations released; inspect existing implementation before claiming follow-up work.
 
 ## EXO-UX-003
 
@@ -2286,7 +2286,7 @@ Native SVG adapter merged in #107 as 260646b after seven green checks at 3771fa9
 
 **Trace native appearance history through actual UI controls**
 
-Status: ready. Dependencies: EXO-QA-004.
+Status: done. Dependencies: EXO-QA-004.
 
 **Files / directories**
 
@@ -2309,4 +2309,4 @@ Status: ready. Dependencies: EXO-QA-004.
 - https://github.com/erythrofr/ClothCraft/pull/128
 - https://github.com/erythrofr/ClothCraft/pull/137
 
-QA implementation may be developed against the explicitly identified candidate branch without marking EXO-LOOK-001 complete or merging its feature. No authoring_ui.rs, authoring.rs, schema, renderer or solver edits; this scope avoids the active markings reservation. Register after this manifest amendment merges and wait for an accepted claim. The first draft #137 verifies 14 paused history/text-focus phases. Native Save/Open is not covered: document_tick returns before shortcuts in smoke mode. The added documents_ui.rs scope is limited to an isolated acceptance adapter and its CPU tests; do not remove the general smoke guard or open user dialogs. Release/reclaim after this amendment before editing the added path. Existing broad quick smoke failed at 17/23 actions and cannot establish optical history acceptance.
+Completed in #137, merged as 0b383296bfa40f747428c88242a60a9644d34aaf after seven successful checks at 647128e and review of the four-file diff. Six opt-in native scenarios use actual controls and verified state gates: paused history/text ownership/default restore, in-flight Apply/Undo/Redo continuity, isolated Save/Open and color/roughness captures. Independent-fabric and flat strain-overlay comparisons have separate recorded evidence at explicit revisions. The integrated desktop CPU suite passed 129 tests (one optional preview ignored), and strict desktop Clippy passed. See docs/native-appearance-acceptance.md for exact fixtures, commands, failures and limits. This completes the scoped acceptance harness, not LOOK-001 or general native-platform certification. Reservation release accepted on #135.
