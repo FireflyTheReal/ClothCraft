@@ -230,6 +230,13 @@ pub enum Command {
         fabric: String,
         appearance: Option<crate::garment::appearance::FabricAppearance>,
     },
+    /// Create or replace a nonphysical placement, addressed by its stable ID.
+    SetGraphic {
+        placement: crate::garment::graphics::GraphicPlacement,
+    },
+    RemoveGraphic {
+        id: String,
+    },
     Fabric {
         panel: String,
         name: String,
@@ -657,6 +664,7 @@ pub fn same_physics(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
         let mut t = t.clone();
         t.mirror_links.clear();
         t.fabric_appearance.clear();
+        t.graphics.clear();
         for p in &mut t.panels {
             p.layout_2d = None;
             p.layout_rotation_degrees = 0.;
@@ -670,17 +678,57 @@ pub fn same_physics(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
     };
     without_layout(a) == without_layout(b)
 }
-/// A strict appearance-only change, distinct from other nonphysical board edits.
+/// A strict visual-only change, distinct from other nonphysical board edits.
 pub fn only_appearance_changed(a: &GarmentTemplate, b: &GarmentTemplate) -> bool {
-    if a.fabric_appearance == b.fabric_appearance {
+    if a.fabric_appearance == b.fabric_appearance && a.graphics == b.graphics {
         return false;
     }
     let strip = |source: &GarmentTemplate| {
         let mut t = source.clone();
         t.fabric_appearance.clear();
+        t.graphics.clear();
         serde_json::to_vec(&t).unwrap()
     };
     strip(a) == strip(b)
+}
+
+/// Ignore only reviewed nonphysical polygon metadata. Unknown fields remain in
+/// the comparison so future geometry extensions fail closed by default.
+fn strip_graphic_frame_metadata(polygon: &mut serde_json::Value) {
+    if let Some(fields) = polygon.as_object_mut() {
+        for key in [
+            "subdivisions",
+            "meshing",
+            "target_lengths",
+            "seam_allowances",
+            "notches",
+        ] {
+            fields.remove(key);
+        }
+    }
+}
+
+fn graphic_material_frame(panel: &Panel) -> Result<Vec<u8>, String> {
+    let mut polygon = serde_json::to_value(&panel.polygon).map_err(|e| e.to_string())?;
+    strip_graphic_frame_metadata(&mut polygon);
+    serde_json::to_vec(&(panel.pattern.width, panel.pattern.height, polygon))
+        .map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod graphic_frame_tests {
+    use super::*;
+    #[test]
+    fn only_reviewed_nonphysical_fields_are_ignored() {
+        let mut polygon = serde_json::json!({"points": [[0, 0]], "meshing": {}, "subdivisions": 1,
+            "target_lengths": {}, "seam_allowances": {"edge": 0.01}, "notches": {"edge": []},
+            "future_geometry": [1, 2]});
+        strip_graphic_frame_metadata(&mut polygon);
+        assert_eq!(
+            polygon,
+            serde_json::json!({"points": [[0, 0]], "future_geometry": [1, 2]})
+        );
+    }
 }
 pub fn rotate_2d(p: DVec2, degrees: f64) -> DVec2 {
     let (s, c) = degrees.to_radians().sin_cos();
@@ -1112,6 +1160,27 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
         );
     }
     linked::check_command(source, &command)?;
+    let deletes_panels = matches!(
+        &command,
+        Command::RemovePanel { .. } | Command::RemovePanels { .. }
+    );
+    let unsupported_graphic_mirror = match &command {
+        Command::Mirror { panel, .. } | Command::LinkedMirror { panel, .. } => {
+            source.graphics.iter().any(|g| &g.panel_id == panel)
+        }
+        _ => false,
+    };
+    if unsupported_graphic_mirror {
+        return Err("Mirroring panels with graphics is not supported yet".into());
+    }
+    if !source.graphics.is_empty()
+        && matches!(
+            &command,
+            Command::Primitive { replace: true, .. } | Command::Polygon { replace: true, .. }
+        )
+    {
+        return Err("Remove graphics before replacing the garment".into());
+    }
     let mut template = source.clone();
     let mut selected = None;
     let mut new_point = None;
@@ -2025,6 +2094,12 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             copy.placement.translation.x += copy.pattern.width + 0.05;
             let i = template.panels.iter().position(|p| p.id == panel).unwrap();
             copy.layout_2d = Some(layout(&template, i) + DVec2::new(copy.pattern.width + 0.15, 0.));
+            for graphic in source.graphics.iter().filter(|g| g.panel_id == panel) {
+                let mut graphic = graphic.clone();
+                graphic.id = unused_id("graphic", template.graphics.iter().map(|g| g.id.clone()));
+                graphic.panel_id = copy.id.clone();
+                template.graphics.push(graphic);
+            }
             selected = Some(copy.id.clone());
             template.panels.push(copy);
         }
@@ -2119,8 +2194,52 @@ pub fn apply(source: &GarmentTemplate, command: Command) -> Result<Edit, String>
             }
             template.seams.retain(|s| s.id != seam);
         }
+        Command::SetGraphic { placement } => {
+            placement.validate_panel(&template)?;
+            selected = Some(placement.panel_id.clone());
+            if let Some(existing) = template.graphics.iter_mut().find(|g| g.id == placement.id) {
+                if *existing == placement {
+                    return Err("Graphic placement is unchanged".into());
+                }
+                *existing = placement;
+            } else {
+                template.graphics.push(placement);
+            }
+        }
+        Command::RemoveGraphic { id } => {
+            if !template.graphics.iter().any(|g| g.id == id) {
+                return Err("Graphic not found".into());
+            }
+            template.graphics.retain(|g| g.id != id);
+        }
     }
     linked::synchronize(source, &mut template)?;
+    // Placement coordinates refer to the existing material frame. Until topology
+    // remapping exists, reject edits that change that frame rather than shifting
+    // artwork silently. Meshing density and length specifications do not change it.
+    let mut checked_graphic_panels = std::collections::BTreeSet::new();
+    for graphic in &source.graphics {
+        if !checked_graphic_panels.insert(&graphic.panel_id) {
+            continue;
+        }
+        let old = source
+            .panels
+            .iter()
+            .find(|p| p.id == graphic.panel_id)
+            .ok_or("Graphic references a missing panel")?;
+        let Some(new) = template.panels.iter().find(|p| p.id == graphic.panel_id) else {
+            if deletes_panels {
+                continue;
+            }
+            return Err("Remove graphics before replacing their panel".into());
+        };
+        if graphic_material_frame(old)? != graphic_material_frame(new)? {
+            return Err("Remove graphics before changing their panel's material contour".into());
+        }
+    }
+    template
+        .graphics
+        .retain(|g| template.panels.iter().any(|p| p.id == g.panel_id));
     template
         .pin_targets
         .retain(|target| template.panels.iter().any(|p| p.id == target.panel));
